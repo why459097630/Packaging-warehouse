@@ -1,0 +1,29 @@
+name: Upload APK to GitHub Release
+
+on:
+  workflow_run:
+    workflows: ["Build APK"]  # 替换成你实际用于打包 APK 的 workflow 名
+    types:
+      - completed
+
+jobs:
+  release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 下载打包产物
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml   # 替换为你打包 APK 的 workflow 文件名
+          workflow_conclusion: success
+          name: app-release     # 替换为你 GitHub Action 打包产物的 artifact 名称
+          repo: why459097630/Packaging-warehouse
+
+      - name: 发布 Release 并上传 APK
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Auto Release - ${{ github.run_number }}
+          tag_name: v${{ github.run_number }}
+          files: app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
