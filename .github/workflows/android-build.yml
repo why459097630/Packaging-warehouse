@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
-    inputs:
-      module:
-        description: '子项目目录（如 meditation-timer）'
-        required: true
-        default: 'app'
 
 jobs:
   build:
@@ -17,22 +11,22 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 17  # ✅ 修复 JDK 版本
-        uses: actions/setup-java@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Set working directory & build  # ✅ 保证打的是子目录
-        working-directory: ${{ github.event.inputs.module }}
-        run: |
-          chmod +x ./gradlew
-          ./gradlew assembleRelease
+      - name: Grant execute permission for gradlew
+        run: chmod +x meditation-timer/gradlew
+
+      - name: Build APK
+        run: cd meditation-timer && ./gradlew assembleRelease
 
       - name: Upload APK Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: app-release.apk
           path: meditation-timer/app/build/outputs/apk/release/app-release.apk
