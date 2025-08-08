@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -20,9 +19,7 @@ jobs:
           java-version: 17
 
       - name: Decode keystore from base64
-        run: |
-          mkdir -p app
-          echo "$KEYSTORE_BASE64" | base64 -d > app/debug.keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/debug.keystore
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -30,7 +27,7 @@ jobs:
       - name: Build APK with signing config
         run: ./gradlew assembleRelease
         env:
-          KEYSTORE_PATH: app/debug.keystore
+          KEYSTORE_PATH: debug.keystore
           KEYSTORE_PASSWORD: android
           KEY_ALIAS: androiddebugkey
           KEY_PASSWORD: android
