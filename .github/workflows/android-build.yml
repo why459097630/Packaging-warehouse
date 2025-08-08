@@ -21,6 +21,7 @@ jobs:
 
       - name: Decode keystore from base64
         run: |
+          mkdir -p app/app
           echo "$KEYSTORE_BASE64" | base64 -d > app/app/debug.keystore
 
       - name: Grant execute permission for gradlew
