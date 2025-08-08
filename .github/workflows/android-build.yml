@@ -19,11 +19,20 @@ jobs:
           distribution: 'temurin'
           java-version: 17
 
+      - name: Decode keystore from base64
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > debug.keystore
+
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Build APK
+      - name: Build APK with signing config
         run: ./gradlew assembleRelease
+        env:
+          KEYSTORE_PATH: debug.keystore
+          KEYSTORE_PASSWORD: android
+          KEY_ALIAS: androiddebugkey
+          KEY_PASSWORD: android
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
