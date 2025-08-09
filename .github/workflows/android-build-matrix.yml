@@ -40,10 +40,23 @@ jobs:
       - name: Grant execute permission
         run: chmod +x ./gradlew
 
-      # 新增：列出 Gradle 任务方便排错
-      - name: List Gradle tasks
-        run: ./gradlew :app:tasks --all || true
+      # ===== 调试：打印关键配置文件（临时排错用） =====
+      - name: Show settings/build files
+        run: |
+          echo "== settings.gradle =="
+          cat settings.gradle || true
+          echo "== root build.gradle (head) =="
+          head -n 60 build.gradle || true
+          echo "== app/build.gradle (head) =="
+          head -n 40 app/build.gradle || true
 
+      # ===== 调试：列出 Gradle 工程与 :app 任务 =====
+      - name: List Gradle tasks and projects
+        run: |
+          ./gradlew projects --no-daemon || true
+          ./gradlew :app:tasks --all --no-daemon || true
+
+      # ===== 正式构建 =====
       - name: Build (Release)
         run: ./gradlew :app:assembleRelease --no-daemon
 
