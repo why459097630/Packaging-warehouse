@@ -1,100 +1,51 @@
-name: Build One Template
+name: Build One Template APK
 
 on:
   workflow_dispatch:
     inputs:
       template:
-        description: "simple-template | core-template | form-template"
-        required: true
-        default: simple-template
-      app_name:
-        description: "应用名（展示名）"
-        required: true
-        default: Demo App
-      app_id:
-        description: "包名（applicationId），如 com.ndjc.demo"
-        required: true
-        default: com.ndjc.demo
+        description: 'Template name (simple-template / core-template / form-template)'
+        required: false
+        default: 'simple-template'
+  push:
+    paths:
+      - 'templates/**'
+      - '.github/workflows/build-one.yml'
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Packaging repo
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Checkout safe-templates
-        uses: actions/checkout@v4
-        with:
-          repository: why459097630/safe-templates
-          path: safe-templates
-
-      - name: Prepare clean app dir
+      - name: Select template
         run: |
+          TEMPLATE_NAME=${{ github.event.inputs.template || 'simple-template' }}
+          echo "Using template: $TEMPLATE_NAME"
+
+          # 删除旧 app 目录
           rm -rf app
-          mkdir -p app
+          
+          # 拷贝 templates 下的指定模板的 app 目录到根目录
+          cp -r templates/$TEMPLATE_NAME/app app
+          echo "Template copied successfully."
 
-      - name: Copy template to app
-        run: cp -r "safe-templates/${{ inputs.template }}/app/." ./app/
-
-      - name: Show key files (debug)
-        run: |
-          echo "== settings.gradle ==" && cat settings.gradle || true
-          echo "== root build.gradle (head) ==" && head -n 60 build.gradle || true
-          echo "== app/build.gradle (head) ==" && head -n 40 app/build.gradle || true
-          echo "== AndroidManifest.xml (head) ==" && head -n 60 app/src/main/AndroidManifest.xml || true
-
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
         with:
-          distribution: temurin
-          java-version: "17"
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-      # === 注入字段（按你当前模板结构）===
-      # 1) 注入包名：app/build.gradle → applicationId "xxx"
-      # 2) 注入应用名：优先 strings.xml 的 app_name；若不存在则直接改 manifest 的 android:label
-      - name: Inject app_id & app_name
-        shell: bash
-        run: |
-          set -e
-          APP_ID="${{ inputs.app_id }}"
-          APP_NAME="${{ inputs.app_name }}"
-
-          # 注入 applicationId
-          sed -i "s/applicationId \".*\"/applicationId \"${APP_ID//\//\\/}\"/g" app/build.gradle
-
-          STRINGS="app/src/main/res/values/strings.xml"
-          MANIFEST="app/src/main/AndroidManifest.xml"
-
-          if [ -f "$STRINGS" ] && grep -q 'name="app_name"' "$STRINGS"; then
-            # strings.xml 存在 app_name，用它作为展示名
-            sed -i 's#<string name="app_name">.*</string>#<string name="app_name">'"${APP_NAME//\//\\/}"'</string>#g' "$STRINGS"
-            # 确保 manifest 使用 @string/app_name 作为 label（如已是则不变）
-            if grep -q 'android:label="@string/app_name"' "$MANIFEST"; then
-              echo "Manifest already labels from @string/app_name"
-            else
-              sed -i 's/android:label="[^"]*"/android:label="@string\/app_name"/g' "$MANIFEST" || true
-            fi
-          else
-            # 没有 strings.xml 的 app_name，直接改 manifest 的 android:label
-            sed -i 's/android:label="[^"]*"/android:label="'"${APP_NAME//\//\\/}"'"/g' "$MANIFEST"
-          fi
-
-          echo "== After inject =="
-          head -n 40 app/build.gradle || true
-          grep -n "applicationId" -n app/build.gradle || true
-          grep -n "app_name" -n $STRINGS || true
-          grep -n "android:label" -n $MANIFEST || true
-
-      - name: Build (Release)
-        run: ./gradlew :app:assembleRelease --no-daemon
+      - name: Build APK
+        run: ./gradlew assembleRelease
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.template }}-apk-${{ github.run_number }}
-          path: app/build/outputs/apk/release/*.apk
+          name: release-apk
+          path: app/build/outputs/apk/release/app-release.apk
