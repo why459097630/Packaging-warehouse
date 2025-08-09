@@ -1,0 +1,9 @@
+<resources>
+    <color name="colorPrimary">#4F46E5</color>
+    <color name="colorPrimaryDark">#373B43</color>
+    <color name="colorAccent">#22C55E</color>
+    <color name="bgLight">#FAFAFA</color>
+
+    <!-- 启动图标背景色（新增） -->
+    <color name="ic_launcher_background">#3F51B5</color>
+</resources>
