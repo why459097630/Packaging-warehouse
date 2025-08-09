@@ -1,10 +1,12 @@
+// ===== Project-level build.gradle (root) =====
 buildscript {
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.1'
+        // 与 Gradle 8.2.x 匹配，稳定
+        classpath 'com.android.tools.build:gradle:8.2.2'
     }
 }
 
@@ -13,4 +15,9 @@ allprojects {
         google()
         mavenCentral()
     }
+}
+
+// 可选：清理任务
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
 }
