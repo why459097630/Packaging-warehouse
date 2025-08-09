@@ -28,8 +28,8 @@ jobs:
           rm -rf app
           mkdir -p app
 
-      - name: Copy template to app
-        run: cp -r "safe-templates/${{ matrix.template }}/app" ./app
+- name: Copy template to app
+  run: cp -r "safe-templates/${{ matrix.template }}/app/." ./app/
 
       # ★ 新增：立刻检查拷贝进来的 app 目录与 build.gradle 头部
       - name: Check copied app dir
