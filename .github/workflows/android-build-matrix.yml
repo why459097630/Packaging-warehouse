@@ -40,6 +40,10 @@ jobs:
       - name: Grant execute permission
         run: chmod +x ./gradlew
 
+      # 新增：列出 Gradle 任务方便排错
+      - name: List Gradle tasks
+        run: ./gradlew :app:tasks --all || true
+
       - name: Build (Release)
         run: ./gradlew :app:assembleRelease --no-daemon
 
