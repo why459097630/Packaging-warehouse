@@ -1,0 +1,50 @@
+name: Android Build (3 Templates Matrix)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template: [simple-template, core-template, form-template]
+
+    steps:
+      - name: Checkout Packaging repo
+        uses: actions/checkout@v4
+
+      - name: Checkout safe-templates
+        uses: actions/checkout@v4
+        with:
+          repository: why459097630/safe-templates
+          path: safe-templates
+
+      - name: Clean old app
+        run: |
+          rm -rf app
+          mkdir -p app
+
+      - name: Copy template to app
+        run: cp -r "safe-templates/${{ matrix.template }}/app" ./app
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Grant execute permission
+        run: chmod +x ./gradlew
+
+      - name: Build (Release)
+        run: ./gradlew :app:assembleRelease --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.template }}-apk
+          path: app/build/outputs/apk/release/*.apk
