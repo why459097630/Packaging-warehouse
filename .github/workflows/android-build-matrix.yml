@@ -31,6 +31,14 @@ jobs:
       - name: Copy template to app
         run: cp -r "safe-templates/${{ matrix.template }}/app" ./app
 
+      # ★ 新增：立刻检查拷贝进来的 app 目录与 build.gradle 头部
+      - name: Check copied app dir
+        run: |
+          echo "== app/build.gradle (head) =="
+          head -n 20 app/build.gradle || true
+          echo "== app/src/main =="
+          ls -la app/src/main || true
+
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
@@ -40,23 +48,18 @@ jobs:
       - name: Grant execute permission
         run: chmod +x ./gradlew
 
-      # ===== 调试：打印关键配置文件（临时排错用） =====
+      # （可选调试）再打印根/模块配置和任务列表，便于定位
       - name: Show settings/build files
         run: |
-          echo "== settings.gradle =="
-          cat settings.gradle || true
-          echo "== root build.gradle (head) =="
-          head -n 60 build.gradle || true
-          echo "== app/build.gradle (head) =="
-          head -n 40 app/build.gradle || true
+          echo "== settings.gradle ==" && cat settings.gradle || true
+          echo "== root build.gradle (head) ==" && head -n 60 build.gradle || true
+          echo "== app/build.gradle (head again) ==" && head -n 40 app/build.gradle || true
 
-      # ===== 调试：列出 Gradle 工程与 :app 任务 =====
       - name: List Gradle tasks and projects
         run: |
           ./gradlew projects --no-daemon || true
           ./gradlew :app:tasks --all --no-daemon || true
 
-      # ===== 正式构建 =====
       - name: Build (Release)
         run: ./gradlew :app:assembleRelease --no-daemon
 
