@@ -5,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // 和 Gradle 8.2.x 搭配稳定
+        // 与 Gradle 8.2.x 搭配稳定
         classpath 'com.android.tools.build:gradle:8.2.2'
     }
 }
@@ -17,7 +17,4 @@ allprojects {
     }
 }
 
-// 可选：清理
-tasks.register("clean", Delete) {
-    delete rootProject.buildDir
-}
+tasks.register("clean", Delete) { delete rootProject.buildDir }
