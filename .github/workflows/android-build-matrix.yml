@@ -1,70 +1,61 @@
-name: Android Build (3 Templates Matrix)
+name: Build Android APK
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         template: [simple-template, core-template, form-template]
-
     steps:
       - name: Checkout Packaging repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Checkout safe-templates
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         with:
           repository: why459097630/safe-templates
           path: safe-templates
 
       - name: Clean old app
-        run: |
-          rm -rf app
-          mkdir -p app
+        run: rm -rf app
 
-- name: Copy template to app
-  run: cp -r "safe-templates/${{ matrix.template }}/app/." ./app/
+      - name: Copy template to app
+        run: cp -r "safe-templates/${{ matrix.template }}/app/." ./app/
 
-      # ★ 新增：立刻检查拷贝进来的 app 目录与 build.gradle 头部
       - name: Check copied app dir
         run: |
-          echo "== app/build.gradle (head) =="
+          echo "== app/build.gradle head =="
           head -n 20 app/build.gradle || true
           echo "== app/src/main =="
           ls -la app/src/main || true
 
       - name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: 17
 
       - name: Grant execute permission
-        run: chmod +x ./gradlew
+        run: chmod +x gradlew
 
-      # （可选调试）再打印根/模块配置和任务列表，便于定位
       - name: Show settings/build files
         run: |
-          echo "== settings.gradle ==" && cat settings.gradle || true
-          echo "== root build.gradle (head) ==" && head -n 60 build.gradle || true
-          echo "== app/build.gradle (head again) ==" && head -n 40 app/build.gradle || true
+          ls -R .
+          cat settings.gradle || true
+          cat build.gradle || true
+          cat app/build.gradle || true
 
       - name: List Gradle tasks and projects
-        run: |
-          ./gradlew projects --no-daemon || true
-          ./gradlew :app:tasks --all --no-daemon || true
+        run: ./gradlew tasks --all
 
       - name: Build (Release)
         run: ./gradlew :app:assembleRelease --no-daemon
 
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.template }}-apk
-          path: app/build/outputs/apk/release/*.apk
+          name: ${{ matrix.template }}-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
