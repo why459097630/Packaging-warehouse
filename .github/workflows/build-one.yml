@@ -1,6 +1,8 @@
 name: Build One Template APK
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       template:
