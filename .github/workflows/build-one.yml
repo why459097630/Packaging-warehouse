@@ -4,200 +4,201 @@ on:
   workflow_dispatch:
     inputs:
       template:
-        description: 'Template name (simple-template | core-template | form-template)'
+        description: 'Template name under templates/*'
         required: false
-        default: 'simple-template'
+        default: 'generated'
       app_name:
-        description: '应用名（展示名）'
+        description: 'Android app label (strings.xml)'
         required: false
         default: '富游App'
       app_id:
-        description: '包名（applicationId），如 com.fy.travel'
+        description: 'applicationId (package name)'
         required: false
-        default: 'com.fy.travel'
+        default: 'com.ndjc.generated'
       versionName:
-        description: '版本名（可选），如 1.0.3'
+        description: 'versionName'
         required: false
-        default: ''
+        default: '1.0.0'
       versionCode:
-        description: '版本号（可选，整数），如 103'
+        description: 'versionCode (int)'
         required: false
-        default: ''
-      sign_release:
-        description: '是否使用Secrets中的签名信息进行release签名（true/false）'
-        required: false
-        default: 'false'
-      upload_release:
-        description: '是否创建GitHub Release并上传APK（true/false）'
-        required: false
-        default: 'false'
-  push:
-    paths:
-      - 'templates/**'
-      - '.github/workflows/build-one.yml'
+        default: '1'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      # 1) 拉代码
+      - name: Checkout Packaging repo
         uses: actions/checkout@v4
 
+      # 2) JDK 17
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      # 3) 清理旧 app/
+      - name: Clean old app
+        run: |
+          rm -rf app
+          mkdir -p app
+
+      # 4) 从 templates 选择并拷贝 app/
       - name: Select template & copy app
         shell: bash
         run: |
           set -e
-          TEMPLATE="${{ github.event.inputs.template || 'simple-template' }}"
+          TEMPLATE="${{ github.event.inputs.template || 'generated' }}"
           echo "Using template: ${TEMPLATE}"
           test -d "templates/${TEMPLATE}/app" || { echo "templates/${TEMPLATE}/app 不存在"; exit 1; }
           rm -rf app
           cp -r "templates/${TEMPLATE}/app" ./app
-          echo "Template copied."
+          find app -maxdepth 2 -type f | sed 's/^/  -> /'
 
-      - name: Setup JDK 17 (with Gradle cache)
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: 'gradle'
+      # 5) 注入 app_name / app_id / version
+      - name: Inject app_name, app_id, version
+        shell: bash
+        run: |
+          set -e
+          APP_NAME="${{ github.event.inputs.app_name || '富游App' }}"
+          APP_ID="${{ github.event.inputs.app_id   || 'com.ndjc.generated' }}"
+          VNAME="${{ github.event.inputs.versionName || '1.0.0' }}"
+          VCODE="${{ github.event.inputs.versionCode || '1' }}"
 
-      - name: Grant execute permission for gradlew
+          # strings.xml 中 app_name
+          STR="app/src/main/res/values/strings.xml"
+          if [ -f "$STR" ]; then
+            if grep -q '<string name="app_name">' "$STR"; then
+              sed -i "s#<string name=\"app_name\">.*</string>#<string name=\"app_name\">${APP_NAME}</string>#g" "$STR"
+            else
+              # 没有则追加
+              awk 'BEGIN{p=1} /<resources>/{print; print "  <string name=\"app_name\">'"$APP_NAME"'</string>"; p=0; next} {print}' "$STR" > "$STR.tmp" && mv "$STR.tmp" "$STR"
+            fi
+          fi
+
+          # build.gradle 中 applicationId/version
+          B="app/build.gradle"
+          if [ -f "$B" ]; then
+            # applicationId
+            if grep -q 'applicationId' "$B"; then
+              sed -i "s#applicationId \".*\"#applicationId \"${APP_ID}\"#g" "$B"
+            else
+              awk '
+                /defaultConfig *\{/ && !a {print; print "        applicationId \"'"$APP_ID"'\""; a=1; next}
+                {print}
+              ' "$B" > "$B.tmp" && mv "$B.tmp" "$B"
+            fi
+            # versionName / versionCode
+            if grep -q 'versionName' "$B"; then
+              sed -i "s#versionName \".*\"#versionName \"${VNAME}\"#g" "$B"
+            else
+              awk '
+                /defaultConfig *\{/ && !vn {print; print "        versionName \"'"$VNAME"'\""; vn=1; next}
+                {print}
+              ' "$B" > "$B.tmp" && mv "$B.tmp" "$B"
+            fi
+            if grep -q 'versionCode' "$B"; then
+              sed -i "s#versionCode \+[0-9]\+#versionCode ${VCODE}#g" "$B"
+              sed -i "s#versionCode [0-9]\+#versionCode ${VCODE}#g" "$B"
+            else
+              awk '
+                /defaultConfig *\{/ && !vc {print; print "        versionCode '"$VCODE"'"; vc=1; next}
+                {print}
+              ' "$B" > "$B.tmp" && mv "$B.tmp" "$B"
+            fi
+          fi
+
+      # 6) 补丁1：Android 12 导出属性
+      - name: Patch Android 12 exported
+        shell: bash
+        run: |
+          FILE="app/src/main/AndroidManifest.xml"
+          if [ -f "$FILE" ]; then
+            if grep -q 'LAUNCHER' "$FILE" && ! grep -q 'android:exported=' "$FILE"; then
+              awk '
+                /<activity/ { inAct=1 }
+                inAct && /<intent-filter/ { inIF=1 }
+                inIF && /LAUNCHER/ { need=1 }
+                inAct && />/ {
+                  if (need && $0 !~ /android:exported=/) {
+                    sub(/<activity/, "<activity android:exported=\"true\"");
+                  }
+                  inAct=0; inIF=0; need=0
+                }
+                { print }
+              ' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+              echo "android:exported added."
+            else
+              echo "No exported patch needed."
+            fi
+          fi
+
+      # 7) 补丁2：图标占位
+      - name: Ensure launcher icon
+        shell: bash
+        run: |
+          set -e
+          base="app/src/main/res"
+          mkdir -p "$base/mipmap-anydpi-v26" "$base/drawable" "$base/values"
+
+          # adaptive icon
+          if [ ! -f "$base/mipmap-anydpi-v26/ic_launcher.xml" ]; then
+            cat > "$base/mipmap-anydpi-v26/ic_launcher.xml" <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+  <background android:drawable="@color/ic_launcher_background"/>
+  <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+</adaptive-icon>
+XML
+          fi
+
+          # foreground vector
+          if [ ! -f "$base/drawable/ic_launcher_foreground.xml" ]; then
+            cat > "$base/drawable/ic_launcher_foreground.xml" <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="108dp" android:height="108dp"
+  android:viewportWidth="108" android:viewportHeight="108">
+  <path android:fillColor="#FFFFFF" android:pathData="M18,18h72v72h-72z"/>
+  <path android:fillColor="#000000" android:pathData="M30,42h36v8h-28v8h24v8h-24v12h-8z"/>
+</vector>
+XML
+          fi
+
+          # colors 背景
+          COLORS="$base/values/colors.xml"
+          if [ -f "$COLORS" ]; then
+            if ! grep -q 'ic_launcher_background' "$COLORS"; then
+              awk '
+                BEGIN{added=0}
+                /<resources>/{print; if(!added){print "  <color name=\"ic_launcher_background\">#3F51B5</color>"; added=1; next}}
+                {print}
+              ' "$COLORS" > "$COLORS.tmp" && mv "$COLORS.tmp" "$COLORS"
+            fi
+          else
+            mkdir -p "$base/values"
+            cat > "$COLORS" <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <color name="ic_launcher_background">#3F51B5</color>
+</resources>
+XML
+          fi
+
+      # 8) Gradle 执行权限
+      - name: Grant execute permission
         run: chmod +x ./gradlew
 
-      # ===== 注入 应用名/包名/版本号 =====
-      - name: Inject app_id / app_name / version
-        shell: bash
-        run: |
-          set -e
-          APP_ID="${{ github.event.inputs.app_id }}"
-          APP_NAME="${{ github.event.inputs.app_name }}"
-          VNAME="${{ github.event.inputs.versionName }}"
-          VCODE="${{ github.event.inputs.versionCode }}"
-          AGB="app/build.gradle"
-          STR="app/src/main/res/values/strings.xml"
-          MAN="app/src/main/AndroidManifest.xml"
-
-          echo "== 注入包名 =="
-          if grep -q 'applicationId "' "$AGB"; then
-            sed -i "s/applicationId \".*\"/applicationId \"${APP_ID//\//\\/}\"/g" "$AGB"
-          else
-            # 在 defaultConfig 中补一行 applicationId
-            awk -v id="${APP_ID}" '
-              BEGIN{inDefault=0}
-              /defaultConfig *\{/ {inDefault=1}
-              {print}
-              inDefault==1 && /{/ && !seen {print "        applicationId \"" id "\""; seen=1}
-              /}/ && inDefault==1 {inDefault=0}
-            ' "$AGB" > "$AGB.tmp" && mv "$AGB.tmp" "$AGB"
-          fi
-
-          echo "== 注入应用名 =="
-          if [ -f "$STR" ] && grep -q 'name="app_name"' "$STR"; then
-            sed -i 's#<string name="app_name">.*</string>#<string name="app_name">'"${APP_NAME//\//\\/}"'</string>#g' "$STR"
-            # 确保 manifest 使用 @string/app_name
-            sed -i 's/android:label="[^"]*"/android:label="@string\/app_name"/g' "$MAN" || true
-          else
-            sed -i 's/android:label="[^"]*"/android:label="'"${APP_NAME//\//\\/}"'"/g' "$MAN"
-          fi
-
-          echo "== 注入版本号 =="
-          if [ -n "$VNAME" ]; then
-            if grep -q 'versionName "' "$AGB"; then
-              sed -i "s/versionName \".*\"/versionName \"${VNAME//\//\\/}\"/g" "$AGB"
-            else
-              awk -v v="${VNAME}" '
-                BEGIN{inDefault=0}
-                /defaultConfig *\{/ {inDefault=1}
-                {print}
-                inDefault==1 && /{/ && !seen {print "        versionName \"" v "\""; seen=1}
-                /}/ && inDefault==1 {inDefault=0}
-              ' "$AGB" > "$AGB.tmp" && mv "$AGB.tmp" "$AGB"
-            fi
-          fi
-
-          if [ -n "$VCODE" ]; then
-            if grep -q 'versionCode ' "$AGB"; then
-              sed -i "s/versionCode [0-9][0-9]*/versionCode ${VCODE}/g" "$AGB"
-            else
-              awk -v v="${VCODE}" '
-                BEGIN{inDefault=0}
-                /defaultConfig *\{/ {inDefault=1}
-                {print}
-                inDefault==1 && /{/ && !seen {print "        versionCode " v; seen=1}
-                /}/ && inDefault==1 {inDefault=0}
-              ' "$AGB" > "$AGB.tmp" && mv "$AGB.tmp" "$AGB"
-            fi
-          fi
-
-          echo "== 注入完成，关键片段 =="
-          head -n 120 "$AGB" || true
-          echo "--- Manifest ---"; head -n 60 "$MAN" || true
-          echo "--- strings.xml ---"; head -n 60 "$STR" || true
-
-      # =====（可选）签名：用 Secrets 构建 release-signing.gradle 并应用 =====
-      # 需要在仓库 Secrets 配置：
-      # RELEASE_KEYSTORE_B64（keystore的Base64），KEY_ALIAS，KEY_PASS，STORE_PASS
-      - name: Configure release signing (optional)
-        if: ${{ inputs.sign_release == 'true' }}
-        shell: bash
-        env:
-          KS_B64: ${{ secrets.RELEASE_KEYSTORE_B64 }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASS: ${{ secrets.KEY_PASS }}
-          STORE_PASS: ${{ secrets.STORE_PASS }}
-        run: |
-          set -e
-          test -n "$KS_B64" || { echo "缺少 RELEASE_KEYSTORE_B64 Secret"; exit 1; }
-          mkdir -p app/keystore
-          echo "$KS_B64" | base64 -d > app/keystore/release.keystore
-
-          cat > app/release-signing.gradle <<'GRAD'
-          android {
-              signingConfigs {
-                  release {
-                      storeFile file("keystore/release.keystore")
-                      storePassword System.getenv("STORE_PASS")
-                      keyAlias System.getenv("KEY_ALIAS")
-                      keyPassword System.getenv("KEY_PASS")
-                  }
-              }
-              buildTypes {
-                  release {
-                      signingConfig signingConfigs.release
-                      minifyEnabled false
-                      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-                  }
-              }
-          }
-          GRAD
-
-          # 在 app/build.gradle 末尾 apply（避免复杂sed）
-          echo -e "\napply from: 'release-signing.gradle'\n" >> app/build.gradle
-          echo "Signing configured."
-
-      - name: List Gradle tasks (debug)
-        run: ./gradlew :app:tasks --no-daemon || true
-
-      - name: Build Release APK
+      # 9) 构建 Release APK
+      - name: Build (Release)
         run: ./gradlew :app:assembleRelease --no-daemon
 
+      # 10) 上传 APK（v4）
       - name: Upload artifact (APK)
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.template }}-apk-${{ github.run_number }}
           path: app/build/outputs/apk/release/*.apk
-          if-no-files-found: error
-          compression-level: 0
-
-      # =====（可选）发布到 GitHub Release =====
-      - name: Create GitHub Release (optional)
-        if: ${{ inputs.upload_release == 'true' }}
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ inputs.versionName || '0.0.' }}${{ github.run_number }}
-          name: "Android APK · ${{ inputs.template }} · ${{ inputs.versionName || '0.0.' }}${{ github.run_number }}"
-          draft: false
-          prerelease: false
-          files: |
-            app/build/outputs/apk/release/*.apk
