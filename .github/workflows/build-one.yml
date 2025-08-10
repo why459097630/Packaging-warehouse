@@ -1,7 +1,6 @@
 name: Build One Template APK
 
 on:
-  # 手动触发（页面会出现 Run workflow 按钮）
   workflow_dispatch:
     inputs:
       template:
@@ -25,20 +24,17 @@ on:
         required: false
         default: '1'
 
-  # 仍允许 push 触发，但只监听 generated 目录，避免无关提交
   push:
     branches: [ main ]
     paths:
       - 'templates/generated/**'
 
-# 只保留最新一次构建，多余的自动取消
 concurrency:
   group: build-generated
   cancel-in-progress: true
 
 jobs:
   build:
-    # 手动触发永远允许；push 触发时，如果提交信息包含 [skip-apk] 则跳过
     if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[skip-apk]') }}
     runs-on: ubuntu-latest
 
