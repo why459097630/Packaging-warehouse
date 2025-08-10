@@ -1,35 +1,33 @@
 package com.ndjc.generated;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView diceTextView;
-    private Random random;
+    private String[] artifactNames = {"Artifact 1", "Artifact 2", "Artifact 3"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        diceTextView = findViewById(R.id.diceTextView);
-        random = new Random();
+        ListView listView = findViewById(R.id.artifact_list);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, artifactNames);
+        listView.setAdapter(adapter);
 
-        diceTextView.setOnClickListener(new View.OnClickListener() {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(View v) {
-                rollDice();
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+                intent.putExtra("artifactName", artifactNames[position]);
+                startActivity(intent);
             }
         });
-    }
-
-    private void rollDice() {
-        int diceNumber = random.nextInt(6) + 1;
-        diceTextView.setText(String.valueOf(diceNumber));
     }
 }
