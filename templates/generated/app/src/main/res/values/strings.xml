@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">NDJC App</string>
-    <string name="dice_image_desc">Dice Image</string>
+    <string name="app_name">Dice Roller</string>
 </resources>
