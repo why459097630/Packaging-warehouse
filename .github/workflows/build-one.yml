@@ -1,11 +1,19 @@
 name: Build One Template APK
 
 on:
+  # 自动触发：只要 main 分支里这些路径有变更就打包
+  push:
+    branches: [ main ]
+    paths:
+      - 'templates/**'
+      - '.github/workflows/build-one.yml'
+
+  # 手动触发：可选（按钮会出现）
   workflow_dispatch:
     inputs:
       template:
         description: 'Template name under templates/*'
-        required: true
+        required: false
         default: 'generated'
       app_name:
         description: 'Android app label (strings.xml)'
@@ -23,6 +31,10 @@ on:
         description: 'versionCode (int)'
         required: false
         default: '1'
+
+concurrency:
+  group: build-one-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -49,14 +61,18 @@ jobs:
         run: |
           set -e
           TEMPLATE="${{ github.event.inputs.template }}"
+          # 自动触发时 inputs 为空，兜底用 generated
+          if [ -z "$TEMPLATE" ]; then TEMPLATE="generated"; fi
           echo "Using template: $TEMPLATE"
+
           if [ ! -d "templates/$TEMPLATE/app" ]; then
             echo "目录不存在: templates/$TEMPLATE/app"
             exit 1
           fi
+
           rm -rf app
           cp -r "templates/$TEMPLATE/app" ./app
-          echo "copied:"
+          echo "copied files:"
           find app -maxdepth 3 -type f | sed 's/^/  -> /'
 
       - name: Inject app_name, app_id, version
