@@ -27,12 +27,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      # 1) 拉代码
       - name: Checkout Packaging repo
         uses: actions/checkout@v4
 
-      # 2) JDK 17
       - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
@@ -40,49 +39,51 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # 3) 清理旧 app/
       - name: Clean old app
         run: |
           rm -rf app
           mkdir -p app
 
-      # 4) 从 templates 选择并拷贝 app/
       - name: Select template & copy app
         shell: bash
         run: |
           set -e
-          TEMPLATE="${{ github.event.inputs.template || 'generated' }}"
-          echo "Using template: ${TEMPLATE}"
-          test -d "templates/${TEMPLATE}/app" || { echo "templates/${TEMPLATE}/app 不存在"; exit 1; }
+          TEMPLATE="${{ github.event.inputs.template }}"
+          if [ -z "$TEMPLATE" ]; then TEMPLATE="generated"; fi
+          echo "Using template: $TEMPLATE"
+          if [ ! -d "templates/$TEMPLATE/app" ]; then
+            echo "目录不存在: templates/$TEMPLATE/app"
+            exit 1
+          fi
           rm -rf app
-          cp -r "templates/${TEMPLATE}/app" ./app
-          find app -maxdepth 2 -type f | sed 's/^/  -> /'
+          cp -r "templates/$TEMPLATE/app" ./app
+          echo "copied:"
+          find app -maxdepth 3 -type f | sed 's/^/  -> /'
 
-      # 5) 注入 app_name / app_id / version
       - name: Inject app_name, app_id, version
         shell: bash
         run: |
           set -e
-          APP_NAME="${{ github.event.inputs.app_name || '富游App' }}"
-          APP_ID="${{ github.event.inputs.app_id   || 'com.ndjc.generated' }}"
-          VNAME="${{ github.event.inputs.versionName || '1.0.0' }}"
-          VCODE="${{ github.event.inputs.versionCode || '1' }}"
+          APP_NAME="${{ github.event.inputs.app_name }}"
+          APP_ID="${{ github.event.inputs.app_id }}"
+          VNAME="${{ github.event.inputs.versionName }}"
+          VCODE="${{ github.event.inputs.versionCode }}"
+          [ -z "$APP_NAME" ] && APP_NAME="富游App"
+          [ -z "$APP_ID" ] && APP_ID="com.ndjc.generated"
+          [ -z "$VNAME" ] && VNAME="1.0.0"
+          [ -z "$VCODE" ] && VCODE="1"
 
-          # strings.xml 中 app_name
           STR="app/src/main/res/values/strings.xml"
           if [ -f "$STR" ]; then
             if grep -q '<string name="app_name">' "$STR"; then
               sed -i "s#<string name=\"app_name\">.*</string>#<string name=\"app_name\">${APP_NAME}</string>#g" "$STR"
             else
-              # 没有则追加
               awk 'BEGIN{p=1} /<resources>/{print; print "  <string name=\"app_name\">'"$APP_NAME"'</string>"; p=0; next} {print}' "$STR" > "$STR.tmp" && mv "$STR.tmp" "$STR"
             fi
           fi
 
-          # build.gradle 中 applicationId/version
           B="app/build.gradle"
           if [ -f "$B" ]; then
-            # applicationId
             if grep -q 'applicationId' "$B"; then
               sed -i "s#applicationId \".*\"#applicationId \"${APP_ID}\"#g" "$B"
             else
@@ -91,7 +92,7 @@ jobs:
                 {print}
               ' "$B" > "$B.tmp" && mv "$B.tmp" "$B"
             fi
-            # versionName / versionCode
+
             if grep -q 'versionName' "$B"; then
               sed -i "s#versionName \".*\"#versionName \"${VNAME}\"#g" "$B"
             else
@@ -100,6 +101,7 @@ jobs:
                 {print}
               ' "$B" > "$B.tmp" && mv "$B.tmp" "$B"
             fi
+
             if grep -q 'versionCode' "$B"; then
               sed -i "s#versionCode \+[0-9]\+#versionCode ${VCODE}#g" "$B"
               sed -i "s#versionCode [0-9]\+#versionCode ${VCODE}#g" "$B"
@@ -111,7 +113,6 @@ jobs:
             fi
           fi
 
-      # 6) 补丁1：Android 12 导出属性
       - name: Patch Android 12 exported
         shell: bash
         run: |
@@ -136,7 +137,6 @@ jobs:
             fi
           fi
 
-      # 7) 补丁2：图标占位
       - name: Ensure launcher icon
         shell: bash
         run: |
@@ -144,7 +144,6 @@ jobs:
           base="app/src/main/res"
           mkdir -p "$base/mipmap-anydpi-v26" "$base/drawable" "$base/values"
 
-          # adaptive icon
           if [ ! -f "$base/mipmap-anydpi-v26/ic_launcher.xml" ]; then
             cat > "$base/mipmap-anydpi-v26/ic_launcher.xml" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
@@ -155,7 +154,6 @@ jobs:
 XML
           fi
 
-          # foreground vector
           if [ ! -f "$base/drawable/ic_launcher_foreground.xml" ]; then
             cat > "$base/drawable/ic_launcher_foreground.xml" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
@@ -168,7 +166,6 @@ XML
 XML
           fi
 
-          # colors 背景
           COLORS="$base/values/colors.xml"
           if [ -f "$COLORS" ]; then
             if ! grep -q 'ic_launcher_background' "$COLORS"; then
@@ -188,17 +185,14 @@ XML
 XML
           fi
 
-      # 8) Gradle 执行权限
       - name: Grant execute permission
         run: chmod +x ./gradlew
 
-      # 9) 构建 Release APK
       - name: Build (Release)
         run: ./gradlew :app:assembleRelease --no-daemon
 
-      # 10) 上传 APK（v4）
       - name: Upload artifact (APK)
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.template }}-apk-${{ github.run_number }}
+          name: apk
           path: app/build/outputs/apk/release/*.apk
