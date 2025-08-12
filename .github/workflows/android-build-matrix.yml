@@ -28,12 +28,12 @@ jobs:
           rm -rf app
           mkdir -p app
 
-      # 关键：拷贝模板到 app/
+      # 关键：拷贝内容，避免 app/app 嵌套目录
       - name: Copy template to app
         run: cp -r "safe-templates/${{ matrix.template }}/app/." ./app/
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -41,20 +41,12 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./app/gradlew
 
-      # 构建 APK
-      - name: Build APK
-        working-directory: app
-        run: ./gradlew assembleRelease
+      - name: Build with Gradle
+        working-directory: ./app
+        run: ./gradlew assembleDebug
 
-      # 生成 upload 目录，并加 commit SHA 到文件名
-      - name: Prepare APK for upload
-        run: |
-          mkdir -p upload
-          cp app/build/outputs/apk/release/app-release.apk upload/app-release-${GITHUB_SHA}.apk
-
-      # 上传 artifact，artifact 名也带 SHA
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
-          name: app-release-${{ github.sha }}
-          path: upload/*.apk
+          name: ${{ matrix.template }}-apk
+          path: app/app/build/outputs/apk/debug/app-debug.apk
