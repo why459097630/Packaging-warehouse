@@ -28,6 +28,38 @@ jobs:
       - name: Use selected template
         run: rsync -a templates/${{ matrix.template }}/ ./
 
+      # === 关键修复：自动读取代码包名 -> 对齐 namespace 与 Manifest 的 package ===
+      - name: Detect package name from source
+        id: pkg
+        shell: bash
+        run: |
+          set -e
+          # 从首个 .kt/.java 文件读取 "package xxx.yyy"（去掉分号）
+          PKG=$(grep -R --include="*.kt" --include="*.java" -h -m1 '^package ' app/src/main/java | head -n1 | awk '{print $2}' | tr -d ';')
+          # 兜底：若没找到，默认一个包名
+          if [ -z "$PKG" ]; then PKG="com.example.app"; fi
+          echo "PKG=$PKG" | tee -a $GITHUB_ENV
+          echo "pkg=$PKG" >> $GITHUB_OUTPUT
+
+      - name: Align namespace and AndroidManifest package
+        shell: bash
+        run: |
+          set -e
+          echo "Using package: $PKG"
+          # 1) 在 app/build.gradle 里追加一个 android{} 块来强制 namespace（AGP 会合并多个 android 块）
+          if [ -f app/build.gradle ]; then
+            cat >> app/build.gradle <<EOF
+
+android {
+  namespace "$PKG"
+}
+EOF
+          fi
+          # 2) 把 AndroidManifest.xml 里的 package 改成同一个（若存在）
+          if [ -f app/src/main/AndroidManifest.xml ]; then
+            sed -i -E 's/package="[^"]*"/package="'"$PKG"'"/' app/src/main/AndroidManifest.xml || true
+          fi
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
