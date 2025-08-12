@@ -1,39 +1,76 @@
-name: Release APK
+name: Android Build (3 Templates Matrix)
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Android Build (3 Templates Matrix)"]  # <- 这里换成你实际的构建 workflow 名称
-    types: [completed]
+  push:
+    branches: [ main ]
 
 jobs:
-  release:
-    # 仅在构建成功或手动触发时执行
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+  build:
+    name: build (${{ matrix.template }})
     runs-on: ubuntu-latest
-    permissions:
-      contents: write   # 允许创建 Release
+
+    strategy:
+      fail-fast: false
+      matrix:
+        template: [simple-template, core-template, form-template]
 
     steps:
-      - name: Download APK artifacts
-        uses: actions/download-artifact@v4
-        with:
-          # 和构建阶段的 artifact 名称匹配；你之前是 `${template}-apk-${sha}`
-          pattern: "*-apk-*"
-          merge-multiple: true
-          path: dist
+      - name: Checkout Packaging repo
+        uses: actions/checkout@v4
 
-      - name: List files
-        run: ls -R dist
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Checkout safe-templates
+        uses: actions/checkout@v4
         with:
-          tag_name: v${{ github.run_number }}
-          name: Auto Release – ${{ github.run_number }}
-          body: "Auto release of latest APKs."
-          files: dist/*.apk
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          repository: why459097630/safe-templates
+          path: safe-templates
+
+      # 可视化/调试：看看模板目录里有什么
+      - name: Show template structure (debug)
+        run: |
+          ls -la
+          echo "----"
+          ls -la safe-templates/${{ matrix.template }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK (cmdline-tools)
+        uses: android-actions/setup-android@v3
+
+      - name: Install required SDK components
+        shell: bash
+        run: |
+          set -e
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "platform-tools" \
+                     "platforms;android-34" \
+                     "build-tools;34.0.0"
+
+      # 采用 Gradle 官方 Action；如果模板里没有 gradlew 也能工作（会下发临时 Gradle）
+      - name: Build with Gradle (assembleRelease)
+        uses: gradle/gradle-build-action@v3
+        with:
+          build-root-directory: safe-templates/${{ matrix.template }}
+          arguments: assembleRelease
+          gradle-version: 8.7
+
+      - name: Collect APKs
+        id: collect
+        shell: bash
+        working-directory: safe-templates/${{ matrix.template }}
+        run: |
+          set -e
+          # 常规 Android 工程，release APK 在 app 模块下：
+          find app/build/outputs -type f -name "*.apk" | sed 's/^/APK: /'
+          echo "apk_glob=app/build/outputs/**/*.apk" >> $GITHUB_OUTPUT
+
+      - name: Upload artifact (${{ matrix.template }})
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.template }}-apk-${{ github.sha }}
+          path: safe-templates/${{ matrix.template }}/${{ steps.collect.outputs.apk_glob }}
+          if-no-files-found: error
