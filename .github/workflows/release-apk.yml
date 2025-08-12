@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows: ["Android Build (3 Templates Matrix)"]
     types: [completed]
-  workflow_dispatch: {}   # 手动触发兜底，方便重跑
+  workflow_dispatch: {}
 
 jobs:
   release:
@@ -24,8 +24,19 @@ jobs:
           name_is_regexp: true
           path: dist
 
-      - name: List files
-        run: ls -lR dist || true
+      - name: Rename APKs to unique names
+        shell: bash
+        run: |
+          set -e
+          shopt -s nullglob
+          for d in dist/*; do
+            [ -d "$d" ] || continue
+            base=$(basename "$d")             # e.g. app-release-core-template
+            apk=$(ls "$d"/*.apk | head -n 1)  # e.g. app-release-unsigned.apk
+            mv "$apk" "dist/${base}.apk"
+            rm -rf "$d"
+          done
+          echo "Final files:"; ls -l dist
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -33,4 +44,6 @@ jobs:
           tag_name: v${{ github.run_number }}
           name: Auto Release ${{ github.run_number }}
           body: "Auto release of latest APKs."
-          files: dist/**/*.apk
+          files: dist/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
