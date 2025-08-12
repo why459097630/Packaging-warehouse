@@ -23,34 +23,20 @@ jobs:
           repository: why459097630/safe-templates
           path: safe-templates
 
-      - name: Show template structure (debug)
-        shell: bash
-        run: |
-          echo ">>> TEMPLATE=${{ matrix.template }}"
-          ROOT="safe-templates/${{ matrix.template }}"
-          ls -la "$ROOT" || true
-          ls -la "$ROOT/app" || true
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Set up Android SDK (cmdline-tools)
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install required SDK components
+      - name: Install SDK components
         shell: bash
         run: |
           sdkmanager --licenses || true
           sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" || true
-          sdkmanager --list | head -n 200 || true
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: 8.7
 
       - name: Detect project dir
         id: detect
@@ -62,65 +48,22 @@ jobs:
           else
             echo "projectDir=$ROOT" >> "$GITHUB_OUTPUT"
           fi
-          echo "Using projectDir=$(sed -n 's/^projectDir=//p' $GITHUB_OUTPUT)"
 
-      - name: Bootstrap Gradle root files if missing
-        working-directory: ${{ steps.detect.outputs.projectDir }}
-        shell: bash
-        run: |
-          if [ ! -f settings.gradle ] && [ ! -f settings.gradle.kts ]; then
-            cat > settings.gradle <<'EOF'
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-    }
-}
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-rootProject.name = "android-template"
-include(":app")
-EOF
-            echo ">>> created settings.gradle"
-          fi
-
-          if [ ! -f build.gradle ] && [ ! -f build.gradle.kts ]; then
-            cat > build.gradle <<'EOF'
-buildscript {
-    repositories { google(); mavenCentral() }
-    dependencies { classpath("com.android.tools.build:gradle:8.5.1") }
-}
-allprojects {
-    repositories { google(); mavenCentral() }
-}
-tasks.register("clean", Delete) { delete(rootProject.buildDir) }
-EOF
-            echo ">>> created build.gradle"
-          fi
-
-      - name: Ensure Gradle wrapper exists
+      - name: Ensure Gradle wrapper
         working-directory: ${{ steps.detect.outputs.projectDir }}
         shell: bash
         run: |
           if [ ! -f gradlew ]; then
-            echo "gradlew not found, generating wrapper..."
             gradle wrapper
           fi
           chmod +x gradlew
           ./gradlew --version
 
-      - name: Build APK
+      - name: Assemble Release
         working-directory: ${{ steps.detect.outputs.projectDir }}
         shell: bash
         run: |
           ./gradlew assembleRelease --stacktrace
-          echo ">>> APKs found:"
           find . -path "*/build/outputs/apk/*/*.apk" -print
 
       - name: Collect APKs
@@ -129,7 +72,6 @@ EOF
           mkdir -p upload/${{ matrix.template }}
           find "${{ steps.detect.outputs.projectDir }}" -path "*/build/outputs/apk/*/*.apk" \
             -exec cp {} "upload/${{ matrix.template }}/" \;
-          ls -la "upload/${{ matrix.template }}"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
