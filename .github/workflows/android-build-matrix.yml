@@ -24,52 +24,50 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 拷贝模板到根目录（不删除源目录）
       - name: Use selected template
         run: rsync -a templates/${{ matrix.template }}/ ./
 
-      # 读取包名：MainActivity > 任意源码 > Manifest > 兜底
-      - name: Detect package name
-        id: pkg
+      # 以 app/build.gradle 的 applicationId 或 Manifest 的 package 为“目标包名”
+      - name: Detect TARGET package (from applicationId / Manifest)
+        id: targetpkg
         shell: bash
         run: |
           set -e
-          PKG=""
-          # 先取 Manifest 兜底
-          if [ -f app/src/main/AndroidManifest.xml ]; then
-            MANI_PKG=$(grep -Po 'package="\K[^"]+' app/src/main/AndroidManifest.xml || true)
-          fi
-          # MainActivity
-          F=$(find app/src/main/java -type f \( -name 'MainActivity.kt' -o -name 'MainActivity.java' \) 2>/dev/null | head -n1 || true)
-          if [ -n "$F" ]; then
-            PKG=$(sed -n 's/^package \([^;]*\).*/\1/p' "$F" | head -n1 | tr -d ';')
-          fi
-          # 任意源码的第一条 package
-          if [ -z "$PKG" ] && [ -d app/src/main/java ]; then
-            PKG=$(grep -R --include='*.kt' --include='*.java' -h -m1 '^package ' app/src/main/java 2>/dev/null | awk '{print $2}' | tr -d ';')
-          fi
-          # Manifest
-          if [ -z "$PKG" ]; then PKG="$MANI_PKG"; fi
-          # 兜底
-          if [ -z "$PKG" ]; then PKG="com.example.app"; fi
-
-          echo "Detected package: $PKG"
-          echo "PKG=$PKG" >> "$GITHUB_ENV"
-
-      # 只做两件事：强制 namespace；同步 Manifest 的 package
-      - name: Align namespace and manifest
-        shell: bash
-        run: |
-          set -e
-          echo "Using package: $PKG"
-
-          # 强制 namespace（AGP 允许多个 android{} 块合并）
+          TARGET=""
           if [ -f app/build.gradle ]; then
-            printf '\nandroid {\n  namespace "%s"\n}\n' "$PKG" >> app/build.gradle
+            TARGET=$(grep -Po 'applicationId\s+"[^"]+"' app/build.gradle | head -n1 | cut -d'"' -f2 || true)
+          fi
+          if [ -z "$TARGET" ] && [ -f app/src/main/AndroidManifest.xml ]; then
+            TARGET=$(grep -Po 'package="\K[^"]+' app/src/main/AndroidManifest.xml | head -n1 || true)
+          fi
+          if [ -z "$TARGET" ]; then TARGET="com.example.app"; fi
+          echo "TARGET=$TARGET" >> "$GITHUB_ENV"
+          echo "Using TARGET package: $TARGET"
+
+      # 把源码里的 package 统一改成 TARGET；同时强制 namespace & Manifest
+      - name: Normalize packages and manifest
+        shell: bash
+        run: |
+          set -e
+          echo "Normalizing to package: $TARGET"
+
+          # 1) 改 .kt/.java 文件的 package 行
+          if [ -d app/src/main/java ]; then
+            while IFS= read -r -d '' f; do
+              # 只改第一行 package
+              sed -i -E '0,/^package/s//package '"$TARGET"';/' "$f" || true
+            done < <(find app/src/main/java -type f \( -name '*.kt' -o -name '*.java' \) -print0 2>/dev/null)
           fi
 
-          # 同步 Manifest 的 package —— 用 perl 更稳，不受 sed 花括号影响
+          # 2) 强制 namespace（AGP 会合并 android{} 块）
+          if [ -f app/build.gradle ]; then
+            printf '\nandroid {\n  namespace "%s"\n}\n' "$TARGET" >> app/build.gradle
+          fi
+
+          # 3) 同步 Manifest 的 package
           if [ -f app/src/main/AndroidManifest.xml ]; then
-            perl -0777 -pe 's/package="[^"]*"/package="'$PKG'"/' -i app/src/main/AndroidManifest.xml
+            perl -0777 -pe 's/package="[^"]*"/package="'$TARGET'"/' -i app/src/main/AndroidManifest.xml
           fi
 
       - name: Set up JDK 17
