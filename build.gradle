@@ -1,20 +1,4 @@
-// ===== Project-level build.gradle (root) =====
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        // 与 Gradle 8.2.x 搭配稳定
-        classpath 'com.android.tools.build:gradle:8.2.2'
-    }
+plugins {
+  id "com.android.application" version "8.2.2" apply false
+  id "org.jetbrains.kotlin.android" version "1.9.22" apply false
 }
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
-tasks.register("clean", Delete) { delete rootProject.buildDir }
