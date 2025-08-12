@@ -1,35 +1,31 @@
-name: Upload APK to GitHub Release
+name: Release APK
 
 on:
-  workflow_run:
-    # 必须与“打包 APK”的 workflow【显示名称】完全一致（Actions 左侧标题）
-    workflows: ["Android Build (3 Templates Matrix)"]
-    types: [completed]
+  workflow_dispatch:
 
 jobs:
   release:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - name: Download artifacts of this run (by run_id)
-        uses: dawidd6/action-download-artifact@v2
+      - name: Download APK artifacts
+        uses: actions/download-artifact@v4
         with:
-          repo: why459097630/Packaging-warehouse
-          run_id: ${{ github.event.workflow_run.id }}  # 精确到这次成功构建
-          path: ./artifacts
+          pattern: "*-apk-*"
+          merge-multiple: true
+          path: dist
 
-      - name: List downloaded files
-        run: |
-          echo "===== artifacts tree ====="
-          ls -R artifacts || true
+      - name: List files
+        run: ls -R dist
 
-      - name: Publish Release (tag: latest) and upload APKs
-        uses: softprops/action-gh-release@v1
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest
-          name: Auto Release - Latest
-          files: artifacts/**/*.apk        # 通配所有 APK
-          fail_on_unmatched_files: false
-          prerelease: true
+          tag_name: v${{ github.run_number }}
+          name: Auto Release – ${{ github.run_number }}
+          body: "Auto release of latest APKs."
+          files: dist/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
