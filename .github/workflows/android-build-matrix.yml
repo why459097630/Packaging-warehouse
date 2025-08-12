@@ -14,7 +14,6 @@ jobs:
         template: [simple-template, core-template, form-template]
 
     steps:
-      # 1) 代码与模板
       - name: Checkout Packaging repo
         uses: actions/checkout@v4
 
@@ -32,7 +31,6 @@ jobs:
           ls -la "$ROOT" || true
           ls -la "$ROOT/app" || true
 
-      # 2) JDK + Android SDK + Gradle
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -42,15 +40,11 @@ jobs:
       - name: Set up Android SDK (cmdline-tools)
         uses: android-actions/setup-android@v3
 
-      # 避免 yes|sdkmanager 的 Broken pipe
       - name: Install required SDK components
         shell: bash
         run: |
           sdkmanager --licenses || true
-          sdkmanager "platform-tools" \
-                     "platforms;android-34" \
-                     "build-tools;34.0.0"
-          echo ">>> Installed SDK packages (partial):"
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" || true
           sdkmanager --list | head -n 200 || true
 
       - name: Set up Gradle
@@ -58,7 +52,6 @@ jobs:
         with:
           gradle-version: 8.7
 
-      # 3) 自动识别项目根目录（一些模板在根，一些在 app/ 下）
       - name: Detect project dir
         id: detect
         shell: bash
@@ -71,7 +64,6 @@ jobs:
           fi
           echo "Using projectDir=$(sed -n 's/^projectDir=//p' $GITHUB_OUTPUT)"
 
-      # 4) 若缺少根 settings/build 文件，动态补齐，避免“串到上层仓库”的 settings.gradle
       - name: Bootstrap Gradle root files if missing
         working-directory: ${{ steps.detect.outputs.projectDir }}
         shell: bash
@@ -98,7 +90,6 @@ EOF
             echo ">>> created settings.gradle"
           fi
 
-          # 顶层 build.gradle 不是必须；但若没有就给一个通用版（兼容老项目）
           if [ ! -f build.gradle ] && [ ! -f build.gradle.kts ]; then
             cat > build.gradle <<'EOF'
 buildscript {
@@ -113,7 +104,6 @@ EOF
             echo ">>> created build.gradle"
           fi
 
-      # 5) 没有 gradlew 就生成，有的话直接使用
       - name: Ensure Gradle wrapper exists
         working-directory: ${{ steps.detect.outputs.projectDir }}
         shell: bash
@@ -125,7 +115,6 @@ EOF
           chmod +x gradlew
           ./gradlew --version
 
-      # 6) 构建 Release APK
       - name: Build APK
         working-directory: ${{ steps.detect.outputs.projectDir }}
         shell: bash
@@ -134,7 +123,6 @@ EOF
           echo ">>> APKs found:"
           find . -path "*/build/outputs/apk/*/*.apk" -print
 
-      # 7) 收集 APK
       - name: Collect APKs
         shell: bash
         run: |
@@ -143,7 +131,6 @@ EOF
             -exec cp {} "upload/${{ matrix.template }}/" \;
           ls -la "upload/${{ matrix.template }}"
 
-      # 8) 上传产物（v4），名称带 commit SHA，便于后续匹配
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
