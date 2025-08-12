@@ -2,7 +2,7 @@ name: Release APK
 
 on:
   workflow_run:
-    workflows: ["Android Build (3 Templates Matrix)"]  # 名字必须与上面的 name 完全一致
+    workflows: ["Android Build (3 Templates Matrix)"]
     types: [completed]
 
 jobs:
@@ -16,6 +16,7 @@ jobs:
       - name: Download APK artifacts
         uses: actions/download-artifact@v4
         with:
+          run-id: ${{ github.event.workflow_run.id }}
           pattern: app-release-*
           merge-multiple: true
           path: dist
