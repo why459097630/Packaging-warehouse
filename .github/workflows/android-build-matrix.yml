@@ -23,31 +23,58 @@ jobs:
           repository: why459097630/safe-templates
           path: safe-templates
 
-      - name: Clean old app
+      - name: Show template structure (debug)
         run: |
-          rm -rf app
-          mkdir -p app
+          echo ">>> TEMPLATE=${{ matrix.template }}"
+          ls -la "safe-templates/${{ matrix.template }}" || true
+          find "safe-templates/${{ matrix.template }}" -maxdepth 2 -name gradlew -print || true
 
-      # 复制模板内容到 app 目录
-      - name: Copy template to app
-        run: cp -r "safe-templates/${{ matrix.template }}/app/." ./app/
-
-      - name: Set up JDK
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x app/gradlew
+      # 给 gradlew 加执行权限（支持两种常见位置）
+      - name: Make gradlew executable
+        working-directory: safe-templates/${{ matrix.template }}
+        run: |
+          if [ -f gradlew ]; then
+            chmod +x gradlew
+          elif [ -f app/gradlew ]; then
+            chmod +x app/gradlew
+          else
+            echo "❌ gradlew not found under $(pwd)"
+            ls -la
+            find . -maxdepth 3 -name gradlew
+            exit 1
+          fi
 
-      - name: Build with Gradle
-        working-directory: app
-        run: ./gradlew assembleDebug
+      # 原地构建 APK（根/子目录两种布局都兼容）
+      - name: Build APK
+        working-directory: safe-templates/${{ matrix.template }}
+        run: |
+          set -e
+          if [ -f gradlew ]; then
+            ./gradlew assembleRelease
+          elif [ -f app/gradlew ]; then
+            (cd app && ../gradlew assembleRelease)
+          fi
+          echo ">>> APKs found:"
+          find . -path "*/build/outputs/apk/*/*.apk" -print
 
-      # 上传 APK 文件
+      # 收集 APK 到统一目录
+      - name: Collect APKs
+        working-directory: safe-templates/${{ matrix.template }}
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/upload/${{ matrix.template }}"
+          find . -path "*/build/outputs/apk/*/*.apk" -print -exec cp {} \
+            "$GITHUB_WORKSPACE/upload/${{ matrix.template }}/" \;
+          ls -la "$GITHUB_WORKSPACE/upload/${{ matrix.template }}"
+
+      # 上传产物（v4），名称带上 commit SHA
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.template }}-apk
-          path: app/app/build/outputs/apk/debug/app-debug.apk
+          name: ${{ matrix.template }}-apk-${{ github.sha }}
+          path: upload/${{ matrix.template }}/*.apk
