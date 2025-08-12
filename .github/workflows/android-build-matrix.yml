@@ -95,7 +95,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Release APK
-        run: ./gradlew --no-daemon assembleRelease
+        run: ./gradlew clean --no-daemon --stacktrace --info assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
