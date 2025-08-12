@@ -1,10 +1,18 @@
 name: Release APK
 
 on:
+  # 手动触发仍然保留
   workflow_dispatch:
+
+  # ★ 关键：监听构建工作流完成
+  workflow_run:
+    workflows: ["Android Build (3 Templates Matrix)"]  # 必须与上面构建的 name 完全一致
+    types: [completed]
 
 jobs:
   release:
+    # 只在手动触发，或被监听到“成功完成”的构建后执行
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
