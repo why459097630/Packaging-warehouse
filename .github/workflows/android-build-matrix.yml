@@ -1,85 +1,39 @@
-      # 计算真正的 Gradle 根目录（rootDir），以及是否需要用 :app 任务
-      - name: Resolve Gradle root
-        id: r
-        shell: bash
-        run: |
-          P="${{ steps.detect.outputs.projectDir }}"
-          ROOT="$P"
-          TASK="assembleRelease"
-          if [ "$(basename "$P")" = "app" ]; then
-            ROOT="$(dirname "$P")"
-            TASK=":app:assembleRelease"
-          fi
-          echo "rootDir=$ROOT" >> "$GITHUB_OUTPUT"
-          echo "gradleTask=$TASK" >> "$GITHUB_OUTPUT"
-          echo ">> rootDir=$ROOT"
-          echo ">> gradleTask=$TASK"
+name: Release APK
 
-      # 在 rootDir 下如果缺少顶层文件，则临时生成最小可用的 settings.gradle / build.gradle
-      - name: Bootstrap Gradle root files if missing
-        working-directory: ${{ steps.r.outputs.rootDir }}
-        shell: bash
-        run: |
-          if [ ! -f settings.gradle ] && [ ! -f settings.gradle.kts ]; then
-            cat > settings.gradle <<'EOF'
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-    }
-}
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-rootProject.name = "android-template"
-include(":app")
-EOF
-            echo ">>> created settings.gradle"
-          fi
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Android Build (3 Templates Matrix)"]  # <- 这里换成你实际的构建 workflow 名称
+    types: [completed]
 
-          if [ ! -f build.gradle ] && [ ! -f build.gradle.kts ]; then
-            cat > build.gradle <<'EOF'
-buildscript {
-    repositories { google(); mavenCentral() }
-    dependencies { classpath("com.android.tools.build:gradle:8.5.1") }
-}
-allprojects { repositories { google(); mavenCentral() } }
-tasks.register("clean", Delete) { delete(rootProject.buildDir) }
-EOF
-            echo ">>> created build.gradle"
-          fi
+jobs:
+  release:
+    # 仅在构建成功或手动触发时执行
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 允许创建 Release
 
-      # 保证 Gradle Wrapper 位于 rootDir，并用它执行
-      - name: Ensure Gradle wrapper
-        working-directory: ${{ steps.r.outputs.rootDir }}
-        shell: bash
-        run: |
-          if [ ! -f gradlew ]; then
-            echo "gradlew not found, generating wrapper..."
-            gradle wrapper
-          fi
-          chmod +x gradlew
-          ./gradlew --version
+    steps:
+      - name: Download APK artifacts
+        uses: actions/download-artifact@v4
+        with:
+          # 和构建阶段的 artifact 名称匹配；你之前是 `${template}-apk-${sha}`
+          pattern: "*-apk-*"
+          merge-multiple: true
+          path: dist
 
-      # 构建
-      - name: Assemble Release
-        working-directory: ${{ steps.r.outputs.rootDir }}
-        shell: bash
-        run: |
-          ./gradlew ${{ steps.r.outputs.gradleTask }} --stacktrace
-          echo ">>> APKs found:"
-          find . -path "*/build/outputs/apk/*/*.apk" -print
+      - name: List files
+        run: ls -R dist
 
-      # 收集 APK（从 rootDir 下收集，而不是只看 app/）
-      - name: Collect APKs
-        shell: bash
-        run: |
-          mkdir -p upload/${{ matrix.template }}
-          find "${{ steps.r.outputs.rootDir }}" -path "*/build/outputs/apk/*/*.apk" \
-            -exec cp {} "upload/${{ matrix.template }}/" \;
-          ls -la "upload/${{ matrix.template }}"
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Auto Release – ${{ github.run_number }}
+          body: "Auto release of latest APKs."
+          files: dist/*.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
