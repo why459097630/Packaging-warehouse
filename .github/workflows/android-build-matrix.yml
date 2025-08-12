@@ -24,59 +24,67 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 把当前要构建的模板复制到仓库根目录（不删除源目录）
       - name: Use selected template
         run: rsync -a templates/${{ matrix.template }}/ ./
 
-      # 读取“最可信”的包名：优先 MainActivity，其次任意 .kt/.java，再次 Manifest
+      # 读取包名：优先 MainActivity，其次任意源码；再不行用 Manifest；最后兜底
       - name: Detect package name
         id: pkg
         shell: bash
         run: |
           set -e
           PKG=""
+          # 从 Manifest 预读一份，作为兜底
           if [ -f app/src/main/AndroidManifest.xml ]; then
             MANI_PKG=$(grep -Po 'package="\K[^"]+' app/src/main/AndroidManifest.xml || true)
           fi
-          if ls app/src/main/java/**/MainActivity.kt >/dev/null 2>&1; then
-            PKG=$(sed -n 's/^package \([^;]*\).*/\1/p' $(ls app/src/main/java/**/MainActivity.kt | head -n1) | tr -d ';')
-          elif ls app/src/main/java/**/MainActivity.java >/dev/null 2>&1; then
-            PKG=$(sed -n 's/^package \([^;]*\).*/\1/p' $(ls app/src/main/java/**/MainActivity.java | head -n1) | tr -d ';')
+          # 1) MainActivity.kt / .java
+          F=$(find app/src/main/java -type f \( -name 'MainActivity.kt' -o -name 'MainActivity.java' \) 2>/dev/null | head -n1 || true)
+          if [ -n "$F" ]; then
+            PKG=$(sed -n 's/^package \([^;]*\).*/\1/p' "$F" | head -n1 | tr -d ';')
           fi
+          # 2) 任何 .kt/.java 的第一条 package
+          if [ -z "$PKG" ] && [ -d app/src/main/java ]; then
+            PKG=$(grep -R --include='*.kt' --include='*.java' -h -m1 '^package ' app/src/main/java 2>/dev/null | awk '{print $2}' | tr -d ';')
+          fi
+          # 3) Manifest 的 package
           if [ -z "$PKG" ]; then
-            PKG=$(grep -R --include="*.kt" --include="*.java" -h -m1 '^package ' app/src/main/java 2>/dev/null | awk '{print $2}' | tr -d ';')
+            PKG="$MANI_PKG"
           fi
-          if [ -z "$PKG" ]; then PKG="$MANI_PKG"; fi
-          if [ -z "$PKG" ]; then PKG="com.example.app"; fi
-          echo "PKG=$PKG" | tee -a $GITHUB_ENV
-          echo "pkg=$PKG" >> $GITHUB_OUTPUT
+          # 4) 兜底
+          if [ -z "$PKG" ]; then
+            PKG="com.example.app"
+          fi
 
-      # 对齐 namespace / Manifest，并为 Java 自动补 R 的 import
+          echo "Detected package: $PKG"
+          # 正确地写环境变量（必须是 KEY=VALUE）
+          echo "PKG=$PKG" >> "$GITHUB_ENV"
+
+      # 强制对齐 namespace / Manifest，并为 .java 自动补 import <PKG>.R
       - name: Align namespace / manifest / R import
         shell: bash
         run: |
           set -e
           echo "Using package: $PKG"
 
-          # 1) 强制 namespace
+          # 1) 强制 namespace（AGP 允许合并多个 android{} 块）
           if [ -f app/build.gradle ]; then
             printf '\nandroid {\n  namespace "%s"\n}\n' "$PKG" >> app/build.gradle
           fi
 
-          # 2) Manifest 的 package 同步
+          # 2) Manifest 的 package 同步（如果有 Manifest）
           if [ -f app/src/main/AndroidManifest.xml ]; then
             sed -i -E "s/package=\"[^\"]*\"/package=\"$PKG\"/" app/src/main/AndroidManifest.xml || true
           fi
 
-          # 3) Java 源码若没有显式 import R，则补上 import <PKG>.R;
-          if ls app/src/main/java/**/*.java >/dev/null 2>&1; then
-            for f in $(ls app/src/main/java/**/*.java); do
-              if ! grep -qE 'import .+\.R;' "$f"; then
-                # 只在有 package 行的文件里插入
-                if grep -q '^package ' "$f"; then
-                  sed -i "1,1{/^package /a import ${PKG}.R;}" "$f"
-                fi
+          # 3) 为 .java 源码补上 import <PKG>.R（若缺失）
+          if [ -d app/src/main/java ]; then
+            while IFS= read -r -d '' f; do
+              if grep -q '^package ' "$f" && ! grep -qE 'import[[:space:]].*\.R;' "$f"; then
+                sed -i "1,1{/^package /a import ${PKG}.R;}" "$f"
               fi
-            done
+            done < <(find app/src/main/java -type f -name '*.java' -print0 2>/dev/null)
           fi
 
       - name: Set up JDK 17
