@@ -1,88 +1,39 @@
 name: Android Build (3 Templates Matrix)
 
 on:
+  # 手动触发（给前端/后台调用）
+  workflow_dispatch:
+    inputs:
+      template:
+        description: Which template to build
+        type: choice
+        options: [core-template, simple-template, form-template]
+        default: core-template
+        required: true
+      build_type:
+        description: Build type
+        type: choice
+        options: [debug, release]
+        default: debug
+        required: true
+
+  # 推送到 main 时，仍然走三模板矩阵构建
   push:
     branches: [ main ]
-    paths:
-      - 'templates/**'
-      - 'app/**'
-      - 'gradle/**'
-      - 'build.gradle'
-      - 'settings.gradle'
-      - '.github/workflows/android-build-matrix.yml'
-  workflow_dispatch:
 
 jobs:
-  build:
+  # A. 手动触发：只构建一个模板（给你的前端/后台用）
+  build_single:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        template: [simple-template, core-template, form-template]
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Clean app dir
+        run: rm -rf app
 
       - name: Use selected template
-        run: rsync -a templates/${{ matrix.template }}/ ./
-
-      # 以 applicationId（优先）或 Manifest 的 package 作为目标包名
-      - name: Detect TARGET package (from applicationId / Manifest)
-        id: targetpkg
-        shell: bash
-        run: |
-          set -e
-          TARGET=""
-          if [ -f app/build.gradle ]; then
-            TARGET=$(grep -Po 'applicationId\s+"[^"]+"' app/build.gradle | head -n1 | cut -d'"' -f2 || true)
-          fi
-          if [ -z "$TARGET" ] && [ -f app/src/main/AndroidManifest.xml ]; then
-            TARGET=$(grep -Po 'package="\K[^"]+' app/src/main/AndroidManifest.xml | head -n1 || true)
-          fi
-          [ -z "$TARGET" ] && TARGET="com.example.app"
-          echo "Using TARGET package: $TARGET"
-          echo "TARGET=$TARGET" >> "$GITHUB_ENV"
-
-      # 统一源码 package（按 .kt / .java 区分，整行替换；无则插入）
-      - name: Normalize source packages + namespace + manifest
-        shell: bash
-        run: |
-          set -e
-          echo "Normalize to package: $TARGET"
-
-          # 1) 改 .kt / .java 的 package 行（整行替换；没有就插到文件头）
-          if [ -d app/src/main/java ]; then
-            while IFS= read -r -d '' f; do
-              case "$f" in
-                *.kt)
-                  if grep -qE '^[[:space:]]*package[[:space:]]+' "$f"; then
-                    # 把第一行 package 整行换成: package <TARGET>
-                    sed -i -E '0,/^[[:space:]]*package[[:space:]].*/{s/^[[:space:]]*package[[:space:]].*/package '"$TARGET"'/}' "$f"
-                  else
-                    sed -i '1ipackage '"$TARGET"'' "$f"
-                  fi
-                  ;;
-                *.java)
-                  if grep -qE '^[[:space:]]*package[[:space:]]+' "$f"; then
-                    sed -i -E '0,/^[[:space:]]*package[[:space:]].*/{s/^[[:space:]]*package[[:space:]].*/package '"$TARGET"';/}' "$f"
-                  else
-                    sed -i '1ipackage '"$TARGET"';' "$f"
-                  fi
-                  ;;
-              esac
-            done < <(find app/src/main/java -type f \( -name '*.kt' -o -name '*.java' \) -print0 2>/dev/null)
-          fi
-
-          # 2) 强制 namespace（AGP 会合并多个 android{} 块）
-          if [ -f app/build.gradle ]; then
-            printf '\nandroid {\n  namespace "%s"\n}\n' "$TARGET" >> app/build.gradle
-          fi
-
-          # 3) 同步 Manifest 的 package（整文件安全替换）
-          if [ -f app/src/main/AndroidManifest.xml ]; then
-            perl -0777 -pe 's/package="[^"]*"/package="'$TARGET'"/' -i app/src/main/AndroidManifest.xml
-          fi
+        run: cp -a templates/${{ inputs.template }}/app ./app
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -94,12 +45,59 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Release APK
-        run: ./gradlew clean --no-daemon --stacktrace --info assembleRelease
+      - name: Choose task
+        id: task
+        run: |
+          if [ "${{ inputs.build_type }}" = "release" ]; then
+            echo "TASK=assembleRelease" >> $GITHUB_OUTPUT
+          else
+            echo "TASK=assembleDebug" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build APK
+        run: ./gradlew --no-daemon ${{ steps.task.outputs.TASK }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-${{ matrix.template }}
-          path: app/build/outputs/apk/**/release/*.apk
+          name: app-${{ inputs.build_type }}-${{ inputs.template }}
+          path: app/build/outputs/apk/**/${{ inputs.build_type }}/*.apk
+          if-no-files-found: error
+
+  # B. push 触发：三模板矩阵照常跑（便于你自己回归）
+  build_matrix:
+    if: ${{ github.event_name != 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template: [core-template, simple-template, form-template]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clean app dir
+        run: rm -rf app
+
+      - name: Use selected template
+        run: cp -a templates/${{ matrix.template }}/app ./app
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 矩阵默认用 debug，够装机验证；你也可改成 release
+      - name: Build APK
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-${{ matrix.template }}
+          path: app/build/outputs/apk/**/debug/*.apk
           if-no-files-found: error
