@@ -1,9 +1,16 @@
 name: Android Build (3 Templates Matrix)
 
 on:
-  workflow_dispatch:
   push:
     branches: [ main ]
+    paths:
+      - 'templates/**'
+      - 'app/**'
+      - 'gradle/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - '.github/workflows/android-build-matrix.yml'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,73 +18,33 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: [ simple-template, core-template, form-template ]
-
-    permissions:
-      contents: read
+        template: [simple-template, core-template, form-template]
 
     steps:
-      - name: Checkout Packaging repo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Checkout safe-templates
-        uses: actions/checkout@v4
-        with:
-          repository: why459097630/safe-templates
-          path: safe-templates
-
-      - name: Clean old app dir
-        run: rm -rf app && mkdir -p app
-
-      - name: Copy template to app
-        run: cp -r "safe-templates/${{ matrix.template }}/app/." ./app
-
-      - name: Show template structure (debug)
-        run: (command -v tree >/dev/null || sudo apt-get update && sudo apt-get install -y tree) && tree -L 2 || true
+      # 如果你的模板在 templates/<name>/ 下，把内容拷到仓库根目录用于构建
+      - name: Use selected template
+        run: |
+          rsync -a --delete templates/${{ matrix.template }}/ ./
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
 
-      - name: Set up Android SDK (cmdline-tools)
-        uses: android-actions/setup-android@v3
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Release APK
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
-          cmdline-tools-version: 12.0
-
-      # 关键修复：不要用 `yes | sdkmanager`，显式接受许可证并安装组件
-      - name: Install required SDK components
-        shell: bash
-        run: |
-          set -u
-          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
-          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" --licenses <<< "y" >/dev/null
-          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" --install \
-            "platform-tools" \
-            "platforms;android-34" \
-            "build-tools;34.0.0"
-
-      - name: Ensure Gradle wrapper exists
-        run: |
-          if [ ! -f gradlew ]; then
-            echo "gradlew not found, generating..."
-            gradle wrapper
-          fi
-          chmod +x ./gradlew
-
-      - name: Build with Gradle (assembleRelease)
-        run: ./gradlew assembleRelease
-
-      - name: Collect APKs
-        run: |
-          mkdir -p dist
-          find app -type f -name "*.apk" -print -exec cp {} dist/ \;
-
-- name: Upload APK
-  uses: actions/upload-artifact@v4
-  with:
-    name: apk
-    path: app/build/outputs/apk/**/release/*.apk
-    if-no-files-found: error
-
+          name: app-release-${{ matrix.template }}
+          path: app/build/outputs/apk/**/release/*.apk
+          if-no-files-found: error
