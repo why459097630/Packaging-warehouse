@@ -13,11 +13,13 @@ jobs:
       contents: write
 
     steps:
-      - name: Download APK artifacts
+      - name: Download APK artifacts from previous run
         uses: actions/download-artifact@v4
         with:
+          # 让它从触发本工作流的构建 run 下载
           run-id: ${{ github.event.workflow_run.id }}
-          pattern: app-release-*
+          # 名称匹配你的上传名；如果你按建议命名为 template-apk-xxxx，用这个就能匹配
+          pattern: "*-apk-*"
           merge-multiple: true
           path: dist
 
