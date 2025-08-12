@@ -27,28 +27,56 @@ jobs:
       - name: Use selected template
         run: rsync -a templates/${{ matrix.template }}/ ./
 
-      # 读取源码中的 package 名
-      - name: Detect package name from source
+      # 读取“最可信”的包名：优先 MainActivity，其次任意 .kt/.java，再次 Manifest
+      - name: Detect package name
         id: pkg
         shell: bash
         run: |
           set -e
-          PKG=$(grep -R --include="*.kt" --include="*.java" -h -m1 '^package ' app/src/main/java 2>/dev/null | head -n1 | awk '{print $2}' | tr -d ';')
+          PKG=""
+          if [ -f app/src/main/AndroidManifest.xml ]; then
+            MANI_PKG=$(grep -Po 'package="\K[^"]+' app/src/main/AndroidManifest.xml || true)
+          fi
+          if ls app/src/main/java/**/MainActivity.kt >/dev/null 2>&1; then
+            PKG=$(sed -n 's/^package \([^;]*\).*/\1/p' $(ls app/src/main/java/**/MainActivity.kt | head -n1) | tr -d ';')
+          elif ls app/src/main/java/**/MainActivity.java >/dev/null 2>&1; then
+            PKG=$(sed -n 's/^package \([^;]*\).*/\1/p' $(ls app/src/main/java/**/MainActivity.java | head -n1) | tr -d ';')
+          fi
+          if [ -z "$PKG" ]; then
+            PKG=$(grep -R --include="*.kt" --include="*.java" -h -m1 '^package ' app/src/main/java 2>/dev/null | awk '{print $2}' | tr -d ';')
+          fi
+          if [ -z "$PKG" ]; then PKG="$MANI_PKG"; fi
           if [ -z "$PKG" ]; then PKG="com.example.app"; fi
-          echo "PKG=$PKG" >> $GITHUB_ENV
+          echo "PKG=$PKG" | tee -a $GITHUB_ENV
           echo "pkg=$PKG" >> $GITHUB_OUTPUT
 
-      # 对齐 namespace 和 Manifest 的 package
-      - name: Align namespace and AndroidManifest package
+      # 对齐 namespace / Manifest，并为 Java 自动补 R 的 import
+      - name: Align namespace / manifest / R import
         shell: bash
         run: |
           set -e
           echo "Using package: $PKG"
+
+          # 1) 强制 namespace
           if [ -f app/build.gradle ]; then
             printf '\nandroid {\n  namespace "%s"\n}\n' "$PKG" >> app/build.gradle
           fi
+
+          # 2) Manifest 的 package 同步
           if [ -f app/src/main/AndroidManifest.xml ]; then
             sed -i -E "s/package=\"[^\"]*\"/package=\"$PKG\"/" app/src/main/AndroidManifest.xml || true
+          fi
+
+          # 3) Java 源码若没有显式 import R，则补上 import <PKG>.R;
+          if ls app/src/main/java/**/*.java >/dev/null 2>&1; then
+            for f in $(ls app/src/main/java/**/*.java); do
+              if ! grep -qE 'import .+\.R;' "$f"; then
+                # 只在有 package 行的文件里插入
+                if grep -q '^package ' "$f"; then
+                  sed -i "1,1{/^package /a import ${PKG}.R;}" "$f"
+                fi
+              fi
+            done
           fi
 
       - name: Set up JDK 17
