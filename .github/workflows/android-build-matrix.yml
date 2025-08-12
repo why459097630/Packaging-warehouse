@@ -24,10 +24,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 如果你的模板在 templates/<name>/ 下，把内容拷到仓库根目录用于构建
+      # 拷贝选中的模板到仓库根目录
       - name: Use selected template
-        run: |
-          rsync -a --delete templates/${{ matrix.template }}/ ./
+        run: rsync -a templates/${{ matrix.template }}/ ./
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
