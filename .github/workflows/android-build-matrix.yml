@@ -24,11 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 拷贝模板到根目录（不删除源目录）
       - name: Use selected template
         run: rsync -a templates/${{ matrix.template }}/ ./
 
-      # 以 app/build.gradle 的 applicationId 或 Manifest 的 package 为“目标包名”
+      # 以 applicationId（优先）或 Manifest 的 package 作为目标包名
       - name: Detect TARGET package (from applicationId / Manifest)
         id: targetpkg
         shell: bash
@@ -41,31 +40,46 @@ jobs:
           if [ -z "$TARGET" ] && [ -f app/src/main/AndroidManifest.xml ]; then
             TARGET=$(grep -Po 'package="\K[^"]+' app/src/main/AndroidManifest.xml | head -n1 || true)
           fi
-          if [ -z "$TARGET" ]; then TARGET="com.example.app"; fi
-          echo "TARGET=$TARGET" >> "$GITHUB_ENV"
+          [ -z "$TARGET" ] && TARGET="com.example.app"
           echo "Using TARGET package: $TARGET"
+          echo "TARGET=$TARGET" >> "$GITHUB_ENV"
 
-      # 把源码里的 package 统一改成 TARGET；同时强制 namespace & Manifest
-      - name: Normalize packages and manifest
+      # 统一源码 package（按 .kt / .java 区分，整行替换；无则插入）
+      - name: Normalize source packages + namespace + manifest
         shell: bash
         run: |
           set -e
-          echo "Normalizing to package: $TARGET"
+          echo "Normalize to package: $TARGET"
 
-          # 1) 改 .kt/.java 文件的 package 行
+          # 1) 改 .kt / .java 的 package 行（整行替换；没有就插到文件头）
           if [ -d app/src/main/java ]; then
             while IFS= read -r -d '' f; do
-              # 只改第一行 package
-              sed -i -E '0,/^package/s//package '"$TARGET"';/' "$f" || true
+              case "$f" in
+                *.kt)
+                  if grep -qE '^[[:space:]]*package[[:space:]]+' "$f"; then
+                    # 把第一行 package 整行换成: package <TARGET>
+                    sed -i -E '0,/^[[:space:]]*package[[:space:]].*/{s/^[[:space:]]*package[[:space:]].*/package '"$TARGET"'/}' "$f"
+                  else
+                    sed -i '1ipackage '"$TARGET"'' "$f"
+                  fi
+                  ;;
+                *.java)
+                  if grep -qE '^[[:space:]]*package[[:space:]]+' "$f"; then
+                    sed -i -E '0,/^[[:space:]]*package[[:space:]].*/{s/^[[:space:]]*package[[:space:]].*/package '"$TARGET"';/}' "$f"
+                  else
+                    sed -i '1ipackage '"$TARGET"';' "$f"
+                  fi
+                  ;;
+              esac
             done < <(find app/src/main/java -type f \( -name '*.kt' -o -name '*.java' \) -print0 2>/dev/null)
           fi
 
-          # 2) 强制 namespace（AGP 会合并 android{} 块）
+          # 2) 强制 namespace（AGP 会合并多个 android{} 块）
           if [ -f app/build.gradle ]; then
             printf '\nandroid {\n  namespace "%s"\n}\n' "$TARGET" >> app/build.gradle
           fi
 
-          # 3) 同步 Manifest 的 package
+          # 3) 同步 Manifest 的 package（整文件安全替换）
           if [ -f app/src/main/AndroidManifest.xml ]; then
             perl -0777 -pe 's/package="[^"]*"/package="'$TARGET'"/' -i app/src/main/AndroidManifest.xml
           fi
