@@ -1,40 +1,60 @@
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+  id 'com.android.application'
+  id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    namespace 'com.ndjc.generated'
-    compileSdk 34
+  namespace 'com.ndjc.generated'
+  compileSdk 34
 
-    defaultConfig {
-        applicationId "com.ndjc.generated"
-        minSdk 24
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
+  defaultConfig {
+    applicationId 'com.ndjc.generated'
+    minSdk 24
+    targetSdk 34
+    versionCode 1
+    versionName '1.0'
+  }
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
+    debug {
+      minifyEnabled false
+    }
+  }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = '17'
-    }
+  // 统一到 JDK 17 + 开启 desugaring（解决 dex 阶段失败）
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+    coreLibraryDesugaringEnabled true
+  }
+  kotlinOptions {
+    jvmTarget = '17'
+  }
+
+  buildFeatures {
+    viewBinding true
+  }
+}
+
+// 可选：更稳的方式指定 Kotlin 工具链
+kotlin {
+  jvmToolchain(17)
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.12.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+  implementation 'androidx.core:core-ktx:1.13.1'
+  implementation 'androidx.appcompat:appcompat:1.6.1'
+  implementation 'com.google.android.material:material:1.12.0'
+  implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+  // desugaring 库（与上面的 coreLibraryDesugaringEnabled 搭配）
+  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+
+  testImplementation 'junit:junit:4.13.2'
+  androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+  androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
