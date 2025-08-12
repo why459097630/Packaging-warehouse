@@ -14,6 +14,7 @@ jobs:
         template: [simple-template, core-template, form-template]
 
     steps:
+      # 1) 代码与模板
       - name: Checkout Packaging repo
         uses: actions/checkout@v4
 
@@ -23,37 +24,41 @@ jobs:
           repository: why459097630/safe-templates
           path: safe-templates
 
-      # 看一下目录结构，便于排障
       - name: Show template structure (debug)
         run: |
           echo ">>> TEMPLATE=${{ matrix.template }}"
-          ls -la "safe-templates/${{ matrix.template }}" || true
-          ls -la "safe-templates/${{ matrix.template }}/app" || true
+          ROOT="safe-templates/${{ matrix.template }}"
+          ls -la "$ROOT" || true
+          ls -la "$ROOT/app" || true
 
+      # 2) JDK + Android SDK + Gradle
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 安装 Android SDK（常用组件，自行按需增减）
-      - name: Set up Android SDK
+      - name: Set up Android SDK (cmdline-tools)
         uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platform-tools
-            platforms;android-34
-            build-tools;34.0.0
 
-      # 安装 Gradle（非 wrapper 情况下也能跑），顺便启用缓存
+      - name: Install required SDK components
+        shell: bash
+        run: |
+          set -e
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "platform-tools" \
+                     "platforms;android-34" \
+                     "build-tools;34.0.0"
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.7
 
-      # 计算实际工程根：优先 app/，否则当前目录
+      # 3) 识别工程根目录（有些模板在根，有些在 app/ 下）
       - name: Detect project dir
         id: detect
+        shell: bash
         run: |
           ROOT="safe-templates/${{ matrix.template }}"
           if [ -f "$ROOT/app/build.gradle" ] || [ -f "$ROOT/app/build.gradle.kts" ]; then
@@ -63,9 +68,10 @@ jobs:
           fi
           echo "Using projectDir=$(cat $GITHUB_OUTPUT | sed -n 's/^projectDir=//p')"
 
-      # 若缺少 wrapper，则用安装好的 Gradle 生成 wrapper
+      # 4) 若缺少 wrapper，则生成；否则直接使用
       - name: Ensure Gradle wrapper exists
         working-directory: ${{ steps.detect.outputs.projectDir }}
+        shell: bash
         run: |
           if [ ! -f gradlew ]; then
             echo "gradlew not found, generating wrapper..."
@@ -74,23 +80,25 @@ jobs:
           chmod +x gradlew
           ./gradlew --version
 
-      # 构建 Release APK
+      # 5) 构建 Release APK
       - name: Build APK
         working-directory: ${{ steps.detect.outputs.projectDir }}
+        shell: bash
         run: |
           ./gradlew assembleRelease --stacktrace
-          echo ">>> APKs:"
+          echo ">>> APKs found:"
           find . -path "*/build/outputs/apk/*/*.apk" -print
 
-      # 收集 APK
+      # 6) 收集 APK
       - name: Collect APKs
+        shell: bash
         run: |
           mkdir -p upload/${{ matrix.template }}
           find "${{ steps.detect.outputs.projectDir }}" -path "*/build/outputs/apk/*/*.apk" \
             -exec cp {} "upload/${{ matrix.template }}/" \;
-          ls -la upload/${{ matrix.template }}
+          ls -la "upload/${{ matrix.template }}"
 
-      # 上传产物（v4），名里带 commit SHA，便于后续匹配
+      # 7) 上传产物（v4），名称带 commit SHA，方便后续匹配
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
