@@ -25,10 +25,11 @@ android {
     }
   }
 
-  // 统一到 JDK 17，修复 “Inconsistent JVM-target … 1.8 vs 17” 报错
+  // 统一到 JDK 17 + 开启 desugaring（解决 dex 阶段失败）
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_17
     targetCompatibility JavaVersion.VERSION_17
+    coreLibraryDesugaringEnabled true
   }
   kotlinOptions {
     jvmTarget = '17'
@@ -39,7 +40,7 @@ android {
   }
 }
 
-// 更稳：指定 Kotlin 工具链为 17（可留可去）
+// 可选：更稳的方式指定 Kotlin 工具链
 kotlin {
   jvmToolchain(17)
 }
@@ -49,6 +50,9 @@ dependencies {
   implementation 'androidx.appcompat:appcompat:1.6.1'
   implementation 'com.google.android.material:material:1.12.0'
   implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+  // desugaring 库（与上面的 coreLibraryDesugaringEnabled 搭配）
+  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 
   testImplementation 'junit:junit:4.13.2'
   androidTestImplementation 'androidx.test.ext:junit:1.1.5'
