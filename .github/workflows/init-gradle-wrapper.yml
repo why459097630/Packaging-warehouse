@@ -1,6 +1,6 @@
 name: Init Gradle Wrapper
 on:
-  workflow_dispatch: {}
+  workflow_dispatch: {}   # 只手动触发，避免每次 push 都跑
 
 jobs:
   add-wrapper:
@@ -17,27 +17,27 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # 为每个模板生成 wrapper（按你的模板路径改）
+      # 给各模板目录生成 wrapper（按你的目录结构改）
       - name: Generate wrapper (core)
         uses: gradle/gradle-build-action@v3
         with:
-          gradle-version: '8.2'      # 和你日志里一致的 8.2，保持稳定
+          gradle-version: '8.2'
           arguments: wrapper
-        working-directory: templates/core-template
+          build-root-directory: templates/core-template
 
       - name: Generate wrapper (simple)
         uses: gradle/gradle-build-action@v3
         with:
           gradle-version: '8.2'
           arguments: wrapper
-        working-directory: templates/simple-template
+          build-root-directory: templates/simple-template
 
       - name: Generate wrapper (form)
         uses: gradle/gradle-build-action@v3
         with:
           gradle-version: '8.2'
           arguments: wrapper
-        working-directory: templates/form-template
+          build-root-directory: templates/form-template
 
       - name: Commit wrapper files
         uses: stefanzweifel/git-auto-commit-action@v5
