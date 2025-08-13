@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       template:
-        description: "要构建的模板：core-template / simple-template / form-template / all"
+        description: "选择模板：core-template / simple-template / form-template / all"
         required: false
         default: "all"
   push:
@@ -16,22 +16,26 @@ permissions:
   contents: read
 
 jobs:
-  build_matrix:
+  build:
     name: Build ${{ matrix.template }}
     runs-on: ubuntu-latest
 
-    # 3 个模板的矩阵；如果是手动触发且只想构建其中一个，就用下面的 if 条件筛选
+    # 通过表达式“生成”矩阵：
+    # - 手动触发且指定了单个模板 => ["该模板"]
+    # - 其他情况 => ["core-template","simple-template","form-template"]
     strategy:
       fail-fast: false
       matrix:
-        template: [core-template, simple-template, form-template]
-
-    # 仅当没有指定或指定为 all 时构建全部；否则只构建选择的那个
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.template == 'all' || inputs.template == '' || matrix.template == inputs.template }}
+        template: ${{ fromJSON(
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.template != '' &&
+          github.event.inputs.template != 'all'
+            && format('["{0}"]', github.event.inputs.template)
+            || '["core-template","simple-template","form-template"]'
+        ) }}
 
     env:
       TEMPLATE_DIR: templates/${{ matrix.template }}
-      APP_DIR: templates/${{ matrix.template }}/app
 
     steps:
       - name: Checkout
