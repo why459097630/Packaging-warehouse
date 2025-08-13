@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write  # 允许提交到仓库
+  contents: write
 
 jobs:
   add-wrapper:
@@ -11,32 +11,34 @@ jobs:
     strategy:
       matrix:
         template: [core-template, simple-template, form-template]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 1) 下载一个 Gradle（只用来生成 wrapper，不会解析你的工程）
       - name: Download Gradle 8.2
         run: |
           wget -q https://services.gradle.org/distributions/gradle-8.2-bin.zip -O gradle.zip
           unzip -q gradle.zip
 
-      # 2) 在临时目录创建一个超小的构建，只注册 wrapper 任务
+      # ✅ 这里用 named 配置已有的 wrapper 任务（不要再 register）
       - name: Generate wrapper in a temp project
         id: gen
         run: |
           TMP="$(mktemp -d)"
           cat > "$TMP/build.gradle" <<'EOF'
-          tasks.register('wrapper', Wrapper) {
-            gradleVersion = '8.2'
-            distributionType = Wrapper.DistributionType.ALL
+          import org.gradle.api.tasks.wrapper.Wrapper
+
+          tasks.named('wrapper', Wrapper) {
+              gradleVersion = '8.2'
+              distributionType = Wrapper.DistributionType.ALL
           }
           EOF
+          # 可选：给个 settings.gradle，避免 Gradle 往上层目录搜索
+          echo "rootProject.name = 'tmp'" > "$TMP/settings.gradle"
+
           ./gradle-8.2/bin/gradle -p "$TMP" wrapper --no-daemon
           echo "TMP=$TMP" >> $GITHUB_OUTPUT
 
-      # 3) 把生成的 wrapper 复制到各模板根目录并提交
       - name: Copy wrapper into template and commit
         run: |
           set -e
@@ -51,7 +53,7 @@ jobs:
           git add "$TEMPL_DIR/gradlew" \
                   "$TEMPL_DIR/gradlew.bat" \
                   "$TEMPL_DIR/gradle/wrapper/gradle-wrapper.jar" \
-                  "$TEMPL_DIR/gradle/wrapper/gradle-wrapper.properties"
+                  "$TEMPL_DIR/gradle/wrapper/gradle-wrapper.properties" || true
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
