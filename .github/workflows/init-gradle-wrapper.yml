@@ -9,6 +9,8 @@ jobs:
   add-wrapper:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
+      max-parallel: 1       
       matrix:
         template: [core-template, simple-template, form-template]
     steps:
