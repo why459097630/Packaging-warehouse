@@ -20,19 +20,11 @@ jobs:
     name: Build ${{ matrix.template }}
     runs-on: ubuntu-latest
 
-    # 通过表达式“生成”矩阵：
-    # - 手动触发且指定了单个模板 => ["该模板"]
-    # - 其他情况 => ["core-template","simple-template","form-template"]
+    # 这里把表达式写成一行，避免 YAML 语法错误
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJSON(
-          github.event_name == 'workflow_dispatch' &&
-          github.event.inputs.template != '' &&
-          github.event.inputs.template != 'all'
-            && format('["{0}"]', github.event.inputs.template)
-            || '["core-template","simple-template","form-template"]'
-        ) }}
+        template: ${{ fromJSON((github.event_name == 'workflow_dispatch' && github.event.inputs.template != '' && github.event.inputs.template != 'all') && format('["{0}"]', github.event.inputs.template) || '["core-template","simple-template","form-template"]') }}
 
     env:
       TEMPLATE_DIR: templates/${{ matrix.template }}
