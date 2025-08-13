@@ -14,17 +14,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout (no code needed but keeps workspace clean)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # 重点 1：直接用触发它的那次构建 run_id 下载产物
+      # 直接用触发它的那次构建 run_id 下载所有产物
       - name: Download APK artifacts from triggering run
         uses: dawidd6/action-download-artifact@v6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           run_id: ${{ github.event.workflow_run.id }}
           path: dist
-          # 如果找不到就直接报错，避免发空 Release
           if_no_artifacts_found: error
 
       - name: Show what we got
@@ -32,7 +30,6 @@ jobs:
           echo "Artifacts content:"
           ls -R dist || true
 
-      # 重点 2：把每个 artifact 目录里的 *.apk 拷贝/重命名到 dist 根目录
       - name: Flatten and rename APKs
         shell: bash
         run: |
@@ -40,11 +37,9 @@ jobs:
           shopt -s nullglob
           for d in dist/*; do
             if [ -d "$d" ]; then
-              # artifact 目录名，例如 app-release-core-template
-              base="$(basename "$d")"
+              base="$(basename "$d")"  # artifact 名
               apks=("$d"/*.apk)
               if [ ${#apks[@]} -gt 0 ]; then
-                # 取第一个 apk 并重命名为 {artifact名}.apk
                 src="${apks[0]}"
                 dst="dist/${base}.apk"
                 echo "Found APK: $src -> $dst"
@@ -57,7 +52,6 @@ jobs:
           echo "Flattened:"
           ls -l dist
 
-      # 重点 3：上传 dist/*.apk 到 Release
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
