@@ -1,20 +1,13 @@
-name: Init Gradle Wrapper
+name: init-gradle-wrapper
 
 on:
-  # 手动触发
-  workflow_dispatch:
-
-  # 也可以在你改动模板目录时自动触发（可按需保留/删除）
-  push:
-    paths:
-      - 'templates/**'
-
-permissions:
-  contents: write  # 允许自动提交生成的 wrapper
+  workflow_dispatch: {}
 
 jobs:
   add-wrapper:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -24,42 +17,43 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: 17
 
-      # 这里用 gradle/gradle-build-action@v3 直接调用 `wrapper` 任务。
-      # 加 --no-search-upward 防止向上查找根 settings.gradle 造成 “not part of the build defined by settings file” 报错
+      # 这里不再用 --no-search-upward
       - name: Generate wrapper (core)
         uses: gradle/gradle-build-action@v3
         with:
-          gradle-version: '8.2'
+          gradle-version: 8.2
           build-root-directory: templates/core-template
-          arguments: wrapper --no-daemon --no-search-upward
+          arguments: wrapper --no-daemon
 
       - name: Generate wrapper (simple)
         uses: gradle/gradle-build-action@v3
         with:
-          gradle-version: '8.2'
+          gradle-version: 8.2
           build-root-directory: templates/simple-template
-          arguments: wrapper --no-daemon --no-search-upward
+          arguments: wrapper --no-daemon
 
       - name: Generate wrapper (form)
         uses: gradle/gradle-build-action@v3
         with:
-          gradle-version: '8.2'
+          gradle-version: 8.2
           build-root-directory: templates/form-template
-          arguments: wrapper --no-daemon --no-search-upward
+          arguments: wrapper --no-daemon
 
-      # 给 gradlew 增加可执行权限（Windows 的 .bat 不需要）
       - name: Make gradlew executable
         run: |
-          chmod +x templates/*-template/gradlew || true
+          git update-index --chmod=+x templates/*-template/gradlew
+          git status --porcelain
 
-      # 自动提交生成的 wrapper 文件
-      - name: Commit and push wrappers
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: 'chore: add/update Gradle wrapper for templates'
-          file_pattern: |
-            templates/**/gradlew
-            templates/**/gradlew.bat
-            templates/**/gradle/wrapper/**
+      - name: Commit wrapper files
+        run: |
+          if ! git diff --quiet; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add templates/*-template/gradlew templates/*-template/gradlew.bat templates/*-template/gradle/wrapper/*
+            git commit -m "chore: add Gradle wrapper for templates"
+            git push
+          else
+            echo "No changes to commit."
+          fi
