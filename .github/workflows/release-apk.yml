@@ -1,85 +1,68 @@
 name: Release APK
 
 on:
-  # 自动：在 Android 构建工作流成功后触发
   workflow_run:
     workflows: ["Android Build (3 Templates Matrix)"]
     types: [completed]
-  # 手动：需要时可在 Actions 里手动运行
-  workflow_dispatch: {}
+
+permissions:
+  contents: write
 
 jobs:
   release:
-    # 自动触发时仅在上个工作流成功时运行；手动触发时总是运行
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
-      # ========== 下载产物 ==========
-      # 自动触发：从触发它的那次构建 run 下载
-      - name: Download APK artifacts (from triggering run)
-        if: ${{ github.event_name == 'workflow_run' }}
+      - name: Checkout (no code needed but keeps workspace clean)
+        uses: actions/checkout@v4
+
+      # 重点 1：直接用触发它的那次构建 run_id 下载产物
+      - name: Download APK artifacts from triggering run
         uses: dawidd6/action-download-artifact@v6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: android-build-matrix.yml
           run_id: ${{ github.event.workflow_run.id }}
-          # 同时匹配 debug / release
-          name: app-(debug|release)-.*
-          name_is_regexp: true
           path: dist
+          # 如果找不到就直接报错，避免发空 Release
+          if_no_artifacts_found: error
 
-      # 手动触发：从 main 分支最近一次成功的构建下载
-      - name: Download APK artifacts (latest successful on main)
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: android-build-matrix.yml
-          workflow_conclusion: success
-          branch: main
-          name: app-(debug|release)-.*
-          name_is_regexp: true
-          path: dist
+      - name: Show what we got
+        run: |
+          echo "Artifacts content:"
+          ls -R dist || true
 
-      - name: List downloaded tree
-        run: ls -lR dist || true
-
-      # ========== 重命名：将每个 artifact 的 apk 拉平并改成唯一文件名 ==========
-      - name: Rename APKs to unique names
+      # 重点 2：把每个 artifact 目录里的 *.apk 拷贝/重命名到 dist 根目录
+      - name: Flatten and rename APKs
         shell: bash
         run: |
-          set -euo pipefail
+          set -e
           shopt -s nullglob
-          # 遍历 dist 下每个 artifact 子目录
           for d in dist/*; do
-            [ -d "$d" ] || continue
-            base="$(basename "$d")"   # e.g. app-debug-core-template
-            apk_file=""
-            for f in "$d"/*.apk; do
-              apk_file="$f"; break
-            done
-            if [ -z "$apk_file" ]; then
-              echo "No APK found in $d, skip."
-              rm -rf "$d"
-              continue
+            if [ -d "$d" ]; then
+              # artifact 目录名，例如 app-release-core-template
+              base="$(basename "$d")"
+              apks=("$d"/*.apk)
+              if [ ${#apks[@]} -gt 0 ]; then
+                # 取第一个 apk 并重命名为 {artifact名}.apk
+                src="${apks[0]}"
+                dst="dist/${base}.apk"
+                echo "Found APK: $src -> $dst"
+                cp -f "$src" "$dst"
+              else
+                echo "WARN: no .apk in $d"
+              fi
             fi
-            new="dist/${base}.apk"
-            mv "$apk_file" "$new"
-            rm -rf "$d"
-            echo "Renamed to $new"
           done
-          echo "Final files:"; ls -l dist
+          echo "Flattened:"
+          ls -l dist
 
-      # ========== 创建 Release 并上传 APK ==========
+      # 重点 3：上传 dist/*.apk 到 Release
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
           name: Auto Release ${{ github.run_number }}
-          body: "Auto release of latest APKs."
-          files: dist/*.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: true
+          files: |
+            dist/*.apk
