@@ -4,79 +4,59 @@ on:
   workflow_dispatch:
     inputs:
       template:
-        description: "Which template to build (leave 'all' to build all)"
+        description: "要构建的模板：core-template / simple-template / form-template / all"
         required: false
-        type: choice
-        options:
-          - all
-          - core-template
-          - simple-template
-          - form-template
-        default: all
+        default: "all"
+  push:
+    paths:
+      - "templates/**"
+      - ".github/workflows/android-build-matrix.yml"
 
 permissions:
   contents: read
 
-concurrency:
-  group: build-${{ github.ref }}-${{ github.workflow }}-${{ github.run_id }}
-  cancel-in-progress: false
-
 jobs:
-  build:
-    name: build (${{ matrix.template }})
-    # 当 inputs.template == 'all' 或未指定时，三个模板都跑；
-    # 如果指定了某个模板，就只跑匹配的那个。
-    if: >
-      ${{ inputs.template == '' ||
-          inputs.template == 'all' ||
-          matrix.template == inputs.template }}
+  build_matrix:
+    name: Build ${{ matrix.template }}
     runs-on: ubuntu-latest
-    timeout-minutes: 40
 
+    # 3 个模板的矩阵；如果是手动触发且只想构建其中一个，就用下面的 if 条件筛选
     strategy:
       fail-fast: false
       matrix:
         template: [core-template, simple-template, form-template]
 
+    # 仅当没有指定或指定为 all 时构建全部；否则只构建选择的那个
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.template == 'all' || inputs.template == '' || matrix.template == inputs.template }}
+
+    env:
+      TEMPLATE_DIR: templates/${{ matrix.template }}
+      APP_DIR: templates/${{ matrix.template }}/app
+
     steps:
       - name: Checkout
-      uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
           cache: gradle
 
       - name: Grant execute permission for gradlew
-        shell: bash
-        run: |
-          chmod +x "templates/${{ matrix.template }}/gradlew" || true
-          chmod +x "templates/${{ matrix.template }}/gradlew.bat" || true
+        run: chmod +x ./gradlew
+        working-directory: ${{ env.TEMPLATE_DIR }}
 
       - name: Build Release APK
-        shell: bash
-        working-directory: templates/${{ matrix.template }}
-        run: |
-          ./gradlew --no-daemon assembleRelease
-
-      - name: List APKs (debug)
-        shell: bash
-        run: |
-          echo "PWD=$(pwd)"
-          echo "== List outputs =="
-          ls -R "templates/${{ matrix.template }}/app/build/outputs" || true
-          echo "== Find *.apk =="
-          find "templates/${{ matrix.template }}/app/build" -name "*.apk" -type f -print
+        run: ./gradlew --no-daemon assembleRelease
+        working-directory: ${{ env.TEMPLATE_DIR }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-${{ matrix.template }}
-          # 兼容不同 AGP 版本的产物路径；如果日志显示路径不同，请据实调整
+          name: app-release-${{ matrix.template }}.apk
           path: |
-            templates/${{ matrix.template }}/app/build/outputs/apk/release/*.apk
-            templates/${{ matrix.template }}/app/build/outputs/apk/**/release/*.apk
-          if-no-files-found: error
-          retention-days: 7
+            ${{ env.TEMPLATE_DIR }}/app/build/outputs/apk/release/*.apk
+            ${{ env.TEMPLATE_DIR }}/app/build/outputs/apk/*/*.apk
+          if-no-files-found: warn
