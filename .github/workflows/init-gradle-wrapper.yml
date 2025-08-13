@@ -19,7 +19,7 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # 这里不再用 --no-search-upward
+      # 生成 wrapper（去掉 --no-search-upward）
       - name: Generate wrapper (core)
         uses: gradle/gradle-build-action@v3
         with:
@@ -41,10 +41,10 @@ jobs:
           build-root-directory: templates/form-template
           arguments: wrapper --no-daemon
 
+      # ✅ 用 chmod，避免 update-index 需要文件已在索引里的问题
       - name: Make gradlew executable
         run: |
-          git update-index --chmod=+x templates/*-template/gradlew
-          git status --porcelain
+          chmod +x templates/*-template/gradlew
 
       - name: Commit wrapper files
         run: |
