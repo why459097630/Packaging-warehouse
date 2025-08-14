@@ -1,53 +1,31 @@
+# .github/workflows/release-apk.yml
 name: Release APK
 
 on:
   workflow_run:
-    workflows: ["Android Build (3 Templates Matrix)"]
+    workflows: ["Android Build (3 Templates Matrix)"]   # 监听这个构建工作流
     types: [completed]
 
-permissions:
-  contents: write
+concurrency:
+  group: release-${{ github.ref }}                      # 同一分支仅允许一个发布
+  cancel-in-progress: true
 
 jobs:
   release:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+
     steps:
-      - name: Download APK artifacts from triggering run
-        uses: dawidd6/action-download-artifact@v6
+      - name: 下载构建产物（来自触发它的那次构建 run）
+        uses: actions/download-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.workflow_run.id }}
           path: dist
-          if_no_artifacts_found: error   # 构建没上传就直接失败
 
-      - name: Show what we got
-        run: |
-          echo "=== dist content ==="
-          ls -R dist || true
-
-      - name: Collect APKs
-        shell: bash
-        run: |
-          set -e
-          mkdir -p dist/_final
-          mapfile -t apks < <(find dist -type f -name "*.apk")
-          if [ ${#apks[@]} -eq 0 ]; then
-            echo "No APKs found in downloaded artifacts"; exit 1
-          fi
-          for f in "${apks[@]}"; do
-            base="$(basename "${f}")"
-            echo "Collect $f -> dist/_final/$base"
-            cp -f "$f" "dist/_final/$base"
-          done
-          echo "Collected:"
-          ls -l dist/_final
-
-      - name: Create GitHub Release
+      # 你原来 release 的步骤（生成校验、创建 GitHub Release、上传 APK）
+      - name: Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
-          name: Auto Release ${{ github.run_number }}
-          generate_release_notes: true
           files: |
-            dist/_final/*.apk
+            dist/**/*.apk
