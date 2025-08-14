@@ -1,1 +1,3 @@
-33
+git add templates/generated/.gitkeep
+git commit -m "chore: prepare generated dir for per-app builds"
+git push
