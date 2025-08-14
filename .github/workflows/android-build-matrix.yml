@@ -1,21 +1,67 @@
 name: Android Build (3 Templates Matrix)
 
 on:
+  # 既支持手动，也支持 Vercel 的 REST 调用（workflow_dispatch）
   workflow_dispatch:
+    inputs:
+      template:
+        description: "which template to build: all | core-template | simple-template | form-template"
+        required: false
+        default: "all"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
+  # 规划要构建哪些模板（把 UI/接口传进来的 template 翻译成矩阵）
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.make.outputs.matrix }}
+    steps:
+      - name: Decide matrix from input
+        id: make
+        shell: bash
+        run: |
+          inp="${{ github.event.inputs.template }}"
+          echo "template input: '${inp}'"
+
+          # 允许简写：core/simple/form
+          case "$inp" in
+            ""|"all")
+              MATRIX='["core-template","simple-template","form-template"]'
+              ;;
+            "core"|"core-template")
+              MATRIX='["core-template"]'
+              ;;
+            "simple"|"simple-template")
+              MATRIX='["simple-template"]'
+              ;;
+            "form"|"form-template")
+              MATRIX='["form-template"]'
+              ;;
+            *)
+              echo "::warning::Unknown template input '${inp}', fallback to 'all'"
+              MATRIX='["core-template","simple-template","form-template"]'
+              ;;
+          esac
+
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+          echo "Matrix decided: $MATRIX"
+
   build:
-    name: Build ${{ matrix.template }}
+    needs: plan
+    if: ${{ needs.plan.outputs.matrix != '[]' }}
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        template: [core-template, simple-template, form-template]
-
-    defaults:
-      run:
-        working-directory: templates/${{ matrix.template }}
+        template: ${{ fromJson(needs.plan.outputs.matrix) }}
 
     steps:
       - name: Checkout
@@ -28,71 +74,19 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew || true
-
-      - name: Ensure gradle.properties
+      - name: Grant execute permission for gradlew
         run: |
-          touch gradle.properties
-          grep -q '^android.useAndroidX=true' gradle.properties || echo 'android.useAndroidX=true' >> gradle.properties
-          grep -q '^android.enableJetifier=true' gradle.properties || echo 'android.enableJetifier=true' >> gradle.properties
+          chmod +x "templates/${{ matrix.template }}/gradlew"
 
-      # 这里去掉 if:，在脚本里判断是否为空
-      - name: Decode keystore
-        env:
-          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      - name: Build Release APK
+        working-directory: templates/${{ matrix.template }}
         run: |
-          if [ -n "$KS_B64" ]; then
-            echo "$KS_B64" | base64 -d > keystore.jks
-            ls -l keystore.jks
-          else
-            echo "ANDROID_KEYSTORE_BASE64 is empty. Skip decoding."
-          fi
+          ./gradlew --no-daemon assembleRelease
 
-      - name: Build release (unsigned)
-        run: ./gradlew --no-daemon assembleRelease
-
-      - name: Locate unsigned APK
-        id: apk
-        run: |
-          APK=$(ls app/build/outputs/apk/release/*-unsigned.apk | head -n1)
-          echo "unsigned=$APK" >> $GITHUB_OUTPUT
-          OUT="app-release-${{ matrix.template }}.apk"
-          echo "signed=$OUT" >> $GITHUB_OUTPUT
-          echo "unsigned_abs=$PWD/$APK" >> $GITHUB_OUTPUT
-          echo "signed_abs=$PWD/$OUT" >> $GITHUB_OUTPUT
-          echo "Found unsigned: $APK -> $OUT"
-
-      - name: Sign APK
-        env:
-          STORE_PWD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_PWD:   ${{ secrets.ANDROID_KEY_PASSWORD }}
-          ALIAS:     ${{ secrets.ANDROID_KEY_ALIAS }}
-        run: |
-          set -e
-          SDK=${ANDROID_SDK_ROOT:-$ANDROID_HOME}
-          BT_VER=$(ls -1 "$SDK/build-tools" | sort -V | tail -n1)
-          A_SIGNER="$SDK/build-tools/$BT_VER/apksigner"
-
-          # 如果没有 keystore（比如没配置 secret），就直接报错退出
-          if [ ! -f keystore.jks ]; then
-            echo "keystore.jks not found. Please set ANDROID_KEYSTORE_BASE64 secret."
-            exit 1
-          fi
-
-          "$A_SIGNER" sign \
-            --ks keystore.jks \
-            --ks-pass "pass:$STORE_PWD" \
-            --key-pass "pass:$KEY_PWD" \
-            --ks-key-alias "$ALIAS" \
-            --out "${{ steps.apk.outputs.signed }}" \
-            "${{ steps.apk.outputs.unsigned }}"
-
-          "$A_SIGNER" verify --verbose "${{ steps.apk.outputs.signed }}"
-
-      - name: Upload signed APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release-${{ matrix.template }}.apk
-          path: ${{ steps.apk.outputs.signed_abs }}
+          path: templates/${{ matrix.template }}/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+          retention-days: 7
