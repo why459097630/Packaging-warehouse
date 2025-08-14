@@ -2,32 +2,21 @@ name: Android Build (3 Templates Matrix)
 
 on:
   workflow_dispatch:
-    inputs:
-      template:
-        description: "选择模板：core-template / simple-template / form-template / all"
-        required: false
-        default: "all"
-  push:
-    paths:
-      - "templates/**"
-      - ".github/workflows/android-build-matrix.yml"
-
-permissions:
-  contents: read
 
 jobs:
   build:
     name: Build ${{ matrix.template }}
     runs-on: ubuntu-latest
 
-    # 这里把表达式写成一行，避免 YAML 语法错误
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJSON((github.event_name == 'workflow_dispatch' && github.event.inputs.template != '' && github.event.inputs.template != 'all') && format('["{0}"]', github.event.inputs.template) || '["core-template","simple-template","form-template"]') }}
+        template: [core-template, simple-template, form-template]
 
-    env:
-      TEMPLATE_DIR: templates/${{ matrix.template }}
+    # 让所有 shell 步骤默认在模板目录中执行
+    defaults:
+      run:
+        working-directory: templates/${{ matrix.template }}
 
     steps:
       - name: Checkout
@@ -37,22 +26,71 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: 17
           cache: gradle
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-        working-directory: ${{ env.TEMPLATE_DIR }}
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew || true
 
-      - name: Build Release APK
+      # 有些仓库没有 gradle.properties，这里兜底写入 AndroidX/Jetifier 开关
+      - name: Ensure gradle.properties
+        run: |
+          touch gradle.properties
+          grep -q '^android.useAndroidX=true' gradle.properties || echo 'android.useAndroidX=true' >> gradle.properties
+          grep -q '^android.enableJetifier=true' gradle.properties || echo 'android.enableJetifier=true' >> gradle.properties
+
+      # ---- 还原 keystore 到当前模板目录 ----
+      - name: Decode keystore
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KS_B64" | base64 -d > keystore.jks
+          ls -l keystore.jks
+
+      # ---- 构建 release（会产出 unsigned APK）----
+      - name: Build release (unsigned)
         run: ./gradlew --no-daemon assembleRelease
-        working-directory: ${{ env.TEMPLATE_DIR }}
 
-      - name: Upload APK
+      # 找到 unsigned APK 路径；准备签名后的最终文件名
+      - name: Locate unsigned APK
+        id: apk
+        run: |
+          APK=$(ls app/build/outputs/apk/release/*-unsigned.apk | head -n1)
+          echo "unsigned=$APK" >> $GITHUB_OUTPUT
+          OUT="app-release-${{ matrix.template }}.apk"
+          echo "signed=$OUT" >> $GITHUB_OUTPUT
+          echo "unsigned_abs=$PWD/$APK" >> $GITHUB_OUTPUT
+          echo "signed_abs=$PWD/$OUT" >> $GITHUB_OUTPUT
+          echo "Found unsigned: $APK -> $OUT"
+
+      # ---- 用 apksigner 为 APK 签名 ----
+      - name: Sign APK
+        env:
+          STORE_PWD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PWD:   ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ALIAS:     ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -e
+          # 取最新 build-tools 版本
+          SDK=${ANDROID_SDK_ROOT:-$ANDROID_HOME}
+          BT_VER=$(ls -1 "$SDK/build-tools" | sort -V | tail -n1)
+          A_SIGNER="$SDK/build-tools/$BT_VER/apksigner"
+
+          "$A_SIGNER" sign \
+            --ks keystore.jks \
+            --ks-pass "pass:$STORE_PWD" \
+            --key-pass "pass:$KEY_PWD" \
+            --ks-key-alias "$ALIAS" \
+            --out "${{ steps.apk.outputs.signed }}" \
+            "${{ steps.apk.outputs.unsigned }}"
+
+          "$A_SIGNER" verify --verbose "${{ steps.apk.outputs.signed }}"
+
+      # ---- 上传签名后的 APK ----
+      - name: Upload signed APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release-${{ matrix.template }}.apk
-          path: |
-            ${{ env.TEMPLATE_DIR }}/app/build/outputs/apk/release/*.apk
-            ${{ env.TEMPLATE_DIR }}/app/build/outputs/apk/*/*.apk
-          if-no-files-found: warn
+          path: ${{ steps.apk.outputs.signed_abs }}
+          if-no-files-found: error
