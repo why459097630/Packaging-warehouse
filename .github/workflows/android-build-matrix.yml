@@ -1,92 +1,86 @@
 name: Android Build (3 Templates Matrix)
 
 on:
-  # 既支持手动，也支持 Vercel 的 REST 调用（workflow_dispatch）
   workflow_dispatch:
     inputs:
       template:
-        description: "which template to build: all | core-template | simple-template | form-template"
+        description: 'template to build (optional; core-template/simple-template/form-template)'
         required: false
-        default: "all"
+        default: ''
 
+# 让工作流有权限创建/更新 Release
 permissions:
-  contents: read
-
-concurrency:
-  group: android-build-${{ github.ref }}
-  cancel-in-progress: false
+  contents: write
 
 jobs:
-  # 规划要构建哪些模板（把 UI/接口传进来的 template 翻译成矩阵）
-  plan:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.make.outputs.matrix }}
-    steps:
-      - name: Decide matrix from input
-        id: make
-        shell: bash
-        run: |
-          inp="${{ github.event.inputs.template }}"
-          echo "template input: '${inp}'"
-
-          # 允许简写：core/simple/form
-          case "$inp" in
-            ""|"all")
-              MATRIX='["core-template","simple-template","form-template"]'
-              ;;
-            "core"|"core-template")
-              MATRIX='["core-template"]'
-              ;;
-            "simple"|"simple-template")
-              MATRIX='["simple-template"]'
-              ;;
-            "form"|"form-template")
-              MATRIX='["form-template"]'
-              ;;
-            *)
-              echo "::warning::Unknown template input '${inp}', fallback to 'all'"
-              MATRIX='["core-template","simple-template","form-template"]'
-              ;;
-          esac
-
-          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
-          echo "Matrix decided: $MATRIX"
-
   build:
-    needs: plan
-    if: ${{ needs.plan.outputs.matrix != '[]' }}
+    name: Build APK (${{ matrix.template }})
     runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.plan.outputs.matrix) }}
+        template: [core-template, simple-template, form-template]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      # 如果前端通过 inputs.template 指定了某个模板，则其它矩阵项直接跳过
+      - name: Skip non-selected templates
+        if: ${{ github.event.inputs.template != '' && matrix.template != github.event.inputs.template }}
+        run: |
+          echo "Skip ${{ matrix.template }} because only building: ${{ github.event.inputs.template }}"
+          exit 0
+
+      - name: Set up Java (Temurin 17)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
-          cache: gradle
+          java-version: "17"
 
-      - name: Grant execute permission for gradlew
-        run: |
-          chmod +x "templates/${{ matrix.template }}/gradlew"
+      # Gradle 缓存（可省时）
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
+      # 进入对应模板目录构建
       - name: Build Release APK
         working-directory: templates/${{ matrix.template }}
         run: |
-          ./gradlew --no-daemon assembleRelease
+          chmod +x ./gradlew
+          ./gradlew clean assembleRelease --stacktrace
 
-      - name: Upload APK
+      # 上传该模板的 APK 成为 artifact
+      - name: Upload APK artifact (${{ matrix.template }})
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-${{ matrix.template }}.apk
+          name: ${{ matrix.template }}-release.apk
           path: templates/${{ matrix.template }}/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
-          retention-days: 7
+
+  release:
+    name: Publish Release with APKs
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all APK artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List dist files
+        run: ls -lah dist
+
+      # 将本次 run 的所有 APK 一次性发到同一个 Release
+      - name: Create/Update GitHub Release and upload APKs
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: v${{ github.run_number }}
+          files: dist/*.apk
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          # 二选一：你已配置的 GH_TOKEN（fine-grained/classic），否则用默认 GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
