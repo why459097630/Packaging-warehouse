@@ -5,24 +5,18 @@ on:
     inputs:
       app_name:
         description: "App display name"
-        required: false
-        default: "Generated App"
       package_name:
         description: "Android package name"
-        required: false
         default: "com.example.generated"
       commit_sha:
         description: "Commit SHA that triggered the build"
-        required: false
       template_slug:
         description: "Template slug"
-        required: false
         default: "simple-template"
 
 permissions:
   contents: write
 
-# 基础风控：按触发者串行，防止并发占满 Runner
 concurrency:
   group: build-${{ github.actor }}
   cancel-in-progress: false
@@ -32,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      PROJECT_DIR: .   # 若 gradlew 在子目录（如 android/），会在步骤中自动检测并覆盖
+      PROJECT_DIR: .
     outputs:
       download_url: ${{ steps.out.outputs.download_url }}
       release_tag:  ${{ steps.out.outputs.release_tag }}
@@ -42,27 +36,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 识别 gradlew 所在目录并修复执行权限/CRLF
       - name: Ensure gradlew executable (and fix CRLF)
-        id: gradlew
         shell: bash
         run: |
           set -e
           if [ -f "./gradlew" ]; then
-            echo "gradlew found in repo root"
             sed -i 's/\r$//' gradlew || true
             chmod +x gradlew
             echo "PROJECT_DIR=." >> $GITHUB_ENV
           elif [ -f "android/gradlew" ]; then
-            echo "gradlew found in android/"
             sed -i 's/\r$//' android/gradlew || true
             chmod +x android/gradlew
             echo "PROJECT_DIR=android" >> $GITHUB_ENV
           else
-            echo "❌ gradlew not found (expected ./gradlew or android/gradlew)" >&2
+            echo "❌ gradlew not found (./gradlew or android/gradlew)" >&2
             exit 1
           fi
-          echo "PROJECT_DIR=$PROJECT_DIR"
 
       - name: Setup JDK
         uses: actions/setup-java@v4
@@ -73,33 +62,30 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # 确保 CI 使用的 Android SDK 路径写入 local.properties，避免被仓库里的 Windows 路径覆盖
       - name: Fix Android SDK path for CI
         run: |
           echo "sdk.dir=${ANDROID_SDK_ROOT:-$ANDROID_HOME}" > ${{ env.PROJECT_DIR }}/local.properties
           cat ${{ env.PROJECT_DIR }}/local.properties
 
-      # 预接受 SDK 许可，避免首次构建失败
       - name: Accept Android SDK licenses
         run: |
-          set -e
           yes | "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses || true
           yes | "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/tools/bin/sdkmanager" --licenses || true
 
-      # 可选：Gradle 缓存（gradle/actions 已含 wrapper 缓存；如不需要可删除此步）
-      - name: Gradle cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Build release (verbose)
+      - name: Build release (verbose, strict)
         working-directory: ${{ env.PROJECT_DIR }}
-        run: ./gradlew --no-daemon assembleRelease -i --stacktrace
+        shell: bash
+        env:
+          ORG_GRADLE_PROJECT_android_useAndroidX: "true"
+          ORG_GRADLE_PROJECT_android_enableJetifier: "true"
+          ORG_GRADLE_PROJECT_android_suppressUnsupportedCompileSdk: "true"
+        run: |
+          set -o pipefail
+          echo "== Gradle & Android env ==" && ./gradlew --version
+          echo "== Verify project structure ==" && (test -f settings.gradle -o -f settings.gradle.kts) && (test -f app/build.gradle -o -f app/build.gradle.kts)
+          echo "== List app tasks ==" && ./gradlew -q :app:tasks --all | sed -n '1,120p'
+          echo "== Dependencies (releaseRuntimeClasspath) ==" && ./gradlew -q :app:dependencies --configuration releaseRuntimeClasspath | sed -n '1,120p'
+          echo "== Build assembleRelease ==" && ./gradlew --no-daemon assembleRelease -i --stacktrace -Dorg.gradle.jvmargs="-Xmx3g -Dfile.encoding=UTF-8"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
