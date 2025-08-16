@@ -3,21 +3,14 @@ name: Android Build (Matrix)
 on:
   workflow_dispatch:
     inputs:
-      app_name:
-        description: "App display name"
-      package_name:
-        description: "Android package name"
-        default: "com.example.generated"
-      commit_sha:
-        description: "Commit SHA that triggered the build"
-      template_slug:
-        description: "Template slug"
-        default: "simple-template"
+      app_name:        { description: "App display name" }
+      package_name:    { description: "Android package name", default: "com.example.generated" }
+      commit_sha:      { description: "Commit SHA that triggered the build" }
+      template_slug:   { description: "Template slug", default: "simple-template" }
 
 permissions:
   contents: write
 
-# 基础风控：按触发者串行，避免并发占满 Runner
 concurrency:
   group: build-${{ github.actor }}
   cancel-in-progress: false
@@ -61,28 +54,31 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Gradle
+      # 关闭所有 Gradle/GHA 缓存（避免缓存服务波动引起告警）
+      - name: Setup Gradle (no cache)
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
-      # 确保 CI 的 Android SDK 路径写入工程，避免被仓库里 Windows 的 local.properties 覆盖
+      # 确保 CI 的 Android SDK 写入 local.properties
       - name: Fix Android SDK path for CI
         run: |
           echo "sdk.dir=${ANDROID_SDK_ROOT:-$ANDROID_HOME}" > ${{ env.PROJECT_DIR }}/local.properties
           cat ${{ env.PROJECT_DIR }}/local.properties
 
-      # 预先接受 SDK 许可，避免首次构建失败
+      # 预接受 SDK 许可
       - name: Accept Android SDK licenses
         run: |
           yes | "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses || true
           yes | "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/tools/bin/sdkmanager" --licenses || true
 
-      # 兜底把 Gradle Wrapper 的网络超时调到 10 分钟（与 gradle.properties 配合）
+      # 兜底把 Gradle Wrapper 的网络超时调到 10 分钟
       - name: Set wrapper timeout env
         run: |
           echo "GRADLE_OPTS=-Dorg.gradle.wrapper.networkTimeout=600000" >> $GITHUB_ENV
           echo "JAVA_TOOL_OPTIONS=-Dorg.gradle.wrapper.networkTimeout=600000" >> $GITHUB_ENV
 
-      # 预热：先让 wrapper 下载并做重试，提高稳定性
+      # 预热 wrapper，并重试 3 次，避免偶发超时
       - name: Pre-warm Gradle wrapper (with retry)
         working-directory: ${{ env.PROJECT_DIR }}
         shell: bash
@@ -97,7 +93,7 @@ jobs:
             sleep $((i * 10))
           done
 
-      # 正式构建（严格/详细日志）
+      # 正式构建（严格/详细日志 → 能定位 What went wrong）
       - name: Build release (verbose, strict)
         working-directory: ${{ env.PROJECT_DIR }}
         shell: bash
