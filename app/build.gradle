@@ -1,43 +1,42 @@
-apply plugin: 'com.android.application'
+// app/build.gradle  —— Groovy 版
+plugins {
+  id 'com.android.application'
+  id 'org.jetbrains.kotlin.android'
+}
 
 android {
-    namespace 'com.example.qrapp'
-    compileSdk 33
+  namespace "com.example.generated"            // 可按需修改
+  compileSdkVersion 34
 
-    defaultConfig {
-        applicationId "com.example.qrapp"
-        minSdk 21
-        targetSdk 33
-        versionCode 1
-        versionName "1.0"
+  defaultConfig {
+    applicationId "com.example.generated"      // 可按需修改
+    minSdkVersion 24
+    targetSdkVersion 34
+    versionCode 1
+    versionName "1.0"
+  }
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+  signingConfigs {
+    // 先用 debug keystore 给 release 一个“明确的签名”，避免因缺签名失败
+    debug {
+      storeFile file(System.getenv("ANDROID_DEBUG_KEYSTORE") ?: "${System.properties['user.home']}/.android/debug.keystore")
+      storePassword 'android'
+      keyAlias 'AndroidDebugKey'
+      keyPassword 'android'
     }
+  }
 
-    signingConfigs {
-        release {
-            storeFile file("debug.keystore")         // ✅ 直接读取本地 app/debug.keystore
-            storePassword "android"
-            keyAlias "androiddebugkey"
-            keyPassword "android"
-        }
+  buildTypes {
+    release {
+      signingConfig signingConfigs.debug        // 准生产前再换成你自己的 keystore
+      minifyEnabled false
+      shrinkResources false
     }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release     // ✅ 使用上方的签名配置
-        }
-    }
-
-    buildFeatures {
-        viewBinding true
-    }
+  }
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+  implementation 'androidx.core:core-ktx:1.12.0'
+  implementation 'androidx.appcompat:appcompat:1.6.1'
+  implementation 'com.google.android.material:material:1.11.0'
 }
