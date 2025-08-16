@@ -1,86 +1,87 @@
-name: Android Build (3 Templates Matrix)
+name: Android Build (Matrix)
 
 on:
   workflow_dispatch:
     inputs:
-      template:
-        description: 'template to build (optional; core-template/simple-template/form-template)'
+      app_name:
+        description: "App display name"
         required: false
-        default: ''
+        default: "Generated App"
+      package_name:
+        description: "Android package name"
+        required: false
+        default: "com.example.generated"
+      commit_sha:
+        description: "Commit SHA that triggered the build"
+        required: false
+      template_slug:
+        description: "Template slug"
+        required: false
+        default: "simple-template"
 
-# 让工作流有权限创建/更新 Release
 permissions:
   contents: write
 
+# 基础风控：同一用户并发串行化，避免并发占满 Runner
+concurrency:
+  group: build-${{ github.actor }}
+  cancel-in-progress: false
+
 jobs:
   build:
-    name: Build APK (${{ matrix.template }})
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        template: [core-template, simple-template, form-template]
+    timeout-minutes: 30
+    outputs:
+      download_url: ${{ steps.out.outputs.download_url }}
+      release_tag: ${{ steps.out.outputs.release_tag }}
+      run_id: ${{ github.run_id }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 如果前端通过 inputs.template 指定了某个模板，则其它矩阵项直接跳过
-      - name: Skip non-selected templates
-        if: ${{ github.event.inputs.template != '' && matrix.template != github.event.inputs.template }}
-        run: |
-          echo "Skip ${{ matrix.template }} because only building: ${{ github.event.inputs.template }}"
-          exit 0
-
-      - name: Set up Java (Temurin 17)
+      - name: Setup JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
-      # Gradle 缓存（可省时）
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # 进入对应模板目录构建
-      - name: Build Release APK
-        working-directory: templates/${{ matrix.template }}
-        run: |
-          chmod +x ./gradlew
-          ./gradlew clean assembleRelease --stacktrace
+      - name: Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-      # 上传该模板的 APK 成为 artifact
-      - name: Upload APK artifact (${{ matrix.template }})
+      - name: Build release
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.template }}-release.apk
-          path: templates/${{ matrix.template }}/app/build/outputs/apk/release/*.apk
+          name: apk
+          path: app/build/outputs/**/*.apk
           if-no-files-found: error
+          retention-days: 30
 
-  release:
-    name: Publish Release with APKs
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all APK artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: dist
-          merge-multiple: true
-
-      - name: List dist files
-        run: ls -lah dist
-
-      # 将本次 run 的所有 APK 一次性发到同一个 Release
-      - name: Create/Update GitHub Release and upload APKs
+      - name: Create Release (prerelease)
+        id: release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}
-          name: v${{ github.run_number }}
-          files: dist/*.apk
-          generate_release_notes: true
+          tag_name: run-${{ github.run_id }}
+          name: ${{ github.event.inputs.app_name || 'Generated App' }} · ${{ github.run_id }}
+          files: app/build/outputs/**/*.apk
           draft: false
-          prerelease: false
-        env:
-          # 二选一：你已配置的 GH_TOKEN（fine-grained/classic），否则用默认 GITHUB_TOKEN
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          prerelease: true
+
+      - name: Output URL
+        id: out
+        run: |
+          echo "release_tag=run-${{ github.run_id }}" >> $GITHUB_OUTPUT
+          echo "download_url=https://github.com/${{ github.repository }}/releases/tag/run-${{ github.run_id }}" >> $GITHUB_OUTPUT
