@@ -31,6 +31,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      PROJECT_DIR: . # 若你的 Android 工程在子目录（如 android），下面的步骤会自动检测并覆盖
     outputs:
       download_url: ${{ steps.out.outputs.download_url }}
       release_tag: ${{ steps.out.outputs.release_tag }}
@@ -39,6 +41,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Ensure gradlew executable (and fix CRLF)
+        id: gradlew
+        shell: bash
+        run: |
+          set -e
+          if [ -f "./gradlew" ]; then
+            echo "gradlew found in repo root"
+            sed -i 's/
+$//' gradlew || true
+            chmod +x gradlew
+            echo "PROJECT_DIR=." >> $GITHUB_ENV
+          elif [ -f "android/gradlew" ]; then
+            echo "gradlew found in android/"
+            sed -i 's/
+$//' android/gradlew || true
+            chmod +x android/gradlew
+            echo "PROJECT_DIR=android" >> $GITHUB_ENV
+          else
+            echo "❌ gradlew not found. Ensure it exists in repo root or android/" >&2
+            exit 1
+          fi
+          echo "PROJECT_DIR=$PROJECT_DIR"
 
       - name: Setup JDK
         uses: actions/setup-java@v4
@@ -60,13 +85,14 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Build release
+        working-directory: ${{ env.PROJECT_DIR }}
         run: ./gradlew --no-daemon assembleRelease
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: app/build/outputs/**/*.apk
+          path: ${{ env.PROJECT_DIR }}/app/build/outputs/**/*.apk
           if-no-files-found: error
           retention-days: 30
 
@@ -76,7 +102,7 @@ jobs:
         with:
           tag_name: run-${{ github.run_id }}
           name: ${{ github.event.inputs.app_name || 'Generated App' }} · ${{ github.run_id }}
-          files: app/build/outputs/**/*.apk
+          files: ${{ env.PROJECT_DIR }}/app/build/outputs/**/*.apk
           draft: false
           prerelease: true
 
