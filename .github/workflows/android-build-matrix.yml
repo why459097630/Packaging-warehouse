@@ -69,6 +69,7 @@ jobs:
           yes | "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses || true
           yes | "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/tools/bin/sdkmanager" --licenses || true
 
+      # 生成 debug.keystore（作为回退）
       - name: Ensure Android debug keystore
         shell: bash
         run: |
@@ -84,17 +85,21 @@ jobs:
           fi
           echo "ANDROID_DEBUG_KEYSTORE=${HOME}/.android/debug.keystore" >> $GITHUB_ENV
 
-      # ⬇⬇⬇ 这里就是那行：一定要用 ${{ ... }} ⬇⬇⬇
+      # 不用 if:，在脚本里判断 Secret 是否存在
       - name: (Optional) Setup release keystore from secrets
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         shell: bash
         run: |
           set -e
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$HOME/release.keystore"
-          echo "RELEASE_KEYSTORE=$HOME/release.keystore" >> $GITHUB_ENV
-          echo "RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
-          echo "RELEASE_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
-          echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> $GITHUB_ENV
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "Using release keystore from secrets..."
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$HOME/release.keystore"
+            echo "RELEASE_KEYSTORE=$HOME/release.keystore" >> $GITHUB_ENV
+            echo "RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
+            echo "RELEASE_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+            echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> $GITHUB_ENV
+          else
+            echo "No ANDROID_KEYSTORE_BASE64 secret, fallback to debug.keystore"
+          fi
 
       - name: Set wrapper timeout env
         run: |
