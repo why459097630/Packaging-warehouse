@@ -17,6 +17,7 @@ on:
 permissions:
   contents: write
 
+# 基础风控：按触发者串行，避免并发占满 Runner
 concurrency:
   group: build-${{ github.actor }}
   cancel-in-progress: false
@@ -36,6 +37,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 识别 gradlew 所在目录并修复执行权限/CRLF
       - name: Ensure gradlew executable (and fix CRLF)
         shell: bash
         run: |
@@ -62,16 +64,40 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      # 确保 CI 的 Android SDK 路径写入工程，避免被仓库里 Windows 的 local.properties 覆盖
       - name: Fix Android SDK path for CI
         run: |
           echo "sdk.dir=${ANDROID_SDK_ROOT:-$ANDROID_HOME}" > ${{ env.PROJECT_DIR }}/local.properties
           cat ${{ env.PROJECT_DIR }}/local.properties
 
+      # 预先接受 SDK 许可，避免首次构建失败
       - name: Accept Android SDK licenses
         run: |
           yes | "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses || true
           yes | "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/tools/bin/sdkmanager" --licenses || true
 
+      # 兜底把 Gradle Wrapper 的网络超时调到 10 分钟（与 gradle.properties 配合）
+      - name: Set wrapper timeout env
+        run: |
+          echo "GRADLE_OPTS=-Dorg.gradle.wrapper.networkTimeout=600000" >> $GITHUB_ENV
+          echo "JAVA_TOOL_OPTIONS=-Dorg.gradle.wrapper.networkTimeout=600000" >> $GITHUB_ENV
+
+      # 预热：先让 wrapper 下载并做重试，提高稳定性
+      - name: Pre-warm Gradle wrapper (with retry)
+        working-directory: ${{ env.PROJECT_DIR }}
+        shell: bash
+        run: |
+          set -e
+          for i in 1 2 3; do
+            echo "Warm-up attempt $i ..."
+            if ./gradlew --version; then
+              echo "Gradle wrapper ready."
+              break
+            fi
+            sleep $((i * 10))
+          done
+
+      # 正式构建（严格/详细日志）
       - name: Build release (verbose, strict)
         working-directory: ${{ env.PROJECT_DIR }}
         shell: bash
