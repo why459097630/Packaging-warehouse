@@ -31,7 +31,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 识别 gradlew 路径并修复权限/CRLF
       - name: Ensure gradlew executable (and fix CRLF)
         shell: bash
         run: |
@@ -55,13 +54,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # 关闭缓存（稳定优先）
       - name: Setup Gradle (no cache)
         uses: gradle/actions/setup-gradle@v3
         with:
           cache-disabled: true
 
-      # 写入 CI 的 Android SDK 路径
       - name: Fix Android SDK path for CI
         run: |
           echo "sdk.dir=${ANDROID_SDK_ROOT:-$ANDROID_HOME}" > ${{ env.PROJECT_DIR }}/local.properties
@@ -72,7 +69,6 @@ jobs:
           yes | "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses || true
           yes | "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/tools/bin/sdkmanager" --licenses || true
 
-      # 生成 debug.keystore（作为 fallback，Secrets 缺失时仍可内测）
       - name: Ensure Android debug keystore
         shell: bash
         run: |
@@ -88,7 +84,7 @@ jobs:
           fi
           echo "ANDROID_DEBUG_KEYSTORE=${HOME}/.android/debug.keystore" >> $GITHUB_ENV
 
-      # 使用你仓库里已有的 Secrets（ANDROID_*）解码 release keystore 并映射为构建期变量
+      # ⬇⬇⬇ 这里就是那行：一定要用 ${{ ... }} ⬇⬇⬇
       - name: (Optional) Setup release keystore from secrets
         if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         shell: bash
@@ -100,13 +96,11 @@ jobs:
           echo "RELEASE_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
           echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> $GITHUB_ENV
 
-      # Gradle wrapper 网络超时兜底
       - name: Set wrapper timeout env
         run: |
           echo "GRADLE_OPTS=-Dorg.gradle.wrapper.networkTimeout=600000" >> $GITHUB_ENV
           echo "JAVA_TOOL_OPTIONS=-Dorg.gradle.wrapper.networkTimeout=600000" >> $GITHUB_ENV
 
-      # 预热 wrapper（最多重试 3 次）
       - name: Pre-warm Gradle wrapper (with retry)
         working-directory: ${{ env.PROJECT_DIR }}
         shell: bash
@@ -121,7 +115,6 @@ jobs:
             sleep $((i * 10))
           done
 
-      # 构建：同时产出 APK + AAB（详细日志）
       - name: Build release (APK + AAB)
         working-directory: ${{ env.PROJECT_DIR }}
         shell: bash
