@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # 需要创建 GitHub Release
+  contents: write
 
 concurrency:
   group: android-${{ github.ref }}
@@ -15,7 +15,6 @@ env:
 
 jobs:
   build:
-    name: build
     runs-on: ubuntu-latest
 
     steps:
@@ -31,7 +30,6 @@ jobs:
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      # 这里去掉了 if: secrets...；改为在脚本里判断是否有 keystore
       - name: Prepare release keystore (if provided)
         run: |
           set -euo pipefail
@@ -45,6 +43,11 @@ jobs:
           else
             echo "No release keystore provided; will build with debug/self-signed config."
           fi
+
+      - name: Make gradlew executable (and fix EOL just in case)
+        run: |
+          sed -i 's/\r$//' gradlew || true
+          chmod +x gradlew
 
       - name: Build AAB & APK (release)
         run: |
