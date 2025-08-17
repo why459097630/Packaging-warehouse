@@ -28,7 +28,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # ==== Generated code verification (must pass or fail build) ====
+      # ==== 生成代码存在性校验（缺任一关键文件直接 fail） ====
       - name: Make scripts executable
         run: chmod +x scripts/check-generated.sh
 
@@ -40,6 +40,26 @@ jobs:
         run: |
           ./gradlew --stacktrace --no-daemon \
             lintDebug assembleDebug
+
+      # 失败时把关键日志打出来 & 打包，便于定位
+      - name: Dump Gradle error logs (always)
+        if: always()
+        run: |
+          echo "---- manifest merger ----"
+          find app/build/outputs -type f -name "manifest-merger*.txt" -print -exec sed -n '1,200p' {} \; || true
+          echo "---- javac errors ----"
+          find app/build -type f -name "*.log" -print -exec sed -n '1,200p' {} \; || true
+          echo "---- lint results ----"
+          find app/build/reports -type f \( -name "lint-results*.xml" -o -name "lint-results*.html" \) -print || true
+
+      - name: Upload build reports (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: |
+            app/build/outputs/**/*.txt
+            app/build/reports/**/*
 
       # ---------- Gate 2: Robolectric Unit Tests (no device) ----------
       - name: Run unit tests (Robolectric smoke)
