@@ -1,3 +1,4 @@
 <resources>
   <string name="app_name">Niandong Demo</string>
+  <string name="hello_text">Hello from API code</string>
 </resources>
