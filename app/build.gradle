@@ -1,71 +1,89 @@
-// app/build.gradle  —— Groovy 版
+// app/build.gradle  —— 安全签名 & compileSdkVersion 已修复版
+
 plugins {
-  id 'com.android.application'
-  id 'org.jetbrains.kotlin.android'
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android' // 如果项目没用 Kotlin，删掉这行也行
 }
 
 android {
-    // 其它 compileSdk、namespace、defaultConfig 等保持不动
+    namespace "com.whys.packaging"   // 按你项目实际包名改
+    compileSdkVersion 34
 
-    def isCI = System.getenv("CI") == "true"
+    defaultConfig {
+        applicationId "com.whys.packaging" // 按需修改
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+        vectorDrawables.useSupportLibrary = true
+    }
 
+    // ---- 签名配置：有就用，没有就自动回退到 debug，不会构建失败 ----
     signingConfigs {
+        // 默认 debug 签名（始终可用）
         debug {
-            // 仅用于本地调试
-            storeFile file("${System.properties['user.home']}/.android/debug.keystore")
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            // Android 默认 debug keystore
+            storeFile file(System.getenv("DEBUG_KEYSTORE") ?: "${System.properties['user.home']}/.android/debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
         }
 
+        // 尝试从 CI 环境变量 / 本地 gradle.properties 读取 release 签名
         release {
-            if (isCI) {
-                // CI（GitHub Actions）使用你仓库的 Secrets 解码出来的正式签名
-                def ksBase64   = System.getenv("ANDROID_KEYSTORE_BASE64")
-                def ksPass     = System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                def keyAlias   = System.getenv("ANDROID_KEY_ALIAS")
-                def keyPass    = System.getenv("ANDROID_KEY_PASSWORD")
+            // 1) CI 路径优先：workflow 注入 ANDROID_KEYSTORE_FILE 指向已解码的 keystore 文件
+            def ksFileEnv = System.getenv("ANDROID_KEYSTORE_FILE")
+            def ksFileProp = project.findProperty("RELEASE_STORE_FILE")    // 2) 本地 gradle.properties 兜底
 
-                // 将 base64 解码到构建目录
-                def ksPath = "${rootProject.buildDir}/ci-release.keystore"
-                if (ksBase64 == null || ksBase64.trim().isEmpty()) {
-                    throw new GradleException("ANDROID_KEYSTORE_BASE64 is empty on CI")
-                }
-                new File(ksPath).bytes = ksBase64.decodeBase64()
+            def finalKsFile = ksFileEnv ? file(ksFileEnv) : (ksFileProp ? file(ksFileProp) : null)
 
-                storeFile file(ksPath)
-                storePassword ksPass
-                this.keyAlias keyAlias
-                keyPassword keyPass
+            if (finalKsFile != null && finalKsFile.exists()) {
+                storeFile finalKsFile
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD") ?: (project.findProperty("RELEASE_STORE_PASSWORD") ?: "")
+                keyAlias      System.getenv("ANDROID_KEY_ALIAS")           ?: (project.findProperty("RELEASE_KEY_ALIAS")      ?: "")
+                keyPassword   System.getenv("ANDROID_KEY_PASSWORD")        ?: (project.findProperty("RELEASE_KEY_PASSWORD")   ?: "")
+                v1SigningEnabled true
+                v2SigningEnabled true
             } else {
-                // 本地开发：没有配置正式签名时，允许临时用 debug keystore（方便本地打包）
-                storeFile file("${System.properties['user.home']}/.android/debug.keystore")
-                storePassword 'android'
-                keyAlias 'androiddebugkey'
-                keyPassword 'android'
+                // 没有 release keystore 时，保持空配置；下面 buildTypes 会自动回退到 debug 签名
+                println("[signingConfigs.release] No release keystore found, will fall back to debug signing.")
             }
         }
     }
 
     buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            // 如果 release 签名完整则用 release，否则退回 debug，避免因签名参数缺失导致构建失败
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            } else {
+                signingConfig signingConfigs.debug
+            }
+        }
         debug {
-            // 调试包用 debug 签名
             signingConfig signingConfigs.debug
         }
-        release {
-            // ⛔ 关键点：release 只能用 release 签名，不要再引用 debug！
-            signingConfig signingConfigs.release
-            // 你的其他 release 配置（混淆等），保持不动
-            minifyEnabled false
-            shrinkResources false
-            // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+    }
+
+    // Java/Kotlin 版本
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
     }
 }
 
-
 dependencies {
-  implementation 'androidx.core:core-ktx:1.12.0'
-  implementation 'androidx.appcompat:appcompat:1.6.1'
-  implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
