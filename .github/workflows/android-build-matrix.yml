@@ -1,164 +1,98 @@
-name: Android Build (Matrix)
+name: android-build-matrix
 
 on:
   workflow_dispatch:
-    inputs:
-      app_name:
-        description: "App display name (用于 Release 标题)"
-      package_name:
-        description: "Android package name"
-        default: "com.example.generated"
-      commit_sha:
-        description: "Commit SHA that triggered the build"
-      template_slug:
-        description: "Template slug"
-        default: "simple-template"
-
-permissions:
-  contents: write
-
-concurrency:
-  group: build-${{ github.actor }}
-  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+
     env:
-      PROJECT_DIR: .
+      JAVA_VERSION: '17'
+      ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
+      # 如果你的 app 模块不是 app，请把 APP_DIR 改成实际模块名（例如 mobile、app-android 等）
+      APP_DIR: app
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Ensure gradlew executable (and fix CRLF)
-        shell: bash
-        run: |
-          set -e
-          if [ -f "./gradlew" ]; then
-            sed -i 's/\r$//' gradlew || true
-            chmod +x gradlew
-            echo "PROJECT_DIR=." >> $GITHUB_ENV
-          elif [ -f "android/gradlew" ]; then
-            sed -i 's/\r$//' android/gradlew || true
-            chmod +x android/gradlew
-            echo "PROJECT_DIR=android" >> $GITHUB_ENV
-          else
-            echo "❌ gradlew not found (./gradlew or android/gradlew)" >&2
-            exit 1
-          fi
-
-      - name: Setup JDK 17
+      - name: Set up Temurin JDK
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: '17'
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Setup Gradle (no cache)
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          cache-disabled: true
+      # 可选：Gradle 缓存（你之前是禁用缓存的，这里照常给出）
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
 
-      - name: Fix Android SDK path for CI
+      - name: Install Android SDK (cmdline-tools)
         run: |
-          echo "sdk.dir=${ANDROID_SDK_ROOT:-$ANDROID_HOME}" > ${{ env.PROJECT_DIR }}/local.properties
-          cat ${{ env.PROJECT_DIR }}/local.properties
+          mkdir -p "$ANDROID_SDK_ROOT"
+          curl -sSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o cmdline-tools.zip
+          unzip -q cmdline-tools.zip -d "$ANDROID_SDK_ROOT"
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+          mv "$ANDROID_SDK_ROOT/cmdline-tools/"{bin,lib,source.properties} "$ANDROID_SDK_ROOT/cmdline-tools/latest" 2>/dev/null || true
 
-      - name: Accept Android SDK licenses
+      - name: Accept SDK licenses & Install build-tools / platforms
         run: |
-          yes | "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses || true
-          yes | "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/tools/bin/sdkmanager" --licenses || true
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" \
+            "platform-tools" \
+            "build-tools;34.0.0" \
+            "platforms;android-34"
 
-      # 生成 debug.keystore（作为回退）
-      - name: Ensure Android debug keystore
-        shell: bash
+      # ===================== 关键断点 1：探针文件 =====================
+      - name: Debug probe — add marker files
         run: |
-          set -e
-          mkdir -p "${HOME}/.android"
-          if [ ! -f "${HOME}/.android/debug.keystore" ]; then
-            keytool -genkeypair -alias AndroidDebugKey \
-              -keyalg RSA -keysize 2048 -validity 10000 \
-              -dname "CN=Android Debug,O=Android,C=US" \
-              -storetype JKS \
-              -keystore "${HOME}/.android/debug.keystore" \
-              -storepass android -keypass android
-          fi
-          echo "ANDROID_DEBUG_KEYSTORE=${HOME}/.android/debug.keystore" >> $GITHUB_ENV
+          set -eux
+          mkdir -p "$APP_DIR/src/main/assets/generated"
+          mkdir -p "$APP_DIR/src/main/res/raw"
+          echo "probe $(date -u +%FT%TZ)" > "$APP_DIR/src/main/assets/generated/__probe.txt"
+          echo '{ "probe": true, "time": "'"$(date -u +%FT%TZ)"'" }' > "$APP_DIR/src/main/res/raw/probe.json"
+          echo "Created following under $APP_DIR/src/main:"
+          ls -R "$APP_DIR/src/main" | sed -n '1,200p'
 
-      # 不用 if:，在脚本里判断 Secret 是否存在
-      - name: (Optional) Setup release keystore from secrets
-        shell: bash
+      # 你原来的构建任务（保持一致：assembleRelease + bundleRelease）
+      - name: Build (assembleRelease + bundleRelease)
         run: |
-          set -e
-          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
-            echo "Using release keystore from secrets..."
-            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$HOME/release.keystore"
-            echo "RELEASE_KEYSTORE=$HOME/release.keystore" >> $GITHUB_ENV
-            echo "RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
-            echo "RELEASE_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
-            echo "RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> $GITHUB_ENV
-          else
-            echo "No ANDROID_KEYSTORE_BASE64 secret, fallback to debug.keystore"
-          fi
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease bundleRelease
 
-      - name: Set wrapper timeout env
+      # ===================== 关键断点 2：APK 内部校验 =====================
+      - name: Verify packaged assets
         run: |
-          echo "GRADLE_OPTS=-Dorg.gradle.wrapper.networkTimeout=600000" >> $GITHUB_ENV
-          echo "JAVA_TOOL_OPTIONS=-Dorg.gradle.wrapper.networkTimeout=600000" >> $GITHUB_ENV
-
-      - name: Pre-warm Gradle wrapper (with retry)
-        working-directory: ${{ env.PROJECT_DIR }}
-        shell: bash
-        run: |
-          set -e
-          for i in 1 2 3; do
-            echo "Warm-up attempt $i ..."
-            if ./gradlew --version; then
-              echo "Gradle wrapper ready."
-              break
+          set -eux
+          APK="$APP_DIR/build/outputs/apk/release/${APP_DIR##*/}-release.apk"
+          # 某些项目 APK 叫 app-release.apk，这里做下兼容：
+          if [ ! -f "$APK" ]; then
+            if [ -f "$APP_DIR/build/outputs/apk/release/app-release.apk" ]; then
+              APK="$APP_DIR/build/outputs/apk/release/app-release.apk"
+            else
+              echo "!! APK not found under $APP_DIR/build/outputs/apk/release"; ls -l "$APP_DIR/build/outputs/apk/release" || true; exit 1
             fi
-            sleep $((i * 10))
-          done
+          fi
 
-      - name: Build release (APK + AAB)
-        working-directory: ${{ env.PROJECT_DIR }}
-        shell: bash
-        env:
-          ORG_GRADLE_PROJECT_android_useAndroidX: "true"
-          ORG_GRADLE_PROJECT_android_enableJetifier: "true"
-          ORG_GRADLE_PROJECT_android_suppressUnsupportedCompileSdk: "true"
-        run: |
-          set -o pipefail
-          ./gradlew --no-daemon assembleRelease bundleRelease -i --stacktrace -Dorg.gradle.jvmargs="-Xmx3g -Dfile.encoding=UTF-8"
+          echo "=== List first 200 entries in APK ==="
+          unzip -l "$APK" | sed -n '1,200p'
 
-      - name: Upload APK artifact
+          echo "=== Check for our expected entries ==="
+          unzip -l "$APK" | egrep 'assets/generated/(catalog\.json|about\.md|__probe\.txt)|res/raw/(catalog\.json|about_md\.txt|probe\.json)' || true
+
+      # 上传产物（保持你之前的产物名）
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: ${{ env.PROJECT_DIR }}/app/build/outputs/**/*.apk
-          if-no-files-found: error
-          retention-days: 30
+          path: |
+            ${{ env.APP_DIR }}/build/outputs/apk/release/*.apk
 
-      - name: Upload AAB artifact
+      - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
           name: aab
-          path: ${{ env.PROJECT_DIR }}/app/build/outputs/bundle/release/*.aab
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Create Release (prerelease)
-        id: ghrelease
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: run-${{ github.run_id }}
-          name: ${{ github.event.inputs.app_name || 'Generated App' }} · ${{ github.run_id }}
-          files: |
-            ${{ env.PROJECT_DIR }}/app/build/outputs/**/*.apk
-            ${{ env.PROJECT_DIR }}/app/build/outputs/bundle/release/*.aab
-          draft: false
-          prerelease: true
-
-      - name: Output URL
-        run: |
-          echo "Release: https://github.com/${{ github.repository }}/releases/tag/run-${{ github.run_id }}"
+          path: |
+            ${{ env.APP_DIR }}/build/outputs/bundle/release/*.aab
