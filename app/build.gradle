@@ -1,60 +1,59 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android' // 没用 Kotlin 可删
 }
 
 android {
-    namespace "com.whystudio.app"      // 你自己的包名
+    namespace "com.example.meditationtimer"
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.whystudio.app"
+        applicationId "com.example.meditationtimer"
         minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
-        debug {
-            minifyEnabled false
-        }
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
-                          'proguard-rules.pro'
-            // 签名配置（下方会补齐）
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     buildFeatures {
-        viewBinding true // 用不到可以去掉
+        viewBinding true
     }
-}
 
-// 读取 keystore.properties（CI 有就生成，没有就跳过）
-def keystorePropsFile = rootProject.file("keystore.properties")
-if (keystorePropsFile.exists()) {
-    def keystoreProps = new Properties()
-    keystoreProps.load(new FileInputStream(keystorePropsFile))
+    // Lint 配置：把警告当错误（保证 CI 不放过潜在崩溃风险）
+    lint {
+        abortOnError true
+        warningsAsErrors true
+    }
 
-    android.signingConfigs {
-        release {
-            storeFile file(keystoreProps['storeFile'])
-            storePassword keystoreProps['storePassword']
-            keyAlias keystoreProps['keyAlias']
-            keyPassword keystoreProps['keyPassword']
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
         }
     }
-    android.buildTypes.release.signingConfig = android.signingConfigs.release
 }
 
 dependencies {
-    implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.12.2'
+    testImplementation 'androidx.test:core:1.5.0'
+
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
