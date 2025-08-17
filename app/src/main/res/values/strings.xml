@@ -1,1 +1,3 @@
-<resources><string name="app_name">Test</string></resources>
+<resources>
+  <string name="app_name">Niandong Demo</string>
+</resources>
