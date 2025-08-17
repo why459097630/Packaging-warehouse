@@ -28,6 +28,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
+      # 统一换行符，避免脚本在 Linux 下因 CRLF 触发语法问题
+      - name: Normalize line endings to LF (optional but recommended)
+        run: |
+          sudo apt-get update && sudo apt-get install -y dos2unix
+          dos2unix .github/workflows/* || true
+          find scripts -type f -exec dos2unix {} \; || true
+
       # ==== 生成代码存在性校验（缺任一关键文件直接 fail） ====
       - name: Make scripts executable
         run: chmod +x scripts/check-generated.sh
@@ -47,7 +54,7 @@ jobs:
         run: |
           echo "---- manifest merger ----"
           find app/build/outputs -type f -name "manifest-merger*.txt" -print -exec sed -n '1,200p' {} \; || true
-          echo "---- javac errors ----"
+          echo "---- javac / kotlinc errors ----"
           find app/build -type f -name "*.log" -print -exec sed -n '1,200p' {} \; || true
           echo "---- lint results ----"
           find app/build/reports -type f \( -name "lint-results*.xml" -o -name "lint-results*.html" \) -print || true
@@ -75,18 +82,15 @@ jobs:
           profile: pixel_5
           disable-animations: true
           script: |
-            APK=app/build/outputs/apk/debug/app-debug.apk
-            if [ ! -f "$APK" ]; then
-              echo "APK not found at $APK"
-              exit 1
-            fi
+            set -euo pipefail
 
-            adb install -r "$APK"
+            APK="app/build/outputs/apk/debug/app-debug.apk"
+            test -f "$APK" || { echo "APK not found at $APK"; exit 1; }
 
-            # Extract package & launcher activity from the APK
-            AAPT=$(which aapt || true)
-            if [ -z "$AAPT" ]; then
-              echo "aapt not found, installing build-tools with aapt..."
+            adb install -r "$APK" >/dev/null
+
+            # 确保有 aapt（使用 build-tools 自带）
+            if ! command -v aapt >/dev/null 2>&1; then
               sdkmanager --install "build-tools;34.0.0"
               export PATH="$ANDROID_HOME/build-tools/34.0.0:$PATH"
             fi
@@ -97,14 +101,14 @@ jobs:
             echo "Detected launcher: $ACT"
 
             adb logcat -c
-            adb shell am start -n ${PKG}/${ACT}
+            adb shell am start -n "${PKG}/${ACT}"
 
             set +e
-            timeout 15s bash -c 'adb logcat | tee /tmp/logcat.txt | grep -q -E "FATAL EXCEPTION|Process[[:space:]].*'"$PKG"'[[:space:]].*has died"'
+            timeout 15s bash -lc 'adb logcat | tee /tmp/logcat.txt | grep -q -E "FATAL EXCEPTION|Process[[:space:]].*'"$PKG"'[[:space:]].*has died"'
             RES=$?
             set -e
 
-            if [ $RES -eq 0 ]; then
+            if [ "$RES" -eq 0 ]; then
               echo "Crash detected during smoke run:"
               tail -n 200 /tmp/logcat.txt || true
               exit 1
