@@ -5,35 +5,64 @@ plugins {
 }
 
 android {
-  namespace "com.example.generated"            // 可按需修改
-  compileSdkVersion 34
+    // 其它 compileSdk、namespace、defaultConfig 等保持不动
 
-  defaultConfig {
-    applicationId "com.example.generated"      // 可按需修改
-    minSdkVersion 24
-    targetSdkVersion 34
-    versionCode 1
-    versionName "1.0"
-  }
+    def isCI = System.getenv("CI") == "true"
 
-  signingConfigs {
-    // 先用 debug keystore 给 release 一个“明确的签名”，避免因缺签名失败
-    debug {
-      storeFile file(System.getenv("ANDROID_DEBUG_KEYSTORE") ?: "${System.properties['user.home']}/.android/debug.keystore")
-      storePassword 'android'
-      keyAlias 'AndroidDebugKey'
-      keyPassword 'android'
+    signingConfigs {
+        debug {
+            // 仅用于本地调试
+            storeFile file("${System.properties['user.home']}/.android/debug.keystore")
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+
+        release {
+            if (isCI) {
+                // CI（GitHub Actions）使用你仓库的 Secrets 解码出来的正式签名
+                def ksBase64   = System.getenv("ANDROID_KEYSTORE_BASE64")
+                def ksPass     = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                def keyAlias   = System.getenv("ANDROID_KEY_ALIAS")
+                def keyPass    = System.getenv("ANDROID_KEY_PASSWORD")
+
+                // 将 base64 解码到构建目录
+                def ksPath = "${rootProject.buildDir}/ci-release.keystore"
+                if (ksBase64 == null || ksBase64.trim().isEmpty()) {
+                    throw new GradleException("ANDROID_KEYSTORE_BASE64 is empty on CI")
+                }
+                new File(ksPath).bytes = ksBase64.decodeBase64()
+
+                storeFile file(ksPath)
+                storePassword ksPass
+                this.keyAlias keyAlias
+                keyPassword keyPass
+            } else {
+                // 本地开发：没有配置正式签名时，允许临时用 debug keystore（方便本地打包）
+                storeFile file("${System.properties['user.home']}/.android/debug.keystore")
+                storePassword 'android'
+                keyAlias 'androiddebugkey'
+                keyPassword 'android'
+            }
+        }
     }
-  }
 
-  buildTypes {
-    release {
-      signingConfig signingConfigs.debug        // 准生产前再换成你自己的 keystore
-      minifyEnabled false
-      shrinkResources false
+    buildTypes {
+        debug {
+            // 调试包用 debug 签名
+            signingConfig signingConfigs.debug
+        }
+        release {
+            // ⛔ 关键点：release 只能用 release 签名，不要再引用 debug！
+            signingConfig signingConfigs.release
+            // 你的其他 release 配置（混淆等），保持不动
+            minifyEnabled false
+            shrinkResources false
+            // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
     }
-  }
 }
+
 
 dependencies {
   implementation 'androidx.core:core-ktx:1.12.0'
