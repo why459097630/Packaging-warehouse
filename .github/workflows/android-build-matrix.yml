@@ -9,9 +9,10 @@ jobs:
 
     env:
       JAVA_VERSION: '17'
-      ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
-      # 如果你的 app 模块不是 app，请把 APP_DIR 改成实际模块名（例如 mobile、app-android 等）
-      APP_DIR: app
+      # 统一使用 Runner 自带的 SDK 路径
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      APP_DIR: app   # 如果你的模块不是 app，这里改成真实模块名
 
     steps:
       - name: Checkout
@@ -25,27 +26,29 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
 
-      # 可选：Gradle 缓存（你之前是禁用缓存的，这里照常给出）
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Install Android SDK (cmdline-tools)
+      # === 仅使用 Runner 自带 SDK，统一路径 ===
+      - name: Accept licenses & ensure build-tools/platforms exist
         run: |
-          mkdir -p "$ANDROID_SDK_ROOT"
-          curl -sSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o cmdline-tools.zip
-          unzip -q cmdline-tools.zip -d "$ANDROID_SDK_ROOT"
-          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          mv "$ANDROID_SDK_ROOT/cmdline-tools/"{bin,lib,source.properties} "$ANDROID_SDK_ROOT/cmdline-tools/latest" 2>/dev/null || true
+          set -eux
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls -la "$ANDROID_HOME" || true
 
-      - name: Accept SDK licenses & Install build-tools / platforms
-        run: |
-          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses
-          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" \
+          # 有些镜像上 cmdline-tools 已经有 latest，如果没有就列个目录帮助排错
+          if [ ! -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            echo "cmdline-tools/latest not found, listing available:"
+            ls -R "$ANDROID_HOME/cmdline-tools" || true
+          fi
+
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
             "platform-tools" \
             "build-tools;34.0.0" \
             "platforms;android-34"
 
-      # ===================== 关键断点 1：探针文件 =====================
+      # === 探针文件：确保资源路径可被打进包 ===
       - name: Debug probe — add marker files
         run: |
           set -eux
@@ -53,27 +56,26 @@ jobs:
           mkdir -p "$APP_DIR/src/main/res/raw"
           echo "probe $(date -u +%FT%TZ)" > "$APP_DIR/src/main/assets/generated/__probe.txt"
           echo '{ "probe": true, "time": "'"$(date -u +%FT%TZ)"'" }' > "$APP_DIR/src/main/res/raw/probe.json"
-          echo "Created following under $APP_DIR/src/main:"
+          echo "Tree of $APP_DIR/src/main:"
           ls -R "$APP_DIR/src/main" | sed -n '1,200p'
 
-      # 你原来的构建任务（保持一致：assembleRelease + bundleRelease）
       - name: Build (assembleRelease + bundleRelease)
         run: |
+          set -eux
           chmod +x gradlew
           ./gradlew --no-daemon assembleRelease bundleRelease
 
-      # ===================== 关键断点 2：APK 内部校验 =====================
       - name: Verify packaged assets
         run: |
           set -eux
           APK="$APP_DIR/build/outputs/apk/release/${APP_DIR##*/}-release.apk"
-          # 某些项目 APK 叫 app-release.apk，这里做下兼容：
+          if [ ! -f "$APK" ] && [ -f "$APP_DIR/build/outputs/apk/release/app-release.apk" ]; then
+            APK="$APP_DIR/build/outputs/apk/release/app-release.apk"
+          fi
           if [ ! -f "$APK" ]; then
-            if [ -f "$APP_DIR/build/outputs/apk/release/app-release.apk" ]; then
-              APK="$APP_DIR/build/outputs/apk/release/app-release.apk"
-            else
-              echo "!! APK not found under $APP_DIR/build/outputs/apk/release"; ls -l "$APP_DIR/build/outputs/apk/release" || true; exit 1
-            fi
+            echo "!! APK not found under $APP_DIR/build/outputs/apk/release"
+            ls -l "$APP_DIR/build/outputs/apk/release" || true
+            exit 1
           fi
 
           echo "=== List first 200 entries in APK ==="
@@ -82,17 +84,14 @@ jobs:
           echo "=== Check for our expected entries ==="
           unzip -l "$APK" | egrep 'assets/generated/(catalog\.json|about\.md|__probe\.txt)|res/raw/(catalog\.json|about_md\.txt|probe\.json)' || true
 
-      # 上传产物（保持你之前的产物名）
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: |
-            ${{ env.APP_DIR }}/build/outputs/apk/release/*.apk
+          path: ${{ env.APP_DIR }}/build/outputs/apk/release/*.apk
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
           name: aab
-          path: |
-            ${{ env.APP_DIR }}/build/outputs/bundle/release/*.aab
+          path: ${{ env.APP_DIR }}/build/outputs/bundle/release/*.aab
