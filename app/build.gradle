@@ -1,28 +1,58 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android' // 没用 Kotlin 可删
+}
+
 android {
-    // …你现有的 compileSdk / defaultConfig / signingConfigs 等保持不变
+    namespace "com.whystudio.app"      // 你自己的包名
+    compileSdk 34
 
-    // 关键 1：显式声明 assets 目录（包含根目录和之前的 generated，二选一都行）
-    sourceSets {
-        main {
-            assets.srcDirs = [
-                'src/main/assets',               // 建议把文件放这里
-                'src/main/assets/generated'      // 如果仍想保留子目录，也一起加入
-            ]
-            res.srcDirs = ['src/main/res']       // 保持默认
+    defaultConfig {
+        applicationId "com.whystudio.app"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                          'proguard-rules.pro'
+            // 签名配置（下方会补齐）
         }
     }
 
-    // 关键 2：不要有把 json/md 排除掉的规则
-    packagingOptions {
-        resources {
-            // 如果你之前加过类似 **"excludes += ['**/*.json', '**/*.md']"** 的，务必删除！
-            // 也不要写成过于激进的通配排除
+    buildFeatures {
+        viewBinding true // 用不到可以去掉
+    }
+}
+
+// 读取 keystore.properties（CI 有就生成，没有就跳过）
+def keystorePropsFile = rootProject.file("keystore.properties")
+if (keystorePropsFile.exists()) {
+    def keystoreProps = new Properties()
+    keystoreProps.load(new FileInputStream(keystorePropsFile))
+
+    android.signingConfigs {
+        release {
+            storeFile file(keystoreProps['storeFile'])
+            storePassword keystoreProps['storePassword']
+            keyAlias keystoreProps['keyAlias']
+            keyPassword keystoreProps['keyPassword']
         }
     }
+    android.buildTypes.release.signingConfig = android.signingConfigs.release
+}
 
-    // 关键 3（如你项目里曾自定义过 ignoreAssetsPattern）：
-    // aaptOptions {
-    //     ignoreAssetsPattern '!.svn:!.git:!CVS:!thumbs.db:!picasa.ini:!*~'
-    //     // 勿加入 *.json / *.md 的排除
-    // }
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 }
