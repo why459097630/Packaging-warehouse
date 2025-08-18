@@ -38,8 +38,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # ========== 如果缺源码则写入兜底版本（防空包） ==========
+      # ========== 防空包：若缺源码则写入兜底版本 ==========
       - name: Ensure generated sources exist (create fallback if missing)
+        shell: bash
         run: |
           set -e
           mkdir -p app/src/main/java/com/example/meditationtimer
@@ -50,58 +51,58 @@ jobs:
           if [ ! -s app/src/main/java/com/example/meditationtimer/MainActivity.java ]; then
             echo "[fallback] writing MainActivity.java"
             cat <<'EOF' > app/src/main/java/com/example/meditationtimer/MainActivity.java
-            package com.example.meditationtimer;
+package com.example.meditationtimer;
 
-            import android.os.Bundle;
-            import android.widget.TextView;
-            import androidx.appcompat.app.AppCompatActivity;
+import android.os.Bundle;
+import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
 
-            public class MainActivity extends AppCompatActivity {
-                @Override
-                protected void onCreate(Bundle savedInstanceState) {
-                    super.onCreate(savedInstanceState);
-                    setContentView(R.layout.activity_main);
-                    TextView tv = findViewById(R.id.textHello);
-                    if (tv != null) {
-                        tv.setText(getString(R.string.hello_text));
-                    }
-                }
-            }
-            EOF
+public class MainActivity extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        TextView tv = findViewById(R.id.textHello);
+        if (tv != null) {
+            tv.setText(getString(R.string.hello_text));
+        }
+    }
+}
+EOF
           else
             echo "MainActivity.java already present"
           fi
 
-          # layout
+          # activity_main.xml
           if [ ! -s app/src/main/res/layout/activity_main.xml ]; then
             echo "[fallback] writing activity_main.xml"
             cat <<'EOF' > app/src/main/res/layout/activity_main.xml
-            <?xml version="1.0" encoding="utf-8"?>
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-              <TextView
-                  android:id="@+id/textHello"
-                  android:text="@string/hello_text"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"/>
-            </LinearLayout>
-            EOF
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+  <TextView
+      android:id="@+id/textHello"
+      android:text="@string/hello_text"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"/>
+</LinearLayout>
+EOF
           else
             echo "activity_main.xml already present"
           fi
 
-          # strings
+          # strings.xml
           if [ ! -s app/src/main/res/values/strings.xml ]; then
             echo "[fallback] writing strings.xml"
             cat <<'EOF' > app/src/main/res/values/strings.xml
-            <resources>
-              <string name="app_name">Niandong Demo</string>
-              <string name="hello_text">Hello from API (fallback)</string>
-            </resources>
-            EOF
+<resources>
+  <string name="app_name">Niandong Demo</string>
+  <string name="hello_text">Hello from API (fallback)</string>
+</resources>
+EOF
           else
             echo "strings.xml already present"
           fi
@@ -109,14 +110,17 @@ jobs:
       # ========== 动态推导 EXPECT_TEXT ==========
       - name: Derive EXPECT_TEXT (input/commit/strings.xml)
         id: derive_text
+        shell: bash
         run: |
           set -e
+          # 1) 来自 workflow 手动触发输入
           INPUT="${{ github.event.inputs.expect_text }}"
           if [ -n "$INPUT" ]; then
             echo "EXPECT_TEXT from workflow input: $INPUT"
             echo "EXPECT_TEXT=$INPUT" >> "$GITHUB_ENV"
             exit 0
           fi
+          # 2) 从 commit message 解析 EXPECT=...
           MSG="${{ github.event.head_commit.message }}"
           if echo "$MSG" | grep -q 'EXPECT='; then
             VAL="$(echo "$MSG" | sed -n "s/.*EXPECT=\(.*\)$/\1/p" | head -n1)"
@@ -126,6 +130,7 @@ jobs:
               exit 0
             fi
           fi
+          # 3) 从 strings.xml 读取 hello_text
           if [ -f app/src/main/res/values/strings.xml ]; then
             VAL="$(sed -n 's/.*<string name="hello_text">\([^<]*\)<.*/\1/p' app/src/main/res/values/strings.xml | head -n1)"
             if [ -n "$VAL" ]; then
@@ -134,11 +139,13 @@ jobs:
               exit 0
             fi
           fi
+          # 4) 兜底：只匹配关键字
           echo "No EXPECT_TEXT found; fallback to keyword mode."
           echo "EXPECT_TEXT=" >> "$GITHUB_ENV"
 
       # ========== 源码可视化 ==========
       - name: Show generated sources (debug)
+        shell: bash
         run: |
           echo "=== MainActivity.java ==="
           sed -n '1,200p' app/src/main/java/com/example/meditationtimer/MainActivity.java || true
@@ -149,6 +156,7 @@ jobs:
 
       # ========== 存在性校验 ==========
       - name: Verify generated sources exist
+        shell: bash
         run: |
           set -e
           test -s app/src/main/java/com/example/meditationtimer/MainActivity.java || { echo "MainActivity.java missing"; exit 1; }
@@ -161,15 +169,18 @@ jobs:
 
       # ========== APK 内含代码 + 资源校验 ==========
       - name: Verify APK contains generated code
+        shell: bash
         run: |
           set -e
           APK="$(find app/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' | head -n 1)"
           test -f "$APK" || { echo "No APK found"; exit 1; }
           echo "APK => $APK"
+
           if ! command -v aapt >/dev/null 2>&1; then
             sdkmanager --install "build-tools;34.0.0"
             export PATH="$ANDROID_HOME/build-tools/34.0.0:$PATH"
           fi
+
           PKG="$(aapt dump badging "$APK" | awk -F"'" '/package: name=/{print $2}')"
           ACT="$(aapt dump badging "$APK" | awk -F"'" '/launchable-activity: name=/{print $2}')"
           echo "Detected package: $PKG"
