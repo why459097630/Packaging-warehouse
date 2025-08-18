@@ -20,10 +20,40 @@ jobs:
 
       - uses: android-actions/setup-android@v3
 
-      - name: Grant gradlew
-        run: chmod +x ./gradlew
+      - name: Make scripts executable
+        run: chmod +x ./gradlew || true && chmod +x scripts/apply_api_payload.sh || true
 
-      - name: Build (assembleDebug)
+      # 可选：这里读取你自己的 API 结果（演示用固定内容）
+      - name: Apply API payload
+        shell: bash
+        run: |
+          set -e
+          export MAIN_JAVA='package com.example.meditationtimer;
+          import android.os.Bundle;
+          import android.widget.TextView;
+          import androidx.appcompat.app.AppCompatActivity;
+          public class MainActivity extends AppCompatActivity {
+            @Override protected void onCreate(Bundle savedInstanceState) {
+              super.onCreate(savedInstanceState);
+              setContentView(R.layout.activity_main);
+              TextView tv = findViewById(R.id.textHello);
+              if (tv != null) tv.setText(getString(R.string.hello_text));
+            }
+          }'
+          export LAYOUT_XML='<?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical" android:gravity="center"
+              android:layout_width="match_parent" android:layout_height="match_parent">
+              <TextView android:id="@+id/textHello" android:text="@string/hello_text"
+                  android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+          </LinearLayout>'
+          export STRINGS_XML='<resources>
+              <string name="app_name">Niandong Demo</string>
+              <string name="hello_text">Hello from API (CI)</string>
+          </resources>'
+          bash scripts/apply_api_payload.sh
+
+      - name: Build APK
         run: ./gradlew --stacktrace --no-daemon assembleDebug
 
       - name: Upload APK
@@ -31,3 +61,4 @@ jobs:
         with:
           name: debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
