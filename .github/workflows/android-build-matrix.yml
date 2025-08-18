@@ -6,14 +6,15 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+    inputs:
+      expect_text:
+        description: "期望在 UI 中出现的文本（留空则自动从 strings.xml:hello_text 抽取）"
+        required: false
+        default: ""
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    env:
-      # 可选：设置后会在 APK/模拟器里严格匹配这个文本
-      EXPECT_TEXT: ""   # 例如：Hello from API 2025-08-18T05:38:52
 
     strategy:
       matrix:
@@ -37,7 +38,45 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # ---- 生成代码内容可视化 ----
+      # ---------- 动态推导 EXPECT_TEXT ----------
+      - name: Derive EXPECT_TEXT (input/commit/strings.xml)
+        id: derive_text
+        run: |
+          set -e
+          # 1) workflow_dispatch 输入优先
+          INPUT="${{ github.event.inputs.expect_text }}"
+          if [ -n "$INPUT" ]; then
+            echo "EXPECT_TEXT from workflow input: $INPUT"
+            echo "EXPECT_TEXT=$INPUT" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          # 2) 从 commit message 解析 EXPECT=xxx（可选）
+          MSG="${{ github.event.head_commit.message }}"
+          if echo "$MSG" | grep -q 'EXPECT='; then
+            VAL="$(echo "$MSG" | sed -n "s/.*EXPECT=\(.*\)$/\1/p" | head -n1)"
+            if [ -n "$VAL" ]; then
+              echo "EXPECT_TEXT from commit message: $VAL"
+              echo "EXPECT_TEXT=$VAL" >> "$GITHUB_ENV"
+              exit 0
+            fi
+          fi
+
+          # 3) 自动从 strings.xml 读取 hello_text
+          if [ -f app/src/main/res/values/strings.xml ]; then
+            VAL="$(sed -n 's/.*<string name="hello_text">\([^<]*\)<.*/\1/p' app/src/main/res/values/strings.xml | head -n1)"
+            if [ -n "$VAL" ]; then
+              echo "EXPECT_TEXT from strings.xml: $VAL"
+              echo "EXPECT_TEXT=$VAL" >> "$GITHUB_ENV"
+              exit 0
+            fi
+          fi
+
+          # 4) 兜底：不设置严格校验，只做关键字检查
+          echo "No EXPECT_TEXT found; fallback to keyword check only."
+          echo "EXPECT_TEXT=" >> "$GITHUB_ENV"
+
+      # ---------- 源码可视化 ----------
       - name: Show generated sources (debug)
         run: |
           echo "=== MainActivity.java ==="
@@ -47,7 +86,7 @@ jobs:
           echo "=== strings.xml ==="
           cat app/src/main/res/values/strings.xml || true
 
-      # ---- 生成文件存在性校验 ----
+      # ---------- 生成文件存在性校验 ----------
       - name: Verify generated sources exist
         run: |
           set -e
@@ -56,11 +95,11 @@ jobs:
           test -f app/src/main/res/layout/activity_main.xml || { echo "missing activity_main.xml"; exit 1; }
           test -f app/src/main/res/values/strings.xml || { echo "missing strings.xml"; exit 1; }
 
-      # ---- 构建 ----
+      # ---------- 构建 ----------
       - name: Gradle Build
         run: ./gradlew --stacktrace --no-daemon clean assembleDebug
 
-      # ---- APK 内含代码 + 资源校验（多 DEX & 资源 dump）----
+      # ---------- APK 内含代码 + 资源校验 ----------
       - name: Verify APK contains generated code
         run: |
           set -e
@@ -107,7 +146,7 @@ jobs:
 
           echo "APK verification passed."
 
-      # ---- 上传 APK ----
+      # ---------- 上传 APK ----------
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
@@ -116,7 +155,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      # ---- 模拟器 15s 冒烟 + UI 实测验收（uiautomator dump）----
+      # ---------- 模拟器 15s 冒烟 + UI 文案验收 ----------
       - name: Emulator smoke run (15s crash monitor + UI check)
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -135,8 +174,6 @@ jobs:
             adb install -r "$APK_PATH" >/dev/null
             adb logcat -c
             adb shell am start -n "${PKG}/${ACT}"
-
-            # 等待渲染稳定
             sleep 3
 
             # 抓取界面层级并校验文案
