@@ -11,6 +11,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      # 可选：设置后会强校验 APK 里的字符串（匹配失败将直接 fail）
+      EXPECT_TEXT: ""   # 例如：Hello from API 2025-08-18T12:34
+
     strategy:
       matrix:
         api-level: [30]
@@ -33,13 +37,21 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # ===== Gate 0: 生成代码存在性校验（防空仓/空文件） =====
+      # ===== Gate 0: 生成代码「内容」可视化 + 存在性校验 =====
+      - name: Show generated sources (debug)
+        run: |
+          echo "=== MainActivity.java ==="
+          sed -n '1,200p' app/src/main/java/com/example/meditationtimer/MainActivity.java || true
+          echo "=== activity_main.xml ==="
+          sed -n '1,200p' app/src/main/res/layout/activity_main.xml || true
+          echo "=== strings.xml ==="
+          cat app/src/main/res/values/strings.xml || true
+
       - name: Verify generated sources exist
         run: |
-          ls -lah app/src/main/java || true
+          set -e
           test -f generated/.ok || { echo "missing generated/.ok"; exit 1; }
-          test -f app/src/main/java/com/example/meditationtimer/MainActivity.java || { echo "missing MainActivity.java"; exit 1; }
-          test -s app/src/main/java/com/example/meditationtimer/MainActivity.java || { echo "MainActivity.java is empty"; exit 1; }
+          test -s app/src/main/java/com/example/meditationtimer/MainActivity.java || { echo "MainActivity.java is empty/missing"; exit 1; }
           test -f app/src/main/res/layout/activity_main.xml || { echo "missing activity_main.xml"; exit 1; }
           test -f app/src/main/res/values/strings.xml || { echo "missing strings.xml"; exit 1; }
 
@@ -47,7 +59,7 @@ jobs:
       - name: Gradle Build
         run: ./gradlew --stacktrace --no-daemon clean assembleDebug
 
-      # ===== Gate 1: APK 内含代码校验（多 DEX，权威 aapt 校验） =====
+      # ===== Gate 1: APK 内含代码 + 资源校验（多 DEX & 资源dump） =====
       - name: Verify APK contains generated code
         run: |
           set -e
@@ -55,7 +67,7 @@ jobs:
           test -f "$APK" || { echo "No APK found in app/build/outputs/apk/debug"; exit 1; }
           echo "APK => $APK"
 
-          # 准备 aapt
+          # 确保 aapt 可用
           if ! command -v aapt >/dev/null 2>&1; then
             sdkmanager --install "build-tools;34.0.0"
             export PATH="$ANDROID_HOME/build-tools/34.0.0:$PATH"
@@ -81,14 +93,24 @@ jobs:
           [ "$FOUND" -eq 1 ] || {
             echo "MainActivity not found in any classes*.dex"
             echo "Dex files present:"; unzip -l "$APK" 'classes*.dex' || true
-            echo "Some strings hit for 'meditationtimer' (for debugging):"
-            for dex in $(unzip -Z1 "$APK" 'classes*.dex'); do
-              unzip -p "$APK" "$dex" 2>/dev/null | strings | grep -m 5 -n 'meditationtimer' || true
-            done
             exit 1
           }
 
-          # 3) 体积兜底（过小高度可疑）
+          # 3) Dump 出 APK 内的 hello_text 文本（用于人工/自动核对）
+          echo "---- Dump hello_text from APK resources ----"
+          aapt dump resources "$APK" \
+            | awk '/resource 0x[0-9a-f]+ com.example.meditationtimer:string\/hello_text/{flag=1;next}/^resource /{flag=0}flag' \
+            | tee /tmp/hello.txt
+
+          # 可选：严格校验 EXPECT_TEXT（设了才校验）
+          if [ -n "$EXPECT_TEXT" ]; then
+            echo "EXPECT_TEXT set => enforcing match: $EXPECT_TEXT"
+            grep -q "$EXPECT_TEXT" /tmp/hello.txt || { echo "hello_text does not contain EXPECT_TEXT"; exit 1; }
+          else
+            echo "EXPECT_TEXT not set => skip strict text match."
+          fi
+
+          # 4) 体积兜底（过小高度可疑）
           SIZE=$(stat -c%s "$APK")
           echo "APK size: $SIZE bytes"
           [ "$SIZE" -gt 1000000 ] || { echo "APK too small (<1MB), likely empty"; exit 1; }
