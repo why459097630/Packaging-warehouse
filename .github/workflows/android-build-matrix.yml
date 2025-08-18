@@ -82,29 +82,40 @@ jobs:
           profile: pixel_5
           disable-animations: true
           script: |
-            # /bin/sh 不支持 'pipefail'，这里只用 -e -u
+            # /bin/sh 环境；只用 -e -u，避免 pipefail 兼容性问题
             set -eu
 
-            APK="app/build/outputs/apk/debug/app-debug.apk"
-            test -f "$APK" || { echo "APK not found at $APK"; exit 1; }
+            # 1) 自动查找 debug APK
+            APK="$(find app/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' | head -n 1 || true)"
+            if [ -z "$APK" ]; then
+              echo "No APK found under app/build/outputs/apk/debug"
+              echo "All APKs under outputs:"
+              find app/build/outputs -type f -name '*.apk' -print || true
+              exit 1
+            fi
+            echo "Found APK: $APK"
 
+            # 2) 安装 APK
             adb install -r "$APK" >/dev/null
 
-            # 确保有 aapt（使用 build-tools 自带）
+            # 3) 确保 aapt 可用（用 build-tools 自带）
             if ! command -v aapt >/dev/null 2>&1; then
               sdkmanager --install "build-tools;34.0.0"
               export PATH="$ANDROID_HOME/build-tools/34.0.0:$PATH"
             fi
 
-            PKG=$(aapt dump badging "$APK" | awk -F"'" '/package: name=/{print $2}')
-            ACT=$(aapt dump badging "$APK" | awk -F"'" '/launchable-activity: name=/{print $2}')
+            # 4) 解析包名与启动 Activity
+            PKG="$(aapt dump badging "$APK" | awk -F\" '/package: name=/{print $2}')"
+            ACT="$(aapt dump badging "$APK" | awk -F\" '/launchable-activity: name=/{print $2}')"
             echo "Detected package: $PKG"
             echo "Detected launcher: $ACT"
 
+            # 5) 启动 App 并监控 15s 是否崩溃
             adb logcat -c
             adb shell am start -n "${PKG}/${ACT}"
 
             set +e
+            # 用 sh 兼容的方式做超时与 grep
             timeout 15s sh -c 'adb logcat | tee /tmp/logcat.txt | grep -q -E "FATAL EXCEPTION|Process[[:space:]].*'"$PKG"'[[:space:]].*has died"'
             RES=$?
             set -e
@@ -123,4 +134,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/*.apk
