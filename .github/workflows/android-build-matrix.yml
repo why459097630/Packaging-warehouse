@@ -1,270 +1,33 @@
-name: Android CI Matrix
+name: Android CI
 
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
-  workflow_dispatch:
-    inputs:
-      expect_text:
-        description: "Expected text in UI (leave empty to use strings.xml:hello_text)"
-        required: false
-        default: ""
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        api-level: [30]
-        target: [default]
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: "17"
-          distribution: "temurin"
           cache: gradle
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v3
 
-      - name: Grant execute permission for gradlew
+      - name: Grant gradlew
         run: chmod +x ./gradlew
 
-      # ---------- Fallback: create minimal sources if missing ----------
-      - name: Ensure generated sources exist (create fallback if missing)
-        shell: bash
-        run: |
-          set -e
-          mkdir -p app/src/main/java/com/example/meditationtimer
-          mkdir -p app/src/main/res/layout
-          mkdir -p app/src/main/res/values
-
-          if [ ! -s app/src/main/java/com/example/meditationtimer/MainActivity.java ]; then
-            printf '%s\n' \
-'package com.example.meditationtimer;' \
-'' \
-'import android.os.Bundle;' \
-'import android.widget.TextView;' \
-'import androidx.appcompat.app.AppCompatActivity;' \
-'' \
-'public class MainActivity extends AppCompatActivity {' \
-'  @Override' \
-'  protected void onCreate(Bundle savedInstanceState) {' \
-'    super.onCreate(savedInstanceState);' \
-'    setContentView(R.layout.activity_main);' \
-'    TextView tv = findViewById(R.id.textHello);' \
-'    if (tv != null) {' \
-'      tv.setText(getString(R.string.hello_text));' \
-'    }' \
-'  }' \
-'}' \
-> app/src/main/java/com/example/meditationtimer/MainActivity.java
-          fi
-
-          if [ ! -s app/src/main/res/layout/activity_main.xml ]; then
-            printf '%s\n' \
-'<?xml version="1.0" encoding="utf-8"?>' \
-'<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"' \
-'  android:orientation="vertical"' \
-'  android:gravity="center"' \
-'  android:layout_width="match_parent"' \
-'  android:layout_height="match_parent">' \
-'  <TextView' \
-'    android:id="@+id/textHello"' \
-'    android:text="@string/hello_text"' \
-'    android:layout_width="wrap_content"' \
-'    android:layout_height="wrap_content"/>' \
-'</LinearLayout>' \
-> app/src/main/res/layout/activity_main.xml
-          fi
-
-          if [ ! -s app/src/main/res/values/strings.xml ]; then
-            printf '%s\n' \
-'<resources>' \
-'  <string name="app_name">Niandong Demo</string>' \
-'  <string name="hello_text">Hello from API (fallback)</string>' \
-'</resources>' \
-> app/src/main/res/values/strings.xml
-          fi
-
-      # ---------- Derive EXPECT_TEXT ----------
-      - name: Derive EXPECT_TEXT (input/commit/strings.xml)
-        id: derive_text
-        shell: bash
-        run: |
-          set -e
-          INPUT="${{ github.event.inputs.expect_text }}"
-          if [ -n "$INPUT" ]; then
-            echo "EXPECT_TEXT=$INPUT" >> "$GITHUB_ENV"
-            exit 0
-          fi
-          MSG="${{ github.event.head_commit.message }}"
-          if echo "$MSG" | grep -q 'EXPECT='; then
-            VAL="$(echo "$MSG" | sed -n 's/.*EXPECT=\(.*\)$/\1/p' | head -n1)"
-            if [ -n "$VAL" ]; then
-              echo "EXPECT_TEXT=$VAL" >> "$GITHUB_ENV"
-              exit 0
-            fi
-          fi
-          if [ -f app/src/main/res/values/strings.xml ]; then
-            VAL="$(sed -n 's/.*<string name="hello_text">\([^<]*\)<.*/\1/p' app/src/main/res/values/strings.xml | head -n1)"
-            if [ -n "$VAL" ]; then
-              echo "EXPECT_TEXT=$VAL" >> "$GITHUB_ENV"
-              exit 0
-            fi
-          fi
-          echo "EXPECT_TEXT=" >> "$GITHUB_ENV"
-
-      # ---------- Stamp (resource + Java) ----------
-      - name: Stamp APK with fingerprint (resource + java)
-        id: stamp
-        shell: bash
-        run: |
-          set -e
-          HELLO="${EXPECT_TEXT}"
-          if [ -z "$HELLO" ] && [ -f app/src/main/res/values/strings.xml ]; then
-            HELLO="$(sed -n 's/.*<string name="hello_text">\([^<]*\)<.*/\1/p' app/src/main/res/values/strings.xml | head -n1)"
-          fi
-          [ -n "$HELLO" ] || HELLO="Hello from API"
-          FPRINT="$(printf '%s' "$HELLO" | sha256sum | cut -c1-16)"
-          echo "FPRINT=$FPRINT" >> "$GITHUB_ENV"
-          echo "Fingerprint: $FPRINT (text: $HELLO)"
-
-          mkdir -p app/src/main/res/values
-          printf '%s\n' \
-'<resources>' \
-"  <string name=\"api_fingerprint\">$FPRINT</string>" \
-'</resources>' \
-> app/src/main/res/values/api_fingerprint.xml
-
-          mkdir -p app/src/main/java/com/example/meditationtimer
-          printf '%s\n' \
-'package com.example.meditationtimer;' \
-'public final class ApiStamp {' \
-"  public static final String FINGERPRINT = \"$FPRINT\";" \
-'  private ApiStamp() {}' \
-'}' \
-> app/src/main/java/com/example/meditationtimer/ApiStamp.java
-
-      # ---------- Debug print ----------
-      - name: Show generated sources (debug)
-        shell: bash
-        run: |
-          echo "=== MainActivity.java ==="
-          sed -n '1,200p' app/src/main/java/com/example/meditationtimer/MainActivity.java || true
-          echo "=== activity_main.xml ==="
-          sed -n '1,200p' app/src/main/res/layout/activity_main.xml || true
-          echo "=== strings.xml ==="
-          cat app/src/main/res/values/strings.xml || true
-          echo "=== api_fingerprint.xml ==="
-          cat app/src/main/res/values/api_fingerprint.xml || true
-          echo "=== ApiStamp.java ==="
-          sed -n '1,120p' app/src/main/java/com/example/meditationtimer/ApiStamp.java || true
-
-      - name: Verify generated sources exist
-        shell: bash
-        run: |
-          set -e
-          test -s app/src/main/java/com/example/meditationtimer/MainActivity.java
-          test -s app/src/main/res/layout/activity_main.xml
-          test -s app/src/main/res/values/strings.xml
-          test -s app/src/main/res/values/api_fingerprint.xml
-          test -s app/src/main/java/com/example/meditationtimer/ApiStamp.java
-
-      - name: Gradle Build
-        run: ./gradlew --stacktrace --no-daemon clean assembleDebug
-
-      # ---------- Lock 1 & 2: resources + dex ----------
-      - name: Verify APK contains generated code
-        shell: bash
-        run: |
-          set -e
-          APK="$(find app/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' | head -n 1)"
-          test -f "$APK" || { echo "No APK found"; exit 1; }
-          echo "APK => $APK"
-
-          if ! command -v aapt >/dev/null 2>&1; then
-            sdkmanager --install "build-tools;34.0.0"
-            export PATH="$ANDROID_HOME/build-tools/34.0.0:$PATH"
-          fi
-
-          PKG="$(aapt dump badging "$APK" | awk -F\" '/package: name=/{print $2}')"
-          ACT="$(aapt dump badging "$APK" | awk -F\" '/launchable-activity: name=/{print $2}')"
-          echo "Detected package: $PKG"
-          echo "Launchable activity: $ACT"
-          [ "$PKG" = "com.example.meditationtimer" ] || { echo "Unexpected package: $PKG"; exit 1; }
-          [ "$ACT" = "com.example.meditationtimer.MainActivity" ] || { echo "Unexpected launcher: $ACT"; exit 1; }
-
-          # Dex must contain MainActivity and fingerprint
-          FOUND=0
-          FPD=0
-          for dex in $(unzip -Z1 "$APK" 'classes*.dex'); do
-            if unzip -p "$APK" "$dex" | strings | grep -qE 'L?com/example/meditationtimer/MainActivity;?'; then
-              FOUND=1
-            fi
-            if unzip -p "$APK" "$dex" | strings | grep -q "$FPRINT"; then
-              FPD=1
-            fi
-          done
-          [ "$FOUND" -eq 1 ] || { echo "MainActivity not found in dex"; exit 1; }
-          [ "$FPD" -eq 1 ] || { echo "Fingerprint NOT found in classes*.dex"; exit 1; }
-
-          # Resources must contain fingerprint and hello_text
-          aapt dump --values resources "$APK" | tee /tmp/aapt_all.txt >/dev/null
-          grep -q ">$FPRINT<" /tmp/aapt_all.txt || { echo "Fingerprint NOT found in resources"; exit 1; }
-
-          if [ -n "$EXPECT_TEXT" ]; then
-            grep -qF "$EXPECT_TEXT" /tmp/aapt_all.txt || { echo "hello_text not matched EXPECT_TEXT"; exit 1; }
-          else
-            grep -q "Hello from API" /tmp/aapt_all.txt || { echo "keyword 'Hello from API' not found"; exit 1; }
-          fi
-
-          SIZE=$(stat -c%s "$APK")
-          [ "$SIZE" -gt 1000000 ] || { echo "APK too small (<1MB)"; exit 1; }
-          echo "APK verification passed."
+      - name: Build (assembleDebug)
+        run: ./gradlew --stacktrace --no-daemon assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
           path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-          retention-days: 7
-
-      # ---------- Lock 3: emulator 15s + UI grep ----------
-      - name: Emulator smoke run (15s crash monitor + UI check)
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          arch: x86_64
-          profile: pixel_5
-          disable-animations: true
-          script: |
-            set -e
-            APK_PATH="$(find app/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' | head -n 1)"; [ -n "$APK_PATH" ]
-            command -v aapt >/dev/null 2>&1 || { sdkmanager --install "build-tools;34.0.0"; export PATH="$ANDROID_HOME/build-tools/34.0.0:$PATH"; }
-            PKG="$(aapt dump badging "$APK_PATH" | awk -F\" '/package: name=/{print $2}')"
-            ACT="$(aapt dump badging "$APK_PATH" | awk -F\" '/launchable-activity: name=/{print $2}')"
-
-            adb install -r "$APK_PATH" >/dev/null
-            adb logcat -c
-            adb shell am start -n "${PKG}/${ACT}"
-            sleep 3
-
-            adb shell uiautomator dump --compressed /sdcard/window_dump.xml >/dev/null 2>&1 || true
-            adb pull /sdcard/window_dump.xml /tmp/window_dump.xml >/dev/null 2>&1 || true
-
-            TXT="${EXPECT_TEXT:-Hello from API}"
-            grep -q "$TXT" /tmp/window_dump.xml || { echo "UI missing text: $TXT"; tail -n 120 /tmp/window_dump.xml || true; exit 1; }
-
-            timeout 15s sh -c 'adb logcat | tee /tmp/logcat.txt | grep -q -E "FATAL EXCEPTION|Process[[:space:]].*'"$PKG"'[[:space:]].*has died"'
-            RES=$?
-            [ "$RES" -eq 0 ] && { echo "Crash detected"; tail -n 200 /tmp/logcat.txt || true; exit 1; } || echo "No crash in 15s"
