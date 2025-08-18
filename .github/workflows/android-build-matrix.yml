@@ -30,6 +30,9 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Grant execute permission for gradlew   # ← 必须有这步
+        run: chmod +x ./gradlew
+
       - name: Gradle Build
         run: ./gradlew --stacktrace --no-daemon assembleDebug
 
@@ -44,7 +47,7 @@ jobs:
       - name: Emulator smoke run (15s crash monitor)
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
+          api-level: ${{ matrix.api-level }}
           arch: x86_64
           profile: pixel_5
           disable-animations: true
