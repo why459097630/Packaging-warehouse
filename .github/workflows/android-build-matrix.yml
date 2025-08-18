@@ -43,36 +43,57 @@ jobs:
           test -f app/src/main/res/layout/activity_main.xml || { echo "missing activity_main.xml"; exit 1; }
           test -f app/src/main/res/values/strings.xml || { echo "missing strings.xml"; exit 1; }
 
-      # ===== 编译 =====
+      # ===== 编译（先 clean，避免旧产物干扰） =====
       - name: Gradle Build
-        run: ./gradlew --stacktrace --no-daemon assembleDebug
+        run: ./gradlew --stacktrace --no-daemon clean assembleDebug
 
-      # ===== Gate 1: APK 内含代码校验（防空包） =====
+      # ===== Gate 1: APK 内含代码校验（多 DEX，权威 aapt 校验） =====
       - name: Verify APK contains generated code
         run: |
+          set -e
           APK="$(find app/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' | head -n 1)"
           test -f "$APK" || { echo "No APK found in app/build/outputs/apk/debug"; exit 1; }
           echo "APK => $APK"
 
-          # 确认 dex 中存在 MainActivity（快速粗验）
-          unzip -p "$APK" classes.dex 2>/dev/null | strings | grep -q "com/example/meditationtimer/MainActivity" \
-            || { echo "MainActivity not found in classes.dex"; exit 1; }
-
-          # 用 aapt 校验 launcher Activity（权威）
+          # 准备 aapt
           if ! command -v aapt >/dev/null 2>&1; then
             sdkmanager --install "build-tools;34.0.0"
             export PATH="$ANDROID_HOME/build-tools/34.0.0:$PATH"
           fi
-          PKG=$(aapt dump badging "$APK" | awk -F"'" '/package: name=/{print $2}')
-          ACT=$(aapt dump badging "$APK" | awk -F"'" '/launchable-activity: name=/{print $2}')
+
+          # 1) 用 aapt 校验包名与 launcher
+          PKG="$(aapt dump badging "$APK" | awk -F"'" '/package: name=/{print $2}')"
+          ACT="$(aapt dump badging "$APK" | awk -F"'" '/launchable-activity: name=/{print $2}')"
           echo "Detected package: $PKG"
           echo "Launchable activity: $ACT"
+          [ "$PKG" = "com.example.meditationtimer" ] || { echo "Unexpected package: $PKG"; exit 1; }
           [ "$ACT" = "com.example.meditationtimer.MainActivity" ] || { echo "Unexpected launcher: $ACT"; exit 1; }
 
-          # 体积兜底（过小高度可疑）
+          # 2) 遍历所有 classes*.dex 查 MainActivity（避免仅查 classes.dex 的误判）
+          FOUND=0
+          for dex in $(unzip -Z1 "$APK" 'classes*.dex'); do
+            echo "Scanning $dex ..."
+            if unzip -p "$APK" "$dex" 2>/dev/null | strings | grep -qE 'L?com/example/meditationtimer/MainActivity;?'; then
+              FOUND=1
+              break
+            fi
+          done
+          [ "$FOUND" -eq 1 ] || {
+            echo "MainActivity not found in any classes*.dex"
+            echo "Dex files present:"; unzip -l "$APK" 'classes*.dex' || true
+            echo "Some strings hit for 'meditationtimer' (for debugging):"
+            for dex in $(unzip -Z1 "$APK" 'classes*.dex'); do
+              unzip -p "$APK" "$dex" 2>/dev/null | strings | grep -m 5 -n 'meditationtimer' || true
+            done
+            exit 1
+          }
+
+          # 3) 体积兜底（过小高度可疑）
           SIZE=$(stat -c%s "$APK")
           echo "APK size: $SIZE bytes"
           [ "$SIZE" -gt 1000000 ] || { echo "APK too small (<1MB), likely empty"; exit 1; }
+
+          echo "APK verification passed."
 
       # ===== 上传产物 =====
       - name: Upload APK
