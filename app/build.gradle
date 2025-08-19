@@ -3,16 +3,15 @@ plugins {
 }
 
 android {
-    namespace 'com.example.meditationtimer'
+    namespace "com.example.app"          // ← 必须与 MainActivity.java 包名一致
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.meditationtimer"
+        applicationId "com.example.app"  // ← APK 的应用 ID
         minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -20,18 +19,24 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            minifyEnabled false
+        }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
+
+    // 可选：如果你在布局里用到了 ViewBinding 可以打开
+    // buildFeatures { viewBinding true }
 }
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.material:material:1.11.0'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
