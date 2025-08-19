@@ -11,5 +11,4 @@
         android:layout_height="wrap_content"
         android:text="@string/hello_text"
         android:textSize="20sp" />
-
 </LinearLayout>
