@@ -4,10 +4,12 @@ plugins {
 }
 
 android {
+    namespace "com.example.app"
   namespace 'com.ndjc.generated'
   compileSdk 34
 
   defaultConfig {
+        applicationId "com.example.app"
     applicationId 'com.ndjc.generated'
     minSdk 24
     targetSdk 34
