@@ -2,96 +2,59 @@ name: Android CI
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+    branches: [ main ]
+    paths:
+      - "app/**"
+      - "gradle/**"
+      - "build.gradle"
+      - "settings.gradle"
+      - "gradlew"
+      - "gradlew.bat"
+      - ".github/workflows/android-build-matrix.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
           java-version: "17"
-          cache: gradle
+          distribution: "temurin"
+          cache: "gradle"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Make scripts executable
-        shell: bash
-        run: |
-          chmod +x ./gradlew || true
-          chmod +x .github/scripts/apply_api_payload.sh || true
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
 
-      # === ① 拉取 API 源码并写盘 ===
-      - name: Fetch payload from API & apply
-        shell: bash
-        env:
-          API_TOKEN: ${{ secrets.API_TOKEN }}   # 如果无鉴权，可删除整行
-        run: |
-          set -euo pipefail
-          # 用 curl 拉三段源码（纯文本）。无鉴权可删 -H 行。
-          export MAIN_JAVA="$(curl -fsSL -H "Authorization: Bearer $API_TOKEN" https://your.api/v1/android/MainActivity.java)"
-          export LAYOUT_XML="$(curl -fsSL -H "Authorization: Bearer $API_TOKEN" https://your.api/v1/android/activity_main.xml)"
-          export STRINGS_XML="$(curl -fsSL -H "Authorization: Bearer $API_TOKEN" https://your.api/v1/android/strings.xml)"
-
-          # 保护性断言，防止空内容继续执行
-          [ -n "$MAIN_JAVA" ]   || { echo "MAIN_JAVA empty"; exit 1; }
-          [ -n "$LAYOUT_XML" ]  || { echo "LAYOUT_XML empty"; exit 1; }
-          [ -n "$STRINGS_XML" ] || { echo "STRINGS_XML empty"; exit 1; }
-
-          # 调你的写盘脚本：把三段内容写入 app/src/... 并生成/修补 Manifest
-          .github/scripts/apply_api_payload.sh
-
-      # === ② 编译 APK ===
+      # ❗ 只编译仓库里的代码；不要再从任何“模板/API”覆盖 app/ 目录
       - name: Build APK
-        run: ./gradlew --stacktrace --no-daemon assembleDebug
+        run: ./gradlew --no-daemon clean :app:assembleRelease
 
-      # === ③ 校验 APK 内资源 ===
-      - name: Verify APK contains generated resources
-        shell: bash
+      - name: Verify APK exists
         run: |
-          set -euo pipefail
-          APK="$(ls app/build/outputs/apk/debug/*.apk | head -n1)"
-          echo "APK => $APK"
-          aapt dump badging "$APK" | sed -n '1,20p'
+          ls -lah app/build/outputs/apk/release || true
+          test -f app/build/outputs/apk/release/app-release.apk
 
-          # 关键校验：必须有我们注入的字符串 hello_text
-          if ! aapt dump resources "$APK" | grep -q "string/hello_text"; then
-            echo "ERROR: string/hello_text not found in APK resources"
-            exit 1
-          fi
-          echo "✅ hello_text found in resources"
-
-      # === ④ 上传构建产物 ===
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
-          path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-
-      # === ⑤ （可选）模拟器 15s 冒烟 ===
-      # - name: Emulator smoke (15s)
-      #   uses: reactivecircus/android-emulator-runner@v2
-      #   with:
-      #     api-level: 30
-      #     arch: x86_64
-      #     profile: pixel_5
-      #     script: |
-      #       APK="$(ls app/build/outputs/apk/debug/*.apk | head -n1)"
-      #       adb install -r "$APK" >/dev/null
-      #       PKG="$(aapt dump badging "$APK" | awk -F\" '/package: name=/{print $2}')"
-      #       ACT="$(aapt dump badging "$APK" | awk -F\" '/launchable-activity: name=/{print $2}')"
-      #       echo "Detected: $PKG / $ACT"
-      #       adb logcat -c
-      #       adb shell am start -n "${PKG}/${ACT}"
-      #       # 如果你在 MainActivity 里 Log.d("hello_text", ...)，可在此处 grep 关键字
-      #       timeout 15s sh -c 'adb logcat | tee /tmp/logcat.txt | grep -q "hello_text"' || true
-      #       echo "Smoke finished"
+          name: app-release
+          path: app/build/outputs/apk/release/*.apk
