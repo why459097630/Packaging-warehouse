@@ -44,17 +44,36 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # ❗ 只编译仓库里的代码；不要再从任何“模板/API”覆盖 app/ 目录
-      - name: Build APK
+      - name: Build (unsigned)
         run: ./gradlew --no-daemon clean :app:assembleRelease
 
-      - name: Verify APK exists
-        run: |
-          ls -lah app/build/outputs/apk/release || true
-          test -f app/build/outputs/apk/release/app-release.apk
+      # 签名（自动 zipalign + apksigner）
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
 
-      - name: Upload APK
+      # 可选：列出输出，便于排障
+      - name: List APKs
+        run: find app/build/outputs -maxdepth 3 -type f -name "*.apk" -ls
+
+      # 验证已签名 APK 存在
+      - name: Verify signed APK exists
+        run: test -f app/build/outputs/apk/release/app-release.apk
+
+      # 额外：校验证书（可选但推荐）
+      - name: Verify signature
+        run: |
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify -v app/build/outputs/apk/release/app-release.apk
+
+      - name: Upload signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: app/build/outputs/apk/release/*.apk
+          name: app-release-signed
+          path: app/build/outputs/apk/release/app-release.apk
