@@ -47,33 +47,27 @@ jobs:
       - name: Build (unsigned)
         run: ./gradlew --no-daemon clean :app:assembleRelease
 
-      # 签名（自动 zipalign + apksigner）
       - name: Sign APK
+        id: sign
         uses: r0adkll/sign-android-release@v1
         with:
           releaseDirectory: app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
+          signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
         env:
+          # 如 34.0.0 不可用，改成 33.0.2 或干脆去掉这行让 action 自动探测
           BUILD_TOOLS_VERSION: "34.0.0"
 
-      # 可选：列出输出，便于排障
-      - name: List APKs
+      - name: List APKs (debug)
         run: find app/build/outputs -maxdepth 3 -type f -name "*.apk" -ls
 
-      # 验证已签名 APK 存在
       - name: Verify signed APK exists
-        run: test -f app/build/outputs/apk/release/app-release.apk
-
-      # 额外：校验证书（可选但推荐）
-      - name: Verify signature
-        run: |
-          $ANDROID_HOME/build-tools/34.0.0/apksigner verify -v app/build/outputs/apk/release/app-release.apk
+        run: test -f "${{ steps.sign.outputs.signedReleaseFile }}"
 
       - name: Upload signed APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release-signed
-          path: app/build/outputs/apk/release/app-release.apk
+          path: ${{ steps.sign.outputs.signedReleaseFile }}
