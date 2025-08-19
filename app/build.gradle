@@ -1,35 +1,28 @@
 plugins {
     id 'com.android.application'
 }
-
 android {
-    namespace "com.example.meditationtimer"        // ← 统一 namespace
+    namespace "com.example.meditationtimer"
     compileSdk 34
-
     defaultConfig {
-        applicationId "com.example.meditationtimer"   // ← 统一 applicationId
+        applicationId "com.example.meditationtimer"
         minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
     }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-        debug {
-            minifyEnabled false
-        }
+        debug { minifyEnabled false }
     }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
 }
-
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
