@@ -1,27 +1,44 @@
 package com.example.app;
 
 import android.os.Bundle;
-import android.widget.TextView;
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.util.*;
 
 public class MainActivity extends AppCompatActivity {
+  private ArrayList<String> items = new ArrayList<>();
+  private ArrayAdapter<String> adapter;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-    TextView tv = findViewById(R.id.textHello);
-    String marker = readAsset("build_marker.txt");
-    if (tv != null) tv.setText(getString(R.string.hello_text) + " | " + marker);
+
+    EditText input = findViewById(R.id.input);
+    Button add = findViewById(R.id.btnAdd);
+    ListView list = findViewById(R.id.list);
+
+    String saved = getSharedPreferences("app", MODE_PRIVATE).getString("todos", "");
+    if (saved != null && !saved.isEmpty()) items.addAll(Arrays.asList(saved.split("\n")));
+    adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
+    list.setAdapter(adapter);
+
+    add.setOnClickListener(v -> {
+      String t = input.getText().toString().trim();
+      if (!t.isEmpty()) { items.add(t); adapter.notifyDataSetChanged(); input.setText(""); }
+    });
+
+    list.setOnItemLongClickListener((parent, v, pos, id) -> {
+      items.remove(pos);
+      adapter.notifyDataSetChanged();
+      return true;
+    });
   }
-  private String readAsset(String path) {
-    try {
-      BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open(path)));
-      StringBuilder sb = new StringBuilder(); String line;
-      while ((line = br.readLine()) != null) sb.append(line);
-      br.close();
-      return sb.toString();
-    } catch (Exception e) { return "no_marker"; }
+
+  @Override
+  protected void onPause() {
+    super.onPause();
+    String joined = String.join("\n", items);
+    getSharedPreferences("app", MODE_PRIVATE).edit().putString("todos", joined).apply();
   }
 }
