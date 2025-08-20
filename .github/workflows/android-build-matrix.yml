@@ -44,44 +44,36 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # =========================
-      # 1) 解析模板（更鲁棒，带默认回退）
-      # =========================
+      # 1) 解析模板：dispatch > assets 标记 > 仓库 grep > 回退 form-template
       - name: Determine template from marker (robust with fallback)
         id: pick
         shell: bash
         run: |
           set -euo pipefail
 
-          # 1) workflow_dispatch 覆盖
           if [[ -n "${{ inputs.template }}" ]]; then
             tmpl="${{ inputs.template }}"
+            echo "template set by dispatch: $tmpl"
           else
-            # 2) 先在 assets 下找各种 marker / 文本
             tmpl="$(grep -Eroh '(core-template|form-template|simple-template)' app/src/main/assets 2>/dev/null | head -n1 || true)"
-            # 3) 仓库兜底全局 grep（避免路径不同或文件名随机）
             if [[ -z "${tmpl:-}" ]]; then
               tmpl="$(git grep -Eo '(core-template|form-template|simple-template)' -- '**/*.txt' ':/app' 2>/dev/null | head -n1 | awk '{print $1}' || true)"
             fi
-            # 4) 仍未找到 -> 默认回退 form-template，给出 warning
             if [[ -z "${tmpl:-}" ]]; then
-              echo "::warning ::No template found in markers, fallback to 'form-template'"
+              echo "::warning ::No template marker found. fallback -> form-template"
               tmpl="form-template"
             fi
           fi
 
-          # 校验
           case "$tmpl" in
             core-template|form-template|simple-template) ;;
-            *) echo "::warning ::Template '$tmpl' not in {core-template|form-template|simple-template}, fallback to 'form-template'"; tmpl="form-template" ;;
+            *) echo "::warning ::Invalid template '$tmpl'. fallback -> form-template"; tmpl="form-template" ;;
           esac
 
           echo "template=$tmpl" >> "$GITHUB_OUTPUT"
           echo "Template resolved: $tmpl"
 
-      # =========================
-      # 2) 应用模板到 app/（只覆盖 app 模块）
-      # =========================
+      # 2) 应用模板到 app/
       - name: Apply template to app/
         shell: bash
         run: |
@@ -102,7 +94,6 @@ jobs:
           echo "Copy ${src}/src/main -> ${dst}/src/main"
           rsync -a --delete "${src}/src/main/" "${dst}/src/main/"
 
-          # 若模板中包含 app 级别的构建脚本，按需覆盖
           if [[ -f "${src}/build.gradle" ]]; then
             cp -f "${src}/build.gradle" "${dst}/build.gradle"
           fi
@@ -110,31 +101,83 @@ jobs:
             cp -f "${src}/build.gradle.kts" "${dst}/build.gradle.kts"
           fi
 
-      # =========================
-      # 3) 编译前显式校验（防空包第一道闸）
-      # =========================
-      - name: Validate module is not empty (fail-fast)
+          echo "=== Tree after applying template ==="
+          (command -v tree >/dev/null && tree -L 3 app/src || find app/src -maxdepth 3 -print)
+
+      # 3) 编译前“防空包”校验（不使用 set -e，务必把原因打印出来）
+      - name: Validate module is not empty (fail-fast but verbose)
         shell: bash
         run: |
-          set -euo pipefail
+          set -u  # 不用 -e，保证都能打印完再 exit 1
 
-          test -f app/src/main/AndroidManifest.xml || { echo "::error::Missing AndroidManifest.xml"; exit 1; }
+          echo "PWD: $(pwd)"
+          echo "ls -la:"
+          ls -la || true
+          echo "ls -la app/src/main:"
+          ls -la app/src/main || true
 
-          src_count=$(find app/src/main/java app/src/main/kotlin -type f \( -name '*.kt' -o -name '*.java' \) 2>/dev/null | wc -l | xargs)
-          if [[ "${src_count:-0}" -lt 1 ]]; then
+          if [[ ! -f app/src/main/AndroidManifest.xml ]]; then
+            echo "::error::Missing AndroidManifest.xml under app/src/main/"
+            exit 1
+          fi
+
+          count_src () {
+            local total=0 n=0
+            if [[ -d "app/src/main/java" ]]; then
+              n=$(find app/src/main/java -type f \( -name '*.kt' -o -name '*.java' \) 2>/dev/null | wc -l || echo 0)
+              total=$(( total + n ))
+            fi
+            if [[ -d "app/src/main/kotlin" ]]; then
+              n=$(find app/src/main/kotlin -type f \( -name '*.kt' -o -name '*.java' \) 2>/dev/null | wc -l || echo 0)
+              total=$(( total + n ))
+            fi
+            echo "${total}"
+          }
+
+          count_res () {
+            if [[ -d "app/src/main/res" ]]; then
+              find app/src/main/res -type f 2>/dev/null | wc -l || echo 0
+            else
+              echo 0
+            fi
+          }
+
+          count_assets () {
+            if [[ -d "app/src/main/assets" ]]; then
+              find app/src/main/assets -type f 2>/dev/null | wc -l || echo 0
+            else
+              echo 0
+            fi
+          }
+
+          src_total=$(count_src)
+          res_total=$(count_res)
+          assets_total=$(count_assets)
+
+          echo "Source files (java|kotlin): ${src_total}"
+          echo "Resource files (res):       ${res_total}"
+          echo "Asset files (assets):       ${assets_total}"
+
+          # 至少要有：源码 >=1，且 (资源>=1 或 资产>=1) —— 防纯空壳
+          fail=0
+          if [[ "${src_total}" -lt 1 ]]; then
             echo "::error::No source files under app/src/main/java|kotlin"
+            fail=1
+          fi
+          if [[ "${res_total}" -lt 1 && "${assets_total}" -lt 1 ]]; then
+            echo "::error::Neither res nor assets exist under app/src/main/ (both empty)"
+            fail=1
+          fi
+
+          if [[ "$fail" -ne 0 ]]; then
+            echo ">>> Directory tree for debugging:"
+            (command -v tree >/dev/null && tree -L 4 app/src || find app/src -maxdepth 4 -print)
             exit 1
           fi
 
-          res_count=$(find app/src/main/res -type f 2>/dev/null | wc -l | xargs)
-          if [[ "${res_count:-0}" -lt 1 ]]; then
-            echo "::error::No resources under app/src/main/res"
-            exit 1
-          fi
+          echo "Pre-build validation passed ✅"
 
-      # =========================
-      # 4) 可选：修补 namespace，避免默认包名
-      # =========================
+      # 4) 可选：修补 namespace
       - name: Patch Gradle namespace (optional)
         shell: bash
         run: |
@@ -149,22 +192,16 @@ jobs:
           if [[ -f app/build.gradle.kts ]]; then
             sed -i -E "s/namespace\\s*=\\s*\"[^\"]+\"/namespace = \"$ns\"/g" app/build.gradle.kts || true
           fi
-
           if grep -q 'package="com.example' app/src/main/AndroidManifest.xml 2>/dev/null; then
             sed -i -E "s/package=\"[^\"]+\"/package=\"$ns\"/g" app/src/main/AndroidManifest.xml || true
           fi
-
           echo "Namespace set to: $ns"
 
-      # =========================
       # 5) 编译（unsigned）
-      # =========================
       - name: Build (unsigned)
         run: ./gradlew --no-daemon clean :app:assembleRelease
 
-      # =========================
-      # 6) 产物体积校验（防空包第二道闸）
-      # =========================
+      # 6) 产物体积阈值（防空包）
       - name: Verify release APK exists and size
         id: apkcheck
         shell: bash
