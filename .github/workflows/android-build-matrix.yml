@@ -1,29 +1,27 @@
-name: Android CI
+name: Android CI (matrix)
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - "app/**"
-      - "gradle/**"
-      - "build.gradle"
-      - "settings.gradle"
-      - "gradlew"
-      - "gradlew.bat"
-      - ".github/workflows/android-build-matrix.yml"
   workflow_dispatch:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: android-ci-${{ github.ref }}
-  cancel-in-progress: true
+  push:
+    paths:
+      - 'app/**'
+      - 'templates/**'
+      - '.github/workflows/android-build-matrix.yml'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+
+    # 你的矩阵如果和这里不同，可以按需改；这块与模板准备无关
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [arm64-v8a]
+        minSdk: [24]
+
+    env:
+      # 没有 marker 时的默认模板（core-template / form-template / simple-template 三选一）
+      DEFAULT_TEMPLATE: form-template
 
     steps:
       - name: Checkout
@@ -34,40 +32,93 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: "17"
-          distribution: "temurin"
-          cache: "gradle"
+          distribution: temurin
+          java-version: '17'
+          cache: 'gradle'
 
-      - name: Setup Android SDK
+      # 如果你的项目需要 Android SDK，请保留；若已有其它步骤安装 SDK，可删除这一行
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build (unsigned)
-        run: ./gradlew --no-daemon clean :app:assembleRelease
+      # ====== 新增 1：读取 marker，决定模板 ======
+      - name: Determine template from marker
+        id: marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          MARKER="app/src/main/assets/build_marker.txt"
+          templ="${DEFAULT_TEMPLATE}"
 
-      - name: Sign APK
-        id: sign
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        env:
-          # 如 34.0.0 不可用，改成 33.0.2 或干脆去掉这行让 action 自动探测
-          BUILD_TOOLS_VERSION: "34.0.0"
+          if [[ -f "$MARKER" ]]; then
+            echo "== build marker =="
+            cat "$MARKER"
+            # 取最后一个字段作为模板名（兼容 'template core-template' 这种写法）
+            templ=$(awk '{print $NF}' "$MARKER" | tr -d '\r\n')
+          else
+            echo "marker not found, fallback to default: ${DEFAULT_TEMPLATE}"
+          fi
 
-      - name: List APKs (debug)
-        run: find app/build/outputs -maxdepth 3 -type f -name "*.apk" -ls
+          case "$templ" in
+            core-template|form-template|simple-template) ;;
+            *)
+              echo "invalid template '$templ', fallback to ${DEFAULT_TEMPLATE}"
+              templ="${DEFAULT_TEMPLATE}"
+              ;;
+          esac
 
-      - name: Verify signed APK exists
-        run: test -f "${{ steps.sign.outputs.signedReleaseFile }}"
+          echo "TEMPLATE=$templ" | tee -a "$GITHUB_ENV"
+          echo "template=$templ"   >> "$GITHUB_OUTPUT"
 
-      - name: Upload signed APK
+      # ====== 新增 2：拷贝模板内容到 app/src/main，避免空包 ======
+      - name: Apply template to app/src/main
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="templates/${TEMPLATE}/app/src/main"
+          DST="app/src/main"
+
+          echo "Using template: ${TEMPLATE}"
+          test -d "$SRC" || { echo "::error::Template dir not found: $SRC"; exit 1; }
+
+          # 保护 marker
+          if [[ -f "${DST}/assets/build_marker.txt" ]]; then
+            cp "${DST}/assets/build_marker.txt" /tmp/_marker.txt
+          fi
+
+          mkdir -p "$DST"
+          # 同步模板（删除无关旧文件，保证构建目录和模板一致）
+          rsync -a --delete "$SRC/" "$DST/"
+
+          # 还原 marker（供后续诊断）
+          if [[ -f /tmp/_marker.txt" ]]; then
+            mkdir -p "${DST}/assets"
+            mv /tmp/_marker.txt "${DST}/assets/build_marker.txt"
+          fi
+
+          # 如果模板内有模块级 build.gradle，则同步；没有就保持现状
+          if [[ -f "templates/${TEMPLATE}/app/build.gradle" ]]; then
+            cp "templates/${TEMPLATE}/app/build.gradle" app/build.gradle
+          fi
+
+          echo "== after copy =="
+          find app/src/main -maxdepth 2 -type f | sed 's/^/  /' | sort || true
+
+          # 保险：Manifest 和至少一个源码/Manifest 文件必须存在
+          test -f app/src/main/AndroidManifest.xml || { echo "::error::AndroidManifest.xml missing"; exit 1; }
+          cnt=$(find app/src/main -type f \( -name '*.kt' -o -name '*.java' -o -name 'AndroidManifest.xml' \) | wc -l)
+          [[ "$cnt" -ge 2 ]] || { echo "::error::template copy seems empty (files=$cnt)"; exit 1; }
+
+      - name: Build (assembleRelease)
+        run: ./gradlew --no-daemon :app:assembleRelease
+
+      # 可选：把产物传出来便于排查 / 下载
+      - name: Upload APK (release)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-signed
-          path: ${{ steps.sign.outputs.signedReleaseFile }}
+          name: release-apk
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: warn
