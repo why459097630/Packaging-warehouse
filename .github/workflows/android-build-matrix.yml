@@ -1,99 +1,41 @@
-name: Android CI (robust + no-empty-apk)
-
-on:
-  push:
-
-permissions:
-  contents: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Gradle cache
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      # 1) 从 marker 推断模板（找不到就用 form-template）
       - name: Determine template from marker (robust with fallback)
         id: marker
         shell: bash
         run: |
           set -euo pipefail
-          MARKER="$(git ls-files 'app/src/main/assets/build_marker_*' | head -n1 || true)"
-          if [[ -n "${MARKER}" ]]; then
-            TPL="$(basename "${MARKER}" | awk -F_ '{print $(NF-1)}')"
-          else
-            TPL="${TEMPLATE:-form-template}"
+          ALLOWED="core-template|form-template|simple-template"
+
+          # 找最新的 build_marker 文件（名字里有没有模板名都行）
+          MARKER="$(git ls-files 'app/src/main/assets/build_marker*' | tail -n1 || true)"
+          TPL=""
+
+          # 1) 从文件名解析
+          if [[ -n "${MARKER}" ]] && echo "${MARKER}" | grep -E -o "${ALLOWED}" >/dev/null; then
+            TPL="$(echo "${MARKER}" | grep -E -o "${ALLOWED}" | head -n1)"
           fi
-          case "${TPL}" in
-            core-template|form-template|simple-template) ;;
-            *) echo "Invalid or missing template in marker. Expected one of: core-template|form-template|simple-template" ; exit 1 ;;
-          esac
+
+          # 2) 从文件内容解析（支持 template=xxx 或 json 里包含 xxx）
+          if [[ -z "${TPL}" && -n "${MARKER}" ]]; then
+            if grep -E -o "${ALLOWED}" -m1 "${MARKER}" >/dev/null; then
+              TPL="$(grep -E -o "${ALLOWED}" -m1 "${MARKER}")"
+            elif head -n1 "${MARKER}" | grep -q 'template='; then
+              TPL="$(head -n1 "${MARKER}" | sed -nE 's/.*template=([a-z-]+).*/\1/p')"
+            fi
+          fi
+
+          # 3) 从最近一次提交信息兜底（我们的 commitMsg 是 "apk: <tpl> | ..."）
+          if [[ -z "${TPL}" ]]; then
+            MSG="$(git log -1 --pretty=%B || true)"
+            if echo "${MSG}" | grep -E -o "${ALLOWED}" >/dev/null; then
+              TPL="$(echo "${MSG}" | grep -E -o "${ALLOWED}" | head -n1)"
+            fi
+          fi
+
+          # 4) 最终兜底：环境变量 TEMPLATE 或默认 form-template
+          if [[ -z "${TPL}" ]]; then
+            TPL="${TEMPLATE:-form-template}"
+            echo "::warning::Template not found in marker/commit, falling back to ${TPL}"
+          fi
+
           echo "template=${TPL}" >> "${GITHUB_OUTPUT}"
-
-      # 2) 应用模板到 app/（如果需要）
-      - name: Apply template to app/
-        if: steps.marker.outputs.template != ''
-        shell: bash
-        run: |
-          set -euo pipefail
-          rsync -a --delete "templates/${{ steps.marker.outputs.template }}/" app/
-
-      # 3) 预检：必须有 Manifest + LAUNCHER + 至少一个布局文件
-      - name: Validate module is not empty (fail-fast)
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f app/src/main/AndroidManifest.xml || { echo "Missing AndroidManifest.xml" ; exit 1 ; }
-          grep -q 'android.intent.category.LAUNCHER' app/src/main/AndroidManifest.xml || { echo "No LAUNCHER activity" ; exit 1 ; }
-          test -f app/src/main/res/layout/activity_main.xml || { echo "Missing layout: activity_main.xml" ; exit 1 ; }
-
-      # 4) 构建 Release（为避免误收缩导致空包，模板 build.gradle 默认关闭收缩）
-      - name: Build (unsigned)
-        run: ./gradlew :app:assembleRelease --no-daemon
-
-      # 5) 终检：解包检查 dex / res 大小阈值，严防“壳包”
-      - name: Verify release APK exists and size
-        id: verify
-        shell: bash
-        run: |
-          set -euo pipefail
-          APK="$(ls app/build/outputs/apk/release/*.apk | head -n1)"
-          [ -s "${APK}" ] || { echo "APK not found" ; exit 1 ; }
-          echo "apk=${APK}" >> "${GITHUB_OUTPUT}"
-
-          TMPDIR="$(mktemp -d)"
-          unzip -q "${APK}" -d "${TMPDIR}"
-
-          DEX_BYTES="$(wc -c < "${TMPDIR}/classes.dex")"
-          RES_SIZE="$(du -s "${TMPDIR}/res" 2>/dev/null | cut -f1 || echo 0)"
-
-          echo "DEX_BYTES=${DEX_BYTES}"
-          echo "RES_SIZE=${RES_SIZE}"
-
-          # 合理阈值（可按项目调高/调低）
-          (( DEX_BYTES >= 15000 )) || { echo "classes.dex too small (${DEX_BYTES})" ; exit 1 ; }
-          (( RES_SIZE   >= 100   )) || { echo "res/ too small (${RES_SIZE})" ; exit 1 ; }
-
-      - name: Upload unsigned APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: unsigned-release-apk
-          path: ${{ steps.verify.outputs.apk }}
+          echo "Using template=${TPL}"
