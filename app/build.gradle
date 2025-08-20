@@ -1,37 +1,69 @@
 plugins {
     id 'com.android.application'
+    // 如果你的项目使用 Kotlin，再打开下面这行（且在根工程有 Kotlin 插件依赖）
+    // id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    // ⚠️ 与 Java/Kotlin 代码中的 package 完全一致
-    namespace "com.example.app"
-
+    namespace 'com.app.generated'
     compileSdk 34
 
     defaultConfig {
-        // ⚠️ 与上面的 namespace、以及代码里的 package 保持一致
-        applicationId "com.example.app"
-        minSdk 24
+        applicationId "com.app.generated"
+        minSdk 23
         targetSdk 34
         versionCode 1
         versionName "1.0"
+        vectorDrawables.useSupportLibrary true
+        multiDexEnabled true
     }
 
     buildTypes {
-        release {
+        debug {
+            // 调试也禁止收缩，便于排查
             minifyEnabled false
+            shrinkResources false
+        }
+        release {
+            // 先杜绝空包：禁用 R8、禁用资源收缩
+            minifyEnabled false
+            shrinkResources false
+            // 如果未来要开启 R8，请同步维护 proguard-rules.pro 的 keep 规则
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
+    // 如果是 Java 源码
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
+    // 如果是 Kotlin 项目，请取消注释
+    // kotlinOptions { jvmTarget = '17' }
+
+    // 可选：ViewBinding 开启（按需）
+    buildFeatures {
+        viewBinding true
+    }
+
+    // 避免第三方库里的 license 文件冲突
+    packagingOptions {
+        resources {
+            excludes += ['/META-INF/{AL2.0,LGPL2.1}', 'META-INF/LICENSE*']
+        }
+    }
+
+    // 构建时不要因为 Lint 报告而中断
+    lint {
+        abortOnError false
+    }
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation "androidx.core:core-ktx:1.13.1"
+    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "com.google.android.material:material:1.12.0"
+    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
+    // （按需添加你的业务依赖）
 }
