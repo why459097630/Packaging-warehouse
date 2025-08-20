@@ -3,229 +3,172 @@ name: Android CI (robust + no-empty-apk)
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'app/**'
-      - 'templates/**'
-      - '.github/workflows/android-build-matrix.yml'
   workflow_dispatch:
-    inputs:
-      template:
-        description: "Override template (core-template|form-template|simple-template)"
-        required: false
-        default: ""
-      minApkSizeKB:
-        description: "Fail if release APK size < this KB"
-        required: false
-        default: "100"
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      JAVA_VERSION: '17'
-      MIN_APK_KB: ${{ inputs.minApkSizeKB || '100' }}
+    timeout-minutes: 15
 
     steps:
+      # 1) 拉代码
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
+      # 2) JDK 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: 'gradle'
+          java-version: '17'
+          cache: gradle
 
+      # 3) Android SDK（含 sdkmanager/aapt/apkanalyzer 能力）
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      # 4) gradlew 可执行
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # 1) 解析模板：dispatch > assets 标记 > 仓库 grep > 回退 form-template
+      # 5) 读取模板（更稳健：先找 marker，找不到用 env.TEMPLATE，最后兜底 form-template）
       - name: Determine template from marker (robust with fallback)
-        id: pick
+        id: marker
         shell: bash
         run: |
           set -euo pipefail
-
-          if [[ -n "${{ inputs.template }}" ]]; then
-            tmpl="${{ inputs.template }}"
-            echo "template set by dispatch: $tmpl"
+          marker=$(ls app/src/main/assets/build_marker_*.txt 2>/dev/null | head -n1 || true)
+          if [[ -n "$marker" ]]; then
+            # 你自己的 marker 第一行写的是 template 名；按需修改解析方式
+            template=$(sed -n '1p' "$marker" | tr -d '\r' | xargs)
+          elif [[ -n "${TEMPLATE:-}" ]]; then
+            template="$TEMPLATE"
           else
-            tmpl="$(grep -Eroh '(core-template|form-template|simple-template)' app/src/main/assets 2>/dev/null | head -n1 || true)"
-            if [[ -z "${tmpl:-}" ]]; then
-              tmpl="$(git grep -Eo '(core-template|form-template|simple-template)' -- '**/*.txt' ':/app' 2>/dev/null | head -n1 | awk '{print $1}' || true)"
-            fi
-            if [[ -z "${tmpl:-}" ]]; then
-              echo "::warning ::No template marker found. fallback -> form-template"
-              tmpl="form-template"
-            fi
+            template="form-template"
           fi
+          if [[ ! "$template" =~ ^(core-template|form-template|simple-template)$ ]]; then
+            echo "::error::Invalid or missing template [$template]. Expected: core-template|form-template|simple-template"
+            exit 1
+          fi
+          echo "template=$template" >> "$GITHUB_OUTPUT"
+          echo "Using template: $template"
 
-          case "$tmpl" in
-            core-template|form-template|simple-template) ;;
-            *) echo "::warning ::Invalid template '$tmpl'. fallback -> form-template"; tmpl="form-template" ;;
-          esac
-
-          echo "template=$tmpl" >> "$GITHUB_OUTPUT"
-          echo "Template resolved: $tmpl"
-
-      # 2) 应用模板到 app/
+      # 6) 应用模板到 app/（按你的仓库结构调整模板路径）
       - name: Apply template to app/
         shell: bash
         run: |
           set -euo pipefail
-          tmpl="${{ steps.pick.outputs.template }}"
-          src="templates/${tmpl}/app"
-          dst="app"
+          T="${{ steps.marker.outputs.template }}"
+          echo "Apply template $T"
+          # 如果你的模板路径不是 templates/$T/app/ ，改这里
+          rsync -a --delete "templates/$T/app/" "app/"
 
-          if [[ ! -d "$src" ]]; then
-            echo "::error::Template path not found: $src"
-            exit 1
-          fi
-
-          echo "Cleaning ${dst}/src/main ..."
-          rm -rf "${dst:?}/src/main"
-          mkdir -p "${dst}/src"
-
-          echo "Copy ${src}/src/main -> ${dst}/src/main"
-          rsync -a --delete "${src}/src/main/" "${dst}/src/main/"
-
-          if [[ -f "${src}/build.gradle" ]]; then
-            cp -f "${src}/build.gradle" "${dst}/build.gradle"
-          fi
-          if [[ -f "${src}/build.gradle.kts" ]]; then
-            cp -f "${src}/build.gradle.kts" "${dst}/build.gradle.kts"
-          fi
-
-          echo "=== Tree after applying template ==="
-          (command -v tree >/dev/null && tree -L 3 app/src || find app/src -maxdepth 3 -print)
-
-      # 3) 编译前“防空包”校验（不使用 set -e，务必把原因打印出来）
-      - name: Validate module is not empty (fail-fast but verbose)
+      # 7) 快照：让我们一眼看到模板有没有铺进去（排查利器）
+      - name: Snapshot app/src/main after templating
         shell: bash
         run: |
-          set -u  # 不用 -e，保证都能打印完再 exit 1
+          echo "---- tree app/src/main ----"
+          ls -R app/src/main || true
+          echo "---- AndroidManifest.xml (first 120 lines) ----"
+          sed -n '1,120p' app/src/main/AndroidManifest.xml || true
 
-          echo "PWD: $(pwd)"
-          echo "ls -la:"
-          ls -la || true
-          echo "ls -la app/src/main:"
-          ls -la app/src/main || true
+      # 8) 基本必备文件检测（fail-fast）
+      - name: Validate module is not empty (fail-fast)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s app/src/main/AndroidManifest.xml
+          test -d app/src/main/java || test -d app/src/main/kotlin
+          test -d app/src/main/res
+          echo "Module content looks OK."
 
-          if [[ ! -f app/src/main/AndroidManifest.xml ]]; then
-            echo "::error::Missing AndroidManifest.xml under app/src/main/"
-            exit 1
-          fi
-
-          count_src () {
-            local total=0 n=0
-            if [[ -d "app/src/main/java" ]]; then
-              n=$(find app/src/main/java -type f \( -name '*.kt' -o -name '*.java' \) 2>/dev/null | wc -l || echo 0)
-              total=$(( total + n ))
-            fi
-            if [[ -d "app/src/main/kotlin" ]]; then
-              n=$(find app/src/main/kotlin -type f \( -name '*.kt' -o -name '*.java' \) 2>/dev/null | wc -l || echo 0)
-              total=$(( total + n ))
-            fi
-            echo "${total}"
-          }
-
-          count_res () {
-            if [[ -d "app/src/main/res" ]]; then
-              find app/src/main/res -type f 2>/dev/null | wc -l || echo 0
-            else
-              echo 0
-            fi
-          }
-
-          count_assets () {
-            if [[ -d "app/src/main/assets" ]]; then
-              find app/src/main/assets -type f 2>/dev/null | wc -l || echo 0
-            else
-              echo 0
-            fi
-          }
-
-          src_total=$(count_src)
-          res_total=$(count_res)
-          assets_total=$(count_assets)
-
-          echo "Source files (java|kotlin): ${src_total}"
-          echo "Resource files (res):       ${res_total}"
-          echo "Asset files (assets):       ${assets_total}"
-
-          # 至少要有：源码 >=1，且 (资源>=1 或 资产>=1) —— 防纯空壳
-          fail=0
-          if [[ "${src_total}" -lt 1 ]]; then
-            echo "::error::No source files under app/src/main/java|kotlin"
-            fail=1
-          fi
-          if [[ "${res_total}" -lt 1 && "${assets_total}" -lt 1 ]]; then
-            echo "::error::Neither res nor assets exist under app/src/main/ (both empty)"
-            fail=1
-          fi
-
-          if [[ "$fail" -ne 0 ]]; then
-            echo ">>> Directory tree for debugging:"
-            (command -v tree >/dev/null && tree -L 4 app/src || find app/src -maxdepth 4 -print)
-            exit 1
-          fi
-
-          echo "Pre-build validation passed ✅"
-
-      # 4) 可选：修补 namespace
+      # 9) 可选：补 namespace（如果模板没写）
       - name: Patch Gradle namespace (optional)
         shell: bash
         run: |
-          set -euo pipefail
-          owner="${GITHUB_REPOSITORY_OWNER,,}"
-          repo="${GITHUB_REPOSITORY##*/}"; repo="${repo,,}"
-          ns="com.${owner//[^a-z0-9]/}.app.${repo//[^a-z0-9]/}"
+          set -e
+          NS="com.app.generated"
+          if ! grep -q "namespace" app/build.gradle*; then
+            echo 'android { namespace "'"$NS"'" }' >> app/build.gradle
+            echo "Patched namespace to $NS"
+          fi
 
-          if [[ -f app/build.gradle ]]; then
-            sed -i -E "s/namespace\\s*=\\s*\"[^\"]+\"/namespace \"$ns\"/g" app/build.gradle || true
-          fi
-          if [[ -f app/build.gradle.kts ]]; then
-            sed -i -E "s/namespace\\s*=\\s*\"[^\"]+\"/namespace = \"$ns\"/g" app/build.gradle.kts || true
-          fi
-          if grep -q 'package="com.example' app/src/main/AndroidManifest.xml 2>/dev/null; then
-            sed -i -E "s/package=\"[^\"]+\"/package=\"$ns\"/g" app/src/main/AndroidManifest.xml || true
-          fi
-          echo "Namespace set to: $ns"
-
-      # 5) 编译（unsigned）
+      # 10) 构建 release APK
       - name: Build (unsigned)
-        run: ./gradlew --no-daemon clean :app:assembleRelease
+        shell: bash
+        run: ./gradlew --no-daemon :app:clean :app:assembleRelease
 
-      # 6) 产物体积阈值（防空包）
-      - name: Verify release APK exists and size
-        id: apkcheck
+      # 11) 确保有 build-tools/cmdline-tools（用于 aapt/apkanalyzer）
+      - name: Ensure build-tools and cmdline-tools
         shell: bash
         run: |
-          set -euo pipefail
-          APK=$(ls -1 app/build/outputs/apk/release/*.apk 2>/dev/null | head -n1 || true)
-          if [[ -z "${APK}" ]]; then
-            echo "::error::No release APK produced under app/build/outputs/apk/release"
-            exit 1
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "build-tools;34.0.0" "cmdline-tools;latest" >/dev/null
+
+      # 12) 找到产物 APK
+      - name: Locate release APK
+        id: apk
+        shell: bash
+        run: |
+          APK=$(ls app/build/outputs/apk/release/*-release*.apk | head -n1 || true)
+          if [[ -z "$APK" ]]; then
+            echo "::error::No release APK produced"; exit 1
           fi
-          size_kb=$(( $(stat -c%s "$APK") / 1024 ))
           echo "apk=$APK" >> "$GITHUB_OUTPUT"
-          echo "size_kb=$size_kb" >> "$GITHUB_OUTPUT"
-          echo "APK: $APK ($size_kb KB)"
+          echo "Using APK: $APK"
 
-          min_kb="${{ env.MIN_APK_KB }}"
-          if [[ "${size_kb}" -lt "${min_kb}" ]]; then
-            echo "::error::APK too small (${size_kb}KB < ${min_kb}KB). Failing to prevent empty APK."
-            exit 1
+      # 13) 解剖 APK（结构 + Manifest）
+      - name: Inspect APK (unzip + aapt + apkanalyzer)
+        shell: bash
+        run: |
+          APK="${{ steps.apk.outputs.apk }}"
+          echo "---- zip listing (first 200) ----"
+          unzip -l "$APK" | sed -n '1,200p'
+          echo "---- aapt dump badging (first 120) ----"
+          "$ANDROID_HOME/build-tools/34.0.0/aapt" dump badging "$APK" | sed -n '1,120p' || true
+          echo "---- apkanalyzer manifest print ----"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer" manifest print "$APK" || true
+
+      # 14) 防线 1：必须存在 LAUNCHER Activity
+      - name: Guard: launcher activity exists
+        shell: bash
+        run: |
+          APK="${{ steps.apk.outputs.apk }}"
+          if ! "$ANDROID_HOME/build-tools/34.0.0/aapt" dump badging "$APK" | grep -q "launchable-activity"; then
+            echo "::error::No LAUNCHER activity in APK"; exit 1
           fi
 
+      # 15) 防线 2：classes.dex 总体积下限（避免“壳包”）
+      - name: Guard: classes.dex minimal size
+        env:
+          DEX_MIN_BYTES: "80000"     # 你可以根据项目复杂度调大，比如 120000
+        shell: bash
+        run: |
+          APK="${{ steps.apk.outputs.apk }}"
+          BYTES=$(unzip -l "$APK" "classes*.dex" | awk 'BEGIN{s=0} $0 ~ /^[ ]*[0-9]+/ {s+=$1} END{print s}')
+          echo "classes*.dex total bytes = $BYTES"
+          if [[ -z "$BYTES" || "$BYTES" -lt "$DEX_MIN_BYTES" ]]; then
+            echo "::error::classes.dex too small ($BYTES bytes)"; exit 1
+          fi
+
+      # 16) 防线 3：至少存在一个布局 xml
+      - name: Guard: at least one layout XML
+        shell: bash
+        run: |
+          APK="${{ steps.apk.outputs.apk }}"
+          RES_COUNT=$(unzip -l "$APK" "res/layout/*.xml" | grep -c "res/layout" || true)
+          echo "layout count = $RES_COUNT"
+          if [[ "$RES_COUNT" -lt 1 ]]; then
+            echo "::error::No layout XML found in APK"; exit 1
+          fi
+
+      # 17) 上传产物
       - name: Upload unsigned APK
         uses: actions/upload-artifact@v4
         with:
           name: unsigned-release-apk
-          path: ${{ steps.apkcheck.outputs.apk }}
+          path: ${{ steps.apk.outputs.apk }}
           if-no-files-found: error
