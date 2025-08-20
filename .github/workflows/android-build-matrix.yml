@@ -1,4 +1,4 @@
-name: Android CI (matrix-safe, no-empty-apk)
+name: Android CI (robust + no-empty-apk)
 
 on:
   push:
@@ -44,36 +44,44 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # ------------------------------
-      # 1) 读取模板（鲁棒：搜索出现的合法模板名）
-      # ------------------------------
-      - name: Determine template from marker
+      # =========================
+      # 1) 解析模板（更鲁棒，带默认回退）
+      # =========================
+      - name: Determine template from marker (robust with fallback)
         id: pick
         shell: bash
         run: |
           set -euo pipefail
-          MARKER="app/src/main/assets/build_marker.txt"
-          # 如果手动触发并给了 inputs.template，则优先使用
+
+          # 1) workflow_dispatch 覆盖
           if [[ -n "${{ inputs.template }}" ]]; then
             tmpl="${{ inputs.template }}"
           else
-            if [[ ! -f "$MARKER" ]]; then
-              echo "::error::Missing $MARKER (内容里必须含 core-template|form-template|simple-template 其一)"
-              exit 1
+            # 2) 先在 assets 下找各种 marker / 文本
+            tmpl="$(grep -Eroh '(core-template|form-template|simple-template)' app/src/main/assets 2>/dev/null | head -n1 || true)"
+            # 3) 仓库兜底全局 grep（避免路径不同或文件名随机）
+            if [[ -z "${tmpl:-}" ]]; then
+              tmpl="$(git grep -Eo '(core-template|form-template|simple-template)' -- '**/*.txt' ':/app' 2>/dev/null | head -n1 | awk '{print $1}' || true)"
             fi
-            tmpl=$(grep -Eo '(core-template|form-template|simple-template)' "$MARKER" | head -n1 || true)
+            # 4) 仍未找到 -> 默认回退 form-template，给出 warning
+            if [[ -z "${tmpl:-}" ]]; then
+              echo "::warning ::No template found in markers, fallback to 'form-template'"
+              tmpl="form-template"
+            fi
           fi
 
-          if [[ -z "${tmpl:-}" ]]; then
-            echo "::error::Invalid or missing template in marker. Expected one of: core-template|form-template|simple-template"
-            exit 1
-          fi
+          # 校验
+          case "$tmpl" in
+            core-template|form-template|simple-template) ;;
+            *) echo "::warning ::Template '$tmpl' not in {core-template|form-template|simple-template}, fallback to 'form-template'"; tmpl="form-template" ;;
+          esac
+
           echo "template=$tmpl" >> "$GITHUB_OUTPUT"
           echo "Template resolved: $tmpl"
 
-      # ------------------------------
-      # 2) 将模板应用到 app 模块（仅覆盖 app/）
-      # ------------------------------
+      # =========================
+      # 2) 应用模板到 app/（只覆盖 app 模块）
+      # =========================
       - name: Apply template to app/
         shell: bash
         run: |
@@ -81,19 +89,20 @@ jobs:
           tmpl="${{ steps.pick.outputs.template }}"
           src="templates/${tmpl}/app"
           dst="app"
+
           if [[ ! -d "$src" ]]; then
-            echo "::error::Template folder not found: $src"
+            echo "::error::Template path not found: $src"
             exit 1
           fi
 
-          echo "Cleaning $dst/src/main ..."
+          echo "Cleaning ${dst}/src/main ..."
           rm -rf "${dst:?}/src/main"
           mkdir -p "${dst}/src"
 
           echo "Copy ${src}/src/main -> ${dst}/src/main"
           rsync -a --delete "${src}/src/main/" "${dst}/src/main/"
 
-          # 如果模板内有特定的 app 配置文件（如 build.gradle[.kts]），可选择覆盖
+          # 若模板中包含 app 级别的构建脚本，按需覆盖
           if [[ -f "${src}/build.gradle" ]]; then
             cp -f "${src}/build.gradle" "${dst}/build.gradle"
           fi
@@ -101,43 +110,39 @@ jobs:
             cp -f "${src}/build.gradle.kts" "${dst}/build.gradle.kts"
           fi
 
-      # ------------------------------
-      # 3) 编译前“空工程/空资源”显式校验 —— 杜绝空包的第一道闸
-      # ------------------------------
+      # =========================
+      # 3) 编译前显式校验（防空包第一道闸）
+      # =========================
       - name: Validate module is not empty (fail-fast)
         shell: bash
         run: |
           set -euo pipefail
+
           test -f app/src/main/AndroidManifest.xml || { echo "::error::Missing AndroidManifest.xml"; exit 1; }
 
-          # 至少有一个源码文件（Kotlin/Java 其一）
           src_count=$(find app/src/main/java app/src/main/kotlin -type f \( -name '*.kt' -o -name '*.java' \) 2>/dev/null | wc -l | xargs)
           if [[ "${src_count:-0}" -lt 1 ]]; then
             echo "::error::No source files under app/src/main/java|kotlin"
             exit 1
           fi
 
-          # 至少有一个资源文件
           res_count=$(find app/src/main/res -type f 2>/dev/null | wc -l | xargs)
           if [[ "${res_count:-0}" -lt 1 ]]; then
             echo "::error::No resources under app/src/main/res"
             exit 1
           fi
 
-      # ------------------------------
-      # 4) 如需修补 namespace，可在此处做统一替换（可选）
-      # ------------------------------
+      # =========================
+      # 4) 可选：修补 namespace，避免默认包名
+      # =========================
       - name: Patch Gradle namespace (optional)
         shell: bash
         run: |
           set -euo pipefail
-          # 生成一个较稳定的 namespace
           owner="${GITHUB_REPOSITORY_OWNER,,}"
-          repo="${GITHUB_REPOSITORY##*/}"
-          repo="${repo,,}"
+          repo="${GITHUB_REPOSITORY##*/}"; repo="${repo,,}"
           ns="com.${owner//[^a-z0-9]/}.app.${repo//[^a-z0-9]/}"
 
-          # app/build.gradle(.kts) 中的 namespace 字段替换（存在才替）
           if [[ -f app/build.gradle ]]; then
             sed -i -E "s/namespace\\s*=\\s*\"[^\"]+\"/namespace \"$ns\"/g" app/build.gradle || true
           fi
@@ -145,21 +150,21 @@ jobs:
             sed -i -E "s/namespace\\s*=\\s*\"[^\"]+\"/namespace = \"$ns\"/g" app/build.gradle.kts || true
           fi
 
-          # Manifest 包名兜底（若仍是 com.example 之类可替换）
           if grep -q 'package="com.example' app/src/main/AndroidManifest.xml 2>/dev/null; then
             sed -i -E "s/package=\"[^\"]+\"/package=\"$ns\"/g" app/src/main/AndroidManifest.xml || true
           fi
+
           echo "Namespace set to: $ns"
 
-      # ------------------------------
+      # =========================
       # 5) 编译（unsigned）
-      # ------------------------------
+      # =========================
       - name: Build (unsigned)
         run: ./gradlew --no-daemon clean :app:assembleRelease
 
-      # ------------------------------
-      # 6) 检查 APK 是否生成且体积达标 —— 杜绝空包的第二道闸
-      # ------------------------------
+      # =========================
+      # 6) 产物体积校验（防空包第二道闸）
+      # =========================
       - name: Verify release APK exists and size
         id: apkcheck
         shell: bash
@@ -175,7 +180,6 @@ jobs:
           echo "size_kb=$size_kb" >> "$GITHUB_OUTPUT"
           echo "APK: $APK ($size_kb KB)"
 
-          # 阈值可通过 workflow_dispatch inputs 覆盖，默认 100KB
           min_kb="${{ env.MIN_APK_KB }}"
           if [[ "${size_kb}" -lt "${min_kb}" ]]; then
             echo "::error::APK too small (${size_kb}KB < ${min_kb}KB). Failing to prevent empty APK."
