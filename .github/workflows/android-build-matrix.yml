@@ -3,7 +3,14 @@ name: Android CI (robust + no-empty-apk)
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  MODULE_PATH: app
+  APK_NAME: unsigned-release-apk
+  MARKER_PATH: app/src/main/assets/build_marker.txt
 
 jobs:
   build:
@@ -17,188 +24,98 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: 17
+          cache: gradle
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
 
-      # 1) 解析 marker（容错+回退）
       - name: Determine template from marker (robust with fallback)
         id: marker
         shell: bash
         run: |
           set -euo pipefail
-
-          # 找到最新的 marker 文件（API 通常会写到 app/src/main/assets）
-          MARKER_FILE="$(ls -t app/src/main/assets/build_marker_*.txt 2>/dev/null | head -n1 || true)"
-
-          # 默认模板
-          TEMPLATE="form-template"
-
-          if [[ -n "${MARKER_FILE}" && -f "${MARKER_FILE}" ]]; then
-            echo "Found marker: ${MARKER_FILE}"
-            echo "---- marker content (first 200 bytes) ----"
-            head -c 200 "${MARKER_FILE}" || true
-            echo
-            # 简单 JSON 提取（无需 jq）：找 "template":"xxx"
-            # 允许空白和单双引号混用；提取后转小写
-            RAW=$(tr -d '\n\r' < "${MARKER_FILE}" | sed -E 's/\\//g')
-            VAL=$(echo "${RAW}" | grep -oE '"template"[[:space:]]*:[[:space:]]*"?[A-Za-z0-9_-]+"' | head -n1 | sed -E 's/.*:[[:space:]]*"?([A-Za-z0-9_-]+)".*/\1/i' | tr 'A-Z' 'a-z' || true)
-
-            if [[ "${VAL}" == "core-template" || "${VAL}" == "form-template" || "${VAL}" == "simple-template" ]]; then
-              TEMPLATE="${VAL}"
-            else
-              echo "Marker template invalid or missing. Fallback to ${TEMPLATE}"
-            fi
-          else
-            echo "No marker file found. Fallback to ${TEMPLATE}"
+          t=""
+          if [[ -n "${TEMPLATE:-}" ]]; then
+            t="${TEMPLATE}"
+          elif [[ -f "${MARKER_PATH}" ]]; then
+            # 读标记文件并去掉所有空白/CR/LF
+            t="$(tr -d '\r\n ' < "${MARKER_PATH}")"
           fi
 
-          echo "TEMPLATE=${TEMPLATE}" | tee -a $GITHUB_ENV
+          case "$t" in
+            core-template|form-template|simple-template)
+              echo "template=${t}" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Invalid or missing template in marker. Expected one of: core-template|form-template|simple-template"
+              echo "template=" >> "$GITHUB_OUTPUT"
+              exit 1
+              ;;
+          esac
 
-      # 2) 应用模板（仅同步 app/ 子模块），并保持幂等
       - name: Apply template to app/
+        if: steps.marker.outputs.template != ''
         shell: bash
         run: |
           set -euo pipefail
-          echo "Using TEMPLATE=${TEMPLATE}"
+          tpl="templates/${{ steps.marker.outputs.template }}"
+          [[ -d "$tpl" ]] || { echo "Template dir not found: $tpl"; exit 1; }
+          # 合并模板（不覆盖已存在的具体实现）
+          rsync -a --ignore-existing "$tpl/" "${MODULE_PATH}/"
 
-          SRC_DIR="templates/${TEMPLATE}"
-          if [[ ! -d "${SRC_DIR}" ]]; then
-            echo "Template directory not found: ${SRC_DIR}"
+      - name: Validate module is not empty (fail-fast)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # 1) 不能没有源码
+          if ! ls ${MODULE_PATH}/src/main/java/* -R >/dev/null 2>&1 && \
+             ! ls ${MODULE_PATH}/src/main/kotlin/* -R >/dev/null 2>&1; then
+            echo "❌ No Java/Kotlin source files under ${MODULE_PATH}/src/main"
             exit 1
           fi
 
-          # 仅拷贝模板里的 app 子模块（避免污染根项目）
-          if [[ -d "${SRC_DIR}/app" ]]; then
-            rsync -a --delete --exclude ".git" --exclude "gradle" --exclude "gradlew*" "${SRC_DIR}/app/" "app/"
-          else
-            # 有的模板就是直接提供 app/ 级别内容
-            rsync -a --delete --exclude ".git" "${SRC_DIR}/" "app/"
+          # 2) 不能缺 AndroidManifest.xml
+          if [[ ! -f "${MODULE_PATH}/src/main/AndroidManifest.xml" ]]; then
+            echo "❌ Missing ${MODULE_PATH}/src/main/AndroidManifest.xml"
+            exit 1
           fi
 
-      # 3) 清理 gradle.properties 里会导致 AGP 8.x 挂掉的旧开关
-      - name: Sanitize gradle.properties (AGP 8.x compatibility)
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ -f "gradle.properties" ]]; then
-            # 移除在 AGP 7+ 已删除的开关（你当前报错的就是 android.enableAapt2）
-            sed -i '/^android.enableAapt2[[:space:]]*=/d' gradle.properties || true
-            # 可选：顺便清理其他历史遗留
-            sed -i '/^android.useDeprecatedNdk/d' gradle.properties || true
-            sed -i '/^android.enableJetifier[[:space:]]*=/d' gradle.properties || true
+          # 3) 不能出现历史遗留的禁用项（例如 android.enableAapt2）
+          if [[ -f "gradle.properties" ]] && grep -q "^android\.enableAapt2" gradle.properties; then
+            echo "❌ Found deprecated 'android.enableAapt2' in gradle.properties. Remove it."
+            exit 1
           fi
 
-      # 4) 杜绝“空模块”：若源码/布局缺失则自动补齐最小可运行内容
-      - name: No-empty safeguard (autofill minimal Activity/layout if missing)
-        shell: bash
-        run: |
-          set -euo pipefail
-          JAVA_DIR="app/src/main/java"
-          RES_LAYOUT_DIR="app/src/main/res/layout"
-          MANIFEST="app/src/main/AndroidManifest.xml"
-
-          mkdir -p "${JAVA_DIR}" "${RES_LAYOUT_DIR}"
-
-          # 若未提供 Manifest，补一个最小可用的
-          if [[ ! -f "${MANIFEST}" ]]; then
-            cat > "${MANIFEST}" <<'XML'
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.app">
-    <application
-        android:label="Demo"
-        android:allowBackup="true"
-        android:supportsRtl="true">
-        <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
-</manifest>
-XML
-          fi
-
-          # 如果没有任何 java/kt 文件，补一个 MainActivity.java
-          FILE_COUNT=$(find "${JAVA_DIR}" -type f \( -name "*.kt" -o -name "*.java" \) | wc -l | tr -d ' ')
-          if [[ "${FILE_COUNT}" == "0" ]]; then
-            PKG_DIR="${JAVA_DIR}/com/example/app"
-            mkdir -p "${PKG_DIR}"
-            cat > "${PKG_DIR}/MainActivity.java" <<'JAVA'
-package com.example.app;
-
-import android.app.Activity;
-import android.os.Bundle;
-import android.widget.TextView;
-
-public class MainActivity extends Activity {
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    TextView tv = new TextView(this);
-    tv.setText("Hello from no-empty safeguard");
-    setContentView(tv);
-  }
-}
-JAVA
-          fi
-
-          # 如果没有任何布局，补一个 activity_main.xml（当前 MainActivity 用 TextView 也能跑，此步可选）
-          if [[ ! -f "${RES_LAYOUT_DIR}/activity_main.xml" ]]; then
-            cat > "${RES_LAYOUT_DIR}/activity_main.xml" <<'XML'
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <TextView
-        android:layout_gravity="center"
-        android:text="Hello from template"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-</FrameLayout>
-XML
-          fi
-
-      # 5) 编译（无签名）
       - name: Build (unsigned)
-        run: ./gradlew --no-daemon --stacktrace assembleRelease
-
-      # 6) 产物验真：classes.dex + AndroidManifest.xml 必须存在；体积 > 2MB
-      - name: Verify release APK exists and size (no-empty check)
-        id: verify
         shell: bash
         run: |
           set -euo pipefail
-          APK=$(ls app/build/outputs/apk/release/*.apk | head -n1 || true)
-          if [[ -z "${APK}" ]]; then
-            echo "No release APK produced."
+          ./gradlew :${MODULE_PATH}:assembleRelease --stacktrace
+
+      - name: Verify release APK exists and size
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=$(ls ${MODULE_PATH}/build/outputs/apk/release/*.apk | head -n1 || true)
+          if [[ -z "$apk" ]]; then
+            echo "❌ Release APK not found."
             exit 1
           fi
-          echo "APK: ${APK}"
-
-          # 检查基本文件
-          unzip -l "${APK}" | grep -q "AndroidManifest.xml" || { echo "Missing AndroidManifest.xml in APK"; exit 1; }
-          unzip -l "${APK}" | grep -q "classes.dex"        || { echo "Missing classes.dex in APK"; exit 1; }
-
-          # 体积阈值（可根据你的模板调大/调小）
-          BYTES=$(stat -c%s "${APK}")
-          echo "APK size: ${BYTES} bytes"
-          MIN_BYTES=$((2*1024*1024)) # 2MB
-          if (( BYTES < MIN_BYTES )); then
-            echo "APK too small (< 2MB). Treat as empty/broken."
+          size=$(stat -c%s "$apk")
+          echo "APK: $apk, size: $size bytes"
+          # 小于 3MB 判定为空包（你可以再调大/调小）
+          if [[ "$size" -lt 3145728 ]]; then
+            echo "❌ APK is too small (likely empty)."
             exit 1
           fi
-
-          echo "apk_path=${APK}" >> $GITHUB_OUTPUT
+          echo "APK_PATH=$apk" >> $GITHUB_ENV
 
       - name: Upload unsigned APK
         uses: actions/upload-artifact@v4
         with:
-          name: unsigned-release-apk
-          path: ${{ steps.verify.outputs.apk_path }}
+          name: ${{ env.APK_NAME }}
+          path: ${{ env.APK_PATH }}
