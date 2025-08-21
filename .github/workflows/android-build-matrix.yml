@@ -2,139 +2,132 @@ name: Android CI (no-empty-apk with content-pack)
 
 on:
   push:
-  workflow_dispatch:
-
-permissions:
-  contents: read
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
-          cache: gradle
+          java-version: "17"
+
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install tools
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y jq unzip
+          sudo apt-get update
+          sudo apt-get install -y aapt apksigner jq unzip
 
-      # 1) 选择模板（从 marker/输入推断；简化：默认 form-template）
       - name: Pick template
         id: pick
-        shell: bash
         run: |
-          set -e
-          T="form-template"
-          if [ -f app/src/main/assets/build_marker.txt ]; then
-            TT=$(grep -Eo 'core-template|form-template|simple-template' app/src/main/assets/build_marker.txt || true)
-            [ -n "$TT" ] && T="$TT"
-          fi
-          echo "template=$T" >> $GITHUB_OUTPUT
-          echo "Using template: $T"
-
-      # 2) 应用模板到 app/（保持干净环境）
-      - name: Apply template to app/
-        shell: bash
-        run: |
-          set -e
-          T="${{ steps.pick.outputs.template }}"
-          rsync -a --delete "templates/$T/app/" "app/"
-
-      # 3) 注入内容包（这是关键：模板之后再合入）
-      - name: Inject content pack
-        shell: bash
-        run: |
-          set -e
-          if [ -d content_pack/app ]; then
-            rsync -a content_pack/app/ app/
-            echo "Injected content_pack into app/"
+          set -euo pipefail
+          if [[ -f app/template.marker ]]; then
+            TEMPLATE="$(cat app/template.marker)"
           else
-            echo "No content_pack/app directory — if API未写入，这里会是空"
+            # 默认 form-template；你也可以从提交信息或路径读取
+            TEMPLATE="form-template"
           fi
+          echo "template=$TEMPLATE" >> $GITHUB_OUTPUT
+          echo "Using template: $TEMPLATE"
 
-      # 4) Gradle 前硬闸：必须有我们注入的业务文件（否则 fail）
-      - name: Pre-build hard gate (content exists)
-        shell: bash
+      - name: Apply template to app/
         run: |
-          set -e
-          test -f app/src/main/AndroidManifest.xml || { echo "::error::Missing AndroidManifest.xml"; exit 1; }
-          test -f app/src/main/java/com/app/generated/MainActivity.java || { echo "::error::Missing generated MainActivity.java"; exit 1; }
-          test -f app/src/main/res/layout/activity_generated.xml || { echo "::error::Missing layout/activity_generated.xml"; exit 1; }
-          MARKER=$(ls -1 app/src/main/assets/build_marker_*.json 2>/dev/null || true)
-          [ -n "$MARKER" ] || { echo "::error::No build_marker json in assets"; exit 1; }
-          echo "Marker: $MARKER"
-          # 至少1个layout + 至少1个源码，进一步兜底
-          L=$(find app/src/main/res/layout -name '*.xml' | wc -l | xargs)
-          S=$(find app/src/main/java -name '*.java' -o -name '*.kt' | wc -l | xargs)
-          [ "$L" -ge 1 ] || { echo "::error::no layout"; exit 1; }
-          [ "$S" -ge 1 ] || { echo "::error::no source"; exit 1; }
+          set -euo pipefail
+          # 模板此处若需要覆盖基础文件，按需处理；通常 app 目录已有模板，不需要额外替换
+
+      # === 关键：把 content_pack 注入到 app/ ===
+      - name: Inject content pack
+        run: |
+          set -euo pipefail
+          if [[ ! -d content_pack/app ]]; then
+            echo "No content_pack/app found in repo. Did the API commit succeed?"
+            echo "Tree:"; ls -R
+            exit 1
+          fi
+          rsync -av --delete content_pack/app/ app/
+          echo "After injection:"
+          find app/src/main -maxdepth 6 -type f \( -name "MainActivity.java" -o -name "activity_generated.xml" -o -name "strings_generated.xml" -o -name "build_marker_*.json" \) -print || true
+
+      # === 预构建硬闸：必须存在内容 ===
+      - name: Pre-build hard gate (content exists)
+        run: |
+          set -euo pipefail
+          echo "Check generated artifacts..."
+          FOUND_JAVA="$(find app/src/main/java -type f -path "*/generated/MainActivity.java" | head -n1 || true)"
+          FOUND_LAYOUT="$(find app/src/main/res/layout -type f -name "activity_generated.xml" | head -n1 || true)"
+          FOUND_STRINGS="$(find app/src/main/res/values -type f -name "strings_generated.xml" | head -n1 || true)"
+          FOUND_MARKER="$(find app/src/main/assets -type f -name "build_marker_*.json" | head -n1 || true)"
+
+          echo "FOUND_JAVA=$FOUND_JAVA"
+          echo "FOUND_LAYOUT=$FOUND_LAYOUT"
+          echo "FOUND_STRINGS=$FOUND_STRINGS"
+          echo "FOUND_MARKER=$FOUND_MARKER"
+
+          [[ -n "$FOUND_JAVA" ]]    || { echo "Error: Missing generated MainActivity.java"; exit 1; }
+          [[ -n "$FOUND_LAYOUT" ]]  || { echo "Error: Missing layout activity_generated.xml"; exit 1; }
+          [[ -n "$FOUND_STRINGS" ]] || { echo "Error: Missing strings_generated.xml"; exit 1; }
+          [[ -n "$FOUND_MARKER" ]]  || { echo "Error: Missing build_marker_*.json"; exit 1; }
 
       - name: Prepare Gradle wrapper
         run: |
-          set -e
-          chmod +x gradlew
-          ./gradlew --version
+          chmod +x ./gradlew
 
-      # 5) 智能选择构建任务
-      - name: Choose Gradle task
-        id: choose
-        shell: bash
+      - name: Choose Gradle task (assembleRelease -> assembleDebug)
+        id: gradle
         run: |
-          set -e
-          if ./gradlew -q :app:tasks --all | grep -q '^assembleRelease'; then
-            echo "task=:app:assembleRelease" >> $GITHUB_OUTPUT
-            echo "variant=release" >> $GITHUB_OUTPUT
-          else
-            echo "task=:app:assembleDebug" >> $GITHUB_OUTPUT
-            echo "variant=debug" >> $GITHUB_OUTPUT
-          fi
+          set -euo pipefail
+          TASK="assembleRelease"
+          echo "task=$TASK" >> $GITHUB_OUTPUT
 
-      - name: Build
-        run: ./gradlew --no-daemon --stacktrace ${{ steps.choose.outputs.task }}
+      - name: Build (unsigned)
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon -Dorg.gradle.jvmargs="-Xmx2g -XX:MaxMetaspaceSize=512m" app:${{ steps.gradle.outputs.task }}
 
       - name: Locate APK
         id: locate
-        shell: bash
         run: |
-          set -e
-          v="${{ steps.choose.outputs.variant }}"
-          APK=$(ls -1 app/build/outputs/apk/$v/*-$v*.apk 2>/dev/null | head -n1 || true)
-          [ -n "$APK" ] || { echo "::error::No APK under outputs/apk/$v"; exit 1; }
+          set -euo pipefail
+          APK=$(ls -1 app/build/outputs/apk/*/*.apk | head -n1 || true)
           echo "apk=$APK" >> $GITHUB_OUTPUT
-          echo "Found $APK"
+          [[ -n "$APK" ]] || { echo "No APK produced"; exit 1; }
+          echo "APK=$APK"
 
-      # 6) Gradle 后硬闸：真正拦下“空壳”
+      # === 构建后硬闸：APK 绝不能为空 ===
       - name: Post-build hard gate (no-empty-apk)
-        shell: bash
         run: |
-          set -e
+          set -euo pipefail
           APK="${{ steps.locate.outputs.apk }}"
+          echo "Verify $APK"
+
+          # aapt dump 清单，检查可启动 Activity
+          aapt dump badging "$APK" | tee /tmp/aapt.txt
+          LAUNCHABLE=$(grep -Eo "launchable-activity: name='[^']+'" /tmp/aapt.txt | head -n1 || true)
+          [[ -n "$LAUNCHABLE" ]] || { echo "No launchable activity"; exit 1; }
+
+          # 检查 dex/manifest/资源是否存在且尺寸合理
+          UNZ=/tmp/apk_unz && rm -rf "$UNZ" && mkdir -p "$UNZ"
+          unzip -q "$APK" -d "$UNZ"
+          test -s "$UNZ/AndroidManifest.xml" || { echo "Missing manifest"; exit 1; }
+          test -s "$UNZ/classes.dex"         || { echo "Missing classes.dex"; exit 1; }
+          test -d "$UNZ/res"                 || { echo "Missing res"; exit 1; }
+
+          # 体积/文件数简易阈值（可按需调整）
+          FILES=$(find "$UNZ" -type f | wc -l)
           SIZE=$(stat -c%s "$APK")
-          [ "$SIZE" -ge 2500000 ] || { echo "::error::APK too small ($SIZE)"; exit 1; }
-          unzip -l "$APK" > /tmp/list.txt
-          grep -q 'AndroidManifest.xml' /tmp/list.txt || { echo "::error::Manifest missing in APK"; exit 1; }
-          grep -q 'classes.dex' /tmp/list.txt || { echo "::error::classes.dex missing in APK"; exit 1; }
-          # 资源数量
-          RES=$(grep -E ' res/(layout|drawable|mipmap)/' /tmp/list.txt | wc -l | xargs)
-          [ "$RES" -ge 3 ] || { echo "::error::not enough resources in APK ($RES)"; exit 1; }
-          # marker 必须被打入 assets
-          MARK=$(basename $(ls -1 app/src/main/assets/build_marker_*.json | head -n1))
-          unzip -l "$APK" | grep -q "assets/$MARK" || { echo "::error::marker not inside APK"; exit 1; }
-          echo "✓ APK structure ok"
+          echo "FILES=$FILES SIZE=$SIZE"
+          [[ $FILES -ge 200 ]] || { echo "APK too small (files<$FILES)"; exit 1; }
+          [[ $SIZE  -ge 3000000 ]] || { echo "APK too small (size<$SIZE)"; exit 1; }
 
       - name: Upload unsigned APK
         uses: actions/upload-artifact@v4
         with:
-          name: unsigned-${{ steps.choose.outputs.variant }}-apk
+          name: unsigned-release-apk
           path: ${{ steps.locate.outputs.apk }}
