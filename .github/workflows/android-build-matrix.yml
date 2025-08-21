@@ -5,8 +5,10 @@ on:
   workflow_dispatch:
 
 env:
-  # APK 体积下限（字节）。按你的模板实际情况可再上调，比如 4_000_000
-  MIN_APK_BYTES: "3000000"
+  # 全局 APK 最小体积阈值（字节）。可按需调整
+  MIN_APK_BYTES: '3000000'
+  # Java / Gradle 基本环境
+  JAVA_VERSION: '17'
 
 jobs:
   build:
@@ -16,115 +18,187 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
 
-      # 可选：安装/准备 Android SDK（AGP 也能自动拉取，保守起见放一层）
-      - name: Set up Android SDK (optional)
-        uses: android-actions/setup-android@v3
-
-      - name: Make gradlew executable
-        run: |
-          chmod +x gradlew || true
-          find . -name gradlew -type f -exec chmod +x {} \; || true
-
-      # 1) 从标记文件里“稳健”读取模板；找不到则回退为 form-template
+      ####################################################################
+      # 1) 从 marker 推断模板（你现有逻辑；若仓库里已有相同步骤，可保留原实现）
+      ####################################################################
       - name: Determine template from marker (robust with fallback)
         id: pick
         shell: bash
         run: |
           set -euo pipefail
-          TEMPLATE="form-template"
-
-          # 支持写入 app/src/main/assets/build_marker*.txt（取最新）
-          if compgen -G "app/src/main/assets/build_marker*.txt" > /dev/null; then
-            FILE=$(ls -1t app/src/main/assets/build_marker*.txt | head -n1)
-            CAND=$(head -n1 "$FILE" | sed 's/\r//g' | xargs || true)
-            if [[ "$CAND" =~ ^(core-template|form-template|simple-template)$ ]]; then
-              TEMPLATE="$CAND"
-            fi
+          # 优先从 app/src/main/assets/build_marker*.txt 读取模板名
+          # 允许值：core-template | form-template | simple-template
+          TPL=''
+          MARKER=$(ls app/src/main/assets/build_marker*.txt 2>/dev/null | head -n1 || true)
+          if [ -n "${MARKER:-}" ]; then
+            TPL=$(tr -d '[:space:]' < "$MARKER")
           fi
+          # 兜底：默认使用 form-template
+          case "$TPL" in
+            core-template|form-template|simple-template) : ;;
+            *) TPL="form-template" ;;
+          esac
+          echo "template=$TPL" >> "$GITHUB_OUTPUT"
+          echo "Picked template: $TPL"
 
-          echo "template=$TEMPLATE" >> "$GITHUB_OUTPUT"
-          echo "Using template: $TEMPLATE"
-
-      # 2) 同步模板 —— 不仅拷贝 app，还要把根级 Gradle 文件也覆盖（否则会缺任务/版本不匹配）
-      - name: Apply template to project
+      ####################################################################
+      # 2) 应用模板到 app/（你现有逻辑；若已有同名步骤，可保留原实现）
+      ####################################################################
+      - name: Apply template to app/
         shell: bash
         run: |
           set -euo pipefail
           TPL="${{ steps.pick.outputs.template }}"
+          echo "Apply templates/$TPL -> app/"
+          rsync -a --delete "templates/$TPL/" app/
 
-          echo "Sync templates/$TPL -> project"
-          rsync -a --delete "templates/$TPL/app/" "app/"
-
-          for f in build.gradle settings.gradle gradle.properties; do
-            if [ -f "templates/$TPL/$f" ]; then
-              cp -f "templates/$TPL/$f" "./$f"
-              echo "Applied $f from template"
-            fi
-          done
-
-      # 3) 快速失败：基本文件是否存在，源/资源是否完全为空
+      ####################################################################
+      # 3) 快速校验 module 非空（你已有）
+      ####################################################################
       - name: Validate module is not empty (fail-fast)
         shell: bash
         run: |
           set -euo pipefail
-          test -f app/src/main/AndroidManifest.xml || { echo "::error::缺少 app/src/main/AndroidManifest.xml"; exit 1; }
+          test -f app/src/main/AndroidManifest.xml
+          test -d app/src/main/java -o -d app/src/main/kotlin -o -d app/src/main/res
 
-          RES=$(find app/src/main/res -type f 2>/dev/null | wc -l | tr -d ' ')
-          SRC=$(find app/src/main -type f \( -name "*.kt" -o -name "*.java" \) 2>/dev/null | wc -l | tr -d ' ')
-          echo "res files: $RES, source files: $SRC"
-
-          if [ "${RES:-0}" -lt 1 ] && [ "${SRC:-0}" -lt 1 ]; then
-            echo "::error::app/src/main 下没有任何资源或代码文件，疑似空项目"
-            exit 1
-          fi
-
-      # 4) 先确认 :app 里确实存在 assembleRelease 任务（根因定位更直接）
-      - name: Ensure :app:assembleRelease task exists
+      ####################################################################
+      # 4) （可选）按模板加载“最小 APK 体积阈值”，优先于全局阈值
+      ####################################################################
+      - name: Load template-specific APK size threshold (optional)
+        id: tplmin
         shell: bash
         run: |
           set -euo pipefail
-          ./gradlew :app:tasks --all > tasks.txt
-          if ! grep -q "^assembleRelease" tasks.txt; then
-            echo "::group:::app tasks"; cat tasks.txt; echo "::endgroup::"
-            echo "::error::':app' 中未发现 assembleRelease 任务。请确认 app/build.gradle 使用 com.android.application 且包含 release 构建类型。"
-            exit 1
+          MIN="${MIN_APK_BYTES:-3000000}"
+          TPL="${{ steps.pick.outputs.template }}"
+          FILE="templates/$TPL/ci-apk-min-bytes.txt"
+          if [ -f "$FILE" ]; then
+            V=$(tr -d '[:space:]' < "$FILE" | sed 's/[_,]//g' || true)
+            if [[ "$V" =~ ^[0-9]+$ ]] && [ "$V" -gt 0 ]; then
+              MIN="$V"
+            fi
           fi
+          echo "min=$MIN" >> "$GITHUB_OUTPUT"
+          echo "Using MIN_APK_BYTES=$MIN"
 
-      # 5) 真正编译
+      ####################################################################
+      # 5) 准备 Gradle wrapper（若你仓库已自带可忽略）
+      ####################################################################
+      - name: Prepare Gradle wrapper
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+
+      ####################################################################
+      # 6) 构建 unsigned release APK（你现有命令）
+      ####################################################################
       - name: Build (unsigned)
-        run: ./gradlew --no-daemon --stacktrace :app:assembleRelease
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon --stacktrace :app:assembleRelease
 
-      # 6) 产物与体积校验（杜绝空包）
+      ####################################################################
+      # 7) 校验 APK 存在与最小体积（模板阈值优先）
+      ####################################################################
       - name: Verify release APK exists and size
         id: verify
-        shell: bash
         env:
-          MIN_APK_BYTES: ${{ env.MIN_APK_BYTES }}
+          MIN_APK_BYTES: ${{ steps.tplmin.outputs.min || env.MIN_APK_BYTES }}
+        shell: bash
         run: |
           set -euo pipefail
-          APK=$(ls -1 app/build/outputs/apk/release/*-release*.apk | head -n1 || true)
-          if [ -z "${APK:-}" ] || [ ! -f "$APK" ]; then
-            echo "::error::未找到 release APK（app/build/outputs/apk/release/*-release*.apk）"
+          APK=$(ls -1 app/build/outputs/apk/release/*-release.apk | head -n1 || true)
+          if [ -z "$APK" ]; then
+            echo "::error::No release APK produced at app/build/outputs/apk/release/"
             exit 1
           fi
           SIZE=$(stat -c%s "$APK")
-          echo "Release APK: $APK ($SIZE bytes)"
-
-          echo "apk=$APK"  >> "$GITHUB_OUTPUT"
-          echo "size=$SIZE" >> "$GITHUB_OUTPUT"
-
+          echo "APK=$APK"
+          echo "SIZE=$SIZE"
+          echo "MIN=${MIN_APK_BYTES}"
           if [ "$SIZE" -lt "$MIN_APK_BYTES" ]; then
-            echo "::error::APK 体积($SIZE) < 阈值($MIN_APK_BYTES)，疑似空包"
+            echo "::error::APK size $SIZE < MIN $MIN_APK_BYTES (bytes) — possible empty APK"
+            exit 1
+          fi
+          echo "apk=$APK" >> "$GITHUB_OUTPUT"
+
+      ####################################################################
+      # 8) 深度内容校验：classes.dex / resources.arsc / res 资源数量
+      ####################################################################
+      - name: Deep verify APK contents (no-empty-apk hard gate)
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="${{ steps.verify.outputs.apk }}"
+
+          echo "::group::APK file list (first 200)"
+          unzip -l "$APK" | sed -n '1,200p'
+          echo "::endgroup::"
+
+          # classes.dex >= 50 KB
+          CLS_SIZE=$(unzip -l "$APK" | awk '/classes\.dex$/ {print $1}' || true)
+          if [ -z "$CLS_SIZE" ] || [ "$CLS_SIZE" -lt 50000 ]; then
+            echo "::error::缺少 classes.dex 或文件太小（$CLS_SIZE 字节），疑似空代码"
             exit 1
           fi
 
-      # 7) 上传产物
+          # resources.arsc >= 50 KB
+          ARSC_SIZE=$(unzip -l "$APK" | awk '/resources\.arsc$/ {print $1}' || true)
+          if [ -z "$ARSC_SIZE" ] || [ "$ARSC_SIZE" -lt 50000 ]; then
+            echo "::error::缺少 resources.arsc 或文件太小（$ARSC_SIZE 字节），疑似空资源"
+            exit 1
+          fi
+
+          # res/ 至少 5 个资源（按模板调整）
+          RES_COUNT=$(unzip -l "$APK" | awk '/ res\// {c++} END{print c+0}')
+          if [ "$RES_COUNT" -lt 5 ]; then
+            echo "::error::res/ 资源文件过少（$RES_COUNT 个），疑似空包"
+            exit 1
+          fi
+
+          echo "✓ Deep verify passed: classes.dex=$CLS_SIZE bytes, resources.arsc=$ARSC_SIZE bytes, res files=$RES_COUNT"
+
+      ####################################################################
+      # 9) aapt 清单检查：必须能解析 package / launchable-activity
+      ####################################################################
+      - name: Inspect manifest (aapt badging)
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="${{ steps.verify.outputs.apk }}"
+          sudo apt-get update -y >/dev/null
+          sudo apt-get install -y aapt >/dev/null
+          BADGING=$(aapt dump badging "$APK" || true)
+          echo "::group::aapt badging (head)"
+          echo "$BADGING" | sed -n '1,120p'
+          echo "::endgroup::"
+
+          PKG=$(echo "$BADGING" | awk -F"'" '/package: name=/{print $2}')
+          ACT=$(echo "$BADGING" | awk -F"'" '/launchable-activity: name=/{print $2}' | head -n1)
+
+          if [ -z "$PKG" ]; then
+            echo "::error::aapt 未能解析到 package name（AndroidManifest 可能异常）"
+            exit 1
+          fi
+          if [ -z "$ACT" ]; then
+            echo "::error::aapt 未能解析到 launchable-activity（可能缺少主入口 Activity）"
+            exit 1
+          fi
+          echo "✓ Manifest ok: package=$PKG, launchable-activity=$ACT"
+
+      ####################################################################
+      # 10) 上传制品
+      ####################################################################
       - name: Upload unsigned APK
         uses: actions/upload-artifact@v4
         with:
