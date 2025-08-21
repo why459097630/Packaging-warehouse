@@ -1,60 +1,56 @@
 plugins {
-  id 'com.android.application'
-  id 'org.jetbrains.kotlin.android'
+    id 'com.android.application'
+    // 如果模板是 Kotlin，再打开下一行：
+    // id 'org.jetbrains.kotlin.android'
 }
 
 android {
-  namespace 'com.ndjc.generated'
-  compileSdk 34
+    compileSdkVersion 34
 
-  defaultConfig {
-    applicationId 'com.ndjc.generated'
-    minSdk 24
-    targetSdk 34
-    versionCode 1
-    versionName '1.0'
-  }
+    // 统一来源的 APP ID（优先环境变量，其次 gradle.properties，最后默认）
+    def appId = (System.getenv("APP_ID")
+            ?: (project.findProperty("APP_ID") ?: "com.app.generated"))
 
-  buildTypes {
-    release {
-      minifyEnabled false
-      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    // AGP 8 必须：Manifest 不能再写 package，这里声明命名空间
+    namespace appId
+
+    defaultConfig {
+        applicationId appId
+        minSdkVersion 24
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0"
+
+        // 如用到 FileProvider 等，用占位符随 applicationId 变化
+        manifestPlaceholders = [
+            fileProviderAuthority: "${appId}.provider"
+        ]
     }
-    debug {
-      minifyEnabled false
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+        }
     }
-  }
 
-  // 统一 Java/Kotlin 到 17，并开启 JDK desugaring（避免 dex 阶段报错）
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_17
-    targetCompatibility JavaVersion.VERSION_17
-    coreLibraryDesugaringEnabled true
-  }
-  kotlinOptions {
-    jvmTarget = '17'
-  }
+    // JDK 17（AGP 8.x 要求）
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    // 如果模板是 Kotlin，再打开：
+    // kotlinOptions { jvmTarget = '17' }
 
-  buildFeatures {
-    viewBinding true
-  }
-}
-
-// 可选：更稳地指定 Kotlin 工具链
-kotlin {
-  jvmToolchain(17)
+    // 可按需开启
+    // buildFeatures { viewBinding true }
 }
 
 dependencies {
-  implementation 'androidx.core:core-ktx:1.13.1'
-  implementation 'androidx.appcompat:appcompat:1.6.1'
-  implementation 'com.google.android.material:material:1.12.0'
-  implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-
-  // 与上面的 coreLibraryDesugaringEnabled 搭配
-  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
-
-  testImplementation 'junit:junit:4.13.2'
-  androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-  androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
 }
