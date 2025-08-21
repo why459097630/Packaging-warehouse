@@ -28,48 +28,39 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      # 2) 从 marker 决定使用哪个模板（健壮 + 回退）
+      # 2) 从 marker 决定模板（改为 POSIX 语法；健壮 + 回退）
       - name: Determine template from marker (robust with fallback)
         id: marker
         shell: bash
         run: |
-          set -euo pipefail
+          set -e
           VALID_TEMPLATES="core-template form-template simple-template"
-
-          guess_template() {
-            local t="$1"
-            for v in $VALID_TEMPLATES; do
-              if [[ "$t" == "$v" ]]; then
-                echo "$t"; return 0
-              fi
-            done
-            return 1
-          }
-
-          # 支持多种 marker 命名
           TEMPLATE=""
+
           for m in \
             app/src/main/assets/build_marker.txt \
             app/src/main/assets/build_marker_*.txt \
             app/src/main/assets/build_marker-*.txt \
-            app/src/main/assets/build_marker*
-          ; do
-            if [[ -f "$m" ]]; then
-              # 支持 "template: xxx" 或直接写模板名
-              t=$(grep -Eo 'core-template|form-template|simple-template' "$m" || true)
-              if [[ -z "$t" ]]; then
-                t=$(tail -n1 "$m" | tr -d '\r' | awk '{print $1}')
+            app/src/main/assets/build_marker* \
+            app/src/main/assets/build.marker.txt \
+            app/src/main/assets/build-marker.txt
+          do
+            if [ -f "$m" ]; then
+              t="$(grep -Eo 'core-template|form-template|simple-template' "$m" | head -n1 || true)"
+              if [ -z "$t" ]; then
+                t="$(tail -n1 "$m" | tr -d '\r' | awk '{print $1}')"
               fi
-              if guess_template "$t" >/dev/null 2>&1; then
-                TEMPLATE="$t"
-                echo "marker file: $m => $TEMPLATE"
-                break
-              fi
+              for v in $VALID_TEMPLATES; do
+                if [ "$t" = "$v" ]; then
+                  TEMPLATE="$t"
+                  echo "marker file: $m => $TEMPLATE"
+                  break 2
+                fi
+              done
             fi
           done
 
-          # 没找到就回退
-          if [[ -z "$TEMPLATE" ]]; then
+          if [ -z "$TEMPLATE" ]; then
             TEMPLATE="form-template"
             echo "No valid marker found, fallback to $TEMPLATE"
           fi
@@ -80,17 +71,17 @@ jobs:
       - name: Apply template to app/
         shell: bash
         run: |
-          set -euo pipefail
+          set -e
           T="${{ steps.marker.outputs.template }}"
           echo "Using template: $T"
           mkdir -p app
           rsync -a --delete "templates/$T/app/" "app/"
 
-      # 4) 准备 Gradle Wrapper（从模板带到仓库根目录）
+      # 4) 准备 Gradle Wrapper
       - name: Prepare Gradle wrapper
         shell: bash
         run: |
-          set -euo pipefail
+          set -e
           T="${{ steps.marker.outputs.template }}"
           rsync -a "templates/$T/gradlew" .
           rsync -a "templates/$T/gradlew.bat" .
@@ -100,37 +91,43 @@ jobs:
 
           # 根级别构建脚本（若模板提供）
           for f in settings.gradle settings.gradle.kts build.gradle build.gradle.kts; do
-            if [[ -f "templates/$T/$f" ]]; then
+            if [ -f "templates/$T/$f" ]; then
               rsync -a "templates/$T/$f" "$f"
             fi
           done
 
-      # 5)（可选）模板内定义最小 APK 体积门槛，默认 1MiB
+      # 5) （可选）模板内定义最小 APK 体积门槛，默认 1MiB
       - name: Load template-specific APK size threshold (optional)
         id: threshold
         shell: bash
         run: |
-          set -euo pipefail
+          set -e
           T="${{ steps.marker.outputs.template }}"
           DEFAULT=$((1024*1024))
           MIN="$DEFAULT"
-          if [[ -f "templates/$T/.ci/min_apk_size" ]]; then
-            MIN=$(cat "templates/$T/.ci/min_apk_size" | tr -d '\r' | tr -d ' ')
+          if [ -f "templates/$T/.ci/min_apk_size" ]; then
+            MIN="$(cat "templates/$T/.ci/min_apk_size" | tr -d '\r' | tr -d ' ')"
           fi
           echo "min=$MIN" >> "$GITHUB_OUTPUT"
           echo "MIN_APK_SIZE=$MIN bytes"
 
-      # 6) 先做轻量校验（AndroidManifest/res/Java 源码是否存在）
+      # 6) 轻量级验证（Manifest/源码/资源是否存在）
       - name: Validate module is not empty (fail-fast)
         shell: bash
         run: |
-          set -euo pipefail
-          test -f app/src/main/AndroidManifest.xml || { echo "::error::Missing app/src/main/AndroidManifest.xml"; exit 1; }
-          SRC_COUNT=$(find app/src/main/java -type f -name '*.kt' -o -name '*.java' | wc -l | xargs)
-          RES_COUNT=$(find app/src/main/res -type f | wc -l | xargs)
+          set -e
+          if [ ! -f app/src/main/AndroidManifest.xml ]; then
+            echo "::error::Missing app/src/main/AndroidManifest.xml"; exit 1
+          fi
+          SRC_COUNT="$(find app/src/main/java -type f \( -name '*.kt' -o -name '*.java' \) 2>/dev/null | wc -l | xargs)"
+          RES_COUNT="$(find app/src/main/res -type f 2>/dev/null | wc -l | xargs)"
           echo "java/kt files: $SRC_COUNT, res files: $RES_COUNT"
-          [[ "$SRC_COUNT" -ge 1 ]] || { echo "::error::No source files found in app/src/main/java"; exit 1; }
-          [[ "$RES_COUNT" -ge 1 ]] || { echo "::error::No resources found in app/src/main/res"; exit 1; }
+          if [ "$SRC_COUNT" -lt 1 ]; then
+            echo "::error::No source files found in app/src/main/java"; exit 1
+          fi
+          if [ "$RES_COUNT" -lt 1 ]; then
+            echo "::error::No resources found in app/src/main/res"; exit 1
+          fi
 
       # 7) 构建 unsigned release
       - name: Build (unsigned)
@@ -139,7 +136,7 @@ jobs:
           set -e
           ./gradlew --no-daemon -stacktrace :app:assembleRelease
 
-      # 8) 直接列出 Gradle 输出，便于排查真实文件名
+      # 8) 列出 Gradle 输出，便于排查
       - name: List Gradle outputs
         shell: bash
         run: |
@@ -147,63 +144,69 @@ jobs:
           echo "== tree app/build/outputs =="
           find app/build/outputs -type f -print | sed 's/^/  /' || true
 
-      # 9) 验证 APK 是否产出且体积达标（改为更宽松的通配符）
+      # 9) 验证 APK 产出与体积（使用 ls 而不是 glob 数组）
       - name: Verify release APK exists and size
         shell: bash
         run: |
-          set -euo pipefail
-          APK_GLOB="app/build/outputs/apk/release/*.apk"
-          APKS=( $APK_GLOB )
-          [[ ${#APKS[@]} -ge 1 ]] || { echo "::error::No release APK produced under $APK_GLOB"; exit 1; }
-          for apk in "${APKS[@]}"; do
+          set -e
+          APK_FILES="$(ls -1 app/build/outputs/apk/release/*.apk 2>/dev/null || true)"
+          if [ -z "$APK_FILES" ]; then
+            echo "::error::No release APK produced under app/build/outputs/apk/release/*.apk"; exit 1
+          fi
+          for apk in $APK_FILES; do
             if stat --version >/dev/null 2>&1; then
-              SIZE=$(stat -c%s "$apk")
+              SIZE="$(stat -c%s "$apk")"
             else
-              SIZE=$(wc -c <"$apk")
+              SIZE="$(wc -c < "$apk")"
             fi
             echo "APK: $apk  size=${SIZE}"
-            [[ "${SIZE}" -ge "${{ steps.threshold.outputs.min }}" ]] \
-              || { echo "::error::APK too small (< ${{ steps.threshold.outputs.min }} bytes)"; exit 1; }
+            MIN="${{ steps.threshold.outputs.min }}"
+            if [ "$SIZE" -lt "$MIN" ]; then
+              echo "::error::APK too small (< $MIN bytes)"; exit 1
+            fi
           done
 
-      # 10) 解包深度校验：必须有 Manifest、至少 1 个 classes.dex、且存在 res 或 resources.arsc
+      # 10) 解包深度校验：必须有 Manifest、至少1个 classes.dex、且存在 res 或 resources.arsc
       - name: Deep verify APK contents (no-empty-apk hard gate)
         shell: bash
         run: |
-          set -euo pipefail
-          APK_GLOB="app/build/outputs/apk/release/*.apk"
-          for apk in $APK_GLOB; do
+          set -e
+          APK_FILES="$(ls -1 app/build/outputs/apk/release/*.apk 2>/dev/null || true)"
+          for apk in $APK_FILES; do
             echo "== Inspect $apk =="
-            TMP=$(mktemp -d)
+            TMP="$(mktemp -d)"
             unzip -qq "$apk" -d "$TMP"
 
-            test -f "$TMP/AndroidManifest.xml" \
-              || { echo "::error::Missing AndroidManifest.xml inside APK"; exit 1; }
+            if [ ! -f "$TMP/AndroidManifest.xml" ]; then
+              echo "::error::Missing AndroidManifest.xml inside APK"; rm -rf "$TMP"; exit 1
+            fi
 
-            DEX_COUNT=$(find "$TMP" -maxdepth 1 -name 'classes*.dex' | wc -l | xargs)
-            echo "dex files: ${DEX_COUNT}"
-            [[ "${DEX_COUNT}" -ge 1 ]] \
-              || { echo "::error::No classes.dex in APK (empty code)"; exit 1; }
+            DEX_COUNT="$(find "$TMP" -maxdepth 1 -name 'classes*.dex' | wc -l | xargs)"
+            echo "dex files: $DEX_COUNT"
+            if [ "$DEX_COUNT" -lt 1 ]; then
+              echo "::error::No classes.dex in APK (empty code)"; rm -rf "$TMP"; exit 1
+            fi
 
-            if [[ ! -f "$TMP/resources.arsc" ]]; then
-              RESC=$(find "$TMP/res" -type f | wc -l | xargs 2>/dev/null || echo 0)
-              echo "res files in APK: ${RESC}"
-              [[ "${RESC}" -ge 1 ]] \
-                || { echo "::error::No resources.arsc and res/ is empty"; exit 1; }
+            if [ ! -f "$TMP/resources.arsc" ]; then
+              RESC="$(find "$TMP/res" -type f 2>/dev/null | wc -l | xargs)"
+              echo "res files in APK: $RESC"
+              if [ "$RESC" -lt 1 ]; then
+                echo "::error::No resources.arsc and res/ is empty"; rm -rf "$TMP"; exit 1
+              fi
             fi
             rm -rf "$TMP"
           done
 
-      # 11) 可选：aapt badging 简要输出（不作为硬门槛）
+      # 11) aapt badging（可选，非硬门槛）
       - name: Inspect manifest (aapt badging)
         shell: bash
         run: |
-          set -euo pipefail
-          APK_GLOB="app/build/outputs/apk/release/*.apk"
+          set -e
+          APK_FILES="$(ls -1 app/build/outputs/apk/release/*.apk 2>/dev/null || true)"
           BUILD_TOOLS="${ANDROID_HOME}/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n1)"
           AAPT="$BUILD_TOOLS/aapt"
-          if [[ -x "$AAPT" ]]; then
-            for apk in $APK_GLOB; do
+          if [ -x "$AAPT" ]; then
+            for apk in $APK_FILES; do
               echo "== $apk (aapt badging) =="
               "$AAPT" dump badging "$apk" | sed -n '1,12p' || true
             done
