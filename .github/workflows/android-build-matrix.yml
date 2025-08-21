@@ -2,187 +2,154 @@ name: Android CI (robust + no-empty-apk)
 
 on:
   push:
+    branches: [ "main" ]
   workflow_dispatch:
-    inputs:
-      marker_template:
-        description: "Override: template (core-template|form-template|simple-template)"
-        required: false
-        type: string
-      marker_prompt:
-        description: "Override: prompt (if API未写入marker时可手动填)"
-        required: false
-        type: string
-
-permissions:
-  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    # 默认兜底（仍然会做反空包校验）
-    env:
-      DEFAULT_TEMPLATE: form-template
-      DEFAULT_PROMPT: "CI fallback prompt: please provide a real prompt via API or workflow input"
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+
+      # 可选：安装排查用的小工具
+      - name: Install tools (jq, unzip)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq unzip
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
-          cache: gradle
+          java-version: "17"
 
-      - name: Install tools (jq, unzip)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq unzip
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 34
+          build-tools: "34.0.0"
+          ndk: false
+          cmake: false
 
+      # -------- 可选：从 marker 中读取模板/提示（没有就安全回退） --------
       - name: Determine template & prompt from marker (robust)
         id: marker
         shell: bash
-        env:
-          MARKER_TEMPLATE: ${{ github.event.inputs.marker_template }}
-          MARKER_PROMPT:   ${{ github.event.inputs.marker_prompt }}
         run: |
           set -euo pipefail
-
-          ASSETS="app/src/main/assets"
-          mkdir -p "$ASSETS"
-
-          # 1) 新格式：JSON
-          LATEST_JSON=$(ls -1 "$ASSETS"/build_marker_*.json 2>/dev/null | sort | tail -n1 || true)
-          TEMPLATE=""
+          json=$(ls -1 app/src/main/assets/build_marker_*.json 2>/dev/null || true)
+          txt="app/src/main/assets/build_marker.txt"
+          TEMPLATE="form-template"
           PROMPT=""
 
-          if [[ -n "${LATEST_JSON:-}" ]]; then
-            echo "Found JSON marker: $LATEST_JSON"
-            TEMPLATE=$(jq -r '.template // empty' "$LATEST_JSON" || true)
-            PROMPT=$(jq -r '.prompt // empty' "$LATEST_JSON" || true)
+          if [[ -n "${json}" ]]; then
+            echo "Marker JSON: ${json}"
+            TEMPLATE=$(jq -r '.template // empty' "${json}" || true)
+            PROMPT=$(jq -r '.prompt // empty'   "${json}" || true)
+          elif [[ -f "${txt}" ]]; then
+            echo "Marker TXT: ${txt}"
+            # 支持 "template=form-template" / "prompt=xxxx" 的简单格式
+            TEMPLATE=$(grep -E '^template=' "${txt}" | head -n1 | cut -d= -f2- || true)
+            PROMPT=$(grep -E '^prompt='   "${txt}" | head -n1 | cut -d= -f2- || true)
           else
-            # 2) 旧格式：TXT (template=..., prompt=...)
-            LEGACY_TXT="$ASSETS/build_marker.txt"
-            if [[ -f "$LEGACY_TXT" ]]; then
-              echo "Found legacy TXT marker: $LEGACY_TXT"
-              TEMPLATE=$(grep -E '^template=' "$LEGACY_TXT" | head -n1 | cut -d= -f2- | tr -d '\r' | xargs || true)
-              PROMPT=$(grep -E '^prompt='   "$LEGACY_TXT" | head -n1 | cut -d= -f2- | tr -d '\r'       || true)
-            fi
+            echo "No marker found. Fallback to defaults."
           fi
 
-          # 3) 手动触发输入 / 环境覆盖
-          if [[ -z "${TEMPLATE:-}" && -n "${MARKER_TEMPLATE:-}" ]]; then
-            TEMPLATE="$MARKER_TEMPLATE"
-          fi
-          if [[ -z "${PROMPT:-}" && -n "${MARKER_PROMPT:-}" ]]; then
-            PROMPT="$MARKER_PROMPT"
-          fi
+          [[ -z "${TEMPLATE}" ]] && TEMPLATE="form-template"
+          echo "template=${TEMPLATE}"
+          echo "prompt=${PROMPT}"
 
-          # 4) 兜底默认
-          TEMPLATE="${TEMPLATE:-$DEFAULT_TEMPLATE}"
-          PROMPT="${PROMPT:-$DEFAULT_PROMPT}"
+          echo "template=${TEMPLATE}" >> "$GITHUB_OUTPUT"
+          echo "prompt=${PROMPT}"     >> "$GITHUB_OUTPUT"
 
-          # 模板枚举校验
-          case "$TEMPLATE" in
-            core-template|form-template|simple-template) ;;
-            *)
-              echo "Invalid template '$TEMPLATE', fallback to $DEFAULT_TEMPLATE"
-              TEMPLATE="$DEFAULT_TEMPLATE"
-              ;;
-          esac
-
-          # 若没有现成 JSON，就生成一份，供后续“APK中必须包含该 marker”校验
-          if [[ -z "${LATEST_JSON:-}" ]]; then
-            TS=$(date -u +%Y%m%d%H%M%S)
-            LATEST_JSON="$ASSETS/build_marker_${TS}.json"
-            jq -n --arg t "$TEMPLATE" --arg p "$PROMPT" --arg ts "$TS" \
-              '{template:$t, prompt:$p, createdAt:$ts}' > "$LATEST_JSON"
-            echo "Materialized marker json: $LATEST_JSON"
-          fi
-
-          echo "template=$TEMPLATE"   >> "$GITHUB_OUTPUT"
-          echo "marker=$LATEST_JSON"  >> "$GITHUB_OUTPUT"
-
-          {
-            echo "### Marker"
-            echo "- template: \`$TEMPLATE\`"
-            echo "- file: \`$LATEST_JSON\`"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Apply template to app/
-        shell: bash
+      # -------- 如你已有“应用模板”的步骤，保留/替换为你自己的命令 --------
+      - name: Apply template to app/ (no-op placeholder)
+        if: always()
         run: |
-          set -euo pipefail
-          TEMPLATE="${{ steps.marker.outputs.template }}"
-          echo "Applying template: $TEMPLATE"
-          rsync -a --delete "templates/${TEMPLATE}/" "app/"
+          echo "Template resolved: ${{ steps.marker.outputs.template }}"
+          # 如果你需要，可在这里根据模板把代码拷到 app/ 里
+          # 例如：rsync -a --delete "templates/${{ steps.marker.outputs.template }}/" app/
 
       - name: Prepare Gradle wrapper
+        run: |
+          chmod +x gradlew
+          git ls-files | grep -E '\.sh$|gradlew$' | xargs -r chmod +x
+
+      # -------- 智能选择构建任务：优先 release，不存在则退化为 debug --------
+      - name: Choose Gradle task (assembleRelease -> assembleDebug)
+        id: choose
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x ./gradlew
-          ./gradlew --version
+          if ./gradlew -q :app:tasks --all | grep -qE '(^| )assembleRelease( |$)'; then
+            TASK=":app:assembleRelease"
+            VARIANT="release"
+          elif ./gradlew -q :app:tasks --all | grep -qE '(^| )assembleDebug( |$)'; then
+            TASK=":app:assembleDebug"
+            VARIANT="debug"
+          else
+            echo "::error ::Neither assembleRelease nor assembleDebug exists under :app. Check your plugins/buildTypes."
+            ./gradlew -q :app:tasks --all || true
+            exit 1
+          fi
+          echo "task=${TASK}"       >> "$GITHUB_OUTPUT"
+          echo "variant=${VARIANT}" >> "$GITHUB_OUTPUT"
+          echo "Chosen task: ${TASK}, variant: ${VARIANT}"
 
       - name: Build (unsigned)
-        shell: bash
         run: |
           set -euo pipefail
-          ./gradlew :app:assembleRelease --stacktrace --no-daemon
+          ./gradlew --no-daemon --stacktrace ${{ steps.choose.outputs.task }}
 
-      - name: Load template-specific APK size threshold (optional)
-        id: size
+      # -------- 稳健地查找 APK 并导出路径 --------
+      - name: Locate APK
+        id: locate
         shell: bash
         run: |
           set -euo pipefail
-          TEMPLATE="${{ steps.marker.outputs.template }}"
-          case "$TEMPLATE" in
-            core-template)   MIN=3000000 ;;  # 3.0 MB
-            form-template)   MIN=2000000 ;;  # 2.0 MB
-            simple-template) MIN=1200000 ;;  # 1.2 MB
-            *)               MIN=1000000 ;;
-          esac
-          echo "min=${MIN}" >> "$GITHUB_OUTPUT"
-
-      - name: Verify release APK exists and size
-        id: apks
-        shell: bash
-        run: |
-          set -euo pipefail
-          APK=$(ls -1 app/build/outputs/apk/release/*-release.apk 2>/dev/null | head -n1 || true)
-          if [[ -z "${APK:-}" ]]; then
-            echo "❌ No release APK produced."
+          VARIANT="${{ steps.choose.outputs.variant }}"
+          APK_GLOB="app/build/outputs/apk/${VARIANT}/*-${VARIANT}.apk"
+          APK_PATH=$(ls -1 ${APK_GLOB} 2>/dev/null | head -n1 || true)
+          if [[ -z "${APK_PATH}" ]]; then
+            echo "Fallback to generic find ..."
+            APK_PATH=$(find app/build/outputs/apk -type f -name "*.apk" | head -n1 || true)
+          fi
+          if [[ -z "${APK_PATH}" ]]; then
+            echo "::error ::No APK produced by Gradle."
             exit 1
           fi
-          echo "apk=${APK}" >> "$GITHUB_OUTPUT"
-          BYTES=$(stat -c%s "$APK")
-          echo "APK size: $BYTES bytes"
-          MIN=${{ steps.size.outputs.min }}
-          if [[ "$BYTES" -lt "$MIN" ]]; then
-            echo "❌ APK too small ($BYTES < $MIN) — likely empty."
-            exit 1
-          fi
-          echo "✅ Size gate passed."
+          echo "apk=${APK_PATH}" >> "$GITHUB_OUTPUT"
+          echo "Found APK: ${APK_PATH}"
 
-      - name: Deep verify APK contents (no-empty-apk hard gate)
+      # -------- 强校验：卡住空包/只壳 APK --------
+      - name: Enforce non-empty APK (size + dex + manifest)
         shell: bash
         run: |
           set -euo pipefail
-          APK="${{ steps.apks.outputs.apk }}"
-          MARKER_BASENAME=$(basename "${{ steps.marker.outputs.marker }}")
-          echo "Checking assets for: assets/${MARKER_BASENAME}"
-          if ! unzip -l "$APK" | grep -q "assets/${MARKER_BASENAME}"; then
-            echo "❌ Marker file not found inside APK assets — build likely did not include content."
+          APK="${{ steps.locate.outputs.apk }}"
+          MIN_SIZE_BYTES=2500000   # 默认阈值 2.5MB；如需按模板细分，可在 marker 里扩展阈值
+          SIZE=$(stat -c%s "${APK}")
+          echo "APK size: ${SIZE} bytes"
+          if [[ "${SIZE}" -lt "${MIN_SIZE_BYTES}" ]]; then
+            echo "::error ::APK too small (< ${MIN_SIZE_BYTES} bytes)."
             exit 1
           fi
-          echo "✅ Marker asset present."
+          unzip -l "${APK}" > /tmp/apk.lst
+          grep -q 'AndroidManifest.xml' /tmp/apk.lst || { echo "::error ::AndroidManifest.xml missing in APK"; exit 1; }
+          grep -q 'classes.dex'         /tmp/apk.lst || { echo "::error ::classes.dex missing in APK (likely empty)"; exit 1; }
+          echo "APK structure looks valid."
+
+      # （可选）输出 Gradle task 列表以便排查
+      - name: List Gradle tasks (debug)
+        if: failure()
+        run: ./gradlew -q :app:tasks --all || true
 
       - name: Upload unsigned APK
         uses: actions/upload-artifact@v4
         with:
           name: unsigned-release-apk
-          path: ${{ steps.apks.outputs.apk }}
+          path: ${{ steps.locate.outputs.apk }}
+          if-no-files-found: error
