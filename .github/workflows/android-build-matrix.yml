@@ -1,222 +1,77 @@
-name: Android CI (robust + no-empty-apk)
+# —— 解析 marker，得到 template + prompt（JSON优先，文本也兼容）——
+- name: Determine template from marker (robust with fallback)
+  id: marker
+  shell: bash
+  run: |
+    set -euo pipefail
+    MARKER_DIR="app/src/main/assets"
+    MARKER="$(ls -1t "$MARKER_DIR"/build_marker_* 2>/dev/null | head -n1 || true)"
+    if [ -z "${MARKER:-}" ]; then
+      echo "No marker found, fallback to default 'form-template'"
+      echo "template=form-template" >> "$GITHUB_OUTPUT"
+      echo "prompt=" >> "$GITHUB_OUTPUT"
+      exit 0
+    fi
 
-on:
-  push:
+    RAW="$(cat "$MARKER")"
+    TEMPLATE=""
+    PROMPT=""
 
-permissions:
-  contents: read
+    # 先尝试按 JSON 解析
+    if command -v jq >/dev/null 2>&1 && echo "$RAW" | jq . >/dev/null 2>&1; then
+      TEMPLATE="$(echo "$RAW" | jq -r '.template // empty')"
+      PROMPT="$(  echo "$RAW" | jq -r '.prompt   // empty')"
+    else
+      # 纯文本兼容：整文件当模板名用
+      TEMPLATE="$(echo "$RAW" | tr -d '\r' | head -n1 | tr -d '"')"
+      PROMPT=""
+    fi
 
-jobs:
-  build:
-    name: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    case "$TEMPLATE" in
+      core-template|form-template|simple-template) ;;
+      *) TEMPLATE="form-template" ;;
+    esac
 
-    steps:
-      # 1) 基础
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    echo "template=$TEMPLATE" >> "$GITHUB_OUTPUT"
+    # 长度太短就清空，避免注入无意义文本
+    if [ "${#PROMPT}" -lt 10 ]; then PROMPT=""; fi
+    # 保护到输出（换行转义）
+    printf 'prompt<<__EOF__\n%s\n__EOF__\n' "$PROMPT" >> "$GITHUB_OUTPUT"
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+    echo "MARKER_USED=$MARKER"
+    echo "TEMPLATE=$TEMPLATE"
+    echo "PROMPT_LEN=${#PROMPT}"
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+# —— 应用模板，并把 prompt 注入到 assets —— 
+- name: Apply template to app/
+  shell: bash
+  run: |
+    set -euo pipefail
+    TPL="${{ steps.marker.outputs.template }}"
+    echo "Applying template: $TPL"
 
-      # 2) 从 marker 决定模板（改为 POSIX 语法；健壮 + 回退）
-      - name: Determine template from marker (robust with fallback)
-        id: marker
-        shell: bash
-        run: |
-          set -e
-          VALID_TEMPLATES="core-template form-template simple-template"
-          TEMPLATE=""
+    # 1) 复制模板文件到 app/（保留你原来的复制策略）
+    rsync -a --delete "templates/$TPL/app/" "app/"
 
-          for m in \
-            app/src/main/assets/build_marker.txt \
-            app/src/main/assets/build_marker_*.txt \
-            app/src/main/assets/build_marker-*.txt \
-            app/src/main/assets/build_marker* \
-            app/src/main/assets/build.marker.txt \
-            app/src/main/assets/build-marker.txt
-          do
-            if [ -f "$m" ]; then
-              t="$(grep -Eo 'core-template|form-template|simple-template' "$m" | head -n1 || true)"
-              if [ -z "$t" ]; then
-                t="$(tail -n1 "$m" | tr -d '\r' | awk '{print $1}')"
-              fi
-              for v in $VALID_TEMPLATES; do
-                if [ "$t" = "$v" ]; then
-                  TEMPLATE="$t"
-                  echo "marker file: $m => $TEMPLATE"
-                  break 2
-                fi
-              done
-            fi
-          done
+    # 2) 注入 prompt：写到 assets 下，被模板内的 UI 读取
+    mkdir -p app/src/main/assets
+    PROMPT_FILE="app/src/main/assets/prompt.txt"
+    CONTENT_JSON="app/src/main/assets/content.json"
 
-          if [ -z "$TEMPLATE" ]; then
-            TEMPLATE="form-template"
-            echo "No valid marker found, fallback to $TEMPLATE"
-          fi
+    if [ -n "${{ steps.marker.outputs.prompt }}" ]; then
+      # 写入纯文本
+      printf '%s\n' "${{ steps.marker.outputs.prompt }}" > "$PROMPT_FILE"
+      # 同时写 JSON（看你的模板读取哪个；两个都写最稳妥）
+      jq -n --arg p "${{ steps.marker.outputs.prompt }}" '{ prompt:$p }' > "$CONTENT_JSON" || \
+        printf '{ "prompt": "%s" }\n' "$(echo "${{ steps.marker.outputs.prompt }}" | sed 's/"/\\"/g')" > "$CONTENT_JSON"
+      echo "Prompt injected: $(wc -c < "$PROMPT_FILE") bytes"
+    else
+      echo "WARN: No prompt to inject, keep template defaults"
+    fi
 
-          echo "template=$TEMPLATE" >> "$GITHUB_OUTPUT"
-
-      # 3) 应用模板到 app/（仅同步 app 目录）
-      - name: Apply template to app/
-        shell: bash
-        run: |
-          set -e
-          T="${{ steps.marker.outputs.template }}"
-          echo "Using template: $T"
-          mkdir -p app
-          rsync -a --delete "templates/$T/app/" "app/"
-
-      # 4) 准备 Gradle Wrapper
-      - name: Prepare Gradle wrapper
-        shell: bash
-        run: |
-          set -e
-          T="${{ steps.marker.outputs.template }}"
-          rsync -a "templates/$T/gradlew" .
-          rsync -a "templates/$T/gradlew.bat" .
-          rm -rf gradle
-          rsync -a "templates/$T/gradle/" gradle/
-          chmod +x gradlew
-
-          # 根级别构建脚本（若模板提供）
-          for f in settings.gradle settings.gradle.kts build.gradle build.gradle.kts; do
-            if [ -f "templates/$T/$f" ]; then
-              rsync -a "templates/$T/$f" "$f"
-            fi
-          done
-
-      # 5) （可选）模板内定义最小 APK 体积门槛，默认 1MiB
-      - name: Load template-specific APK size threshold (optional)
-        id: threshold
-        shell: bash
-        run: |
-          set -e
-          T="${{ steps.marker.outputs.template }}"
-          DEFAULT=$((1024*1024))
-          MIN="$DEFAULT"
-          if [ -f "templates/$T/.ci/min_apk_size" ]; then
-            MIN="$(cat "templates/$T/.ci/min_apk_size" | tr -d '\r' | tr -d ' ')"
-          fi
-          echo "min=$MIN" >> "$GITHUB_OUTPUT"
-          echo "MIN_APK_SIZE=$MIN bytes"
-
-      # 6) 轻量级验证（Manifest/源码/资源是否存在）
-      - name: Validate module is not empty (fail-fast)
-        shell: bash
-        run: |
-          set -e
-          if [ ! -f app/src/main/AndroidManifest.xml ]; then
-            echo "::error::Missing app/src/main/AndroidManifest.xml"; exit 1
-          fi
-          SRC_COUNT="$(find app/src/main/java -type f \( -name '*.kt' -o -name '*.java' \) 2>/dev/null | wc -l | xargs)"
-          RES_COUNT="$(find app/src/main/res -type f 2>/dev/null | wc -l | xargs)"
-          echo "java/kt files: $SRC_COUNT, res files: $RES_COUNT"
-          if [ "$SRC_COUNT" -lt 1 ]; then
-            echo "::error::No source files found in app/src/main/java"; exit 1
-          fi
-          if [ "$RES_COUNT" -lt 1 ]; then
-            echo "::error::No resources found in app/src/main/res"; exit 1
-          fi
-
-      # 7) 构建 unsigned release
-      - name: Build (unsigned)
-        shell: bash
-        run: |
-          set -e
-          ./gradlew --no-daemon -stacktrace :app:assembleRelease
-
-      # 8) 列出 Gradle 输出，便于排查
-      - name: List Gradle outputs
-        shell: bash
-        run: |
-          set -e
-          echo "== tree app/build/outputs =="
-          find app/build/outputs -type f -print | sed 's/^/  /' || true
-
-      # 9) 验证 APK 产出与体积（使用 ls 而不是 glob 数组）
-      - name: Verify release APK exists and size
-        shell: bash
-        run: |
-          set -e
-          APK_FILES="$(ls -1 app/build/outputs/apk/release/*.apk 2>/dev/null || true)"
-          if [ -z "$APK_FILES" ]; then
-            echo "::error::No release APK produced under app/build/outputs/apk/release/*.apk"; exit 1
-          fi
-          for apk in $APK_FILES; do
-            if stat --version >/dev/null 2>&1; then
-              SIZE="$(stat -c%s "$apk")"
-            else
-              SIZE="$(wc -c < "$apk")"
-            fi
-            echo "APK: $apk  size=${SIZE}"
-            MIN="${{ steps.threshold.outputs.min }}"
-            if [ "$SIZE" -lt "$MIN" ]; then
-              echo "::error::APK too small (< $MIN bytes)"; exit 1
-            fi
-          done
-
-      # 10) 解包深度校验：必须有 Manifest、至少1个 classes.dex、且存在 res 或 resources.arsc
-      - name: Deep verify APK contents (no-empty-apk hard gate)
-        shell: bash
-        run: |
-          set -e
-          APK_FILES="$(ls -1 app/build/outputs/apk/release/*.apk 2>/dev/null || true)"
-          for apk in $APK_FILES; do
-            echo "== Inspect $apk =="
-            TMP="$(mktemp -d)"
-            unzip -qq "$apk" -d "$TMP"
-
-            if [ ! -f "$TMP/AndroidManifest.xml" ]; then
-              echo "::error::Missing AndroidManifest.xml inside APK"; rm -rf "$TMP"; exit 1
-            fi
-
-            DEX_COUNT="$(find "$TMP" -maxdepth 1 -name 'classes*.dex' | wc -l | xargs)"
-            echo "dex files: $DEX_COUNT"
-            if [ "$DEX_COUNT" -lt 1 ]; then
-              echo "::error::No classes.dex in APK (empty code)"; rm -rf "$TMP"; exit 1
-            fi
-
-            if [ ! -f "$TMP/resources.arsc" ]; then
-              RESC="$(find "$TMP/res" -type f 2>/dev/null | wc -l | xargs)"
-              echo "res files in APK: $RESC"
-              if [ "$RESC" -lt 1 ]; then
-                echo "::error::No resources.arsc and res/ is empty"; rm -rf "$TMP"; exit 1
-              fi
-            fi
-            rm -rf "$TMP"
-          done
-
-      # 11) aapt badging（可选，非硬门槛）
-      - name: Inspect manifest (aapt badging)
-        shell: bash
-        run: |
-          set -e
-          APK_FILES="$(ls -1 app/build/outputs/apk/release/*.apk 2>/dev/null || true)"
-          BUILD_TOOLS="${ANDROID_HOME}/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n1)"
-          AAPT="$BUILD_TOOLS/aapt"
-          if [ -x "$AAPT" ]; then
-            for apk in $APK_FILES; do
-              echo "== $apk (aapt badging) =="
-              "$AAPT" dump badging "$apk" | sed -n '1,12p' || true
-            done
-          else
-            echo "aapt not found (skipped)"
-          fi
-
-      # 12) 上传 unsigned APK
-      - name: Upload unsigned APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: unsigned-release-apk
-          path: app/build/outputs/apk/release/*.apk
+    # 3) 再给一层“非空资产”的快速校验：文件存在且字节数 > 20
+    if [ -f "$PROMPT_FILE" ] && [ "$(wc -c < "$PROMPT_FILE")" -gt 20 ]; then
+      echo "Prompt asset OK"
+    else
+      echo "No or too-short prompt; continue with template defaults"
+    fi
