@@ -1,0 +1,4 @@
+# 统一用 LF，避免 \r 破坏 shell 与 gradlew
+*.sh           text eol=lf
+gradlew        text eol=lf
+*.gradle       text eol=lf
