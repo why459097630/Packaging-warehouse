@@ -1,161 +1,281 @@
 name: Android CI (no-empty-apk with content-pack)
 
 on:
+  workflow_dispatch:
+    inputs:
+      template:
+        description: "Template id: core-template | form-template | simple-template"
+        required: false
+        default: "form-template"
+      prompt:
+        description: "Business prompt sent to the API to generate content"
+        required: false
+        default: ""
+      buildType:
+        description: "assembleRelease | assembleDebug"
+        required: false
+        default: "assembleRelease"
   push:
     branches: [ main ]
-  pull_request:
-  workflow_dispatch:
+    paths:
+      - "app/**"
+      - "templates/**"
+      - ".github/workflows/android-build-matrix.yml"
+      - "scripts/**"
 
 concurrency:
-  group: android-no-empty-apk-${{ github.ref }}
+  group: android-no-empty-apk
   cancel-in-progress: true
 
 env:
-  # 构建期最小 APK 体积（字节），可按需要调整
-  MIN_APK_BYTES: "3000000"
-  # 目标 Android 平台、工具版本
-  ANDROID_PLATFORM: "android-34"
-  BUILD_TOOLS: "34.0.0"
+  JAVA_VERSION: "17"
+  ANDROID_BUILD_TOOLS: "34.0.0"
+  ANDROID_API_LEVEL: "34"
+  GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
+  # 读取 marker；若调度时没传，就从文件/默认回落
+  INPUT_TEMPLATE: ${{ github.event.inputs.template }}
+  INPUT_PROMPT: ${{ github.event.inputs.prompt }}
+  INPUT_BUILD_TYPE: ${{ github.event.inputs.buildType }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
-      # JDK 17 + Gradle 缓存
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: gradle
-
-      # 安装 Android SDK（稳健：单独装需要的组件 + 自动接受 license）
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android commandline components
+      - name: Setup Templet/Prompt from marker (fallbacks)
+        id: marker
         shell: bash
         run: |
           set -euo pipefail
-          yes | sdkmanager --licenses >/dev/null
-          sdkmanager --install "platform-tools" "platforms;${ANDROID_PLATFORM}" "build-tools;${BUILD_TOOLS}"
+          t="${INPUT_TEMPLATE:-}"
+          p="${INPUT_PROMPT:-}"
+          bt="${INPUT_BUILD_TYPE:-}"
 
+          # 允许通过 app/src/main/assets/build_marker.txt 或 .json 指定模板
+          if [[ -z "$t" ]]; then
+            if [[ -f app/src/main/assets/build_marker.txt ]]; then
+              t="$(sed -n '1p' app/src/main/assets/build_marker.txt | tr -d '\r\n' || true)"
+            elif [[ -f app/src/main/assets/build_marker.json ]]; then
+              t="$(jq -r '.template // empty' app/src/main/assets/build_marker.json || true)"
+              p="$(jq -r '.prompt // empty' app/src/main/assets/build_marker.json || echo "${p}")"
+            fi
+          fi
+          [[ -z "$t" ]] && t="form-template"
+
+          [[ -z "$bt" ]] && bt="assembleRelease"
+          # 仅允许两种
+          if [[ "$bt" != "assembleRelease" && "$bt" != "assembleDebug" ]]; then
+            bt="assembleRelease"
+          fi
+
+          echo "template=$t" | tee -a $GITHUB_OUTPUT
+          echo "prompt=$p"   | tee -a $GITHUB_OUTPUT
+          echo "buildType=$bt" | tee -a $GITHUB_OUTPUT
+
+      # 可选：调用你自己的 API，让它把内容写入到仓库 content_pack/app（或直接 push 到本仓）
+      - name: Request content pack by API
+        id: call_api
+        if: ${{ env.INPUT_PROMPT != '' || steps.marker.outputs.prompt != '' }}
+        shell: bash
+        env:
+          API_URL: ${{ secrets.CONTENT_API_URL }}
+          API_SECRET: ${{ secrets.CONTENT_API_SECRET }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          template="${{ steps.marker.outputs.template }}"
+          prompt_in_dispatch="${{ env.INPUT_PROMPT }}"
+          marker_prompt="${{ steps.marker.outputs.prompt }}"
+          prompt="${prompt_in_dispatch:-$marker_prompt}"
+
+          echo ">> Template: $template"
+          echo ">> Prompt length: ${#prompt}"
+
+          if [[ -z "${API_URL:-}" || -z "${API_SECRET:-}" ]]; then
+            echo "No CONTENT_API_URL or CONTENT_API_SECRET; skip API call."
+            exit 0
+          fi
+
+          payload="$(jq -n \
+            --arg owner  "${{ github.repository_owner }}" \
+            --arg repo   "${{ github.event.repository.name }}" \
+            --arg branch "${{ github.ref_name }}" \
+            --arg token  "${GH_PAT:-}" \
+            --arg template "$template" \
+            --arg prompt   "$prompt" \
+            '{owner:$owner,repo:$repo,branch:$branch,token:$token,template:$template,prompt:$prompt}')"
+
+          echo "POST $API_URL/api/generate-apk"
+          http_code=$(
+            curl -sS -o /tmp/api_resp.json -w "%{http_code}" \
+              -H "Content-Type: application/json" \
+              -H "X-API-SECRET: ${API_SECRET}" \
+              -X POST "$API_URL/api/generate-apk" \
+              --data "$payload" || true
+          )
+          echo "API http_code=$http_code"
+          cat /tmp/api_resp.json || true
+
+          # 不是硬失败；真正的硬闸在后面检查 content_pack
+          if [[ "$http_code" -lt 200 || "$http_code" -ge 300 ]]; then
+            echo "::warning::API returned non-2xx; will rely on polling for content_pack."
+          fi
+
+      - name: Poll content pack (wait up to 2 min)
+        id: poll
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in {1..24}; do
+            echo "Try #$i ..."
+            # 若 API 以自动 push 方式写入同仓库，可拉一下
+            git fetch --all --quiet || true
+            git status --porcelain || true
+
+            if [[ -d content_pack/app ]]; then
+              echo "content_pack/app exists."
+              exit 0
+            fi
+            sleep 5
+          done
+          # 失败也继续，后面的硬闸会终止构建
+          exit 0
+
+      - name: Pre-build hard gate (content must exist)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -d content_pack/app ]]; then
+            echo "::error::No content_pack/app found. API 未写入变更或未发起。为避免空包，构建终止。"
+            echo "仓库根目录结构："; (ls -la || true)
+            exit 1
+          fi
+
+      - name: Inject content pack into app/
+        shell: bash
+        run: |
+          set -euo pipefail
+          rsync -a --delete content_pack/app/ app/
+          echo "After inject, app/ tree (top 200):"
+          (cd app && find . | head -n 200)
+
+      - name: Post-inject essential files gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          test -f app/src/main/AndroidManifest.xml && ok=$((ok+1))
+          test -f app/src/main/res/layout/activity_main.xml && ok=$((ok+1))
+          # 允许 Java/Kotlin 二选一
+          if compgen -G "app/src/main/java/**/MainActivity.*" > /dev/null; then ok=$((ok+1)); fi
+          if compgen -G "app/src/main/kotlin/**/MainActivity.*" > /dev/null; then ok=$((ok+1)); fi
+
+          if [[ "$ok" -lt 3 ]]; then
+            echo "::error::关键业务文件缺失（Manifest/Activity/layout）。为避免空包，构建终止。"
+            exit 1
+          fi
+
+      # Gradle 缓存
       - name: Gradle cache
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+            .gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
-            gradle-${{ runner.os }}-
+            ${{ runner.os }}-gradle-
 
-      # 确保 gradlew 可执行，同时把模板里的 gradlew 也统一成可执行（防止 Permission denied）
-      - name: Ensure gradlew executable
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      # 使用官方 action 安装 cmdline-tools/平台包，避免“Broken pipe”
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            platform-tools
+            build-tools;${{ env.ANDROID_BUILD_TOOLS }}
+            platforms;android-${{ env.ANDROID_API_LEVEL }}
+
+      - name: Ensure gradlew executable (templates & app)
         shell: bash
         run: |
           set -euo pipefail
           chmod +x gradlew || true
-          chmod -R +x templates/*/gradlew 2>/dev/null || true
+          find templates -maxdepth 3 -name "gradlew" -exec chmod +x {} \; || true
+          echo "Gradle wrapper version:"
+          ./gradlew --version || true
 
-      # 如果仓库没有 app/（或想给个兜底），用 simple-template 初始化一次
-      - name: Ensure app/ exists (fallback to simple template once)
+      - name: Select build type
+        id: sel
         shell: bash
         run: |
           set -euo pipefail
-          if [ ! -d "app" ]; then
-            echo "app/ not found, bootstrap from templates/simple-template"
-            rsync -av templates/simple-template/ app/
-          fi
+          bt="${{ steps.marker.outputs.buildType }}"
+          echo "bt=$bt" | tee -a $GITHUB_OUTPUT
 
-      # 关键：把 API 写入的业务内容（content_pack/app/**）合并进项目 app/
-      - name: Inject content pack (if any)
+      - name: Build (unsigned)
         shell: bash
         run: |
           set -euo pipefail
-          echo "Repo tree top-level:"
-          ls -la
-          if [ -d "content_pack/app" ]; then
-            echo ">>> found content_pack/app, injecting into app/"
-            rsync -a --delete --exclude '.git' content_pack/app/ app/
-          else
-            echo ">>> No content_pack/app found. Did the API commit succeed?"
-          fi
-
-      # 预构建硬闸：必须存在 Manifest 与至少一个 MainActivity.java
-      - name: Pre-build hard gate (content must exist)
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ ! -f "app/src/main/AndroidManifest.xml" ]; then
-            echo "::error::Missing app/src/main/AndroidManifest.xml (content pack not injected)."
-            exit 1
-          fi
-          if ! find app/src/main/java -name "MainActivity.java" | grep -q .; then
-            echo "::error::Missing MainActivity.java (content pack not injected)."
-            exit 1
-          fi
-          echo "Pre-build content check passed."
-
-      - name: Prepare Gradle wrapper
-        shell: bash
-        run: |
-          set -euo pipefail
-          ./gradlew --version
-
-      # 优先打 release；失败时回落到 debug（避免签名配置缺失导致整个流程中断）
-      - name: Build (release -> debug fallback)
-        shell: bash
-        run: |
-          set -euo pipefail
-          ./gradlew --no-daemon -stacktrace :app:assembleRelease || \
-          ./gradlew --no-daemon -stacktrace :app:assembleDebug
+          ./gradlew --no-daemon --stacktrace :app:${{ steps.sel.outputs.bt }}
 
       - name: Locate APK
-        id: find_apk
+        id: apk
         shell: bash
         run: |
           set -euo pipefail
-          APK="$(ls -1 app/build/outputs/apk/release/*-release*.apk 2>/dev/null | head -n1 || true)"
-          if [ -z "$APK" ]; then
-            APK="$(ls -1 app/build/outputs/apk/debug/*-debug*.apk 2>/dev/null | head -n1 || true)"
-          fi
-          if [ -z "$APK" ]; then
-            echo "::error::Cannot locate generated APK."
+          mapfile -t files < <(ls -1 app/build/outputs/apk/**/**/*.apk 2>/dev/null || true)
+          if [[ "${#files[@]}" -eq 0 ]]; then
+            echo "::error::No APK produced."
             exit 1
           fi
-          echo "apk=$APK" >> "$GITHUB_OUTPUT"
-          echo "Found APK: $APK"
+          # 取第一个
+          apk="${files[0]}"
+          echo "apk=$apk" | tee -a $GITHUB_OUTPUT
+          ls -lh "$apk"
 
-      # 构建后硬闸：必须包含 classes.dex 或 resources.arsc 且体积达标
       - name: Post-build hard gate (no-empty-apk)
         shell: bash
         run: |
           set -euo pipefail
-          APK="${{ steps.find_apk.outputs.apk }}"
-          BYTES="$(stat -c%s "$APK")"
-          echo "APK size: $BYTES bytes (threshold: $MIN_APK_BYTES)"
-          unzip -l "$APK" | tee /tmp/apk.list
-          if ! grep -E "classes\.dex|resources\.arsc" /tmp/apk.list >/dev/null; then
-            echo "::error::APK missing classes.dex/resources.arsc (likely empty)."
+          apk="${{ steps.apk.outputs.apk }}"
+          echo "Validate $apk"
+
+          # aapt badging（先装 aapt）
+          sudo apt-get update -y
+          sudo apt-get install -y aapt unzip zip >/dev/null
+
+          aapt dump badging "$apk" | sed -n '1,80p' || true
+
+          # 必须包含 classes.dex 和 resources.arsc；且大小阈值> 0
+          unzip -l "$apk" | tee /tmp/apk.lst
+          grep -q "classes.dex" /tmp/apk.lst || { echo "::error::classes.dex not found"; exit 1; }
+          grep -q "resources.arsc" /tmp/apk.lst || { echo "::error::resources.arsc not found"; exit 1; }
+
+          # 粗略大小阈值，防止极小空包（按需调整）
+          min_kb=3000
+          sz_kb=$(du -k "$apk" | awk '{print $1}')
+          echo "APK size: ${sz_kb} KB (min ${min_kb} KB)"
+          if (( sz_kb < min_kb )); then
+            echo "::error::APK size too small, likely empty. Abort."
             exit 1
           fi
-          if [ "$BYTES" -lt "$MIN_APK_BYTES" ]; then
-            echo "::error::APK too small (< $MIN_APK_BYTES bytes)."
-            exit 1
-          fi
-          echo "Post-build APK content/size check passed."
 
       - name: Upload unsigned APK
         uses: actions/upload-artifact@v4
         with:
-          name: unsigned-apk
-          path: ${{ steps.find_apk.outputs.apk }}
+          name: unsigned-${{ steps.sel.outputs.bt }}.apk
+          path: ${{ steps.apk.outputs.apk }}
           if-no-files-found: error
