@@ -1,41 +1,46 @@
-// app/build.gradle
 plugins {
-  id("com.android.application")
-  id("org.jetbrains.kotlin.android") // 如果你用 Kotlin
+    id 'com.android.application'
 }
 
 android {
-  namespace "com.example.app"
-  compileSdk 34
+    compileSdkVersion 34
 
-  defaultConfig {
-    applicationId "com.example.app"
-    minSdk 24
-    targetSdk 34
-    versionCode 1
-    versionName "1.0"
-  }
+    // 从流水线/环境变量/gradle.properties 注入 APP_ID；没有就给一个默认
+    def appId = (System.getenv("APP_ID")
+            ?: (project.findProperty("APP_ID") ?: "com.app.generated"))
 
-  buildTypes {
-    release {
-      minifyEnabled false
-      proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
+    // AGP 8 要求在这里声明 namespace
+    namespace appId
+
+    defaultConfig {
+        applicationId appId
+        minSdkVersion 24
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0"
+
+        // 如果你用到 FileProvider，这样让 authority 跟随 applicationId
+        manifestPlaceholders = [
+                fileProviderAuthority: "${appId}.provider"
+        ]
     }
-  }
 
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_17
-    targetCompatibility JavaVersion.VERSION_17
-  }
-  kotlinOptions {
-    jvmTarget = "17"
-  }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+        }
+    }
+
+    // 可选：如果用到 ViewBinding/Compose 再开
+    // buildFeatures { viewBinding true }
 }
 
 dependencies {
-  implementation "androidx.core:core-ktx:1.12.0"
-  implementation "androidx.appcompat:appcompat:1.6.1"
-  implementation "com.google.android.material:material:1.11.0"
-  implementation "androidx.activity:activity-ktx:1.8.2"
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
 }
