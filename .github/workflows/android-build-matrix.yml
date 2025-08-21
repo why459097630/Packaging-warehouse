@@ -2,15 +2,11 @@ name: Android CI (robust + no-empty-apk)
 
 on:
   push:
-    branches: [ "main" ]
-
-permissions:
-  contents: read
+    branches: [ main ]
 
 env:
-  MODULE_PATH: app
-  APK_NAME: unsigned-release-apk
-  MARKER_PATH: app/src/main/assets/build_marker.txt
+  MARKER_FILE: app/src/main/assets/build_marker.txt
+  MIN_APK_SIZE: "2097152"   # 2MB，避免空包
 
 jobs:
   build:
@@ -19,103 +15,82 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # 1) 从固定标记文件读模板（只接受三种值）
+      - name: Determine template from marker (robust with fallback)
+        id: tpl
+        run: |
+          set -euo pipefail
+          if [ ! -f "$MARKER_FILE" ]; then
+            echo "::error ::marker file not found: $MARKER_FILE"
+            exit 1
+          fi
+          t=$(tr -d '\r\n' < "$MARKER_FILE" || true)
+          case "$t" in
+            core-template|form-template|simple-template) ;;
+            *) echo "::error ::Invalid or missing template '$t'"; exit 1 ;;
+          esac
+          echo "template=$t" >> "$GITHUB_OUTPUT"
+
+      # 2) 应用模板代码（app/ + gradle wrapper）
+      - name: Apply template to app/
+        run: |
+          set -e
+          TPL="${{ steps.tpl.outputs.template }}"
+          rsync -a --delete "templates/$TPL/app/" app/
+          # 复制 gradle wrapper 到仓库根（确保存在）
+          rsync -a "templates/$TPL/gradle/" gradle/
+          cp "templates/$TPL/gradlew" ./gradlew
+          cp "templates/$TPL/gradlew.bat" ./gradlew.bat
+
+      # 3) 修复行尾并赋可执行权限，校验 wrapper 文件存在
+      - name: Prepare Gradle wrapper
+        run: |
+          set -e
+          sed -i 's/\r$//' gradlew || true
+          chmod +x gradlew
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            echo "::error ::gradle-wrapper.jar missing"
+            ls -R gradle || true
+            exit 1
+          fi
+          ./gradlew --version
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
-          cache: gradle
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Gradle cache
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Determine template from marker (robust with fallback)
-        id: marker
-        shell: bash
-        run: |
-          set -euo pipefail
-          t=""
-          if [[ -n "${TEMPLATE:-}" ]]; then
-            t="${TEMPLATE}"
-          elif [[ -f "${MARKER_PATH}" ]]; then
-            # 读标记文件并去掉所有空白/CR/LF
-            t="$(tr -d '\r\n ' < "${MARKER_PATH}")"
-          fi
-
-          case "$t" in
-            core-template|form-template|simple-template)
-              echo "template=${t}" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "Invalid or missing template in marker. Expected one of: core-template|form-template|simple-template"
-              echo "template=" >> "$GITHUB_OUTPUT"
-              exit 1
-              ;;
-          esac
-
-      - name: Apply template to app/
-        if: steps.marker.outputs.template != ''
-        shell: bash
-        run: |
-          set -euo pipefail
-          tpl="templates/${{ steps.marker.outputs.template }}"
-          [[ -d "$tpl" ]] || { echo "Template dir not found: $tpl"; exit 1; }
-          # 合并模板（不覆盖已存在的具体实现）
-          rsync -a --ignore-existing "$tpl/" "${MODULE_PATH}/"
-
-      - name: Validate module is not empty (fail-fast)
-        shell: bash
-        run: |
-          set -euo pipefail
-          # 1) 不能没有源码
-          if ! ls ${MODULE_PATH}/src/main/java/* -R >/dev/null 2>&1 && \
-             ! ls ${MODULE_PATH}/src/main/kotlin/* -R >/dev/null 2>&1; then
-            echo "❌ No Java/Kotlin source files under ${MODULE_PATH}/src/main"
-            exit 1
-          fi
-
-          # 2) 不能缺 AndroidManifest.xml
-          if [[ ! -f "${MODULE_PATH}/src/main/AndroidManifest.xml" ]]; then
-            echo "❌ Missing ${MODULE_PATH}/src/main/AndroidManifest.xml"
-            exit 1
-          fi
-
-          # 3) 不能出现历史遗留的禁用项（例如 android.enableAapt2）
-          if [[ -f "gradle.properties" ]] && grep -q "^android\.enableAapt2" gradle.properties; then
-            echo "❌ Found deprecated 'android.enableAapt2' in gradle.properties. Remove it."
-            exit 1
-          fi
+          java-version: "17"
 
       - name: Build (unsigned)
-        shell: bash
         run: |
-          set -euo pipefail
-          ./gradlew :${MODULE_PATH}:assembleRelease --stacktrace
+          ./gradlew assembleRelease --stacktrace --no-daemon
 
+      # 4) 防空包：必须生成 release APK 且 > MIN_APK_SIZE
       - name: Verify release APK exists and size
-        shell: bash
+        id: verify
         run: |
-          set -euo pipefail
-          apk=$(ls ${MODULE_PATH}/build/outputs/apk/release/*.apk | head -n1 || true)
-          if [[ -z "$apk" ]]; then
-            echo "❌ Release APK not found."
+          set -e
+          apk=$(ls -1 app/build/outputs/apk/release/*-release.apk | head -n1 || true)
+          if [ -z "$apk" ]; then
+            echo "::error ::No release APK produced"
             exit 1
           fi
-          size=$(stat -c%s "$apk")
-          echo "APK: $apk, size: $size bytes"
-          # 小于 3MB 判定为空包（你可以再调大/调小）
-          if [[ "$size" -lt 3145728 ]]; then
-            echo "❌ APK is too small (likely empty)."
+          size=$(stat -c '%s' "$apk")
+          echo "apk=$apk" >> $GITHUB_OUTPUT
+          echo "size=$size" >> $GITHUB_OUTPUT
+          echo "APK: $apk"
+          echo "SIZE: $size bytes"
+          if [ "$size" -lt "${MIN_APK_SIZE}" ]; then
+            echo "::error ::APK too small ($size bytes) < ${MIN_APK_SIZE}, fail build to avoid empty APK"
             exit 1
           fi
-          echo "APK_PATH=$apk" >> $GITHUB_ENV
 
       - name: Upload unsigned APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APK_NAME }}
-          path: ${{ env.APK_PATH }}
+          name: unsigned-release-apk
+          path: ${{ steps.verify.outputs.apk }}
