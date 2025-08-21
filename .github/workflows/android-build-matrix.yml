@@ -1,27 +1,45 @@
-name: Android CI (no-empty-apk + content-pack)
+name: Android CI (no-empty-apk with content-pack)
 
 on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "业务文案（可选；留空则用仓库 demo_payload/prompt.txt）"
+        required: false
+        type: string
+      template:
+        description: "模板：core-template|form-template|simple-template"
+        required: false
+        default: "form-template"
+        type: choice
+        options: [core-template, form-template, simple-template]
   push:
     branches: [ "main" ]
-  workflow_dispatch:
-
-concurrency:
-  group: android-ci-${{ github.ref }}
-  cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 env:
+  # ====== 需在仓库/Org secrets 配置的变量 ======
+  # 你的 API 密钥：Settings → Secrets → Actions → New repository secret
+  X_API_SECRET: ${{ secrets.X_API_SECRET }}
+  # 你的 vercel 域名（结尾无需/），例如：https://niandongjicheng.vercel.app
+  API_BASE: ${{ secrets.API_BASE }}
+  # ============================================
+  # 兜底模板（也可由 workflow_dispatch 选择）
+  FALLBACK_TEMPLATE: ${{ inputs.template || 'form-template' }}
   JAVA_VERSION: "17"
-  ANDROID_API: "34"
-  ANDROID_BUILD_TOOLS: "34.0.0"
-  # 构建后“空包否决”阈值（字节）。视模板和资源大小可适当提高到 3_000_000+
-  MIN_APK_SIZE: "2000000"
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+  BUILD_TOOLS: "34.0.0"
+  ANDROID_PLATFORM: "android-34"
+  APP_MODULE: "app"
+  # APK 体积下限（小于此值直接认为空包，按需调整）
+  APK_MIN_BYTES: "2500000"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -30,189 +48,201 @@ jobs:
           fetch-depth: 0
 
       - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
           cache: gradle
 
-      - name: Set up Android SDK
+      - name: Set up Android SDK (cmdline-tools + platforms/build-tools)
         uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platforms;android-${{ env.ANDROID_API }}
-            build-tools;${{ env.ANDROID_BUILD_TOOLS }}
-            platform-tools
+      - name: Install Android components
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager \
+            "platform-tools" \
+            "build-tools;${BUILD_TOOLS}" \
+            "platforms;${ANDROID_PLATFORM}"
 
-      - name: Gradle cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      #####################################################################
-      # 0) 若 app 目录缺失，则用一个可编译的最小模板兜底（避免目录为空）
-      #####################################################################
-      - name: Ensure app/ exists (fallback to simple-template)
+      # ========== 选择模板（从 marker 或者调度输入） ==========
+      - name: Pick template (from marker or input)
+        id: pick
         shell: bash
         run: |
           set -euo pipefail
-          if [ ! -d app ] || [ -z "$(ls -A app || true)" ]; then
-            if [ -d templates/simple-template/app ]; then
-              echo "app/ is empty, copy templates/simple-template/app as base"
-              rsync -a templates/simple-template/app/ app/
+          marker=$(ls ${APP_MODULE}/src/main/assets/build_marker_*.json 2>/dev/null || true)
+          if [[ -n "$marker" ]]; then
+            # 从 marker JSON 里读取 "template" 字段
+            t=$(jq -r '.template // empty' "$marker" || true)
+          fi
+          if [[ -z "${t:-}" ]]; then
+            t="${{ env.FALLBACK_TEMPLATE }}"
+          fi
+          echo "template=$t" | tee -a $GITHUB_OUTPUT
+          echo "Picked template: $t"
+
+      # ========== 将模板拷贝到 app/（不覆盖 content_pack） ==========
+      - name: Apply template to app/
+        run: |
+          set -euo pipefail
+          t="${{ steps.pick.outputs.template }}"
+          if [[ ! -d "templates/$t/app" ]]; then
+            echo "Template templates/$t/app not found"; exit 1
+          fi
+          rsync -a --delete \
+            --exclude gradle/ --exclude gradlew --exclude gradlew.bat \
+            "templates/$t/app/" "${APP_MODULE}/"
+
+      # ========== 注入业务内容 ==========
+      # 1) 优先使用 repo 中 content_pack/app/**（例如 API 已经提前 commit 进来）
+      # 2) 如没有且提供了 API_BASE + X_API_SECRET，则尝试触发 API
+      # 3) 再次检查，仍没有就失败（杜绝空包）
+      - name: Inject content pack (if any)
+        id: inject
+        shell: bash
+        run: |
+          set -euo pipefail
+          have_pack=0
+
+          if [[ -d "content_pack/app" ]]; then
+            have_pack=1
+            echo "::notice::Found content_pack/app in repo, will merge into app/"
+            rsync -a "content_pack/app/" "${APP_MODULE}/"
+          fi
+
+          if [[ $have_pack -eq 0 && -n "${API_BASE:-}" && -n "${X_API_SECRET:-}" ]]; then
+            echo "::notice::Try to request API to generate content pack..."
+            # 业务文案：优先取 workflow_dispatch prompt；否则读 demo_payload/prompt.txt
+            if [[ -n "${{ inputs.prompt }}" ]]; then
+              P="${{ inputs.prompt }}"
+            elif [[ -f "demo_payload/prompt.txt" ]]; then
+              P="$(cat demo_payload/prompt.txt)"
             else
-              echo "::error::No app/ and no templates/simple-template/app to fallback."
-              exit 1
+              P="生成一个带图文的应用示例"
             fi
+
+            body=$(jq -nc --arg prompt "$P" --arg dryRun "false" --arg template "${{ steps.pick.outputs.template }}" \
+                   '{prompt:$prompt, dryRun: ($dryRun=="true"), template:$template}')
+
+            # 你的 API 期望的 Header 与路径，如有变化按你的实际改
+            curl -sS -X POST "${API_BASE}/api/generate-apk" \
+              -H "content-type: application/json" \
+              -H "x-api-secret: ${X_API_SECRET}" \
+              -d "${body}" || true
+
+            # 等待 API 完成 commit（如果 API 是“向当前仓库提交”的模式）
+            echo "Waiting for API commit to appear..."
+            sleep 8
+            git fetch --all --prune
+            # 把远端最新的提交拉过来（若 API 在同分支提交，当前 run 会继续跑）
+            git pull --ff-only || true
           fi
 
-      #####################################################################
-      # 1) 注入 content_pack（由 API 写入仓库：content_pack/app/*）
-      #####################################################################
-      - name: Inject content pack
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "== repo top tree =="
-          ls -la
-
-          if [ ! -d content_pack/app ]; then
-            echo "::error::No content_pack/app found in repo. Did the API commit succeed?"
-            echo "== show repo tree (maxdepth=2) =="
-            find . -maxdepth 2 -type d -print
-            exit 1
+          # 第二次检查
+          if [[ -d "content_pack/app" ]]; then
+            echo "::notice::Found content_pack/app after API, merge into app/"
+            rsync -a "content_pack/app/" "${APP_MODULE}/"
+            have_pack=1
           fi
 
-          echo "== Copy content_pack/app/* -> app/ =="
-          rsync -a --delete content_pack/app/ app/
-
-          echo "== After injection (partial) =="
-          find app -maxdepth 5 -type f | sed 's#^#  #g' | head -n 200
-
-          # 关键文件存在性校验
-          test -f app/src/main/AndroidManifest.xml || { echo "::error::Missing AndroidManifest.xml"; exit 1; }
-          MAIN_FILE=$(grep -Rl --include="*.java" --include="*.kt" "class MainActivity" app/src/main/java || true)
-          if [ -z "$MAIN_FILE" ]; then
-            echo "::error::Missing MainActivity (java/kt)"
-            exit 1
+          # 写入一个标记，便于后续硬闸检查
+          if [[ $have_pack -eq 1 ]]; then
+            echo "have_content_pack=true" >> $GITHUB_OUTPUT
+          else
+            echo "have_content_pack=false" >> $GITHUB_OUTPUT
           fi
 
-          # 从 Manifest 解析包名，并校验目录
-          PKG=$(sed -n 's/.*package="\([^"]*\)".*/\1/p' app/src/main/AndroidManifest.xml | head -n1)
-          if [ -z "$PKG" ]; then
-            echo "::error::Cannot parse package name from AndroidManifest.xml"
-            exit 1
-          fi
-          PKG_PATH=$(echo "$PKG" | tr '.' '/')
-          if [ ! -d "app/src/main/java/$PKG_PATH" ]; then
-            echo "::error::Java package path not match: app/src/main/java/$PKG_PATH"
-            exit 1
-          fi
-
-          # 让 applicationId 与 Manifest 保持一致（如不一致则覆盖）
-          if [ -f app/build.gradle ]; then
-            sed -i.bak -E "s/applicationId \"[^\"]+\"/applicationId \"$PKG\"/g" app/build.gradle || true
-          fi
-
-          echo "Injected package: $PKG"
-
-      #####################################################################
-      # 2) 预编译硬闸：至少要有 1 个 java/kt 与 1 个 xml
-      #####################################################################
+      # ========== 预构建硬闸：必须有“业务文件” ==========
       - name: Pre-build hard gate (content exists)
         shell: bash
         run: |
           set -euo pipefail
-          JAVA_COUNT=$(find app/src/main/java -type f \( -name '*.java' -o -name '*.kt' \) | wc -l | tr -d ' ')
-          XML_COUNT=$(find app/src/main/res -type f -name '*.xml' | wc -l | tr -d ' ')
-          echo "JAVA=$JAVA_COUNT  XML=$XML_COUNT"
-          if [ "$JAVA_COUNT" -lt 1 ] || [ "$XML_COUNT" -lt 1 ]; then
-            echo "::error::Not enough content (java=$JAVA_COUNT xml=$XML_COUNT)"
+          if [[ "${{ steps.inject.outputs.have_content_pack }}" != "true" ]]; then
+            echo "::error::No content_pack/app found. API未写入或提交尚未生效。为杜绝空包，构建终止。"
+            echo "工作流会在拿不到业务内容时失败，请先确保 API 正常返回并提交。"
             exit 1
           fi
-          test -s app/src/main/AndroidManifest.xml
 
-      #####################################################################
-      # 3) Gradle 可执行 & 统一换行符
-      #####################################################################
+          # 至少要有一个业务文件存在（Java/Kotlin/XML/HTML 之一）
+          hits=$(find "${APP_MODULE}/src/main" \
+                   -type f \( -name '*.java' -o -name '*.kt' -o -name '*.xml' -o -name '*.html' \) \
+                   | wc -l)
+          if [[ "$hits" -lt 2 ]]; then
+            echo "::error::业务代码/资源太少（${hits} 个），疑似空包。"
+            exit 1
+          fi
+          echo "Pre-build gate passed with ${hits} files."
+
+      # ========== Gradle wrapper ==========
       - name: Prepare Gradle wrapper
-        shell: bash
         run: |
           set -euo pipefail
-          sed -i 's/\r$//' gradlew || true
-          chmod +x gradlew
-          # 避免模板中 gradlew 未记录执行位：强制设置一遍
           git update-index --chmod=+x gradlew || true
+          chmod +x gradlew
+          dos2unix gradlew 2>/dev/null || true
 
-      #####################################################################
-      # 4) 选择 assemble 任务
-      #####################################################################
+      # ========== 自动选择 assembleRelease / assembleDebug ==========
       - name: Choose Gradle task (assembleRelease -> assembleDebug)
-        id: pick_gradle_task
+        id: gtask
         shell: bash
         run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            echo "task=assembleRelease" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          if ./gradlew -q tasks --all | grep -q "^assembleRelease"; then
+            echo "task=assembleRelease" | tee -a $GITHUB_OUTPUT
           else
-            echo "task=assembleDebug" >> "$GITHUB_OUTPUT"
+            echo "task=assembleDebug" | tee -a $GITHUB_OUTPUT
           fi
-          echo "picked task: ${{ steps.pick_gradle_task.outputs.task }}"
 
-      #####################################################################
-      # 5) 构建
-      #####################################################################
+      # ========== 构建 ==========
       - name: Build (unsigned)
-        shell: bash
         run: |
           set -euo pipefail
-          ./gradlew --no-daemon -S :app:${{ steps.pick_gradle_task.outputs.task }}
+          ./gradlew --no-daemon -p . ${{ steps.gtask.outputs.task }}
 
-      #####################################################################
-      # 6) 定位 APK
-      #####################################################################
+      # ========== 定位 APK ==========
       - name: Locate APK
-        id: locate_apk
+        id: apk
         shell: bash
         run: |
           set -euo pipefail
-          APK=$(find app/build/outputs/apk -type f -name "*-release*.apk" -o -name "*-debug*.apk" | head -n1 || true)
-          if [ -z "$APK" ]; then
-            echo "::error::No APK produced"
+          f=$(ls ${APP_MODULE}/build/outputs/apk/*/*-*.apk 2>/dev/null | head -n1 || true)
+          if [[ -z "$f" ]]; then
+            echo "::error::APK 未生成。"
             exit 1
           fi
-          echo "apk=$APK" >> "$GITHUB_OUTPUT"
-          echo "Found APK: $APK"
+          echo "path=$f" | tee -a $GITHUB_OUTPUT
+          ls -lh "$f"
 
-      #####################################################################
-      # 7) 构建后硬闸：按大小兜底，杜绝空包
-      #####################################################################
+      # ========== 产物硬闸：体积 + 结构 ==========
       - name: Post-build hard gate (no-empty-apk)
         shell: bash
         run: |
           set -euo pipefail
-          APK="${{ steps.locate_apk.outputs.apk }}"
-          if [ -z "$APK" ]; then
-            echo "::error::APK path missing"
-            exit 1
-          fi
-          if stat --version >/dev/null 2>&1; then
-            SIZE=$(stat -c%s "$APK")
-          else
-            SIZE=$(stat -f%z "$APK")
-          fi
-          echo "APK size: $SIZE"
-          if [ "$SIZE" -lt "${{ env.MIN_APK_SIZE }}" ]; then
-            echo "::error::APK too small (< ${{ env.MIN_APK_SIZE }}) — likely empty"
+          apk="${{ steps.apk.outputs.path }}"
+          size=$(stat -c%s "$apk")
+          echo "APK size: $size bytes"
+
+          if [[ "$size" -lt "${APK_MIN_BYTES}" ]]; then
+            echo "::error::APK size too small (< ${APK_MIN_BYTES}). 认定为空包，失败。"
             exit 1
           fi
 
+          # 结构检查：必须要有 classes*.dex 和 res/layout/ 等
+          tmpdir=$(mktemp -d)
+          unzip -q "$apk" -d "$tmpdir"
+          classes=$(ls "$tmpdir"/classes*.dex 2>/dev/null | wc -l)
+          layouts=$(ls "$tmpdir"/res/layout* 2>/dev/null | wc -l || true)
+
+          if [[ "$classes" -lt 1 || "$layouts" -lt 1 ]]; then
+            echo "::error::APK 结构异常（classes.dex 或 layout 目录缺失），疑似空包。"
+            exit 1
+          fi
+          echo "Post-build gate passed."
+
+      # ========== 上传产物 ==========
       - name: Upload unsigned APK
         uses: actions/upload-artifact@v4
         with:
           name: unsigned-release-apk
-          path: ${{ steps.locate_apk.outputs.apk }}
+          path: ${{ steps.apk.outputs.path }}
+          if-no-files-found: error
