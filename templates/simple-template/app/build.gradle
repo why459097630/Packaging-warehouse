@@ -1,20 +1,27 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    // 如果模板是 Kotlin，再打开下一行：
+    // id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    namespace 'com.ndjc.generated'
-    compileSdk 34
+    compileSdkVersion 34
+
+    def appId = (System.getenv("APP_ID")
+            ?: (project.findProperty("APP_ID") ?: "com.app.generated"))
+
+    namespace appId
 
     defaultConfig {
-        applicationId "com.ndjc.generated"
-        minSdk 24
-        targetSdk 34
+        applicationId appId
+        minSdkVersion 24
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders = [
+            fileProviderAuthority: "${appId}.provider"
+        ]
     }
 
     buildTypes {
@@ -22,19 +29,23 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            debuggable true
+        }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = '17'
-    }
+    // 如果模板是 Kotlin，再打开：
+    // kotlinOptions { jvmTarget = '17' }
+
+    // buildFeatures { viewBinding true }
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.12.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
 }
