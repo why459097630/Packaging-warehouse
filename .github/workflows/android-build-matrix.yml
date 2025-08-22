@@ -17,6 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # 把 inputs 和 secrets 全部映射到 env，if 只用 env 判断
     env:
       TEMPLATE:      ${{ inputs.template }}
       PROMPT:        ${{ inputs.prompt }}
@@ -27,6 +28,17 @@ jobs:
       VERSION_NAME:  ${{ inputs.version_name }}
       VERSION_CODE:  ${{ inputs.version_code }}
       REASON:        ${{ inputs.reason }}
+
+      RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+      RELEASE_STORE_PASSWORD:  ${{ secrets.RELEASE_STORE_PASSWORD }}
+      RELEASE_KEY_ALIAS:       ${{ secrets.RELEASE_KEY_ALIAS }}
+      RELEASE_KEY_PASSWORD:    ${{ secrets.RELEASE_KEY_PASSWORD }}
+
+      # 统一在 env 里生成一个布尔字符串，后面直接用它做 if 判断
+      HAS_SIGNING: ${{ (secrets.RELEASE_KEYSTORE_BASE64 != '' &&
+                        secrets.RELEASE_STORE_PASSWORD  != '' &&
+                        secrets.RELEASE_KEY_ALIAS       != '' &&
+                        secrets.RELEASE_KEY_PASSWORD    != '') }}
 
     steps:
       - name: Checkout
@@ -44,33 +56,27 @@ jobs:
         run: |
           echo "template=$TEMPLATE"
           echo "prompt=$PROMPT"
-          # 这里调用你生成模板的脚本
+          # 这里调用你生成模板与写入逻辑的脚本 / 命令
           # bash scripts/generate_from_template.sh "$TEMPLATE" "$PROMPT" "$APK_NAME" "$VERSION_NAME" "$VERSION_CODE"
 
-      # ---------- 有签名就走 release ----------
+      # ----------------- 有签名：release -----------------
       - name: Decode release keystore
-        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' }}
+        if: ${{ env.HAS_SIGNING == 'true' }}
         run: |
-          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
+          echo "${RELEASE_KEYSTORE_BASE64}" | base64 -d > keystore.jks
 
       - name: Build release (signed)
-        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' &&
-               secrets.RELEASE_STORE_PASSWORD != '' &&
-               secrets.RELEASE_KEY_ALIAS != '' &&
-               secrets.RELEASE_KEY_PASSWORD != '' }}
+        if: ${{ env.HAS_SIGNING == 'true' }}
         run: |
           ./gradlew clean assembleRelease \
             -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/keystore.jks \
-            -Pandroid.injected.signing.store.password='${{ secrets.RELEASE_STORE_PASSWORD }}' \
-            -Pandroid.injected.signing.key.alias='${{ secrets.RELEASE_KEY_ALIAS }}' \
-            -Pandroid.injected.signing.key.password='${{ secrets.RELEASE_KEY_PASSWORD }}'
+            -Pandroid.injected.signing.store.password="${RELEASE_STORE_PASSWORD}" \
+            -Pandroid.injected.signing.key.alias="${RELEASE_KEY_ALIAS}" \
+            -Pandroid.injected.signing.key.password="${RELEASE_KEY_PASSWORD}"
 
-      # ---------- 否则回退到 debug ----------
+      # ----------------- 无签名：debug -----------------
       - name: Build debug (fallback)
-        if: ${{ !(secrets.RELEASE_KEYSTORE_BASE64 != '' &&
-                  secrets.RELEASE_STORE_PASSWORD != '' &&
-                  secrets.RELEASE_KEY_ALIAS != '' &&
-                  secrets.RELEASE_KEY_PASSWORD != '') }}
+        if: ${{ env.HAS_SIGNING != 'true' }}
         run: ./gradlew clean assembleDebug
 
       - name: Upload APK
