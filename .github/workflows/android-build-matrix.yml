@@ -1,183 +1,131 @@
-name: Android CI (non-empty-apk with content-pack)
+name: Android Build (matrix)
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'content-packs/**'
-      - '.github/workflows/android-build-matrix.yml'
-      - 'app/**'
-      - 'android/**'
-      - 'gradle/**'
-      - 'build.gradle*'
-      - 'settings.gradle*'
-  repository_dispatch:
-    types: [build-apk]
   workflow_dispatch:
     inputs:
       template:
-        description: 'template name (optional)'
+        description: "模板（core-template|form-template|simple-template）"
+        required: true
+        type: string
+      prompt:
+        description: "应用描述 / prompt"
+        required: true
+        type: string
+      owner:
+        description: "目标仓库 owner（写入生成代码的仓库）"
+        required: true
+        type: string
+      repo:
+        description: "目标仓库 repo"
+        required: true
+        type: string
+      branch:
+        description: "目标分支"
         required: false
-      commit_sha:
-        description: 'content commit sha (optional)'
+        default: "main"
+        type: string
+      apk_name:
+        description: "APK 文件名"
         required: false
+        default: "app"
+        type: string
+      version_name:
+        description: "版本名"
+        required: false
+        default: "1.0.0"
+        type: string
+      version_code:
+        description: "版本号（整数）"
+        required: false
+        default: "1"
+        type: string
+      reason:                # ← 关键：把 reason 声明出来，避免 422
+        description: "触发原因/追踪标识（可选）"
+        required: false
+        type: string
 
 permissions:
   contents: read
-  actions: read
-
-concurrency:
-  group: android-build-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   build:
+    name: Build Android
     runs-on: ubuntu-latest
-    timeout-minutes: 60
 
     env:
-      ARTIFACT_NAME: apk-output
+      TEMPLATE:      ${{ inputs.template }}
+      PROMPT:        ${{ inputs.prompt }}
+      GH_OWNER:      ${{ inputs.owner }}
+      GH_REPO:       ${{ inputs.repo }}
+      GH_BRANCH:     ${{ inputs.branch }}
+      APK_NAME:      ${{ inputs.apk_name }}
+      VERSION_NAME:  ${{ inputs.version_name }}
+      VERSION_CODE:  ${{ inputs.version_code }}
+      REASON:        ${{ inputs.reason }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Print event & list repo
-        run: |
-          echo "event: ${{ github.event_name }}"
-          echo "payload: ${{ toJson(github.event.client_payload) }}"
-          ls -la
-          ls -la content-packs || true
-          test -f content-packs/current.json && head -c 200 content-packs/current.json || echo "no content-packs/current.json"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+          cache: 'gradle'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Gradle cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-${{ runner.os }}-
-
-      - name: Ensure gradlew executable
-        run: chmod +x ./gradlew || true
-
-      # === 注入内容包到 assets（支持两种常见工程结构）===
-      - name: Inject content pack into assets
-        shell: bash
+      - name: Print inputs (for debugging)
         run: |
-          set -e
-          if [[ -f content-packs/current.json ]]; then
-            echo "Found content-packs/current.json"
-            mkdir -p app/src/main/assets || true
-            cp -f content-packs/current.json app/src/main/assets/content.json 2>/dev/null || true
+          echo "TEMPLATE=$TEMPLATE"
+          echo "PROMPT=$PROMPT"
+          echo "GH_OWNER=$GH_OWNER GH_REPO=$GH_REPO GH_BRANCH=$GH_BRANCH"
+          echo "APK_NAME=$APK_NAME VERSION_NAME=$VERSION_NAME VERSION_CODE=$VERSION_CODE"
+          echo "REASON=$REASON"
 
-            mkdir -p android/app/src/main/assets || true
-            cp -f content-packs/current.json android/app/src/main/assets/content.json 2>/dev/null || true
+      # ======（可选）生成/写入模板代码的步骤，如果你的仓库里已经完成这一步，可自行删除 ======
+      # - name: Generate project code from template
+      #   run: |
+      #     # 在这里把 $TEMPLATE / $PROMPT 等参数写入到 app 源码
+      #     echo "Generate code here..."
+      # ======================================================================
 
-            echo "Content pack copied to assets (if paths exist)."
-          else
-            echo "::warning::content-packs/current.json not found, build may produce empty APK."
-          fi
-
-      # === 非空闸门，避免空 APK ===
-      - name: Pre-build non-empty gate
-        shell: bash
-        run: |
-          set -e
-          TARGETS=()
-          [[ -f app/src/main/assets/content.json ]] && TARGETS+=("app/src/main/assets/content.json")
-          [[ -f android/app/src/main/assets/content.json ]] && TARGETS+=("android/app/src/main/assets/content.json")
-
-          if [[ ${#TARGETS[@]} -eq 0 ]]; then
-            echo "::warning::No assets content.json found. Trying to continue, but this likely leads to empty APK."
-            exit 0
-          fi
-
-          for f in "${TARGETS[@]}"; do
-            if [[ ! -s "$f" ]]; then
-              echo "::error::$f exists but is empty -> failing to prevent empty APK."
-              exit 1
-            fi
-            echo "OK non-empty: $f"
-          done
-
-      # === 先检查是否提供了签名 secrets，输出一个布尔结果 ===
-      - name: Check signing secrets
-        id: signing
-        shell: bash
-        env:
-          KS_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
-          KS_PWD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-          ALIAS:  ${{ secrets.RELEASE_KEY_ALIAS }}
-          ALIAS_PWD: ${{ secrets.RELEASE_KEY_ALIAS_PASSWORD }}
-        run: |
-          has_signing=false
-          if [[ -n "$KS_B64" && -n "$KS_PWD" && -n "$ALIAS" && -n "$ALIAS_PWD" ]]; then
-            has_signing=true
-          fi
-          echo "has_signing=$has_signing" >> "$GITHUB_OUTPUT"
-          echo "has_signing=$has_signing"
-
+      # 有签名时：解码 keystore 并写入环境变量
       - name: Decode release keystore
-        if: ${{ steps.signing.outputs.has_signing == 'true' }}
-        shell: bash
-        env:
-          KS_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_KEYSTORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_ALIAS_PASSWORD }}
         run: |
-          echo "$KS_B64" | base64 -d > release.keystore
-          ls -la release.keystore
+          mkdir -p app
+          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > app/release.jks
+          echo "STORE_FILE=app/release.jks" >> $GITHUB_ENV
+          echo "STORE_PASSWORD=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "KEY_ALIAS=${{ secrets.RELEASE_KEY_ALIAS }}" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=${{ secrets.RELEASE_KEY_ALIAS_PASSWORD }}" >> $GITHUB_ENV
 
-      # === 分开两个构建步骤：release 与 debug，按上一步判断 ===
+      # 有签名：打 release 包
       - name: Build release
-        if: ${{ steps.signing.outputs.has_signing == 'true' }}
-        shell: bash
-        env:
-          KEYSTORE_PASSWORD:     ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-          KEY_ALIAS:             ${{ secrets.RELEASE_KEY_ALIAS }}
-          KEY_ALIAS_PASSWORD:    ${{ secrets.RELEASE_KEY_ALIAS_PASSWORD }}
-          ANDROID_KEYSTORE:      ${{ github.workspace }}/release.keystore
+        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_KEYSTORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_ALIAS_PASSWORD }}
         run: |
-          set -e
-          ./gradlew --no-daemon assembleRelease
+          ./gradlew --no-daemon clean :app:assembleRelease \
+            -PversionName="${VERSION_NAME}" -PversionCode="${VERSION_CODE}"
 
-      - name: Build debug (fallback)
-        if: ${{ steps.signing.outputs.has_signing != 'true' }}
-        shell: bash
-        run: |
-          set -e
-          ./gradlew --no-daemon assembleDebug
-
-      - name: Locate APKs
-        id: apks
-        shell: bash
-        run: |
-          set -e
-          echo "APK list:"
-          find . -type f -name "*.apk" -print | tee /tmp/apk-list.txt
-          COUNT=$(wc -l </tmp/apk-list.txt | tr -d ' ')
-          if [[ "$COUNT" -eq 0 ]]; then
-            echo "::error::No APK produced."
-            exit 1
-          fi
-          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
-
-      - name: Upload APK artifact
+      - name: Upload release APK
+        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_KEYSTORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_ALIAS_PASSWORD }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: |
-            **/*.apk
-          if-no-files-found: error
+          name: ${{ env.APK_NAME }}-release
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: warn
+
+      # 无签名：fallback 到 debug 包
+      - name: Build debug (fallback)
+        if: ${{ !(secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_KEYSTORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_ALIAS_PASSWORD) }}
+        run: |
+          ./gradlew --no-daemon clean :app:assembleDebug \
+            -PversionName="${VERSION_NAME}" -PversionCode="${VERSION_CODE}"
+
+      - name: Upload debug APK
+        if: ${{ !(secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_KEYSTORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_ALIAS_PASSWORD) }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_NAME }}-debug
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
