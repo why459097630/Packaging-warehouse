@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "createdAt": "2025-08-22T08:19:07.482Z",
+  "createdAt": "2025-08-22T08:28:23.731Z",
   "template": "form-template",
   "prompt": "生成一个介绍菜品的安卓app，要可以上传照片和文字介绍，可以标价，要有登录系统",
   "payload": {}
