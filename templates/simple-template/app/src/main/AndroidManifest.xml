@@ -1,34 +1,103 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.app.generated">
+name: Android Build (Matrix)
 
-    <application
-        android:allowBackup="true"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+on:
+  # ① 允许从 API/手动触发，并显式声明 inputs（修复 422: Unexpected inputs）
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'why trigger'
+        required: false
+        type: string
+        default: api
+      template:
+        description: 'template to build'
+        required: false
+        type: choice
+        options:
+          - core-template
+          - form-template
+          - simple-template
+        default: form-template
 
-        <!-- 这就是启动 Activity；有 MAIN/LAUNCHER 的就必须声明 exported -->
-        <activity
-            android:name="com.app.generated.MainActivity"
-            android:exported="true"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
+  # ② 也支持当 content_pack / 模板变更时自动触发
+  push:
+    branches: [ main ]
+    paths:
+      - 'content_pack/**'
+      - 'templates/**'
+      - '.github/workflows/android-build-matrix.yml'
 
-        <!-- 若模板里还有带 <intent-filter> 的 receiver/service，一样显式声明 exported -->
-        <!--
-        <receiver
-            android:name=".SomeReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.xxx.ACTION"/>
-            </intent-filter>
-        </receiver>
-        -->
+concurrency: android-build-${{ github.ref }}
 
-    </application>
-</manifest>
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    env:
+      # 如果是手动/API 触发，有 inputs.template；push 触发时没有，则默认 form-template
+      TEMPLATE_NAME: ${{ inputs.template || 'form-template' }}
+      JAVA_TOOL_OPTIONS: -Xmx2g
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Print inputs (debug)
+        run: |
+          echo "reason=${{ inputs.reason }}"
+          echo "template=${{ env.TEMPLATE_NAME }}"
+
+      # 可选：解码 keystore（若提供了四个签名相关 secrets 则构建 release）
+      - name: Decode release keystore (optional)
+        id: keystore
+        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_KEYSTORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > release.keystore
+          echo "HAS_KEYSTORE=true" >> "$GITHUB_OUTPUT"
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+
+      - name: Build debug APK
+        run: |
+          ./gradlew --no-daemon :app:assembleDebug -PTEMPLATE_NAME="${TEMPLATE_NAME}"
+          ls -R app/build/outputs || true
+
+      - name: Build release APK (only if keystore present)
+        if: steps.keystore.outputs.HAS_KEYSTORE == 'true'
+        env:
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          ./gradlew --no-daemon :app:assembleRelease \
+            -Pandroid.injected.signing.store.file=$PWD/release.keystore \
+            -Pandroid.injected.signing.store.password="$RELEASE_KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$RELEASE_KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$RELEASE_KEY_PASSWORD"
+          ls -R app/build/outputs || true
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apks-${{ github.run_number }}
+          path: |
+            app/build/outputs/**/*.apk
+            app/build/outputs/**/*.aab
+          if-no-files-found: warn
+          retention-days: 7
