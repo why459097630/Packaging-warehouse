@@ -1,103 +1,77 @@
-name: Android Build (matrix)
+name: android-build-matrix
 
 on:
   workflow_dispatch:
     inputs:
-      template:
-        required: true
-        type: string
-        description: Template name (e.g. form-template)
-      prompt:
-        required: true
-        type: string
-        description: LLM prompt used to generate code
-      owner:
-        required: true
-        type: string
-      repo:
-        required: true
-        type: string
-      branch:
-        required: true
-        type: string
-        default: "main"
-      apk_name:
-        required: true
-        type: string
-        default: "MyApp"
-      version_name:
-        required: true
-        type: string
-        default: "1.0.0"
-      version_code:
-        required: true
-        type: string
-        default: "1"
-      reason:
-        required: false
-        type: string
-        default: ""
-
-permissions:
-  contents: write
-  actions: write
+      template:       { description: 'template dir', required: true,  default: 'form-template' }
+      prompt:         { description: 'prompt text',  required: true,  default: '' }
+      owner:          { description: 'repo owner',    required: true,  default: 'why459097630' }
+      repo:           { description: 'repo name',     required: true,  default: 'Packaging-warehouse' }
+      branch:         { description: 'branch',        required: true,  default: 'main' }
+      apk_name:       { description: 'APK name',      required: true,  default: 'MyApp' }
+      version_name:   { description: 'versionName',   required: true,  default: '1.0.0' }
+      version_code:   { description: 'versionCode',   required: true,  default: '1' }
+      reason:         { description: 'reason',        required: false, default: '' }
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      TEMPLATE:      ${{ inputs.template }}
+      PROMPT:        ${{ inputs.prompt }}
+      OWNER:         ${{ inputs.owner }}
+      REPO:          ${{ inputs.repo }}
+      BRANCH:        ${{ inputs.branch }}
+      APK_NAME:      ${{ inputs.apk_name }}
+      VERSION_NAME:  ${{ inputs.version_name }}
+      VERSION_CODE:  ${{ inputs.version_code }}
+      REASON:        ${{ inputs.reason }}
+
     steps:
-      - name: Checkout target branch
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch }}
+          fetch-depth: 0
 
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'gradle'
+          distribution: temurin
+          java-version: 17
 
-      - name: Ensure Gradle wrapper executable
-        run: chmod +x ./gradlew
-
-      # --- 如果配置了 release keystore，就先解码 ---
-      - name: Decode release keystore (if provided)
-        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' }}
-        env:
-          KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+      # ===== 这里按你的实际项目生成代码/写入配置 =====
+      - name: Generate project from template
         run: |
-          echo "$KEYSTORE_B64" | base64 -d > release.keystore
-          ls -l release.keystore
+          echo "template=$TEMPLATE"
+          echo "prompt=$PROMPT"
+          # 你的生成脚本，例如：
+          # bash scripts/generate_from_template.sh "$TEMPLATE" "$PROMPT" "$APK_NAME" "$VERSION_NAME" "$VERSION_CODE"
 
-      # --- 有签名信息 => 构建 release ---
-      - name: Build release (if keystore present)
-        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' && secrets.RELEASE_KEYSTORE_PASSWORD != '' && secrets.RELEASE_KEY_ALIAS != '' && secrets.RELEASE_KEY_PASSWORD != '' }}
-        env:
-          RELEASE_KEYSTORE: ${{ github.workspace }}/release.keystore
-          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
-          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-          VERSION_NAME: ${{ github.event.inputs.version_name }}
-          VERSION_CODE: ${{ github.event.inputs.version_code }}
-          APK_NAME: ${{ github.event.inputs.apk_name }}
-        run: ./gradlew assembleRelease --stacktrace
+      # --- 如果提供了签名秘钥，则走 Release 签名构建 ---
+      - name: Decode release keystore
+        if: ${{ !!secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
 
-      # --- 否则走 debug，避免构建中断 ---
+      - name: Build release (signed)
+        if: ${{ !!secrets.RELEASE_KEYSTORE_BASE64 && !!secrets.RELEASE_STORE_PASSWORD && !!secrets.RELEASE_KEY_ALIAS && !!secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          ./gradlew clean assembleRelease \
+            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/keystore.jks \
+            -Pandroid.injected.signing.store.password='${{ secrets.RELEASE_STORE_PASSWORD }}' \
+            -Pandroid.injected.signing.key.alias='${{ secrets.RELEASE_KEY_ALIAS }}' \
+            -Pandroid.injected.signing.key.password='${{ secrets.RELEASE_KEY_PASSWORD }}'
+
+      # --- 否则退回到 Debug 构建（便于验证写入内容是否成功） ---
       - name: Build debug (fallback)
-        if: ${{ !(secrets.RELEASE_KEYSTORE_BASE64 != '' && secrets.RELEASE_KEYSTORE_PASSWORD != '' && secrets.RELEASE_KEY_ALIAS != '' && secrets.RELEASE_KEY_PASSWORD != '') }}
-        env:
-          VERSION_NAME: ${{ github.event.inputs.version_name }}
-          VERSION_CODE: ${{ github.event.inputs.version_code }}
-          APK_NAME: ${{ github.event.inputs.apk_name }}
-        run: ./gradlew assembleDebug --stacktrace
+        if: ${{ !(secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_STORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_PASSWORD) }}
+        run: ./gradlew clean assembleDebug
 
-      - name: Upload APK/AAB artifacts
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs.apk_name }}-${{ github.event.inputs.version_name }}
+          name: ${{ env.APK_NAME }}-${{ env.VERSION_NAME }}-apk
           path: |
-            **/build/outputs/apk/**/*.apk
-            **/build/outputs/bundle/**/*.aab
-          if-no-files-found: warn
+            **/app/build/outputs/apk/**/**/*.apk
+            **/build/outputs/apk/**/**/*.apk
