@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       owner:
-        description: "目标仓库 owner（写入生成代码的仓库）"
+        description: "目标仓库 owner（生成代码要写入的仓库）"
         required: true
         type: string
       repo:
@@ -25,7 +25,7 @@ on:
         default: "main"
         type: string
       apk_name:
-        description: "APK 文件名"
+        description: "APK 文件名前缀"
         required: false
         default: "app"
         type: string
@@ -39,7 +39,7 @@ on:
         required: false
         default: "1"
         type: string
-      reason:                # ← 关键：把 reason 声明出来，避免 422
+      reason:                 # 关键：声明 reason，避免 422
         description: "触发原因/追踪标识（可选）"
         required: false
         type: string
@@ -53,15 +53,15 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TEMPLATE:      ${{ inputs.template }}
-      PROMPT:        ${{ inputs.prompt }}
-      GH_OWNER:      ${{ inputs.owner }}
-      GH_REPO:       ${{ inputs.repo }}
-      GH_BRANCH:     ${{ inputs.branch }}
-      APK_NAME:      ${{ inputs.apk_name }}
-      VERSION_NAME:  ${{ inputs.version_name }}
-      VERSION_CODE:  ${{ inputs.version_code }}
-      REASON:        ${{ inputs.reason }}
+      TEMPLATE:     ${{ inputs.template }}
+      PROMPT:       ${{ inputs.prompt }}
+      GH_OWNER:     ${{ inputs.owner }}
+      GH_REPO:      ${{ inputs.repo }}
+      GH_BRANCH:    ${{ inputs.branch }}
+      APK_NAME:     ${{ inputs.apk_name }}
+      VERSION_NAME: ${{ inputs.version_name }}
+      VERSION_CODE: ${{ inputs.version_code }}
+      REASON:       ${{ inputs.reason }}
 
     steps:
       - name: Checkout
@@ -72,26 +72,39 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: 'gradle'
+          cache: gradle
 
-      - name: Print inputs (for debugging)
+      - name: Print inputs (debug)
         run: |
           echo "TEMPLATE=$TEMPLATE"
           echo "PROMPT=$PROMPT"
-          echo "GH_OWNER=$GH_OWNER GH_REPO=$GH_REPO GH_BRANCH=$GH_BRANCH"
+          echo "TARGET=$GH_OWNER/$GH_REPO@$GH_BRANCH"
           echo "APK_NAME=$APK_NAME VERSION_NAME=$VERSION_NAME VERSION_CODE=$VERSION_CODE"
           echo "REASON=$REASON"
 
-      # ======（可选）生成/写入模板代码的步骤，如果你的仓库里已经完成这一步，可自行删除 ======
-      # - name: Generate project code from template
-      #   run: |
-      #     # 在这里把 $TEMPLATE / $PROMPT 等参数写入到 app 源码
-      #     echo "Generate code here..."
-      # ======================================================================
+      # 计算是否具备签名所需的 4 个 secrets，并把结果写到 $GITHUB_ENV
+      - name: Detect signing secrets
+        env:
+          S1: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          S2: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          S3: ${{ secrets.RELEASE_KEY_ALIAS }}
+          S4: ${{ secrets.RELEASE_KEY_ALIAS_PASSWORD }}
+        run: |
+          if [ -n "${S1}" ] && [ -n "${S2}" ] && [ -n "${S3}" ] && [ -n "${S4}" ]; then
+            echo "SIGNING=true" >> $GITHUB_ENV
+          else
+            echo "SIGNING=false" >> $GITHUB_ENV
+          fi
 
-      # 有签名时：解码 keystore 并写入环境变量
+      # （如果你的 API 已经把模板内容写进仓库，这一步可以删掉或保留为空）
+      # - name: Generate project code from template (optional)
+      #   run: |
+      #     echo "Generate code to repo based on $TEMPLATE ..."
+      #     # 在这里把 PROMPT/模板写入到 app 源码
+
+      # 有签名：解码 keystore
       - name: Decode release keystore
-        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_KEYSTORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_ALIAS_PASSWORD }}
+        if: env.SIGNING == 'true'
         run: |
           mkdir -p app
           echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > app/release.jks
@@ -102,13 +115,13 @@ jobs:
 
       # 有签名：打 release 包
       - name: Build release
-        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_KEYSTORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_ALIAS_PASSWORD }}
+        if: env.SIGNING == 'true'
         run: |
           ./gradlew --no-daemon clean :app:assembleRelease \
             -PversionName="${VERSION_NAME}" -PversionCode="${VERSION_CODE}"
 
       - name: Upload release APK
-        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_KEYSTORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_ALIAS_PASSWORD }}
+        if: env.SIGNING == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APK_NAME }}-release
@@ -117,13 +130,13 @@ jobs:
 
       # 无签名：fallback 到 debug 包
       - name: Build debug (fallback)
-        if: ${{ !(secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_KEYSTORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_ALIAS_PASSWORD) }}
+        if: env.SIGNING != 'true'
         run: |
           ./gradlew --no-daemon clean :app:assembleDebug \
             -PversionName="${VERSION_NAME}" -PversionCode="${VERSION_CODE}"
 
       - name: Upload debug APK
-        if: ${{ !(secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_KEYSTORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_ALIAS_PASSWORD) }}
+        if: env.SIGNING != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APK_NAME }}-debug
