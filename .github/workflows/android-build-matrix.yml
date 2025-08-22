@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'content-packs/**'                   # 👈 API 写入的文件，push 时自动触发
+      - 'content-packs/**'
       - '.github/workflows/android-build-matrix.yml'
       - 'app/**'
       - 'android/**'
@@ -12,14 +12,14 @@ on:
       - 'build.gradle*'
       - 'settings.gradle*'
   repository_dispatch:
-    types: [build-apk]                       # 👈 API 的 repository_dispatch 事件
+    types: [build-apk]
   workflow_dispatch:
     inputs:
       template:
-        description: 'template name'
+        description: 'template name (optional)'
         required: false
       commit_sha:
-        description: 'content commit sha'
+        description: 'content commit sha (optional)'
         required: false
 
 permissions:
@@ -36,9 +36,6 @@ jobs:
     timeout-minutes: 60
 
     env:
-      # 允许你通过 workflow_dispatch 传模板；不是必须
-      TEMPLATE_NAME: ${{ github.event.inputs.template }}
-      # 产物上传的名字
       ARTIFACT_NAME: apk-output
 
     steps:
@@ -47,26 +44,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Print event & payload
+      - name: Print event & list repo
         run: |
           echo "event: ${{ github.event_name }}"
           echo "payload: ${{ toJson(github.event.client_payload) }}"
           ls -la
           ls -la content-packs || true
-          test -f content-packs/current.json && cat content-packs/current.json || echo "no content-packs/current.json"
+          test -f content-packs/current.json && head -c 200 content-packs/current.json || echo "no content-packs/current.json"
 
-      # Java 17（Android Gradle Plugin 8+ 推荐）
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      # 安装 Android SDK（更稳的预置 Action，避免你之前遇到的 pipe 错误）
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      # Gradle 缓存
       - name: Gradle cache
         uses: actions/cache@v4
         with:
@@ -78,30 +72,27 @@ jobs:
             gradle-${{ runner.os }}-
 
       - name: Ensure gradlew executable
-        run: |
-          chmod +x ./gradlew || true
+        run: chmod +x ./gradlew || true
 
-      # ===== 注入内容包（关键）=====
+      # === 注入内容包到 assets（支持两种常见工程结构）===
       - name: Inject content pack into assets
         shell: bash
         run: |
           set -e
           if [[ -f content-packs/current.json ]]; then
             echo "Found content-packs/current.json"
-            # 原生 Android 常见目录
             mkdir -p app/src/main/assets || true
             cp -f content-packs/current.json app/src/main/assets/content.json 2>/dev/null || true
 
-            # React Native 常见目录
             mkdir -p android/app/src/main/assets || true
             cp -f content-packs/current.json android/app/src/main/assets/content.json 2>/dev/null || true
 
             echo "Content pack copied to assets (if paths exist)."
           else
-            echo "::warning::content-packs/current.json not found, build will continue but may produce empty app."
+            echo "::warning::content-packs/current.json not found, build may produce empty APK."
           fi
 
-      # ===== 非空校验，避免空 APK =====
+      # === 非空闸门，避免空 APK ===
       - name: Pre-build non-empty gate
         shell: bash
         run: |
@@ -123,32 +114,51 @@ jobs:
             echo "OK non-empty: $f"
           done
 
-      # ===== 可选：签名（存在才执行），否则走 Debug =====
-      - name: Decode release keystore (optional)
-        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 && secrets.RELEASE_KEYSTORE_PASSWORD && secrets.RELEASE_KEY_ALIAS && secrets.RELEASE_KEY_ALIAS_PASSWORD }}
-        shell: bash
-        run: |
-          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > release.keystore
-          ls -la release.keystore
-
-      - name: Build (release if signed; else debug)
+      # === 先检查是否提供了签名 secrets，输出一个布尔结果 ===
+      - name: Check signing secrets
+        id: signing
         shell: bash
         env:
-          # 供 Gradle 读取的签名信息（按你工程里 signingConfig 的变量命名需要）
-          KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
-          KEY_ALIAS_PASSWORD: ${{ secrets.RELEASE_KEY_ALIAS_PASSWORD }}
+          KS_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          KS_PWD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          ALIAS:  ${{ secrets.RELEASE_KEY_ALIAS }}
+          ALIAS_PWD: ${{ secrets.RELEASE_KEY_ALIAS_PASSWORD }}
+        run: |
+          has_signing=false
+          if [[ -n "$KS_B64" && -n "$KS_PWD" && -n "$ALIAS" && -n "$ALIAS_PWD" ]]; then
+            has_signing=true
+          fi
+          echo "has_signing=$has_signing" >> "$GITHUB_OUTPUT"
+          echo "has_signing=$has_signing"
+
+      - name: Decode release keystore
+        if: ${{ steps.signing.outputs.has_signing == 'true' }}
+        shell: bash
+        env:
+          KS_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KS_B64" | base64 -d > release.keystore
+          ls -la release.keystore
+
+      # === 分开两个构建步骤：release 与 debug，按上一步判断 ===
+      - name: Build release
+        if: ${{ steps.signing.outputs.has_signing == 'true' }}
+        shell: bash
+        env:
+          KEYSTORE_PASSWORD:     ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          KEY_ALIAS:             ${{ secrets.RELEASE_KEY_ALIAS }}
+          KEY_ALIAS_PASSWORD:    ${{ secrets.RELEASE_KEY_ALIAS_PASSWORD }}
+          ANDROID_KEYSTORE:      ${{ github.workspace }}/release.keystore
         run: |
           set -e
-          if [[ -f release.keystore ]]; then
-            echo "== Building release =="
-            # 如果你的工程里 signingConfig 使用的是环境变量，这里确保 gradle 脚本能读到
-            export ANDROID_KEYSTORE=$(pwd)/release.keystore
-            ./gradlew --no-daemon assembleRelease
-          else
-            echo "== No keystore, building debug =="
-            ./gradlew --no-daemon assembleDebug
-          fi
+          ./gradlew --no-daemon assembleRelease
+
+      - name: Build debug (fallback)
+        if: ${{ steps.signing.outputs.has_signing != 'true' }}
+        shell: bash
+        run: |
+          set -e
+          ./gradlew --no-daemon assembleDebug
 
       - name: Locate APKs
         id: apks
