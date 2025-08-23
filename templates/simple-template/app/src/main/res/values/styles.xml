@@ -1,4 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 简单通用主题，可按需替换 -->
-    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar" />
+    <!-- 只保留一个主题，避免与 strings.xml 重复 -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
 </resources>
