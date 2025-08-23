@@ -89,60 +89,58 @@ jobs:
           set -euo pipefail
           chmod +x templates/*/gradlew || true
 
-      - name: Inject API data into template
-        if: env.TEMPLATE != ''
-        env:
-          TEMPLATE: ${{ env.TEMPLATE }}
-          APK_NAME: ${{ env.APK_NAME }}
-          API_BASE: ${{ env.API_BASE }}
-          API_SECRET: ${{ env.API_SECRET }}
-        shell: bash
-        run: |
-          set -euo pipefail
+    - name: Inject API data into template
+      env:
+        TEMPLATE:        ${{ github.event.client_payload.template }}
+        APP_NAME:        ${{ github.event.client_payload.app_name }}   # 如果前端发的是 appName 就写 appName
+        API_BASE:        ${{ github.event.client_payload.api_base }}   # 或 apiBase
+        API_SECRET:      ${{ github.event.client_payload.api_secret }} # 或 apiSecret
+      shell: bash
+      run: |
+        set -euo pipefail
+        ROOT="templates/${TEMPLATE}/app/src/main"
+        VALUES="${ROOT}/res/values"
+        STRINGS="${VALUES}/strings.xml"
+        STYLES="${VALUES}/styles.xml"
 
-          ROOT="templates/${TEMPLATE}/app/src/main"
-          VALUES="${ROOT}/res/values"
-          STRINGS="${VALUES}/strings.xml"
-          STYLES="${VALUES}/styles.xml"
+        mkdir -p "${VALUES}"
 
-          mkdir -p "${VALUES}"
+        # 仅当 strings.xml 不存在时写一个最小骨架
+        if [ ! -f "${STRINGS}" ]; then
+          cat > "${STRINGS}" <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+</resources>
+XML
+        fi
 
-          # strings.xml 不存在时创建空文件
-          if [ ! -f "${STRINGS}" ]; then
-            cat > "${STRINGS}" <<'XML'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-          </resources>
-          XML
-          fi
+        # 仅当 styles.xml 不存在时写一个默认主题，避免 Duplicate resources
+        if [ ! -f "${STYLES}" ]; then
+          cat > "${STYLES}" <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
+</resources>
+XML
+        fi
 
-          # styles.xml 不存在时写入默认主题，避免重复合并报错
-          if [ ! -f "${STYLES}" ]; then
-            cat > "${STYLES}" <<'XML'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-            <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
-          </resources>
-          XML
-          fi
+        # 清理旧项
+        sed -i '/name="app_name"/d'   "${STRINGS}" || true
+        sed -i '/name="api_base"/d'   "${STRINGS}" || true
+        sed -i '/name="api_secret"/d' "${STRINGS}" || true
 
-          # 先清理旧项（没有也不报错）
-          sed -i '/name="app_name"/d'   "${STRINGS}" || true
-          sed -i '/name="api_base"/d'   "${STRINGS}" || true
-          sed -i '/name="api_secret"/d' "${STRINGS}" || true
-
-          # 在 </resources> 之前插入三项
-          tmp="${STRINGS}.tmp"
-          awk -v app="${APK_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
-            /<\/resources>/ && !done {
-              print "    <string name=\"app_name\">"  app    "</string>"
-              print "    <string name=\"api_base\">"  base   "</string>"
-              print "    <string name=\"api_secret\">" secret "</string>"
-              done = 1
-            }
-            { print }
-          ' "${STRINGS}" > "$tmp"
-          mv "$tmp" "${STRINGS}"
+        # 在 </resources> 前插入新项
+        tmp="${STRINGS}.tmp"
+        awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
+          /<\/resources>/ && !done {
+            print "  <string name=\"app_name\">"  app   "</string>"
+            print "  <string name=\"api_base\">"  base  "</string>"
+            print "  <string name=\"api_secret\">"<< secret <<"</string>"
+            done=1
+          }
+          { print }
+        ' "${STRINGS}" > "${tmp}"
+        mv "${tmp}" "${STRINGS}"
 
       - name: Build debug APK
         working-directory: templates/${{ env.TEMPLATE }}
