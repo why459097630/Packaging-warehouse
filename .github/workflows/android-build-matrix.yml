@@ -1,36 +1,30 @@
----
 name: android-build-matrix
 
 on:
   workflow_dispatch:
     inputs:
       template:
-        description: "form-template | simple-template | core-template"
+        description: "Which app template to use (core-template|form-template|simple-template)"
         required: true
         default: form-template
-      version:
-        description: "App version"
-        required: true
-        default: 1.0.0
       apk_name:
-        description: "APK name"
+        description: "App name (will be injected to strings.xml)"
         required: true
         default: MyApp
       api_base:
-        description: "API base (optional)"
-        required: false
-        default: ""
+        description: "API base URL"
+        required: true
+        default: https://example.com/api
       api_secret:
-        description: "API secret (optional)"
-        required: false
-        default: ""
-
-permissions:
-  contents: read
+        description: "API secret"
+        required: true
+        default: secret123
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,10 +36,8 @@ jobs:
           java-version: "17"
 
       - name: Ensure gradlew executable
-        shell: bash
         run: |
-          set -e
-          find templates -name gradlew -type f -print0 | xargs -0 chmod +x
+          chmod +x templates/*/gradlew || true
 
       - name: Inject API data into template
         shell: bash
@@ -56,6 +48,7 @@ jobs:
           API_SECRET: ${{ inputs.api_secret }}
         run: |
           set -euo pipefail
+
           ROOT="templates/${TEMPLATE}/app/src/main"
           VALUES="${ROOT}/res/values"
           STRINGS="${VALUES}/strings.xml"
@@ -63,59 +56,54 @@ jobs:
 
           mkdir -p "${VALUES}"
 
+          # 仅当 strings.xml 不存在时创建空的 resources
           if [ ! -f "${STRINGS}" ]; then
-            cat > "${STRINGS}" <<EOF
+            cat > "${STRINGS}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 </resources>
-EOF
+XML
           fi
 
-          sed -i '/name="app_name"/d'   "${STRINGS}"
-          sed -i '/name="api_base"/d'   "${STRINGS}"
-          sed -i '/name="api_secret"/d' "${STRINGS}"
+          # 仅当 styles.xml 不存在时创建默认主题，避免 Duplicate resources
+          if [ ! -f "${STYLES}" ]; then
+            cat > "${STYLES}" <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
+</resources>
+XML
+          fi
 
+          # 先清理旧项
+          sed -i '/name="app_name"/d'   "${STRINGS}" || true
+          sed -i '/name="api_base"/d'   "${STRINGS}" || true
+          sed -i '/name="api_secret"/d' "${STRINGS}" || true
+
+          # 在 </resources> 前插入新项
           tmp="${STRINGS}.tmp"
           awk -v app="${APK_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
             /<\/resources>/ && !done {
-              print "    <string name=\"app_name\">" app "</string>"
-              if (length(base))   print "    <string name=\"api_base\">" base "</string>"
-              if (length(secret)) print "    <string name=\"api_secret\">" secret "</string>"
+              print "    <string name=\"app_name\">"  app    "</string>"
+              print "    <string name=\"api_base\">"  base   "</string>"
+              print "    <string name=\"api_secret\">" secret "</string>"
               done=1
             }
             { print }
-          ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
-
-          if [ ! -f "${STYLES}" ]; then
-            cat > "${STYLES}" <<EOF
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:statusBarColor">@android:color/transparent</item>
-    </style>
-</resources>
-EOF
-          fi
-
-          if ! grep -q 'style name="AppTheme"' "${STYLES}"; then
-            tmp="${STYLES}.tmp"
-            awk '
-              /<\/resources>/ && !done {
-                print "    <style name=\"AppTheme\" parent=\"Theme.MaterialComponents.DayNight.NoActionBar\">"
-                print "        <item name=\"android:statusBarColor\">@android:color/transparent</item>"
-                print "    </style>"
-                done=1
-              }
-              { print }
-            ' "${STYLES}" > "${tmp}" && mv "${tmp}" "${STYLES}"
+          ' "${STRINGS}" > "${tmp}"
+          mv "${tmp}" "${STRINGS}"
 
       - name: Build debug APK
-        working-directory: templates/${{ inputs.template }}
-        run: ./gradlew clean assembleDebug
+        shell: bash
+        run: |
+          cd "templates/${{ inputs.template }}"
+          ./gradlew clean assembleDebug
 
-      - name: Upload APK artifact
+      - name: Upload APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.apk_name }}-${{ inputs.version }}-debug
-          path: templates/${{ inputs.template }}/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+          name: debug-apk-${{ inputs.template }}
+          path: |
+            templates/${{ inputs.template }}/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
