@@ -1,92 +1,126 @@
 name: android-build-matrix
 
 on:
-  workflow_dispatch:
   repository_dispatch:
     types: [generate-apk]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Dump raw event (debug)
+        run: |
+          echo '====== github.event (truncated) ======'
+          echo '${{ toJson(github.event.client_payload) }}'
+
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
           cache: gradle
 
+      # 提取入参：兼容驼峰/下划线（关键）
       - name: Extract inputs
         id: in
         run: |
-          echo "template=${{ github.event.client_payload.template }}"     >> "$GITHUB_OUTPUT"
-          echo "app_name=${{ github.event.client_payload.app_name }}"     >> "$GITHUB_OUTPUT"
-          echo "api_base=${{ github.event.client_payload.api_base }}"     >> "$GITHUB_OUTPUT"
-          echo "api_secret=${{ github.event.client_payload.api_secret }}" >> "$GITHUB_OUTPUT"
+          echo "template=${{ github.event.client_payload.template || '' }}" >> $GITHUB_OUTPUT
+          echo "app_name=${{ github.event.client_payload.app_name || github.event.client_payload.appName || '' }}" >> $GITHUB_OUTPUT
+          echo "api_base=${{ github.event.client_payload.api_base || github.event.client_payload.apiBase || '' }}" >> $GITHUB_OUTPUT
+          echo "api_secret=${{ github.event.client_payload.api_secret || github.event.client_payload.apiSecret || '' }}" >> $GITHUB_OUTPUT
 
-      - name: Ensure gradlew executable
-        run: chmod +x templates/**/gradlew || true
+      - name: Show parsed fields (debug)
+        run: |
+          echo "template = ${{ steps.in.outputs.template }}"
+          echo "app_name = ${{ steps.in.outputs.app_name }}"
+          echo "api_base = ${{ steps.in.outputs.api_base }}"
+          echo "api_secret_len = $(echo -n '${{ steps.in.outputs.api_secret }}' | wc -c)"
+          echo "::add-mask::${{ steps.in.outputs.api_secret }}"
 
+      # 缺失即失败，避免继续打“空包”
+      - name: Validate inputs
+        run: |
+          miss=0
+          for k in template app_name api_base api_secret; do
+            v=$(eval echo '${{ steps.in.outputs.'$k' }}')
+            if [ -z "$v" ]; then echo "missing: $k"; miss=1; fi
+          done
+          if [ $miss -ne 0 ]; then
+            echo "❌ required inputs missing, stop."
+            exit 1
+          fi
+
+      # 将参数写入模板工程的 strings.xml（只改这 3 个键，不破坏其它字符串）
       - name: Inject API data into template
         env:
-          TEMPLATE: ${{ steps.in.outputs.template }}
-          APP_NAME: ${{ steps.in.outputs.app_name }}
-          API_BASE: ${{ steps.in.outputs.api_base }}
+          TEMPLATE  : ${{ steps.in.outputs.template }}
+          APP_NAME  : ${{ steps.in.outputs.app_name }}
+          API_BASE  : ${{ steps.in.outputs.api_base }}
           API_SECRET: ${{ steps.in.outputs.api_secret }}
         shell: bash
         run: |
           set -euo pipefail
-
           ROOT="templates/${TEMPLATE}/app/src/main"
           VALUES="${ROOT}/res/values"
           STRINGS="${VALUES}/strings.xml"
           STYLES="${VALUES}/styles.xml"
+
           mkdir -p "${VALUES}"
 
-          # 1) 若 strings.xml 不存在，创建一个空骨架
+          # 若 strings.xml 不存在，先写一个最小骨架
           if [ ! -f "${STRINGS}" ]; then
-            cat >"${STRINGS}" <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-          </resources>
-          EOF
+            cat > "${STRINGS}" <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+</resources>
+XML
           fi
 
-          # 2) 若 styles.xml 不存在，写入一个默认主题，避免 R 资源缺失
+          # 若 styles.xml 不存在，写入一个默认主题，避免 R 资源缺失
           if [ ! -f "${STYLES}" ]; then
-            cat >"${STYLES}" <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-            <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
-          </resources>
-          EOF
+            cat > "${STYLES}" <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar" />
+</resources>
+XML
           fi
 
-          # 3) 清理旧项并写入新项
+          # 先清理旧值（幂等）
           sed -i '/name="app_name"/d'   "${STRINGS}" || true
           sed -i '/name="api_base"/d'   "${STRINGS}" || true
           sed -i '/name="api_secret"/d' "${STRINGS}" || true
 
-          tmp="${STRINGS}.tmp"
-          awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
+          # 在 </resources> 之前插入新值
+          awk -v an="${APP_NAME}" -v ab="${API_BASE}" -v as="${API_SECRET}" '
             /<\/resources>/ && !done {
-              print "    <string name=\"app_name\">"  app    "</string>";
-              print "    <string name=\"api_base\">"  base   "</string>";
-              print "    <string name=\"api_secret\">" secret "</string>";
+              print "  <string name=\"app_name\">"  an "</string>"
+              print "  <string name=\"api_base\">"  ab "</string>"
+              print "  <string name=\"api_secret\">"<< as <<"</string>"
               done=1
             }
             { print }
-          ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
+          ' "${STRINGS}" > "${STRINGS}.tmp" && mv "${STRINGS}.tmp" "${STRINGS}"
+
+          echo "=== strings.xml after inject ==="
+          grep -E 'app_name|api_base|api_secret' -n "${STRINGS}" || true
+
+      - name: Ensure gradlew executable
+        run: chmod +x templates/**/gradlew || true
 
       - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
-        run: ./gradlew clean assembleDebug
+        run: ./gradlew assembleDebug
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: debug
           path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
