@@ -1,3 +1,4 @@
+# .github/workflows/android-build-matrix.yml
 name: android-build-matrix
 
 on:
@@ -39,17 +40,14 @@ jobs:
           APP_NAME: ${{ steps.in.outputs.app_name }}
           API_BASE: ${{ steps.in.outputs.api_base }}
           API_SECRET: ${{ steps.in.outputs.api_secret }}
-        shell: bash
         run: |
           set -euo pipefail
-
           ROOT="templates/${TEMPLATE}/app/src/main"
           VALUES="${ROOT}/res/values"
           STRINGS="${VALUES}/strings.xml"
           STYLES="${VALUES}/styles.xml"
           mkdir -p "${VALUES}"
 
-          # 初始化 strings.xml（若不存在）
           if [ ! -f "${STRINGS}" ]; then
             cat > "${STRINGS}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
@@ -58,7 +56,6 @@ jobs:
 XML
           fi
 
-          # 初始化 styles.xml（若不存在），避免 theme 相关编译错误
           if [ ! -f "${STYLES}" ]; then
             cat > "${STYLES}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
@@ -68,7 +65,6 @@ XML
 XML
           fi
 
-          # 清理旧项再写入
           sed -i -e '/name="app_name"/d' -e '/name="api_base"/d' -e '/name="api_secret"/d' "${STRINGS}"
           tmp="${STRINGS}.tmp"
           awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
