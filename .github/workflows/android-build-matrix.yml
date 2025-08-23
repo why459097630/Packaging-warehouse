@@ -4,23 +4,23 @@ on:
   workflow_dispatch:
     inputs:
       template:
-        description: "模板目录 (form-template|simple-template|core-template)"
+        description: "form-template | simple-template | core-template"
         required: true
         default: form-template
       version:
-        description: "版本号"
+        description: "App version"
         required: true
         default: 1.0.0
       apk_name:
-        description: "应用名 / APK 名"
+        description: "APK name"
         required: true
         default: MyApp
       api_base:
-        description: "API Base"
+        description: "API base (optional)"
         required: false
         default: ""
       api_secret:
-        description: "API Secret"
+        description: "API secret (optional)"
         required: false
         default: ""
 
@@ -63,55 +63,54 @@ jobs:
 
           mkdir -p "${VALUES}"
 
-          # strings.xml（若不存在则创建）
+          # strings.xml —— 创建或清理后再写入
           if [ ! -f "${STRINGS}" ]; then
-            cat > "${STRINGS}" <<'XML'
+            cat > "${STRINGS}" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 </resources>
-XML
+EOF
           fi
 
-          # 先清掉重复项再注入
           sed -i '/name="app_name"/d'   "${STRINGS}"
           sed -i '/name="api_base"/d'   "${STRINGS}"
           sed -i '/name="api_secret"/d' "${STRINGS}"
 
+          # 在 </resources> 之前插入字符串
+          tmp="${STRINGS}.tmp"
           awk -v app="${APK_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
-            /<resources[^>]*>/ && !added {
-              print
+            /<\/resources>/ && !done {
               print "    <string name=\"app_name\">" app "</string>"
               if (length(base))   print "    <string name=\"api_base\">" base "</string>"
               if (length(secret)) print "    <string name=\"api_secret\">" secret "</string>"
-              added=1
-              next
+              done=1
             }
             { print }
-          ' "${STRINGS}" > "${STRINGS}.tmp" && mv "${STRINGS}.tmp" "${STRINGS}"
+          ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
 
-          # styles.xml（若不存在则创建）
+          # styles.xml —— 创建或补齐 AppTheme
           if [ ! -f "${STYLES}" ]; then
-            cat > "${STYLES}" <<'XML'
+            cat > "${STYLES}" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 </resources>
-XML
+EOF
           fi
 
-          # 确保至少有 AppTheme
           if ! grep -q 'style name="AppTheme"' "${STYLES}"; then
+            tmp="${STYLES}.tmp"
             awk '
-              /<\/resources>$/ && !added {
+              /<\/resources>/ && !done {
                 print "    <style name=\"AppTheme\" parent=\"Theme.MaterialComponents.DayNight.NoActionBar\">"
                 print "        <item name=\"android:statusBarColor\">@android:color/transparent</item>"
                 print "    </style>"
-                added=1
+                done=1
               }
               { print }
-            ' "${STYLES}" > "${STYLES}.tmp" && mv "${STYLES}.tmp" "${STYLES}"
+            ' "${STYLES}" > "${tmp}" && mv "${tmp}" "${STYLES}"
 
       - name: Build debug APK
         working-directory: templates/${{ inputs.template }}
