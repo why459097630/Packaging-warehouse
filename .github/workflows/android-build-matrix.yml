@@ -1,39 +1,8 @@
 name: android-build-matrix
 
 on:
-  # 手动触发（前端也可以用这个）
-  workflow_dispatch:
-    inputs:
-      template:
-        description: 'simple-template | form-template | core-template'
-        required: true
-        default: simple-template
-      app_name:
-        description: 'App name'
-        required: true
-      version_name:
-        description: 'Version name'
-        required: false
-      version_code:
-        description: 'Version code'
-        required: false
-      api_base:
-        description: 'API base URL'
-        required: false
-      api_secret:
-        description: 'API secret'
-        required: false
-      branch:
-        description: 'Branch to build'
-        required: false
-        default: main
-      reason:
-        description: 'Reason (optional)'
-        required: false
-
-  # 通过 API 触发
   repository_dispatch:
-    types: [generate-apk]
+    types: [generate-apk]   # 前端用 event_type=generate-apk 触发
 
 permissions:
   contents: read
@@ -45,114 +14,86 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          # repository_dispatch 时走 payload.branch；否则走 workflow_dispatch 的 inputs.branch
-          ref: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.branch || inputs.branch }}
-
-      - name: Extract inputs
-        id: args
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-            template="${{ github.event.client_payload.template }}"
-            app_name="${{ github.event.client_payload.apk_name }}"
-            version_name="${{ github.event.client_payload.version_name }}"
-            version_code="${{ github.event.client_payload.version_code }}"
-            api_base="${{ github.event.client_payload.api_base }}"
-            api_secret="${{ github.event.client_payload.api_secret }}"
-          else
-            template="${{ inputs.template }}"
-            app_name="${{ inputs.app_name }}"
-            version_name="${{ inputs.version_name }}"
-            version_code="${{ inputs.version_code }}"
-            api_base="${{ inputs.api_base }}"
-            api_secret="${{ inputs.api_secret }}"
-          fi
-
-          echo "TEMPLATE=$template"       >> "$GITHUB_ENV"
-          echo "APK_NAME=$app_name"       >> "$GITHUB_ENV"
-          echo "VERSION_NAME=$version_name" >> "$GITHUB_ENV"
-          echo "VERSION_CODE=$version_code" >> "$GITHUB_ENV"
-          echo "API_BASE=$api_base"       >> "$GITHUB_ENV"
-          echo "API_SECRET=$api_secret"   >> "$GITHUB_ENV"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: 17
+          cache: gradle
+
+      - name: Extract inputs
+        id: in
+        run: |
+          echo "template=${{ github.event.client_payload.template }}" >> $GITHUB_OUTPUT
+          echo "app_name=${{ github.event.client_payload.app_name }}" >> $GITHUB_OUTPUT
+          echo "api_base=${{ github.event.client_payload.api_base }}" >> $GITHUB_OUTPUT
+          echo "api_secret=${{ github.event.client_payload.api_secret }}" >> $GITHUB_OUTPUT
 
       - name: Ensure gradlew executable
+        run: |
+          chmod +x templates/**/gradlew || true
+
+      - name: Inject API data into template
+        env:
+          TEMPLATE:  ${{ steps.in.outputs.template }}
+          APP_NAME:  ${{ steps.in.outputs.app_name }}
+          API_BASE:  ${{ steps.in.outputs.api_base }}
+          API_SECRET:${{ steps.in.outputs.api_secret }}
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x templates/*/gradlew || true
+          ROOT="templates/${TEMPLATE}/app/src/main"
+          VALUES="${ROOT}/res/values"
+          STRINGS="${VALUES}/strings.xml"
+          STYLES="${VALUES}/styles.xml"
+          mkdir -p "${VALUES}"
 
-    - name: Inject API data into template
-      env:
-        TEMPLATE:        ${{ github.event.client_payload.template }}
-        APP_NAME:        ${{ github.event.client_payload.app_name }}   # 如果前端发的是 appName 就写 appName
-        API_BASE:        ${{ github.event.client_payload.api_base }}   # 或 apiBase
-        API_SECRET:      ${{ github.event.client_payload.api_secret }} # 或 apiSecret
-      shell: bash
-      run: |
-        set -euo pipefail
-        ROOT="templates/${TEMPLATE}/app/src/main"
-        VALUES="${ROOT}/res/values"
-        STRINGS="${VALUES}/strings.xml"
-        STYLES="${VALUES}/styles.xml"
-
-        mkdir -p "${VALUES}"
-
-        # 仅当 strings.xml 不存在时写一个最小骨架
-        if [ ! -f "${STRINGS}" ]; then
-          cat > "${STRINGS}" <<'XML'
+          # 初次创建 strings.xml
+          if [ ! -f "${STRINGS}" ]; then
+            cat > "${STRINGS}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 </resources>
 XML
-        fi
+          fi
 
-        # 仅当 styles.xml 不存在时写一个默认主题，避免 Duplicate resources
-        if [ ! -f "${STYLES}" ]; then
-          cat > "${STYLES}" <<'XML'
+          # 初次创建 styles.xml，避免主题重复
+          if [ ! -f "${STYLES}" ]; then
+            cat > "${STYLES}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
 </resources>
 XML
-        fi
+          fi
 
-        # 清理旧项
-        sed -i '/name="app_name"/d'   "${STRINGS}" || true
-        sed -i '/name="api_base"/d'   "${STRINGS}" || true
-        sed -i '/name="api_secret"/d' "${STRINGS}" || true
+          # 清理旧项
+          sed -i '/name="app_name"/d'   "${STRINGS}" || true
+          sed -i '/name="api_base"/d'   "${STRINGS}" || true
+          sed -i '/name="api_secret"/d' "${STRINGS}" || true
 
-        # 在 </resources> 前插入新项
-        tmp="${STRINGS}.tmp"
-        awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
-          /<\/resources>/ && !done {
-            print "  <string name=\"app_name\">"  app   "</string>"
-            print "  <string name=\"api_base\">"  base  "</string>"
-            print "  <string name=\"api_secret\">"<< secret <<"</string>"
-            done=1
-          }
-          { print }
-        ' "${STRINGS}" > "${tmp}"
-        mv "${tmp}" "${STRINGS}"
+          # 插入新项（在 </resources> 前）
+          tmp="${STRINGS}.tmp"
+          awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
+            /<\/resources>/ && !done {
+              print "  <string name=\"app_name\">"  app   "</string>"
+              print "  <string name=\"api_base\">"  base  "</string>"
+              print "  <string name=\"api_secret\">" secret "</string>"
+              done=1
+            }
+            { print }
+          ' "${STRINGS}" > "${tmp}"
+          mv "${tmp}" "${STRINGS}"
 
       - name: Build debug APK
-        working-directory: templates/${{ env.TEMPLATE }}
-        shell: bash
+        working-directory: templates/${{ steps.in.outputs.template }}
         run: |
-          set -euo pipefail
-          ./gradlew --no-daemon clean assembleDebug
-          ls -lah app/build/outputs/apk/debug || true
+          chmod +x gradlew
+          ./gradlew clean assembleDebug --no-daemon
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APK_NAME }}-debug
-          path: templates/${{ env.TEMPLATE }}/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+          name: debug
+          path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
