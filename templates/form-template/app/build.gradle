@@ -1,10 +1,11 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    namespace "com.app.generated"     // Gradle 8 要求；Manifest 里 package 字段会被忽略
+    // 这个 namespace / applicationId 会被工作流注入步骤覆盖
+    namespace "com.app.generated"
     compileSdk 34
 
     defaultConfig {
@@ -12,13 +13,17 @@ android {
         minSdk 24
         targetSdk 34
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
-        debug { minifyEnabled false }
-        release {
+        debug {
             minifyEnabled false
+        }
+        release {
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -27,16 +32,19 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = '17' }
-
-    buildFeatures {
-        viewBinding true
+    // 这个块必须有 Kotlin 插件才会生效；上面的 plugins 已经声明
+    kotlinOptions {
+        jvmTarget = '17'
     }
 }
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.12.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'           // AppTheme 依赖
-    implementation 'com.google.android.material:material:1.9.0'   // Material 主题依赖
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
