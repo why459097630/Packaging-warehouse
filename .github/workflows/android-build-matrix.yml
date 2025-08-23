@@ -45,49 +45,53 @@ jobs:
         shell: bash
         run: |
           set -e
-          # 统一赋可执行权限，避免 “Permission denied”
           find templates -name gradlew -type f -print0 | xargs -0 chmod +x
 
       - name: Inject API data into template
         shell: bash
+        env:
+          TEMPLATE: ${{ inputs.template }}
+          APK_NAME: ${{ inputs.apk_name }}
+          API_BASE: ${{ inputs.api_base }}
+          API_SECRET: ${{ inputs.api_secret }}
         run: |
-          set -e
-          ROOT="templates/${{ inputs.template }}/app/src/main"
-          VALUES="$ROOT/res/values"
-          STRINGS="$VALUES/strings.xml"
-          STYLES="$VALUES/styles.xml"
+          set -euo pipefail
+          ROOT="templates/${TEMPLATE}/app/src/main"
+          VALUES="${ROOT}/res/values"
+          STRINGS="${VALUES}/strings.xml"
+          STYLES="${VALUES}/styles.xml"
 
-          mkdir -p "$VALUES"
+          mkdir -p "${VALUES}"
 
-          # 1) 确保 strings.xml 存在且只写入字符串
-          if [ ! -f "$STRINGS" ]; then
-            cat > "$STRINGS" <<'XML'
+          # 1) strings.xml 只保留字符串
+          if [ ! -f "${STRINGS}" ]; then
+            cat > "${STRINGS}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 </resources>
 XML
           fi
 
-          # 去重后再注入，避免 Duplicate resources
-          sed -i '/name="app_name"/d'   "$STRINGS"
-          sed -i '/name="api_base"/d'   "$STRINGS"
-          sed -i '/name="api_secret"/d' "$STRINGS"
+          # 去重再注入
+          sed -i '/name="app_name"/d'   "${STRINGS}"
+          sed -i '/name="api_base"/d'   "${STRINGS}"
+          sed -i '/name="api_secret"/d' "${STRINGS}"
 
-          awk -v app="${{ inputs.apk_name }}" \
-              -v base="${{ inputs.api_base }}" \
-              -v secret="${{ inputs.api_secret }}" '
+          awk -v app="${APK_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
             /<resources[^>]*>/ && !added {
               print
               print "    <string name=\"app_name\">" app "</string>"
               if (length(base))   print "    <string name=\"api_base\">" base "</string>"
               if (length(secret)) print "    <string name=\"api_secret\">" secret "</string>"
-              added=1; next
-            }1
-          ' "$STRINGS" > "$STRINGS.tmp" && mv "$STRINGS.tmp" "$STRINGS"
+              added=1
+              next
+            }
+            { print }
+          ' "${STRINGS}" > "${STRINGS}.tmp" && mv "${STRINGS}.tmp" "${STRINGS}"
 
-          # 2) 确保 styles.xml 里有且仅有一个 AppTheme（绝不往 strings.xml 写样式）
-          if [ ! -f "$STYLES" ]; then
-            cat > "$STYLES" <<'XML'
+          # 2) styles.xml 只保留一个 AppTheme
+          if [ ! -f "${STYLES}" ]; then
+            cat > "${STYLES}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
@@ -97,15 +101,16 @@ XML
 XML
           fi
 
-          if ! grep -q 'style name="AppTheme"' "$STYLES"; then
+          if ! grep -q 'style name="AppTheme"' "${STYLES}"; then
             awk '
               /<\/resources>$/ && !added {
                 print "    <style name=\"AppTheme\" parent=\"Theme.MaterialComponents.DayNight.NoActionBar\">"
                 print "        <item name=\"android:statusBarColor\">@android:color/transparent</item>"
                 print "    </style>"
                 added=1
-              } {print}
-            ' "$STYLES" > "$STYLES.tmp" && mv "$STYLES.tmp" "$STYLES"
+              }
+              { print }
+            ' "${STYLES}" > "${STYLES}.tmp" && mv "${STYLES}.tmp" "${STYLES}"
           fi
 
       - name: Build debug APK
