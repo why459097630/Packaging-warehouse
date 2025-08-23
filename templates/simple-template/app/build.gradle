@@ -1,36 +1,25 @@
 plugins {
     id 'com.android.application'
-    // 如果模板是 Kotlin，再打开下一行：
-    // id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
 }
 
 android {
-    compileSdkVersion 34
-
-    def appId = (System.getenv("APP_ID")
-            ?: (project.findProperty("APP_ID") ?: "com.app.generated"))
-
-    namespace appId
+    namespace "com.app.generated"     // Gradle 8 要求；Manifest 里 package 字段会被忽略
+    compileSdk 34
 
     defaultConfig {
-        applicationId appId
-        minSdkVersion 24
-        targetSdkVersion 34
+        applicationId "com.app.generated"
+        minSdk 24
+        targetSdk 34
         versionCode 1
         versionName "1.0"
-
-        manifestPlaceholders = [
-            fileProviderAuthority: "${appId}.provider"
-        ]
     }
 
     buildTypes {
+        debug { minifyEnabled false }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            debuggable true
         }
     }
 
@@ -38,14 +27,16 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    // 如果模板是 Kotlin，再打开：
-    // kotlinOptions { jvmTarget = '17' }
+    kotlinOptions { jvmTarget = '17' }
 
-    // buildFeatures { viewBinding true }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'           // AppTheme 依赖
+    implementation 'com.google.android.material:material:1.9.0'   // Material 主题依赖
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 }
