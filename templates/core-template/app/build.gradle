@@ -1,56 +1,42 @@
 plugins {
     id 'com.android.application'
-    // 如果模板是 Kotlin，再打开下一行：
-    // id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
 }
 
 android {
-    compileSdkVersion 34
-
-    // 统一来源的 APP ID（优先环境变量，其次 gradle.properties，最后默认）
-    def appId = (System.getenv("APP_ID")
-            ?: (project.findProperty("APP_ID") ?: "com.app.generated"))
-
-    // AGP 8 必须：Manifest 不能再写 package，这里声明命名空间
-    namespace appId
+    namespace "com.app.generated"     // Gradle 8 要求；Manifest 里 package 字段会被忽略
+    compileSdk 34
 
     defaultConfig {
-        applicationId appId
-        minSdkVersion 24
-        targetSdkVersion 34
+        applicationId "com.app.generated"
+        minSdk 24
+        targetSdk 34
         versionCode 1
         versionName "1.0"
-
-        // 如用到 FileProvider 等，用占位符随 applicationId 变化
-        manifestPlaceholders = [
-            fileProviderAuthority: "${appId}.provider"
-        ]
     }
 
     buildTypes {
+        debug { minifyEnabled false }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-        debug {
-            debuggable true
-        }
     }
 
-    // JDK 17（AGP 8.x 要求）
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    // 如果模板是 Kotlin，再打开：
-    // kotlinOptions { jvmTarget = '17' }
+    kotlinOptions { jvmTarget = '17' }
 
-    // 可按需开启
-    // buildFeatures { viewBinding true }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'           // AppTheme 依赖
+    implementation 'com.google.android.material:material:1.9.0'   // Material 主题依赖
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 }
