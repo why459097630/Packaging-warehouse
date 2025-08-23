@@ -63,7 +63,7 @@ jobs:
 
           mkdir -p "${VALUES}"
 
-          # 1) strings.xml 只保留字符串
+          # strings.xml
           if [ ! -f "${STRINGS}" ]; then
             cat > "${STRINGS}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
@@ -72,7 +72,7 @@ jobs:
 XML
           fi
 
-          # 去重再注入
+          # 删除重复项再注入
           sed -i '/name="app_name"/d'   "${STRINGS}"
           sed -i '/name="api_base"/d'   "${STRINGS}"
           sed -i '/name="api_secret"/d' "${STRINGS}"
@@ -89,7 +89,7 @@ XML
             { print }
           ' "${STRINGS}" > "${STRINGS}.tmp" && mv "${STRINGS}.tmp" "${STRINGS}"
 
-          # 2) styles.xml 只保留一个 AppTheme
+          # styles.xml
           if [ ! -f "${STYLES}" ]; then
             cat > "${STYLES}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
@@ -111,7 +111,6 @@ XML
               }
               { print }
             ' "${STYLES}" > "${STYLES}.tmp" && mv "${STYLES}.tmp" "${STYLES}"
-          fi
 
       - name: Build debug APK
         working-directory: templates/${{ inputs.template }}
