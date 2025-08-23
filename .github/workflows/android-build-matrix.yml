@@ -63,7 +63,7 @@ jobs:
 
           mkdir -p "${VALUES}"
 
-          # strings.xml
+          # strings.xml（若不存在则创建）
           if [ ! -f "${STRINGS}" ]; then
             cat > "${STRINGS}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
@@ -72,7 +72,7 @@ jobs:
 XML
           fi
 
-          # 删除重复项再注入
+          # 先清掉重复项再注入
           sed -i '/name="app_name"/d'   "${STRINGS}"
           sed -i '/name="api_base"/d'   "${STRINGS}"
           sed -i '/name="api_secret"/d' "${STRINGS}"
@@ -89,7 +89,7 @@ XML
             { print }
           ' "${STRINGS}" > "${STRINGS}.tmp" && mv "${STRINGS}.tmp" "${STRINGS}"
 
-          # styles.xml
+          # styles.xml（若不存在则创建）
           if [ ! -f "${STYLES}" ]; then
             cat > "${STYLES}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
@@ -101,6 +101,7 @@ XML
 XML
           fi
 
+          # 确保至少有 AppTheme
           if ! grep -q 'style name="AppTheme"' "${STYLES}"; then
             awk '
               /<\/resources>$/ && !added {
