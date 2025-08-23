@@ -1,3 +1,4 @@
+---
 name: android-build-matrix
 
 on:
@@ -30,7 +31,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,7 +63,6 @@ jobs:
 
           mkdir -p "${VALUES}"
 
-          # strings.xml —— 创建或清理后再写入
           if [ ! -f "${STRINGS}" ]; then
             cat > "${STRINGS}" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
@@ -76,7 +75,6 @@ EOF
           sed -i '/name="api_base"/d'   "${STRINGS}"
           sed -i '/name="api_secret"/d' "${STRINGS}"
 
-          # 在 </resources> 之前插入字符串
           tmp="${STRINGS}.tmp"
           awk -v app="${APK_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
             /<\/resources>/ && !done {
@@ -88,7 +86,6 @@ EOF
             { print }
           ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
 
-          # styles.xml —— 创建或补齐 AppTheme
           if [ ! -f "${STYLES}" ]; then
             cat > "${STYLES}" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
