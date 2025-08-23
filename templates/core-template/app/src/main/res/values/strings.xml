@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 由 CI 注入：app_name / api_base / api_secret -->
+    <string name="app_name">MyApp</string>
+    <string name="api_base">https://example.com/</string>
+    <string name="api_secret">dev-secret</string>
 </resources>
