@@ -1,36 +1,16 @@
 name: android-build-matrix
 
 on:
-  # 前端/服务端通过 GitHub API 触发
+  workflow_dispatch:
   repository_dispatch:
     types: [generate-apk]
-  # 手动触发（方便你在 Actions 页面自测）
-  workflow_dispatch:
-    inputs:
-      template:
-        description: "Template folder"
-        required: true
-        default: "form-template"
-      app_name:
-        description: "App name"
-        required: true
-        default: "MyApp"
-      api_base:
-        description: "API base URL"
-        required: true
-        default: "https://example.com"
-      api_secret:
-        description: "API secret"
-        required: true
-        default: "secret"
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -39,102 +19,74 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - name: Extract inputs (merge repository_dispatch & workflow_dispatch)
+      - name: Extract inputs
         id: in
-        shell: bash
         run: |
-          set -euo pipefail
-          TEMPLATE="${{ github.event.client_payload.template }}"
-          APP_NAME="${{ github.event.client_payload.app_name }}"
-          API_BASE="${{ github.event.client_payload.api_base }}"
-          API_SECRET="${{ github.event.client_payload.api_secret }}"
-
-          # 若是 workflow_dispatch，用页面输入回填
-          [ -z "$TEMPLATE" ]   && TEMPLATE="${{ inputs.template }}"
-          [ -z "$APP_NAME" ]   && APP_NAME="${{ inputs.app_name }}"
-          [ -z "$API_BASE" ]   && API_BASE="${{ inputs.api_base }}"
-          [ -z "$API_SECRET" ] && API_SECRET="${{ inputs.api_secret }}"
-
-          echo "template=$TEMPLATE"   >> "$GITHUB_OUTPUT"
-          echo "app_name=$APP_NAME"   >> "$GITHUB_OUTPUT"
-          echo "api_base=$API_BASE"   >> "$GITHUB_OUTPUT"
-          echo "api_secret=$API_SECRET" >> "$GITHUB_OUTPUT"
-
-      - name: Sanity check inputs (print & enforce non-empty)
-        shell: bash
-        run: |
-          echo "::group::payload values"
-          echo "template = '${{ steps.in.outputs.template }}'"
-          echo "app_name = '${{ steps.in.outputs.app_name }}'"
-          echo "api_base = '${{ steps.in.outputs.api_base }}'"
-          echo "::add-mask::${{ steps.in.outputs.api_secret }}"
-          echo "api_secret length = $(echo -n '${{ steps.in.outputs.api_secret }}' | wc -c)"
-          echo "::endgroup::"
-
-          [ -n "${{ steps.in.outputs.template }}" ]   || { echo "template missing"; exit 1; }
-          [ -n "${{ steps.in.outputs.app_name }}" ]   || { echo "app_name missing"; exit 1; }
-          [ -n "${{ steps.in.outputs.api_base }}" ]   || { echo "api_base missing"; exit 1; }
-          [ -n "${{ steps.in.outputs.api_secret }}" ] || { echo "api_secret missing"; exit 1; }
+          echo "template=${{ github.event.client_payload.template }}"     >> "$GITHUB_OUTPUT"
+          echo "app_name=${{ github.event.client_payload.app_name }}"     >> "$GITHUB_OUTPUT"
+          echo "api_base=${{ github.event.client_payload.api_base }}"     >> "$GITHUB_OUTPUT"
+          echo "api_secret=${{ github.event.client_payload.api_secret }}" >> "$GITHUB_OUTPUT"
 
       - name: Ensure gradlew executable
-        shell: bash
-        run: |
-          chmod +x templates/**/gradlew || true
+        run: chmod +x templates/**/gradlew || true
 
-      - name: Inject API data into template (only write non-empty)
+      - name: Inject API data into template
         env:
-          TEMPLATE:  ${{ steps.in.outputs.template }}
-          APP_NAME:  ${{ steps.in.outputs.app_name }}
-          API_BASE:  ${{ steps.in.outputs.api_base }}
-          API_SECRET:${{ steps.in.outputs.api_secret }}
+          TEMPLATE: ${{ steps.in.outputs.template }}
+          APP_NAME: ${{ steps.in.outputs.app_name }}
+          API_BASE: ${{ steps.in.outputs.api_base }}
+          API_SECRET: ${{ steps.in.outputs.api_secret }}
         shell: bash
         run: |
           set -euo pipefail
+
           ROOT="templates/${TEMPLATE}/app/src/main"
           VALUES="${ROOT}/res/values"
           STRINGS="${VALUES}/strings.xml"
           STYLES="${VALUES}/styles.xml"
-
           mkdir -p "${VALUES}"
 
-          # 创建 strings.xml/styels.xml（若不存在），避免资源缺失
+          # 1) 若 strings.xml 不存在，创建一个空骨架
           if [ ! -f "${STRINGS}" ]; then
-            printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>' '</resources>' > "${STRINGS}"
-          fi
-          if [ ! -f "${STYLES}" ]; then
-            printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>' \
-              '  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>' \
-              '</resources>' > "${STYLES}"
+            cat >"${STRINGS}" <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+          </resources>
+          EOF
           fi
 
-          # 只在非空时覆盖（防止把空写进去）
-          [ -n "${APP_NAME}" ]  && sed -i '/name="app_name"/d'   "${STRINGS}"
-          [ -n "${API_BASE}" ]  && sed -i '/name="api_base"/d'   "${STRINGS}"
-          [ -n "${API_SECRET}" ]&& sed -i '/name="api_secret"/d' "${STRINGS}"
+          # 2) 若 styles.xml 不存在，写入一个默认主题，避免 R 资源缺失
+          if [ ! -f "${STYLES}" ]; then
+            cat >"${STYLES}" <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+            <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
+          </resources>
+          EOF
+          fi
+
+          # 3) 清理旧项并写入新项
+          sed -i '/name="app_name"/d'   "${STRINGS}" || true
+          sed -i '/name="api_base"/d'   "${STRINGS}" || true
+          sed -i '/name="api_secret"/d' "${STRINGS}" || true
 
           tmp="${STRINGS}.tmp"
           awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
             /<\/resources>/ && !done {
-              if (length(app))    print "  <string name=\"app_name\">"  app    "</string>";
-              if (length(base))   print "  <string name=\"api_base\">"  base   "</string>";
-              if (length(secret)) print "  <string name=\"api_secret\">" secret "</string>";
+              print "    <string name=\"app_name\">"  app    "</string>";
+              print "    <string name=\"api_base\">"  base   "</string>";
+              print "    <string name=\"api_secret\">" secret "</string>";
               done=1
             }
             { print }
-          ' "${STRINGS}" > "${tmp}"
-          mv "${tmp}" "${STRINGS}"
-
-          echo "----- strings.xml after inject -----"
-          cat "${STRINGS}"
+          ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
 
       - name: Build debug APK
-        shell: bash
         working-directory: templates/${{ steps.in.outputs.template }}
-        run: ./gradlew clean assembleDebug --no-daemon
+        run: ./gradlew clean assembleDebug
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.in.outputs.template }}-debug
+          name: debug
           path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
