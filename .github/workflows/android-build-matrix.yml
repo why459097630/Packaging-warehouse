@@ -2,14 +2,13 @@ name: android-build-matrix
 
 on:
   repository_dispatch:
-    types: [generate-apk]   # 前端用 event_type=generate-apk 触发
-
-permissions:
-  contents: read
+    types: [generate-apk]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -25,10 +24,10 @@ jobs:
       - name: Extract inputs
         id: in
         run: |
-          echo "template=${{ github.event.client_payload.template }}" >> $GITHUB_OUTPUT
-          echo "app_name=${{ github.event.client_payload.app_name }}" >> $GITHUB_OUTPUT
-          echo "api_base=${{ github.event.client_payload.api_base }}" >> $GITHUB_OUTPUT
-          echo "api_secret=${{ github.event.client_payload.api_secret }}" >> $GITHUB_OUTPUT
+          echo "template=${{ github.event.client_payload.template }}" >> "$GITHUB_OUTPUT"
+          echo "app_name=${{ github.event.client_payload.app_name }}" >> "$GITHUB_OUTPUT"
+          echo "api_base=${{ github.event.client_payload.api_base }}" >> "$GITHUB_OUTPUT"
+          echo "api_secret=${{ github.event.client_payload.api_secret }}" >> "$GITHUB_OUTPUT"
 
       - name: Ensure gradlew executable
         run: |
@@ -36,20 +35,21 @@ jobs:
 
       - name: Inject API data into template
         env:
-          TEMPLATE:  ${{ steps.in.outputs.template }}
-          APP_NAME:  ${{ steps.in.outputs.app_name }}
-          API_BASE:  ${{ steps.in.outputs.api_base }}
-          API_SECRET:${{ steps.in.outputs.api_secret }}
+          TEMPLATE: ${{ steps.in.outputs.template }}
+          APP_NAME: ${{ steps.in.outputs.app_name }}
+          API_BASE: ${{ steps.in.outputs.api_base }}
+          API_SECRET: ${{ steps.in.outputs.api_secret }}
         shell: bash
         run: |
           set -euo pipefail
+
           ROOT="templates/${TEMPLATE}/app/src/main"
           VALUES="${ROOT}/res/values"
           STRINGS="${VALUES}/strings.xml"
           STYLES="${VALUES}/styles.xml"
           mkdir -p "${VALUES}"
 
-          # 初次创建 strings.xml
+          # 初始化 strings.xml（若不存在）
           if [ ! -f "${STRINGS}" ]; then
             cat > "${STRINGS}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
@@ -58,42 +58,37 @@ jobs:
 XML
           fi
 
-          # 初次创建 styles.xml，避免主题重复
+          # 初始化 styles.xml（若不存在），避免 theme 相关编译错误
           if [ ! -f "${STYLES}" ]; then
             cat > "${STYLES}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
+  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar" />
 </resources>
 XML
           fi
 
-          # 清理旧项
-          sed -i '/name="app_name"/d'   "${STRINGS}" || true
-          sed -i '/name="api_base"/d'   "${STRINGS}" || true
-          sed -i '/name="api_secret"/d' "${STRINGS}" || true
-
-          # 插入新项（在 </resources> 前）
+          # 清理旧项再写入
+          sed -i -e '/name="app_name"/d' -e '/name="api_base"/d' -e '/name="api_secret"/d' "${STRINGS}"
           tmp="${STRINGS}.tmp"
           awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
             /<\/resources>/ && !done {
-              print "  <string name=\"app_name\">"  app   "</string>"
-              print "  <string name=\"api_base\">"  base  "</string>"
-              print "  <string name=\"api_secret\">" secret "</string>"
+              print "    <string name=\"app_name\">" app "</string>"
+              print "    <string name=\"api_base\">" base "</string>"
+              print "    <string name=\"api_secret\">" secret "</string>"
               done=1
             }
             { print }
-          ' "${STRINGS}" > "${tmp}"
-          mv "${tmp}" "${STRINGS}"
+          ' "${STRINGS}" > "$tmp"
+          mv "$tmp" "${STRINGS}"
 
       - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
-        run: |
-          chmod +x gradlew
-          ./gradlew clean assembleDebug --no-daemon
+        run: ./gradlew clean assembleDebug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: debug
           path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
