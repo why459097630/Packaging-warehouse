@@ -1,51 +1,102 @@
 name: android-build-matrix
 
 on:
+  # 手动触发（前端也可以用这个）
   workflow_dispatch:
     inputs:
       template:
-        description: "Which app template to use (core-template|form-template|simple-template)"
+        description: 'simple-template | form-template | core-template'
         required: true
-        default: form-template
-      apk_name:
-        description: "App name (will be injected to strings.xml)"
+        default: simple-template
+      app_name:
+        description: 'App name'
         required: true
-        default: MyApp
+      version_name:
+        description: 'Version name'
+        required: false
+      version_code:
+        description: 'Version code'
+        required: false
       api_base:
-        description: "API base URL"
-        required: true
-        default: https://example.com/api
+        description: 'API base URL'
+        required: false
       api_secret:
-        description: "API secret"
-        required: true
-        default: secret123
+        description: 'API secret'
+        required: false
+      branch:
+        description: 'Branch to build'
+        required: false
+        default: main
+      reason:
+        description: 'Reason (optional)'
+        required: false
+
+  # 通过 API 触发
+  repository_dispatch:
+    types: [generate-apk]
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # repository_dispatch 时走 payload.branch；否则走 workflow_dispatch 的 inputs.branch
+          ref: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.branch || inputs.branch }}
+
+      - name: Extract inputs
+        id: args
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            template="${{ github.event.client_payload.template }}"
+            app_name="${{ github.event.client_payload.apk_name }}"
+            version_name="${{ github.event.client_payload.version_name }}"
+            version_code="${{ github.event.client_payload.version_code }}"
+            api_base="${{ github.event.client_payload.api_base }}"
+            api_secret="${{ github.event.client_payload.api_secret }}"
+          else
+            template="${{ inputs.template }}"
+            app_name="${{ inputs.app_name }}"
+            version_name="${{ inputs.version_name }}"
+            version_code="${{ inputs.version_code }}"
+            api_base="${{ inputs.api_base }}"
+            api_secret="${{ inputs.api_secret }}"
+          fi
+
+          echo "TEMPLATE=$template"       >> "$GITHUB_ENV"
+          echo "APK_NAME=$app_name"       >> "$GITHUB_ENV"
+          echo "VERSION_NAME=$version_name" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$version_code" >> "$GITHUB_ENV"
+          echo "API_BASE=$api_base"       >> "$GITHUB_ENV"
+          echo "API_SECRET=$api_secret"   >> "$GITHUB_ENV"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
       - name: Ensure gradlew executable
+        shell: bash
         run: |
+          set -euo pipefail
           chmod +x templates/*/gradlew || true
 
       - name: Inject API data into template
-        shell: bash
+        if: env.TEMPLATE != ''
         env:
-          TEMPLATE: ${{ inputs.template }}
-          APK_NAME: ${{ inputs.apk_name }}
-          API_BASE: ${{ inputs.api_base }}
-          API_SECRET: ${{ inputs.api_secret }}
+          TEMPLATE: ${{ env.TEMPLATE }}
+          APK_NAME: ${{ env.APK_NAME }}
+          API_BASE: ${{ env.API_BASE }}
+          API_SECRET: ${{ env.API_SECRET }}
+        shell: bash
         run: |
           set -euo pipefail
 
@@ -56,54 +107,54 @@ jobs:
 
           mkdir -p "${VALUES}"
 
-          # 仅当 strings.xml 不存在时创建空的 resources
+          # strings.xml 不存在时创建空文件
           if [ ! -f "${STRINGS}" ]; then
             cat > "${STRINGS}" <<'XML'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-</resources>
-XML
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+          </resources>
+          XML
           fi
 
-          # 仅当 styles.xml 不存在时创建默认主题，避免 Duplicate resources
+          # styles.xml 不存在时写入默认主题，避免重复合并报错
           if [ ! -f "${STYLES}" ]; then
             cat > "${STYLES}" <<'XML'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
-</resources>
-XML
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+            <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
+          </resources>
+          XML
           fi
 
-          # 先清理旧项
+          # 先清理旧项（没有也不报错）
           sed -i '/name="app_name"/d'   "${STRINGS}" || true
           sed -i '/name="api_base"/d'   "${STRINGS}" || true
           sed -i '/name="api_secret"/d' "${STRINGS}" || true
 
-          # 在 </resources> 前插入新项
+          # 在 </resources> 之前插入三项
           tmp="${STRINGS}.tmp"
           awk -v app="${APK_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
             /<\/resources>/ && !done {
               print "    <string name=\"app_name\">"  app    "</string>"
               print "    <string name=\"api_base\">"  base   "</string>"
               print "    <string name=\"api_secret\">" secret "</string>"
-              done=1
+              done = 1
             }
             { print }
-          ' "${STRINGS}" > "${tmp}"
-          mv "${tmp}" "${STRINGS}"
+          ' "${STRINGS}" > "$tmp"
+          mv "$tmp" "${STRINGS}"
 
       - name: Build debug APK
+        working-directory: templates/${{ env.TEMPLATE }}
         shell: bash
         run: |
-          cd "templates/${{ inputs.template }}"
-          ./gradlew clean assembleDebug
+          set -euo pipefail
+          ./gradlew --no-daemon clean assembleDebug
+          ls -lah app/build/outputs/apk/debug || true
 
-      - name: Upload APK
-        if: always()
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk-${{ inputs.template }}
-          path: |
-            templates/${{ inputs.template }}/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: warn
+          name: ${{ env.APK_NAME }}-debug
+          path: templates/${{ env.TEMPLATE }}/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
