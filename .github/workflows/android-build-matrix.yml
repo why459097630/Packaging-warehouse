@@ -1,44 +1,57 @@
 name: android-build-matrix
 
 on:
+  # 手动触发
   workflow_dispatch:
     inputs:
-      template:       { description: 'template dir', required: true,  default: 'form-template' }
-      prompt:         { description: 'prompt text',  required: true,  default: '' }
-      owner:          { description: 'repo owner',   required: true,  default: 'why459097630' }
-      repo:           { description: 'repo name',    required: true,  default: 'Packaging-warehouse' }
-      branch:         { description: 'branch',       required: true,  default: 'main' }
-      apk_name:       { description: 'APK name',     required: true,  default: 'MyApp' }
-      version_name:   { description: 'versionName',  required: true,  default: '1.0.0' }
-      version_code:   { description: 'versionCode',  required: true,  default: '1' }
-      reason:         { description: 'reason',       required: false, default: '' }
+      template:
+        description: 'core-template | form-template | simple-template'
+        required: true
+        default: 'form-template'
+      owner:
+        description: 'app owner'
+        required: true
+        default: 'why459097630'
+      repo:
+        description: 'repo (usually Packaging-warehouse)'
+        required: true
+        default: 'Packaging-warehouse'
+      branch:
+        description: 'git branch'
+        required: true
+        default: 'main'
+      app_name:
+        description: 'App name'
+        required: true
+        default: 'MyApp'
+      version_name:
+        description: 'Version name'
+        required: true
+        default: '1.0.0'
+      version_code:
+        description: 'Version code'
+        required: true
+        default: '1'
+      reason:
+        description: 'Why build (tag in artifact name)'
+        required: false
+        default: 'manual'
+  # API 触发（/api/generate-apk）
+  repository_dispatch:
+    types: [generate-apk]
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+
+env:
+  APP_DIR: ${{ github.workspace }}/generated-app
 
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-latest
-
-    # 把 inputs 和 secrets 全部映射到 env，if 只用 env 判断
-    env:
-      TEMPLATE:      ${{ inputs.template }}
-      PROMPT:        ${{ inputs.prompt }}
-      OWNER:         ${{ inputs.owner }}
-      REPO:          ${{ inputs.repo }}
-      BRANCH:        ${{ inputs.branch }}
-      APK_NAME:      ${{ inputs.apk_name }}
-      VERSION_NAME:  ${{ inputs.version_name }}
-      VERSION_CODE:  ${{ inputs.version_code }}
-      REASON:        ${{ inputs.reason }}
-
-      RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
-      RELEASE_STORE_PASSWORD:  ${{ secrets.RELEASE_STORE_PASSWORD }}
-      RELEASE_KEY_ALIAS:       ${{ secrets.RELEASE_KEY_ALIAS }}
-      RELEASE_KEY_PASSWORD:    ${{ secrets.RELEASE_KEY_PASSWORD }}
-
-      # 统一在 env 里生成一个布尔字符串，后面直接用它做 if 判断
-      HAS_SIGNING: ${{ (secrets.RELEASE_KEYSTORE_BASE64 != '' &&
-                        secrets.RELEASE_STORE_PASSWORD  != '' &&
-                        secrets.RELEASE_KEY_ALIAS       != '' &&
-                        secrets.RELEASE_KEY_PASSWORD    != '') }}
 
     steps:
       - name: Checkout
@@ -46,43 +59,90 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
+          cache: 'gradle'
 
+      # 统一兼容 workflow_dispatch / repository_dispatch 的入参
+      - name: Resolve inputs
+        id: in
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            payload='${{ toJson(github.event.client_payload) }}'
+          else
+            payload='${{ toJson(inputs) }}'
+          fi
+          echo "$payload" > /tmp/payload.json
+          jq -r '.template      // "form-template"'        /tmp/payload.json | xargs -I{} echo "template={}"       >> $GITHUB_OUTPUT
+          jq -r '.owner         // "why459097630"'         /tmp/payload.json | xargs -I{} echo "owner={}"          >> $GITHUB_OUTPUT
+          jq -r '.repo          // "Packaging-warehouse"'  /tmp/payload.json | xargs -I{} echo "repo={}"           >> $GITHUB_OUTPUT
+          jq -r '.branch        // "main"'                 /tmp/payload.json | xargs -I{} echo "branch={}"         >> $GITHUB_OUTPUT
+          jq -r '.app_name      // "MyApp"'                /tmp/payload.json | xargs -I{} echo "app_name={}"       >> $GITHUB_OUTPUT
+          jq -r '.version_name  // "1.0.0"'                /tmp/payload.json | xargs -I{} echo "version_name={}"   >> $GITHUB_OUTPUT
+          jq -r '.version_code  // "1"'                    /tmp/payload.json | xargs -I{} echo "version_code={}"   >> $GITHUB_OUTPUT
+          jq -r '.reason        // "manual"'               /tmp/payload.json | xargs -I{} echo "reason={}"         >> $GITHUB_OUTPUT
+
+      # ====== 你已有的“生成项目”步骤，可继续使用自己的实现 ======
+      # 下面示例用 rsync 从模板目录拷贝到工作目录（保留权限/时间戳）
       - name: Generate project from template
+        shell: bash
         run: |
-          echo "template=$TEMPLATE"
-          echo "prompt=$PROMPT"
-          # 这里调用你生成模板与写入逻辑的脚本 / 命令
-          # bash scripts/generate_from_template.sh "$TEMPLATE" "$PROMPT" "$APK_NAME" "$VERSION_NAME" "$VERSION_CODE"
+          rm -rf "$APP_DIR"
+          mkdir -p "$APP_DIR"
+          rsync -a "templates/${{ steps.in.outputs.template }}/" "$APP_DIR/"
 
-      # ----------------- 有签名：release -----------------
-      - name: Decode release keystore
-        if: ${{ env.HAS_SIGNING == 'true' }}
+      # 关键修复：给 gradlew 补执行位，并去掉潜在 CRLF
+      - name: Make gradle wrapper executable
+        shell: bash
+        working-directory: ${{ env.APP_DIR }}
         run: |
-          echo "${RELEASE_KEYSTORE_BASE64}" | base64 -d > keystore.jks
+          sed -i 's/\r$//' gradlew || true
+          find . -name "gradlew" -type f -print -exec chmod +x {} \;
+
+      # （可选）快速查看生成结果，确认“API 写入的内容真的进来了”
+      - name: Sanity check generated sources
+        shell: bash
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          echo "----- AndroidManifest (head) -----"
+          sed -n '1,120p' app/src/main/AndroidManifest.xml || true
+          echo "----- strings.xml (head) -----"
+          sed -n '1,120p' app/src/main/res/values/strings.xml || true
+
+      # 有签名信息就走 release，无签名就 fallback 到 debug
+      - name: Decode release keystore
+        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' && secrets.RELEASE_KEY_ALIAS != '' && secrets.RELEASE_KEYSTORE_PASSWORD != '' && secrets.RELEASE_KEY_PASSWORD != '' }}
+        shell: bash
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
 
       - name: Build release (signed)
-        if: ${{ env.HAS_SIGNING == 'true' }}
+        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' && secrets.RELEASE_KEY_ALIAS != '' && secrets.RELEASE_KEYSTORE_PASSWORD != '' && secrets.RELEASE_KEY_PASSWORD != '' }}
+        shell: bash
+        working-directory: ${{ env.APP_DIR }}
+        env:
+          KEY_ALIAS:          ${{ secrets.RELEASE_KEY_ALIAS }}
+          KEYSTORE_PASSWORD:  ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD:       ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
-          ./gradlew clean assembleRelease \
-            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/keystore.jks \
-            -Pandroid.injected.signing.store.password="${RELEASE_STORE_PASSWORD}" \
-            -Pandroid.injected.signing.key.alias="${RELEASE_KEY_ALIAS}" \
-            -Pandroid.injected.signing.key.password="${RELEASE_KEY_PASSWORD}"
+          ./gradlew clean assembleRelease
 
-      # ----------------- 无签名：debug -----------------
       - name: Build debug (fallback)
-        if: ${{ env.HAS_SIGNING != 'true' }}
-        run: ./gradlew clean assembleDebug
+        if: ${{ !(secrets.RELEASE_KEYSTORE_BASE64 != '' && secrets.RELEASE_KEY_ALIAS != '' && secrets.RELEASE_KEYSTORE_PASSWORD != '' && secrets.RELEASE_KEY_PASSWORD != '') }}
+        shell: bash
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          ./gradlew clean assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APK_NAME }}-${{ env.VERSION_NAME }}-apk
+          name: apk-${{ steps.in.outputs.app_name }}-${{ steps.in.outputs.version_name }}-${{ steps.in.outputs.reason }}
           path: |
-            **/app/build/outputs/apk/**/**/*.apk
-            **/build/outputs/apk/**/**/*.apk
+            ${{ env.APP_DIR }}/**/*.apk
+          if-no-files-found: warn
