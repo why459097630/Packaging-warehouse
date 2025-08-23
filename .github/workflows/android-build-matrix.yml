@@ -1,24 +1,17 @@
-# .github/workflows/android-build-matrix.yml
 name: android-build-matrix
 
-# ① 允许 API 触发 & 手动触发
 on:
+  # 前端/后端通过 repository_dispatch 触发
   repository_dispatch:
-    types: [generate-apk]         # 必须和 API 的 event_type 一致
+    types: [generate-apk]
+  # 也支持在 Actions 里手动点 Run workflow
   workflow_dispatch:
     inputs:
-      template:
-        description: Template name
-        required: false
-      app_name:
-        description: App name
-        required: false
-      version_name:
-        description: Version name
-        required: false
-      version_code:
-        description: Version code
-        required: false
+      template:      { description: "Template name", required: false }
+      app_name:      { description: "App name",     required: false }
+      version_name:  { description: "Version name", required: false }
+      version_code:  { description: "Version code", required: false }
+      prompt:        { description: "Prompt text",  required: false }
 
 jobs:
   build:
@@ -28,13 +21,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ② 同时兼容 repository_dispatch / workflow_dispatch 的参数
+      # ① 统一解析 inputs（兼容 repository_dispatch / workflow_dispatch），并给默认值
       - name: Extract inputs
         id: vars
         shell: bash
         run: |
           set -e
-          get() { v="$1"; [ -n "$v" ] && echo "$v" || echo ""; }
+          get(){ v="$1"; [ -n "$v" ] && echo "$v" || echo ""; }
 
           TEMPLATE=$(get "${{ github.event.client_payload.template }}")
           [ -z "$TEMPLATE" ] && TEMPLATE=$(get "${{ github.event.inputs.template }}")
@@ -52,46 +45,96 @@ jobs:
           [ -z "$VERSION_CODE" ] && VERSION_CODE=$(get "${{ github.event.inputs.version_code }}")
           [ -z "$VERSION_CODE" ] && VERSION_CODE="1"
 
+          PROMPT=$(get "${{ github.event.client_payload.prompt }}")
+          [ -z "$PROMPT" ] && PROMPT=$(get "${{ github.event.inputs.prompt }}")
+
           echo "template=$TEMPLATE"         >> $GITHUB_OUTPUT
           echo "app_name=$APP_NAME"         >> $GITHUB_OUTPUT
           echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
           echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "prompt<<EOF"                >> $GITHUB_OUTPUT
+          echo "$PROMPT"                    >> $GITHUB_OUTPUT
+          echo "EOF"                        >> $GITHUB_OUTPUT
 
-      # ③ 保障 gradlew 可执行位（解决 Permission denied）
+      # ② 保证任何位置的 gradlew 都有执行位（彻底解决 Permission denied）
       - name: Ensure gradlew executable
         shell: bash
         run: |
           set -e
-          # 仓库里/模板里/生成工程里，凡是叫 gradlew 的都加执行位
           find . -type f -name gradlew -exec chmod +x {} +
 
-      # 下面是你现有的步骤（示例占位），用上方解析出的变量：
-      #   ${{ steps.vars.outputs.template }}
-      #   ${{ steps.vars.outputs.app_name }}
-      #   ${{ steps.vars.outputs.version_name }}
-      #   ${{ steps.vars.outputs.version_code }}
-      #
-      # - name: Generate project from template
-      #   run: |
-      #     scripts/generate.sh \
-      #       --template "${{ steps.vars.outputs.template }}" \
-      #       --app-name "${{ steps.vars.outputs.app_name }}" \
-      #       --version-name "${{ steps.vars.outputs.version_name }}" \
-      #       --version-code "${{ steps.vars.outputs.version_code }}"
+      # ③ 安装 JDK（Android Gradle 需要）
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
 
-      # - name: Set up JDK
-      #   uses: actions/setup-java@v4
-      #   with:
-      #     distribution: temurin
-      #     java-version: '17'
+      # ④ 注入 API 内容到模板工程（assets/config）并修改 app 名称
+      - name: Inject API data into template
+        working-directory: templates/${{ steps.vars.outputs.template }}
+        shell: bash
+        run: |
+          set -e
+          mkdir -p app/src/main/assets
+          cat > app/src/main/assets/app-config.json <<JSON
+          {
+            "appName": "${{ steps.vars.outputs.app_name }}",
+            "versionName": "${{ steps.vars.outputs.version_name }}",
+            "versionCode": "${{ steps.vars.outputs.version_code }}",
+            "prompt": ${{
+              toJson(steps.vars.outputs.prompt)
+            }}
+          }
+          JSON
 
-      # - name: Build (release or debug)
-      #   working-directory: ./Packaging-warehouse-app   # ← 你的实际工程目录
-      #   run: |
-      #     ./gradlew clean assembleDebug   # 或 assembleRelease（按你的签名策略）
+          # 如果有 strings.xml 就同步修改 app_name（忽略错误也没关系）
+          if [ -f app/src/main/res/values/strings.xml ]; then
+            sed -i 's#<string name="app_name">.*</string>#<string name="app_name">${{ steps.vars.outputs.app_name }}</string>#' app/src/main/res/values/strings.xml || true
+          fi
 
-      # - name: Upload APK
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: apk
-      #     path: '**/*.apk'
+          echo "== injected config =="
+          cat app/src/main/assets/app-config.json || true
+
+      # ⑤ 编译 Debug APK（在模板工程目录执行）
+      - name: Build debug APK
+        id: build
+        working-directory: templates/${{ steps.vars.outputs.template }}
+        shell: bash
+        run: |
+          set -e
+          ./gradlew --version
+          ./gradlew clean assembleDebug
+
+          # 尝试常见输出路径获取 APK
+          APK=$(ls -1 app/build/outputs/apk/debug/*.apk 2>/dev/null | head -n1 || true)
+          if [ -z "$APK" ]; then
+            APK=$(find . -path "*/outputs/apk/*/debug/*.apk" -o -path "*/outputs/apk/debug/*.apk" | head -n1 || true)
+          fi
+          if [ -z "$APK" ]; then
+            echo "No APK found!" >&2
+            exit 1
+          fi
+          echo "apk=$APK" >> $GITHUB_OUTPUT
+          echo "apk_name=$(basename "$APK")" >> $GITHUB_OUTPUT
+          echo "Found APK: $APK"
+
+      # ⑥ 上传构建产物，并在 Summary 给出下载链接
+      - name: Upload APK artifact
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.vars.outputs.app_name }}-${{ steps.vars.outputs.version_name }}.apk
+          path: templates/${{ steps.vars.outputs.template }}/${{ steps.build.outputs.apk }}
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Build summary
+        shell: bash
+        run: |
+          echo "### ✅ Build Succeeded" >> $GITHUB_STEP_SUMMARY
+          echo "- Template: \`${{ steps.vars.outputs.template }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- App: **${{ steps.vars.outputs.app_name }}**" >> $GITHUB_STEP_SUMMARY
+          echo "- Version: **${{ steps.vars.outputs.version_name }} (code ${{ steps.vars.outputs.version_code }})**" >> $GITHUB_STEP_SUMMARY
+          echo "- APK: **${{ steps.build.outputs.apk_name }}**" >> $GITHUB_STEP_SUMMARY
+          echo "- ⬇️ [Download artifact](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
