@@ -1,28 +1,29 @@
 name: android-build-matrix
 
 on:
-  # 供前端/服务端通过 GitHub API 触发
+  # 前端/接口触发
   repository_dispatch:
     types: [generate-apk]
-  # 便于在 Actions 页面手动测试
+  # 手工触发
   workflow_dispatch:
     inputs:
       template:
-        description: "Template folder (e.g. core-template|form-template|simple-template)"
+        description: "Template"
         required: true
-        default: "form-template"
+        type: choice
+        options: [form-template, core-template, simple-template]
       app_name:
-        description: "App name shown in the app"
+        description: "App Name"
         required: true
-        default: "MyApp"
+        type: string
       api_base:
-        description: "API base URL"
+        description: "API Base"
         required: true
-        default: "https://example.com"
+        type: string
       api_secret:
-        description: "API secret"
+        description: "API Secret (optional)"
         required: false
-        default: ""
+        type: string
 
 jobs:
   build:
@@ -32,39 +33,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-          cache: gradle
-
       - name: Extract inputs
         id: in
         shell: bash
         run: |
-          # repository_dispatch 的 client_payload
-          echo "template=${{ github.event.client_payload.template }}"       >> "$GITHUB_OUTPUT"
-          echo "app_name=${{ github.event.client_payload.app_name }}"      >> "$GITHUB_OUTPUT"
-          echo "api_base=${{ github.event.client_payload.api_base }}"      >> "$GITHUB_OUTPUT"
-          echo "api_secret=${{ github.event.client_payload.api_secret }}"  >> "$GITHUB_OUTPUT"
-
-          # 如果是 workflow_dispatch，则用页面输入覆盖
-          if [[ -n "${{ github.event.inputs.template }}" ]]; then
-            echo "template=${{ github.event.inputs.template }}" >> "$GITHUB_OUTPUT"
-          fi
-          if [[ -n "${{ github.event.inputs.app_name }}" ]]; then
-            echo "app_name=${{ github.event.inputs.app_name }}" >> "$GITHUB_OUTPUT"
-          fi
-          if [[ -n "${{ github.event.inputs.api_base }}" ]]; then
-            echo "api_base=${{ github.event.inputs.api_base }}" >> "$GITHUB_OUTPUT"
-          fi
-          if [[ -n "${{ github.event.inputs.api_secret }}" ]]; then
-            echo "api_secret=${{ github.event.inputs.api_secret }}" >> "$GITHUB_OUTPUT"
-          fi
-
-          echo "Resolved inputs:"
-          cat "$GITHUB_OUTPUT"
+          echo "template=${{ github.event.client_payload.template || inputs.template }}" >> "$GITHUB_OUTPUT"
+          echo "app_name=${{ github.event.client_payload.app_name || inputs.app_name }}" >> "$GITHUB_OUTPUT"
+          echo "api_base=${{ github.event.client_payload.api_base || inputs.api_base }}" >> "$GITHUB_OUTPUT"
+          echo "api_secret=${{ github.event.client_payload.api_secret || inputs.api_secret }}" >> "$GITHUB_OUTPUT"
 
       - name: Ensure gradlew executable
         shell: bash
@@ -85,9 +61,10 @@ jobs:
           VALUES="${ROOT}/res/values"
           STRINGS="${VALUES}/strings.xml"
           STYLES="${VALUES}/styles.xml"
+
           mkdir -p "${VALUES}"
 
-          # strings.xml 不存在时创建空壳
+          # strings.xml 不存在则创建空壳
           if [ ! -f "${STRINGS}" ]; then
             cat >"${STRINGS}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
@@ -96,49 +73,48 @@ jobs:
 XML
           fi
 
-          # styles.xml 不存在时写入默认主题，避免 R 资源缺失
+          # styles.xml 不存在则写入一个默认主题，避免缺失 R
           if [ ! -f "${STYLES}" ]; then
             cat >"${STYLES}" <<'XML'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
 </resources>
 XML
           fi
 
-          # 先清理旧项（存在就删，不存在也不报错）
+          # 先清理旧项（幂等）
           sed -i '/name="app_name"/d'   "${STRINGS}" || true
           sed -i '/name="api_base"/d'   "${STRINGS}" || true
           sed -i '/name="api_secret"/d' "${STRINGS}" || true
 
-          # 在 </resources> 之前插入三项
+          # 在 </resources> 前插入新项
           tmp="${STRINGS}.tmp"
           awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
             /<\/resources>/ && !done {
-              print "  <string name=\"app_name\">"  app    "</string>";
-              print "  <string name=\"api_base\">"  base   "</string>";
-              print "  <string name=\"api_secret\">" secret "</string>";
+              print "    <string name=\"app_name\">" app "</string>"
+              print "    <string name=\"api_base\">" base "</string>"
+              if (length(secret) > 0) print "    <string name=\"api_secret\">" secret "</string>"
               done=1
             }
             { print }
           ' "${STRINGS}" > "${tmp}"
           mv "${tmp}" "${STRINGS}"
 
-          echo "----- strings.xml after inject -----"
-          cat "${STRINGS}"
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
 
       - name: Build debug APK
-        env:
-          TEMPLATE: ${{ steps.in.outputs.template }}
         shell: bash
-        run: |
-          set -euo pipefail
-          cd "templates/${TEMPLATE}"
-          ./gradlew --no-daemon clean assembleDebug
+        working-directory: templates/${{ steps.in.outputs.template }}
+        run: ./gradlew clean assembleDebug
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.in.outputs.template }}-debug
+          name: debug
           path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
