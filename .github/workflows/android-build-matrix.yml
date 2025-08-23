@@ -1,7 +1,6 @@
 name: android-build-matrix
 
 on:
-  # 手动触发
   workflow_dispatch:
     inputs:
       template:
@@ -13,7 +12,7 @@ on:
         required: true
         default: 'why459097630'
       repo:
-        description: 'repo (usually Packaging-warehouse)'
+        description: 'repo (Packaging-warehouse)'
         required: true
         default: 'Packaging-warehouse'
       branch:
@@ -33,10 +32,9 @@ on:
         required: true
         default: '1'
       reason:
-        description: 'Why build (tag in artifact name)'
+        description: 'build reason'
         required: false
         default: 'manual'
-  # API 触发（/api/generate-apk）
   repository_dispatch:
     types: [generate-apk]
 
@@ -50,7 +48,6 @@ env:
 
 jobs:
   build:
-    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -66,7 +63,7 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # 统一兼容 workflow_dispatch / repository_dispatch 的入参
+      # 统一解析 inputs（兼容 repository_dispatch 与 workflow_dispatch）
       - name: Resolve inputs
         id: in
         shell: bash
@@ -86,16 +83,21 @@ jobs:
           jq -r '.version_code  // "1"'                    /tmp/payload.json | xargs -I{} echo "version_code={}"   >> $GITHUB_OUTPUT
           jq -r '.reason        // "manual"'               /tmp/payload.json | xargs -I{} echo "reason={}"         >> $GITHUB_OUTPUT
 
-      # ====== 你已有的“生成项目”步骤，可继续使用自己的实现 ======
-      # 下面示例用 rsync 从模板目录拷贝到工作目录（保留权限/时间戳）
+      # 1) 从模板拷贝到工作目录
       - name: Generate project from template
         shell: bash
         run: |
-          rm -rf "$APP_DIR"
-          mkdir -p "$APP_DIR"
+          rm -rf "$APP_DIR" && mkdir -p "$APP_DIR"
           rsync -a "templates/${{ steps.in.outputs.template }}/" "$APP_DIR/"
 
-      # 关键修复：给 gradlew 补执行位，并去掉潜在 CRLF
+          # 2) 把 API 的内容真正写进模板（占位符示例：__APP_NAME__ 等）
+          find "$APP_DIR" -type f -name "*.xml" -o -name "AndroidManifest.xml" -o -name "*.gradle" |
+            xargs sed -i \
+              -e "s/__APP_NAME__/${{ steps.in.outputs.app_name }}/g" \
+              -e "s/__VERSION_NAME__/${{ steps.in.outputs.version_name }}/g" \
+              -e "s/__VERSION_CODE__/${{ steps.in.outputs.version_code }}/g"
+
+      # 3) 关键修复：gradlew 权限 + 去 CRLF
       - name: Make gradle wrapper executable
         shell: bash
         working-directory: ${{ env.APP_DIR }}
@@ -103,18 +105,18 @@ jobs:
           sed -i 's/\r$//' gradlew || true
           find . -name "gradlew" -type f -print -exec chmod +x {} \;
 
-      # （可选）快速查看生成结果，确认“API 写入的内容真的进来了”
-      - name: Sanity check generated sources
+      # 4) 为了确认“写入成功”，把关键文件打印出来
+      - name: Sanity check
         shell: bash
         working-directory: ${{ env.APP_DIR }}
         run: |
-          echo "----- AndroidManifest (head) -----"
+          echo "== AndroidManifest.xml =="
           sed -n '1,120p' app/src/main/AndroidManifest.xml || true
-          echo "----- strings.xml (head) -----"
+          echo "== strings.xml =="
           sed -n '1,120p' app/src/main/res/values/strings.xml || true
 
-      # 有签名信息就走 release，无签名就 fallback 到 debug
-      - name: Decode release keystore
+      # 5) 如果存在签名信息，就打 release；否则走 debug
+      - name: Decode keystore
         if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' && secrets.RELEASE_KEY_ALIAS != '' && secrets.RELEASE_KEYSTORE_PASSWORD != '' && secrets.RELEASE_KEY_PASSWORD != '' }}
         shell: bash
         working-directory: ${{ env.APP_DIR }}
@@ -139,10 +141,17 @@ jobs:
         run: |
           ./gradlew clean assembleDebug
 
-      - name: Upload APK
+      # 6) 同时上传 APK 和生成源码，方便你确认不是“空包”
+      - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
           name: apk-${{ steps.in.outputs.app_name }}-${{ steps.in.outputs.version_name }}-${{ steps.in.outputs.reason }}
-          path: |
-            ${{ env.APP_DIR }}/**/*.apk
+          path: ${{ env.APP_DIR }}/**/*.apk
+          if-no-files-found: warn
+
+      - name: Upload generated source
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-source-${{ steps.in.outputs.app_name }}-${{ steps.in.outputs.version_name }}
+          path: ${{ env.APP_DIR }}
           if-no-files-found: warn
