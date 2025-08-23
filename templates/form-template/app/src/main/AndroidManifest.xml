@@ -1,34 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.app.generated">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
         android:allowBackup="true"
         android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!-- 这就是启动 Activity；有 MAIN/LAUNCHER 的就必须声明 exported -->
         <activity
-            android:name="com.app.generated.MainActivity"
-            android:exported="true"
-            android:launchMode="singleTask">
+            android:name=".MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <!-- 若模板里还有带 <intent-filter> 的 receiver/service，一样显式声明 exported -->
-        <!--
-        <receiver
-            android:name=".SomeReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.xxx.ACTION"/>
-            </intent-filter>
-        </receiver>
-        -->
-
     </application>
+
 </manifest>
