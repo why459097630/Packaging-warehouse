@@ -1,0 +1,4 @@
+<resources>
+    <!-- 简单通用主题，可按需替换 -->
+    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar" />
+</resources>
