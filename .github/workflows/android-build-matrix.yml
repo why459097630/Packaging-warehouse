@@ -20,7 +20,7 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      # 1) 把收到的 client_payload 原样保存，便于排查
+      # 1) 原样保存 client_payload，便于排查
       - name: Upload raw payload
         run: |
           echo '${{ toJson(github.event.client_payload) }}' > client-payload-raw.json
@@ -36,14 +36,14 @@ jobs:
       - name: Extract inputs (compat snake/camel)
         id: in
         env:
-          CP_TRACE_ID:        ${{ github.event.client_payload.trace_id }}
-          CP_TEMPLATE:        ${{ github.event.client_payload.template }}
-          CP_APP_NAME:        ${{ github.event.client_payload.app_name }}
-          CP_APP_NAME_CAMEL:  ${{ github.event.client_payload.appName }}
-          CP_API_BASE:        ${{ github.event.client_payload.api_base }}
-          CP_API_BASE_CAMEL:  ${{ github.event.client_payload.apiBase }}
-          CP_API_SECRET:      ${{ github.event.client_payload.api_secret }}
-          CP_API_SECRET_CAMEL:${{ github.event.client_payload.apiSecret }}
+          CP_TRACE_ID:         ${{ github.event.client_payload.trace_id }}
+          CP_TEMPLATE:         ${{ github.event.client_payload.template }}
+          CP_APP_NAME:         ${{ github.event.client_payload.app_name }}
+          CP_APP_NAME_CAMEL:   ${{ github.event.client_payload.appName }}
+          CP_API_BASE:         ${{ github.event.client_payload.api_base }}
+          CP_API_BASE_CAMEL:   ${{ github.event.client_payload.apiBase }}
+          CP_API_SECRET:       ${{ github.event.client_payload.api_secret }}
+          CP_API_SECRET_CAMEL: ${{ github.event.client_payload.apiSecret }}
         run: |
           set -euo pipefail
           trace_id="${CP_TRACE_ID:-}"
@@ -58,20 +58,20 @@ jobs:
           api_secret="${CP_API_SECRET:-}"
           [ -z "$api_secret" ] && api_secret="${CP_API_SECRET_CAMEL:-}"
 
-          echo "trace_id=$trace_id"    >> "$GITHUB_OUTPUT"
-          echo "template=$template"    >> "$GITHUB_OUTPUT"
-          echo "app_name=$app_name"    >> "$GITHUB_OUTPUT"
-          echo "api_base=$api_base"    >> "$GITHUB_OUTPUT"
-          echo "api_secret=$api_secret">> "$GITHUB_OUTPUT"
+          echo "trace_id=$trace_id"     >> "$GITHUB_OUTPUT"
+          echo "template=$template"     >> "$GITHUB_OUTPUT"
+          echo "app_name=$app_name"     >> "$GITHUB_OUTPUT"
+          echo "api_base=$api_base"     >> "$GITHUB_OUTPUT"
+          echo "api_secret=$api_secret" >> "$GITHUB_OUTPUT"
         shell: bash
 
       - name: Validate required inputs
         env:
-          O_TRACE:     ${{ steps.in.outputs.trace_id }}
-          O_TEMPLATE:  ${{ steps.in.outputs.template }}
-          O_APP_NAME:  ${{ steps.in.outputs.app_name }}
-          O_API_BASE:  ${{ steps.in.outputs.api_base }}
-          O_API_SECRET:${{ steps.in.outputs.api_secret }}
+          O_TRACE:      ${{ steps.in.outputs.trace_id }}
+          O_TEMPLATE:   ${{ steps.in.outputs.template }}
+          O_APP_NAME:   ${{ steps.in.outputs.app_name }}
+          O_API_BASE:   ${{ steps.in.outputs.api_base }}
+          O_API_SECRET: ${{ steps.in.outputs.api_secret }}
         run: |
           set -euo pipefail
           echo "trace_id=${O_TRACE}"
@@ -88,11 +88,11 @@ jobs:
 
       - name: Echo extracted inputs
         env:
-          O_TRACE:     ${{ steps.in.outputs.trace_id }}
-          O_TEMPLATE:  ${{ steps.in.outputs.template }}
-          O_APP_NAME:  ${{ steps.in.outputs.app_name }}
-          O_API_BASE:  ${{ steps.in.outputs.api_base }}
-          O_API_SECRET:${{ steps.in.outputs.api_secret }}
+          O_TRACE:      ${{ steps.in.outputs.trace_id }}
+          O_TEMPLATE:   ${{ steps.in.outputs.template }}
+          O_APP_NAME:   ${{ steps.in.outputs.app_name }}
+          O_API_BASE:   ${{ steps.in.outputs.api_base }}
+          O_API_SECRET: ${{ steps.in.outputs.api_secret }}
         run: |
           echo "----- Extracted inputs -----"
           echo "trace_id      = ${O_TRACE}"
@@ -107,13 +107,13 @@ jobs:
         run: chmod +x templates/**/gradlew || true
         shell: bash
 
-      # 3) 注入 strings.xml / styles.xml（若不存在则创建骨架）
+      # 3) 注入 strings.xml / styles.xml
       - name: Inject API data into template
         env:
-          TEMPLATE:  ${{ steps.in.outputs.template }}
-          APP_NAME:  ${{ steps.in.outputs.app_name }}
-          API_BASE:  ${{ steps.in.outputs.api_base }}
-          API_SECRET:${{ steps.in.outputs.api_secret }}
+          TEMPLATE:   ${{ steps.in.outputs.template }}
+          APP_NAME:   ${{ steps.in.outputs.app_name }}
+          API_BASE:   ${{ steps.in.outputs.api_base }}
+          API_SECRET: ${{ steps.in.outputs.api_secret }}
         run: |
           set -euo pipefail
 
@@ -124,7 +124,6 @@ jobs:
 
           mkdir -p "${VALUES}"
 
-          # strings.xml skeleton
           if [ ! -f "${STRINGS}" ]; then
             cat >"${STRINGS}" <<'XML'
           <?xml version="1.0" encoding="utf-8"?>
@@ -133,7 +132,6 @@ jobs:
           XML
           fi
 
-          # styles.xml skeleton
           if [ ! -f "${STYLES}" ]; then
             cat >"${STYLES}" <<'XML'
           <?xml version="1.0" encoding="utf-8"?>
@@ -143,12 +141,10 @@ jobs:
           XML
           fi
 
-          # 清除旧项
           sed -i '/name="app_name"/d'   "${STRINGS}" || true
           sed -i '/name="api_base"/d'   "${STRINGS}" || true
           sed -i '/name="api_secret"/d' "${STRINGS}" || true
 
-          # 追加新项到 </resources> 之前
           tmp="${STRINGS}.tmp"
           awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
             /<\/resources>/ && !done {
@@ -160,7 +156,6 @@ jobs:
             { print }
           ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
 
-          # 保存注入后的快照，便于排查
           cp "${STRINGS}" "values-${TEMPLATE}.xml"
         shell: bash
 
@@ -170,7 +165,6 @@ jobs:
           name: values-${{ steps.in.outputs.template }}
           path: values-${{ steps.in.outputs.template }}.xml
 
-      # 4) 构建 APK
       - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
         run: ./gradlew --no-daemon clean assembleDebug
