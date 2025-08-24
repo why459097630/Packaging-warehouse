@@ -10,90 +10,110 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # ① 回显 GitHub 事件与原始 client_payload，便于定位“参数没带过来”
-      - name: Echo raw GitHub event
-        run: |
-          echo '==== github.event ===='
-          echo '${{ toJson(github.event) }}'
-          echo '==== client_payload ===='
-          echo '${{ toJson(github.event.client_payload) }}' > client_payload.json
-
-      - name: Upload raw payload
-        uses: actions/upload-artifact@v4
-        with:
-          name: client-payload-raw
-          path: client_payload.json
-
-      # ② JDK
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
           cache: gradle
 
-      # ③ 解析参数：同时兼容 snake_case 与 camelCase
-      - name: Extract inputs
+      # 1) 把收到的 client_payload 原样保存，便于排查
+      - name: Upload raw payload
+        run: |
+          echo '${{ toJson(github.event.client_payload) }}' > client-payload-raw.json
+        shell: bash
+
+      - name: Upload client-payload-raw.json
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-payload-raw
+          path: client-payload-raw.json
+
+      # 2) 兼容提取 & 输出
+      - name: Extract inputs (compat snake/camel)
         id: in
-        shell: bash
-        run: |
-          tpl='${{ github.event.client_payload.template }}'
-
-          app_snake='${{ github.event.client_payload.app_name }}'
-          app_camel='${{ github.event.client_payload.appName }}'
-          base_snake='${{ github.event.client_payload.api_base }}'
-          base_camel='${{ github.event.client_payload.apiBase }}'
-          sec_snake='${{ github.event.client_payload.api_secret }}'
-          sec_camel='${{ github.event.client_payload.apiSecret }}'
-
-          app="${app_snake:-$app_camel}"
-          base="${base_snake:-$base_camel}"
-          secret="${sec_snake:-$sec_camel}"
-
-          echo "template=${tpl}"   >> "$GITHUB_OUTPUT"
-          echo "app_name=${app}"   >> "$GITHUB_OUTPUT"
-          echo "api_base=${base}"  >> "$GITHUB_OUTPUT"
-          echo "api_secret=${secret}" >> "$GITHUB_OUTPUT"
-
-          echo "::group::Extracted inputs"
-          echo "template=${tpl}"
-          echo "app_name=${app}"
-          echo "api_base=${base}"
-          if [ -n "${secret}" ]; then echo "api_secret=***"; else echo "api_secret="; fi
-          echo "::endgroup::"
-
-      # ④ 严格校验：任一缺失则直接失败（快速暴露“没带过来”的情况）
-      - name: Validate required inputs
-        shell: bash
         env:
-          TEMPLATE:  ${{ steps.in.outputs.template }}
-          APP_NAME:  ${{ steps.in.outputs.app_name }}
-          API_BASE:  ${{ steps.in.outputs.api_base }}
-          API_SECRET: ${{ steps.in.outputs.api_secret }}
+          CP_TRACE_ID:        ${{ github.event.client_payload.trace_id }}
+          CP_TEMPLATE:        ${{ github.event.client_payload.template }}
+          CP_APP_NAME:        ${{ github.event.client_payload.app_name }}
+          CP_APP_NAME_CAMEL:  ${{ github.event.client_payload.appName }}
+          CP_API_BASE:        ${{ github.event.client_payload.api_base }}
+          CP_API_BASE_CAMEL:  ${{ github.event.client_payload.apiBase }}
+          CP_API_SECRET:      ${{ github.event.client_payload.api_secret }}
+          CP_API_SECRET_CAMEL:${{ github.event.client_payload.apiSecret }}
         run: |
+          set -euo pipefail
+          trace_id="${CP_TRACE_ID:-}"
+          template="${CP_TEMPLATE:-}"
+
+          app_name="${CP_APP_NAME:-}"
+          [ -z "$app_name" ] && app_name="${CP_APP_NAME_CAMEL:-}"
+
+          api_base="${CP_API_BASE:-}"
+          [ -z "$api_base" ] && api_base="${CP_API_BASE_CAMEL:-}"
+
+          api_secret="${CP_API_SECRET:-}"
+          [ -z "$api_secret" ] && api_secret="${CP_API_SECRET_CAMEL:-}"
+
+          echo "trace_id=$trace_id"    >> "$GITHUB_OUTPUT"
+          echo "template=$template"    >> "$GITHUB_OUTPUT"
+          echo "app_name=$app_name"    >> "$GITHUB_OUTPUT"
+          echo "api_base=$api_base"    >> "$GITHUB_OUTPUT"
+          echo "api_secret=$api_secret">> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Validate required inputs
+        env:
+          O_TRACE:     ${{ steps.in.outputs.trace_id }}
+          O_TEMPLATE:  ${{ steps.in.outputs.template }}
+          O_APP_NAME:  ${{ steps.in.outputs.app_name }}
+          O_API_BASE:  ${{ steps.in.outputs.api_base }}
+          O_API_SECRET:${{ steps.in.outputs.api_secret }}
+        run: |
+          set -euo pipefail
+          echo "trace_id=${O_TRACE}"
           miss=""
-          [ -z "$TEMPLATE"  ] && miss="$miss template"
-          [ -z "$APP_NAME"  ] && miss="$miss app_name"
-          [ -z "$API_BASE"  ] && miss="$miss api_base"
-          [ -z "$API_SECRET" ] && miss="$miss api_secret"
+          [ -z "${O_TEMPLATE}"  ] && miss="$miss template"
+          [ -z "${O_APP_NAME}"  ] && miss="$miss app_name"
+          [ -z "${O_API_BASE}"  ] && miss="$miss api_base"
+          [ -z "${O_API_SECRET}" ] && miss="$miss api_secret"
           if [ -n "$miss" ]; then
             echo "Missing required inputs:$miss"
             exit 1
           fi
+        shell: bash
+
+      - name: Echo extracted inputs
+        env:
+          O_TRACE:     ${{ steps.in.outputs.trace_id }}
+          O_TEMPLATE:  ${{ steps.in.outputs.template }}
+          O_APP_NAME:  ${{ steps.in.outputs.app_name }}
+          O_API_BASE:  ${{ steps.in.outputs.api_base }}
+          O_API_SECRET:${{ steps.in.outputs.api_secret }}
+        run: |
+          echo "----- Extracted inputs -----"
+          echo "trace_id      = ${O_TRACE}"
+          printf 'template      = [%s]\n' "${O_TEMPLATE}"
+          printf 'app_name      = [%s]  len=%s\n' "${O_APP_NAME}"  "${#O_APP_NAME}"
+          printf 'api_base      = [%s]  len=%s\n' "${O_API_BASE}"  "${#O_API_BASE}"
+          printf 'api_secret    = [%s]  len=%s\n' "${O_API_SECRET}" "${#O_API_SECRET}"
+          echo "----------------------------"
+        shell: bash
 
       - name: Ensure gradlew executable
         run: chmod +x templates/**/gradlew || true
+        shell: bash
 
-      # ⑤ 把参数写入 strings.xml（若文件不存在则创建），并保留快照工件
+      # 3) 注入 strings.xml / styles.xml（若不存在则创建骨架）
       - name: Inject API data into template
         env:
           TEMPLATE:  ${{ steps.in.outputs.template }}
           APP_NAME:  ${{ steps.in.outputs.app_name }}
           API_BASE:  ${{ steps.in.outputs.api_base }}
-          API_SECRET: ${{ steps.in.outputs.api_secret }}
-        shell: bash
+          API_SECRET:${{ steps.in.outputs.api_secret }}
         run: |
           set -euo pipefail
 
@@ -101,20 +121,21 @@ jobs:
           VALUES="${ROOT}/res/values"
           STRINGS="${VALUES}/strings.xml"
           STYLES="${VALUES}/styles.xml"
+
           mkdir -p "${VALUES}"
 
-          # strings.xml 不存在则创建
+          # strings.xml skeleton
           if [ ! -f "${STRINGS}" ]; then
-            cat > "${STRINGS}" <<'XML'
+            cat >"${STRINGS}" <<'XML'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
           </resources>
           XML
           fi
 
-          # styles.xml 不存在则写默认主题，避免 R 资源缺失
+          # styles.xml skeleton
           if [ ! -f "${STYLES}" ]; then
-            cat > "${STYLES}" <<'XML'
+            cat >"${STYLES}" <<'XML'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
             <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
@@ -122,12 +143,13 @@ jobs:
           XML
           fi
 
-          # 先清理旧项
+          # 清除旧项
           sed -i '/name="app_name"/d'   "${STRINGS}" || true
           sed -i '/name="api_base"/d'   "${STRINGS}" || true
           sed -i '/name="api_secret"/d' "${STRINGS}" || true
 
-          # 追加新值
+          # 追加新项到 </resources> 之前
+          tmp="${STRINGS}.tmp"
           awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
             /<\/resources>/ && !done {
               print "    <string name=\"app_name\">"  app    "</string>";
@@ -136,10 +158,11 @@ jobs:
               done=1
             }
             { print }
-          ' "${STRINGS}" > "${STRINGS}.tmp" && mv "${STRINGS}.tmp" "${STRINGS}"
+          ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
 
-          # 保存快照，便于核对最终落库内容
+          # 保存注入后的快照，便于排查
           cp "${STRINGS}" "values-${TEMPLATE}.xml"
+        shell: bash
 
       - name: Upload values snapshot
         uses: actions/upload-artifact@v4
@@ -147,10 +170,11 @@ jobs:
           name: values-${{ steps.in.outputs.template }}
           path: values-${{ steps.in.outputs.template }}.xml
 
-      # ⑥ 构建与产物
+      # 4) 构建 APK
       - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
         run: ./gradlew --no-daemon clean assembleDebug
+        shell: bash
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
