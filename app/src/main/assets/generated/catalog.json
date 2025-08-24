@@ -1,8 +1,8 @@
 {
   "title": "Lamborghini Encyclopedia",
-  "generatedAt": "2025-08-17T08:08:06.257Z",
-  "prompt": "Build an Android app called \"Lamborghini Encyclopedia\".\nCover every Lamborghini model with year, engine, power, and a photo for each.\nInclude search and filters by decade.",
-  "template": "simple-template",
+  "generatedAt": "2025-08-24T15:02:49.825Z",
+  "prompt": "测试：请生成一个简单的待办App结构",
+  "template": "form-template",
   "smart": true,
   "models": [
     {
