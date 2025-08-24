@@ -1,7 +1,32 @@
 {
-  "error": {
-    "message": "The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.",
-    "type": "invalid_request_error",
-    "code": "model_decommissioned"
-  }
+  "id": "chatcmpl-50b065c5-62dc-4b31-8429-0d6e5b605f21",
+  "object": "chat.completion",
+  "created": 1756049904,
+  "model": "llama-3.3-70b-versatile",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "以下是一个简单的待办App结构的JSON表示：\n```json\n{\n  \"appName\": \"待办清单\",\n  \"appDescription\": \"一个简单的待办清单App\",\n  \"screens\": [\n    {\n      \"name\": \"主页\",\n      \"description\": \"显示所有待办事项\",\n      \"components\": [\n        {\n          \"type\": \"列表\",\n          \"data\": \"待办事项列表\",\n          \"actions\": [\n            {\n              \"type\": \"添加\",\n              \"description\": \"添加新待办事项\"\n            },\n            {\n              \"type\": \"编辑\",\n              \"description\": \"编辑现有待办事项\"\n            },\n            {\n              \"type\": \"删除\",\n              \"description\": \"删除待办事项\"\n            }\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"添加待办事项\",\n      \"description\": \"添加新待办事项\",\n      \"components\": [\n        {\n          \"type\": \"表单\",\n          \"fields\": [\n            {\n              \"name\": \"标题\",\n              \"type\": \"文本\"\n            },\n            {\n              \"name\": \"描述\",\n              \"type\": \"文本\"\n            },\n            {\n              \"name\": \"截止日期\",\n              \"type\": \"日期\"\n            }\n          ],\n          \"actions\": [\n            {\n              \"type\": \"保存\",\n              \"description\": \"保存新待办事项\"\n            }\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"编辑待办事项\",\n      \"description\": \"编辑现有待办事项\",\n      \"components\": [\n        {\n          \"type\": \"表单\",\n          \"fields\": [\n            {\n              \"name\": \"标题\",\n              \"type\": \"文本\"\n            },\n            {\n              \"name\": \"描述\",\n              \"type\": \"文本\"\n            },\n            {\n              \"name\": \"截止日期\",\n              \"type\": \"日期\"\n            }\n          ],\n          \"actions\": [\n            {\n              \"type\": \"保存\",\n              \"description\": \"保存编辑后的待办事项\"\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"data\": {\n    \"待办事项列表\": [\n      {\n        \"id\": 1,\n        \"标题\": \"买菜\",\n        \"描述\": \"买一些蔬菜和水果\",\n        \"截止日期\": \"2023-03-15\"\n      },\n      {\n        \"id\": 2,\n        \"标题\": \"做作业\",\n        \"描述\": \"完成数学和英语作业\",\n        \"截止日期\": \"2023-03-16\"\n      }\n    ]\n  }\n}\n```\n这个JSON结构定义了一个简单的待办App，包含三个屏幕：主页、添加待办事项和编辑待办事项。每个屏幕都包含一些组件，例如列表、表单和按钮。数据存储在一个名为“待办事项列表”的数组中，每个待办事项都有一个唯一的ID、标题、描述和截止日期。"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.195745622,
+    "prompt_tokens": 59,
+    "prompt_time": 0.015828918,
+    "completion_tokens": 663,
+    "completion_time": 1.178042086,
+    "total_tokens": 722,
+    "total_time": 1.193871004
+  },
+  "usage_breakdown": null,
+  "system_fingerprint": "fp_2ddfbb0da0",
+  "x_groq": {
+    "id": "req_01k3ebp3yre32tewdms9kz4amy"
+  },
+  "service_tier": "on_demand"
 }
