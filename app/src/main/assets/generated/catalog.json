@@ -1,7 +1,7 @@
 {
   "title": "Lamborghini Encyclopedia",
-  "generatedAt": "2025-08-24T15:38:21.170Z",
-  "prompt": "测试：请生成一个简单的待办App结构",
+  "generatedAt": "2025-08-24T15:54:59.899Z",
+  "prompt": "测试：生成一个介绍菜品的安卓app，要可以上传照片和文字介绍，要有标价，要有登录系统，还有留言系统",
   "template": "form-template",
   "smart": true,
   "models": [
