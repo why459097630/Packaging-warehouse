@@ -1,23 +1,175 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ndjc.generated">
+name: android-build-matrix
 
-    <application
-        android:allowBackup="true"
-        android:label="MyApp"
-        android:icon="@mipmap/ic_launcher"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+on:
+  workflow_dispatch:
+    inputs:
+      template:
+        description: "Which template to build (form-template/core-template/simple-template)"
+        required: false
+        default: "form-template"
+      app_name:
+        description: "App name"
+        required: false
+        default: "MyApp"
+      api_base:
+        description: "API base (optional)"
+        required: false
+        default: ""
+      api_secret:
+        description: "API secret (optional)"
+        required: false
+        default: ""
+  repository_dispatch:
+    types: [generate-apk]
 
-        <activity android:name=".AddEditActivity" />
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
-    </application>
-</manifest>
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Extract inputs
+        id: in
+        run: |
+          echo "template=${{ github.event.inputs.template || github.event.client_payload.template || 'form-template' }}" >> "$GITHUB_OUTPUT"
+          echo "app_name=${{ github.event.inputs.app_name || github.event.client_payload.app_name || github.event.client_payload.appName || 'MyApp' }}" >> "$GITHUB_OUTPUT"
+          echo "api_base=${{ github.event.inputs.api_base || github.event.client_payload.api_base || github.event.client_payload.apiBase || '' }}" >> "$GITHUB_OUTPUT"
+          echo "api_secret=${{ github.event.inputs.api_secret || github.event.client_payload.api_secret || github.event.client_payload.apiSecret || '' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Show resolved inputs (masked)
+        env:
+          TEMPLATE:   ${{ steps.in.outputs.template }}
+          APP_NAME:   ${{ steps.in.outputs.app_name }}
+          API_BASE:   ${{ steps.in.outputs.api_base }}
+          API_SECRET: ${{ steps.in.outputs.api_secret }}
+        run: |
+          echo "::add-mask::$API_SECRET"
+          echo "[inputs] template = $TEMPLATE"
+          echo "[inputs] app_name = $APP_NAME"
+          echo "[inputs] api_base  = $API_BASE"
+          echo "[inputs] api_secret = $([ -z "$API_SECRET" ] && echo '(empty)' || echo '(masked)')"
+
+      - name: Check template directory
+        run: |
+          T="templates/${{ steps.in.outputs.template }}"
+          [ -d "$T" ] || { echo "Template directory not found: $T"; exit 1; }
+
+      - name: Inject API data into template
+        env:
+          TEMPLATE:   ${{ steps.in.outputs.template }}
+          APP_NAME:   ${{ steps.in.outputs.app_name }}
+          API_BASE:   ${{ steps.in.outputs.api_base }}
+          API_SECRET: ${{ steps.in.outputs.api_secret }}
+        run: |
+          set -euo pipefail
+          ROOT="templates/${TEMPLATE}/app/src/main"
+          VALUES="${ROOT}/res/values"
+          STRINGS="${VALUES}/strings.xml"
+          STYLES="${VALUES}/styles.xml"
+          mkdir -p "${VALUES}"
+
+          [ -f "${STRINGS}" ] || cat >"${STRINGS}" <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources></resources>
+          EOF
+
+          [ -f "${STYLES}" ] || cat >"${STYLES}" <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+            <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
+          </resources>
+          EOF
+
+          sed -i '/name="app_name"/d'   "${STRINGS}" || true
+          sed -i '/name="api_base"/d'   "${STRINGS}" || true
+          sed -i '/name="api_secret"/d' "${STRINGS}" || true
+
+          tmp="${STRINGS}.tmp"
+          awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
+            /<\/resources>/ && !done {
+              print "    <string name=\"app_name\">"  app    "</string>";
+              print "    <string name=\"api_base\">"  base   "</string>";
+              print "    <string name=\"api_secret\">" secret "</string>";
+              done=1
+            }
+            { print }
+          ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
+
+      - name: Sync generated assets into template
+        run: |
+          set -e
+          T="templates/${{ steps.in.outputs.template }}"
+          SRC_ASSETS="app/src/main/assets/generated"
+          DST_ASSETS="$T/app/src/main/assets/generated"
+          if [ -d "$SRC_ASSETS" ]; then
+            mkdir -p "$DST_ASSETS"
+            cp -r "$SRC_ASSETS/." "$DST_ASSETS/"
+          fi
+          SRC_RAW="app/src/main/res/raw"
+          DST_RAW="$T/app/src/main/res/raw"
+          if [ -d "$SRC_RAW" ]; then
+            mkdir -p "$DST_RAW"
+            cp -r "$SRC_RAW/." "$DST_RAW/"
+          fi
+          if [ -f "$DST_ASSETS/catalog.json" ]; then
+            cp "$DST_ASSETS/catalog.json" "$DST_ASSETS/spec.json"
+          fi
+
+      - name: Verify template has wrapper & settings
+        run: |
+          T="templates/${{ steps.in.outputs.template }}"
+          test -f "$T/gradlew" || { echo "gradlew missing in $T"; exit 1; }
+          if [ ! -f "$T/settings.gradle" ] && [ ! -f "$T/settings.gradle.kts" ]; then
+            echo "settings.gradle not found in $T"; exit 1;
+          fi
+
+      - name: Make gradlew executable
+        run: chmod +x templates/${{ steps.in.outputs.template }}/gradlew
+
+      - name: Build debug APK
+        working-directory: templates/${{ steps.in.outputs.template }}
+        run: ./gradlew --no-daemon --stacktrace -i clean assembleDebug
+
+      - name: Prove assets are inside APK
+        run: |
+          set -e
+          APK=$(ls templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk | head -n1)
+          echo "APK => $APK"
+          unzip -l "$APK" | grep 'assets/generated' || true
+          unzip -p "$APK" assets/generated/spec.json        > spec_from_apk.json        || true
+          unzip -p "$APK" assets/generated/groq_content.txt > groq_from_apk.txt         || true
+          head -n 40 spec_from_apk.json || true
+          head -n 20 groq_from_apk.txt  || true
+
+      - name: Dump manifest merger report
+        if: failure()
+        run: |
+          REPORT_DIR="templates/${{ steps.in.outputs.template }}/app/build/outputs/logs"
+          ls -lah "$REPORT_DIR" || true
+          tail -n 200 "$REPORT_DIR/manifest-merger-debug-report.txt" || true
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug
+          path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
+
+      - name: Upload proof & logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-${{ steps.in.outputs.template }}
+          path: |
+            spec_from_apk.json
+            groq_from_apk.txt
+            templates/${{ steps.in.outputs.template }}/app/src/main/AndroidManifest.xml
+            templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml
+            templates/${{ steps.in.outputs.template }}/app/build/outputs/logs/*
