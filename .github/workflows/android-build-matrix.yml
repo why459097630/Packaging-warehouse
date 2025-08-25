@@ -124,6 +124,34 @@ jobs:
           grep -q 'name="api_base"'  "$VALUES" && \
           grep -q 'name="api_secret"' "$VALUES" || { echo "strings.xml missing expected entries"; exit 1; }
 
+      # ========= 方案A：把根目录生成的文件同步到模板 =========
+      - name: Sync generated assets into template
+        shell: bash
+        run: |
+          set -e
+          T="templates/${{ steps.in.outputs.template }}"
+
+          SRC_ASSETS="app/src/main/assets/generated"
+          DST_ASSETS="$T/app/src/main/assets/generated"
+          if [ -d "$SRC_ASSETS" ]; then
+            mkdir -p "$DST_ASSETS"
+            cp -r "$SRC_ASSETS/." "$DST_ASSETS/"
+            echo "Synced $SRC_ASSETS -> $DST_ASSETS"
+          else
+            echo "WARN: $SRC_ASSETS not found (skip)"
+          fi
+
+          SRC_RAW="app/src/main/res/raw"
+          DST_RAW="$T/app/src/main/res/raw"
+          if [ -d "$SRC_RAW" ]; then
+            mkdir -p "$DST_RAW"
+            cp -r "$SRC_RAW/." "$DST_RAW/"
+            echo "Synced $SRC_RAW -> $DST_RAW"
+          else
+            echo "WARN: $SRC_RAW not found (skip)"
+          fi
+      # =====================================================
+
       - name: Verify template has wrapper & settings
         run: |
           T="templates/${{ steps.in.outputs.template }}"
@@ -133,9 +161,24 @@ jobs:
           fi
           echo "OK: wrapper & settings exist in $T"
 
+      - name: Make gradlew executable
+        run: chmod +x templates/${{ steps.in.outputs.template }}/gradlew
+
       - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
         run: ./gradlew --no-daemon --stacktrace clean assembleDebug
+
+      # 构建后从 APK 中验证 assets/generated 是否已包含（证据）
+      - name: Prove assets are inside APK
+        shell: bash
+        run: |
+          APK="templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/app-debug.apk"
+          echo "== List generated files in APK =="
+          unzip -l "$APK" | grep 'assets/generated' || true
+          echo "== Preview spec.json from APK =="
+          unzip -p "$APK" assets/generated/spec.json | head -n 30 || true
+          echo "== Preview groq_content.txt from APK =="
+          unzip -p "$APK" assets/generated/groq_content.txt | head -n 30 || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
