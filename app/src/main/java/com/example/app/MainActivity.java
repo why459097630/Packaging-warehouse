@@ -9,6 +9,9 @@ import android.widget.TextView;
 import android.widget.Button;
 import android.widget.TextView;
 
+import android.widget.Button;
+import android.widget.TextView;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,9 +28,15 @@ TextView tv=findViewById(R.id.tvTitle);
 Button btn=findViewById(R.id.btnAction);
 btn.setOnClickListener(v -> tv.setText("DiceRoller clicked"));
 
+TextView tv=findViewById(R.id.tvTitle);
+Button btn=findViewById(R.id.btnAction);
+btn.setOnClickListener(v -> tv.setText("DiceRoller clicked"));
+
     }
 
     // NDJC:FUNCTIONS
+// default functions
+
 // default functions
 
 // default functions
