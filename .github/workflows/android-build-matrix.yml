@@ -57,7 +57,7 @@ jobs:
             exit 1
           fi
 
-      # 注入 strings.xml / styles.xml
+      # 写 strings.xml / styles.xml
       - name: Inject API data into template
         env:
           TEMPLATE:   ${{ steps.in.outputs.template }}
@@ -67,7 +67,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           ROOT="templates/${TEMPLATE}/app/src/main"
           VALUES="${ROOT}/res/values"
           STRINGS="${VALUES}/strings.xml"
@@ -97,7 +96,6 @@ jobs:
           sed -i '/name="app_name"/d'   "${STRINGS}" || true
           sed -i '/name="api_base"/d'   "${STRINGS}" || true
           sed -i '/name="api_secret"/d' "${STRINGS}" || true
-
           tmp="${STRINGS}.tmp"
           awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
             /<\/resources>/ && !done {
@@ -121,13 +119,20 @@ jobs:
           grep -q 'name="api_base"'  "$VALUES" && \
           grep -q 'name="api_secret"' "$VALUES" || { echo "strings.xml missing expected entries"; exit 1; }
 
-      # 让根目录 gradlew 可执行
-      - name: Ensure root gradlew executable
-        run: chmod +x gradlew
+      # 校验模板有自己的一套 wrapper & settings
+      - name: Verify template has wrapper & settings
+        run: |
+          T="templates/${{ steps.in.outputs.template }}"
+          test -f "$T/gradlew" || { echo "gradlew missing in $T"; exit 1; }
+          if [ ! -f "$T/settings.gradle" ] && [ ! -f "$T/settings.gradle.kts" ]; then
+            echo "settings.gradle not found in $T"; exit 1;
+          fi
+          echo "OK: wrapper & settings exist in $T"
 
-      # 使用根 wrapper，-p 指向模板目录构建
+      # 在模板目录执行模板自带的 gradlew（会使用模板的 settings.gradle）
       - name: Build debug APK
-        run: ./gradlew -p templates/${{ steps.in.outputs.template }} clean assembleDebug
+        working-directory: templates/${{ steps.in.outputs.template }}
+        run: ./gradlew --no-daemon --stacktrace clean assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
