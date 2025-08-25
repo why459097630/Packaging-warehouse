@@ -1,1 +1,4 @@
-<resources><string name="app_name">MyApp</string></resources>
+<resources>
+    <string name="app_name">NDJC</string>
+    <!-- NDJC:STRINGS -->
+</resources>
