@@ -1,28 +1,18 @@
 plugins {
     id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    compileSdkVersion 34
-
-    // 从流水线/环境变量/gradle.properties 注入 APP_ID；没有就给一个默认
-    def appId = (System.getenv("APP_ID")
-        ?: (project.findProperty("APP_ID") ?: "com.app.generated"))
-
-    // AGP 8 需要在这里声明 namespace
-    namespace appId
+    namespace 'com.ndjc.generated'
+    compileSdk 34
 
     defaultConfig {
-        applicationId appId
-        minSdkVersion 24
-        targetSdkVersion 34
+        applicationId 'com.ndjc.generated'
+        minSdk 24
+        targetSdk 34
         versionCode 1
-        versionName "1.0"
-
-        // 如果你用到 FileProvider，这样让 authority 跟随 applicationId
-        manifestPlaceholders = [
-            fileProviderAuthority: "${appId}.provider"
-        ]
+        versionName '1.0'
     }
 
     buildTypes {
@@ -31,25 +21,28 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            debuggable true
+            minifyEnabled false
         }
     }
 
-    // 与 CI 的 JDK 版本一致（建议 17）
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+    // 关闭没用到的特性，避免产生多余任务/合并错误
+    buildFeatures {
+        viewBinding false
+        dataBinding false
+        compose false
     }
-    // 如果以后启用 ViewBinding/Compose，再打开下面开关
-    // buildFeatures { viewBinding true }
+
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/*', 'LICENSE*', 'META-INF/AL2.0', 'META-INF/LGPL2.1']
+        }
+    }
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.12.0'
-
-    // 新增：列表渲染 & JSON 解析
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
     implementation 'com.google.code.gson:gson:2.10.1'
 }
