@@ -3,12 +3,12 @@
 **安卓app源代码结构：**
 
 1. `MainActivity.java`：主活动，负责显示菜品列表和导航到其他活动。
-2. `DishActivity.java`：菜品详情活动，负责显示菜品的照片、文字介绍、价格等信息。
-3. `UploadActivity.java`：上传活动，负责上传菜品的照片和文字介绍。
+2. `DishActivity.java`：菜品活动，负责显示菜品详情，包括照片、文字介绍、价格和留言。
+3. `UploadActivity.java`：上传活动，负责上传照片和文字介绍。
 4. `LoginActivity.java`：登录活动，负责用户登录和注册。
 5. `MessageActivity.java`：留言活动，负责显示和发送留言。
-6. `DishAdapter.java`：菜品适配器，负责将菜品数据绑定到列表视图中。
-7. `DishModel.java`：菜品模型，负责存储菜品的数据。
+6. `DishAdapter.java`：菜品适配器，负责将菜品数据绑定到列表视图。
+7. `DishModel.java`：菜品模型，负责存储菜品数据。
 
 **JSON数据结构：**
 
@@ -18,33 +18,33 @@
     {
       "id": 1,
       "name": "菜品1",
-      "description": "菜品1的描述",
+      "description": "这是菜品1的描述",
       "price": 10.99,
       "image": "https://example.com/image1.jpg",
       "comments": [
         {
           "id": 1,
-          "content": "留言1",
-          "username": "用户1"
+          "username": "用户1",
+          "content": "这道菜很好吃"
         },
         {
           "id": 2,
-          "content": "留言2",
-          "username": "用户2"
+          "username": "用户2",
+          "content": "我也很喜欢这道菜"
         }
       ]
     },
     {
       "id": 2,
       "name": "菜品2",
-      "description": "菜品2的描述",
+      "description": "这是菜品2的描述",
       "price": 9.99,
       "image": "https://example.com/image2.jpg",
       "comments": [
         {
           "id": 3,
-          "content": "留言3",
-          "username": "用户3"
+          "username": "用户3",
+          "content": "这道菜不错"
         }
       ]
     }
@@ -69,7 +69,7 @@
 ```java
 // MainActivity.java
 public class MainActivity extends AppCompatActivity {
-  private ListView listView;
+  private ListView dishList;
   private DishAdapter dishAdapter;
 
   @Override
@@ -77,9 +77,9 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    listView = findViewById(R.id.listView);
+    dishList = (ListView) findViewById(R.id.dish_list);
     dishAdapter = new DishAdapter(this, getDishes());
-    listView.setAdapter(dishAdapter);
+    dishList.setAdapter(dishAdapter);
   }
 
   private List<DishModel> getDishes() {
@@ -92,25 +92,50 @@ public class MainActivity extends AppCompatActivity {
 
 // DishActivity.java
 public class DishActivity extends AppCompatActivity {
-  private DishModel dish;
+  private ImageView dishImage;
+  private TextView dishName;
+  private TextView dishDescription;
+  private TextView dishPrice;
+  private EditText commentEditText;
+  private Button commentButton;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_dish);
 
-    dish = (DishModel) getIntent().getSerializableExtra("dish");
-    // 显示菜品信息
-    TextView nameTextView = findViewById(R.id.nameTextView);
-    nameTextView.setText(dish.getName());
-    // ...
+    dishImage = (ImageView) findViewById(R.id.dish_image);
+    dishName = (TextView) findViewById(R.id.dish_name);
+    dishDescription = (TextView) findViewById(R.id.dish_description);
+    dishPrice = (TextView) findViewById(R.id.dish_price);
+    commentEditText = (EditText) findViewById(R.id.comment_edit_text);
+    commentButton = (Button) findViewById(R.id.comment_button);
+
+    // 设置菜品信息
+    DishModel dish = (DishModel) getIntent().getSerializableExtra("dish");
+    dishImage.setImageResource(dish.getImage());
+    dishName.setText(dish.getName());
+    dishDescription.setText(dish.getDescription());
+    dishPrice.setText(String.valueOf(dish.getPrice()));
+
+    // 设置留言按钮点击事件
+    commentButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        // 发送留言
+        String comment = commentEditText.getText().toString();
+        // ...
+      }
+    });
   }
 }
 
 // UploadActivity.java
 public class UploadActivity extends AppCompatActivity {
-  private EditText nameEditText;
-  private EditText descriptionEditText;
+  private ImageView uploadImage;
+  private EditText uploadName;
+  private EditText uploadDescription;
+  private EditText uploadPrice;
   private Button uploadButton;
 
   @Override
@@ -118,16 +143,20 @@ public class UploadActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_upload);
 
-    nameEditText = findViewById(R.id.nameEditText);
-    descriptionEditText = findViewById(R.id.descriptionEditText);
-    uploadButton = findViewById(R.id.uploadButton);
+    uploadImage = (ImageView) findViewById(R.id.upload_image);
+    uploadName = (EditText) findViewById(R.id.upload_name);
+    uploadDescription = (EditText) findViewById(R.id.upload_description);
+    uploadPrice = (EditText) findViewById(R.id.upload_price);
+    uploadButton = (Button) findViewById(R.id.upload_button);
 
+    // 设置上传按钮点击事件
     uploadButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
         // 上传菜品信息
-        String name = nameEditText.getText().toString();
-        String description = descriptionEditText.getText().toString();
+        String name = uploadName.getText().toString();
+        String description = uploadDescription.getText().toString();
+        double price = Double.parseDouble(uploadPrice.getText().toString());
         // ...
       }
     });
@@ -145,10 +174,11 @@ public class LoginActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_login);
 
-    usernameEditText = findViewById(R.id.usernameEditText);
-    passwordEditText = findViewById(R.id.passwordEditText);
-    loginButton = findViewById(R.id.loginButton);
+    usernameEditText = (EditText) findViewById(R.id.username_edit_text);
+    passwordEditText = (EditText) findViewById(R.id.password_edit_text);
+    loginButton = (Button) findViewById(R.id.login_button);
 
+    // 设置登录按钮点击事件
     loginButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -163,90 +193,26 @@ public class LoginActivity extends AppCompatActivity {
 
 // MessageActivity.java
 public class MessageActivity extends AppCompatActivity {
-  private ListView listView;
-  private MessageAdapter messageAdapter;
+  private ListView commentList;
+  private CommentAdapter commentAdapter;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_message);
 
-    listView = findViewById(R.id.listView);
-    messageAdapter = new MessageAdapter(this, getMessages());
-    listView.setAdapter(messageAdapter);
+    commentList = (ListView) findViewById(R.id.comment_list);
+    commentAdapter = new CommentAdapter(this, getComments());
+    commentList.setAdapter(commentAdapter);
   }
 
-  private List<MessageModel> getMessages() {
+  private List<CommentModel> getComments() {
     // 从JSON数据中获取留言列表
-    List<MessageModel> messages = new ArrayList<>();
+    List<CommentModel> comments = new ArrayList<>();
     // ...
-    return messages;
+    return comments;
   }
 }
 ```
 
-**DishAdapter.java**
-```java
-public class DishAdapter extends BaseAdapter {
-  private List<DishModel> dishes;
-  private Context context;
-
-  public DishAdapter(Context context, List<DishModel> dishes) {
-    this.context = context;
-    this.dishes = dishes;
-  }
-
-  @Override
-  public int getCount() {
-    return dishes.size();
-  }
-
-  @Override
-  public Object getItem(int position) {
-    return dishes.get(position);
-  }
-
-  @Override
-  public long getItemId(int position) {
-    return position;
-  }
-
-  @Override
-  public View getView(int position, View convertView, ViewGroup parent) {
-    View view = LayoutInflater.from(context).inflate(R.layout.item_dish, null);
-    DishModel dish = dishes.get(position);
-    // 绑定菜品数据
-    TextView nameTextView = view.findViewById(R.id.nameTextView);
-    nameTextView.setText(dish.getName());
-    // ...
-    return view;
-  }
-}
-```
-
-**DishModel.java**
-```java
-public class DishModel implements Serializable {
-  private int id;
-  private String name;
-  private String description;
-  private double price;
-  private String image;
-  private List<CommentModel> comments;
-
-  // getters and setters
-}
-```
-
-**CommentModel.java**
-```java
-public class CommentModel implements Serializable {
-  private int id;
-  private String content;
-  private String username;
-
-  // getters and setters
-}
-```
-
-注意：以上代码只是一个基本的示例，需要根据实际需求进行修改和扩展。同时，需要注意安卓app的安全性和用户体验。
+注意：上述代码仅为示例，需要根据实际需求进行修改和完善。同时，需要实现登录、注册、上传菜品信息、发送留言等功能。
