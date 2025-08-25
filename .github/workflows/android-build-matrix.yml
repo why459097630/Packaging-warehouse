@@ -70,7 +70,7 @@ jobs:
             echo "Template directory not found: $T"; exit 1
           fi
 
-      # 注入 strings.xml/styles.xml（若不存在则创建），写入 app_name/api_base/api_secret
+      # 注入 strings.xml / styles.xml（若不存在则创建），写入 app_name/api_base/api_secret
       - name: Inject API data into template
         env:
           TEMPLATE:   ${{ steps.in.outputs.template }}
@@ -120,7 +120,20 @@ jobs:
             { print }
           ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
 
-      # 同步根仓库生成的 assets/raw 到模板（若存在）
+      # gradle.properties 兜底
+      - name: Ensure gradle.properties sane defaults
+        env:
+          TEMPLATE: ${{ steps.in.outputs.template }}
+        shell: bash
+        run: |
+          set -e
+          GP="templates/${TEMPLATE}/gradle.properties"
+          touch "$GP"
+          grep -q '^android.useAndroidX='   "$GP" || echo 'android.useAndroidX=true' >> "$GP"
+          grep -q '^android.enableJetifier=' "$GP" || echo 'android.enableJetifier=true' >> "$GP"
+          grep -q '^org.gradle.jvmargs='     "$GP" || echo 'org.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8' >> "$GP"
+
+      # 同步仓库根生成的 assets/raw 到模板（若存在）
       - name: Sync generated assets into template
         env:
           TEMPLATE: ${{ steps.in.outputs.template }}
@@ -139,7 +152,7 @@ jobs:
             mkdir -p "$DST_RAW"
             cp -r "$SRC_RAW/." "$DST_RAW/"
           fi
-          # 如果只有 catalog.json，则顺手生成一份 spec.json 方便 App 读取
+          # 若只有 catalog.json，则生成一份 spec.json 方便读取
           if [ -f "$DST_ASSETS/catalog.json" ] && [ ! -f "$DST_ASSETS/spec.json" ]; then
             cp "$DST_ASSETS/catalog.json" "$DST_ASSETS/spec.json"
           fi
@@ -160,7 +173,7 @@ jobs:
           TEMPLATE: ${{ steps.in.outputs.template }}
         run: chmod +x templates/${{ steps.in.outputs.template }}/gradlew
 
-      # ===== 新增：自动补齐缺失 @string/xxx（从 res/ 中扫描引用）=====
+      # 自动补齐缺失的 @string/xxx
       - name: Auto-fill missing string resources (safety net)
         env:
           TEMPLATE: ${{ steps.in.outputs.template }}
@@ -172,7 +185,6 @@ jobs:
           mkdir -p "$(dirname "$STRINGS")"
           [ -f "$STRINGS" ] || echo '<?xml version="1.0" encoding="utf-8"?><resources/>' > "$STRINGS"
 
-          # 找到所有 @string/xxx
           missing=()
           mapfile -t keys < <(grep -Roh '@string/[A-Za-z0-9_]\+' "$RES" 2>/dev/null | sed 's|.*@string/||' | sort -u)
           for k in "${keys[@]}"; do
@@ -193,43 +205,3 @@ jobs:
                     printf "    <string name=\"%s\">%s</string>\n", arr[i], arr[i];
                   }
                 }
-                done=1
-              }
-              { print }
-            ' "$STRINGS" > "$tmp" && mv "$tmp" "$STRINGS"
-          else
-            echo "No missing strings detected."
-          fi
-
-      # ===== 使用 tee 保存完整 Gradle 输出，失败也能上传 =====
-      - name: Build debug APK (with full log)
-        id: gradle
-        working-directory: templates/${{ steps.in.outputs.template }}
-        shell: bash
-        run: |
-          set -e
-          ./gradlew --no-daemon --stacktrace -i clean assembleDebug | tee ../../gradle_debug.log
-          test ${PIPESTATUS[0]} -eq 0
-
-      # 上传日志、清单合并报告等（无论成功与否）
-      - name: Upload build logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gradle-logs-${{ steps.in.outputs.template }}
-          path: |
-            templates/gradle_debug.log
-            templates/${{ steps.in.outputs.template }}/app/build/outputs/logs/**
-            templates/${{ steps.in.outputs.template }}/app/build/reports/**
-            templates/${{ steps.in.outputs.template }}/app/build/intermediates/merged_manifest/**
-
-      # 成功时，从 APK 抽取证明文件
-      - name: Prove assets are inside APK
-        if: success()
-        shell: bash
-        run: |
-          set -e
-          APK=$(ls templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk | head -n1)
-          echo "APK => $APK"
-          unzip -l "$APK" | grep 'assets/generated' || true
-          unzip -p
