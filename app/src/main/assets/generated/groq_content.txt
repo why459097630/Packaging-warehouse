@@ -1,299 +1,205 @@
 以下是一个基本的安卓app源代码结构和JSON数据结构，用于介绍菜品的app：
-```java
-//菜品信息实体类
-public class Dish {
-    private int id;
-    private String name;
-    private String description;
-    private double price;
-    private String imageUrl;
 
-    // getters and setters
-}
+**安卓app源代码结构：**
 
-//用户信息实体类
-public class User {
-    private int id;
-    private String username;
-    private String password;
+1. `MainActivity.java`：主活动，负责显示菜品列表和导航到其他活动。
+2. `DishActivity.java`：菜品活动，负责显示菜品详情，包括照片、文字介绍、价格等。
+3. `UploadActivity.java`：上传活动，负责上传照片和文字介绍。
+4. `LoginActivity.java`：登录活动，负责用户登录。
+5. `MessageActivity.java`：留言活动，负责显示和发送留言。
+6. `DishAdapter.java`：菜品适配器，负责将菜品数据绑定到列表视图。
+7. `DishModel.java`：菜品模型，负责存储菜品数据。
 
-    // getters and setters
-}
+**JSON数据结构：**
 
-//留言信息实体类
-public class Comment {
-    private int id;
-    private int dishId;
-    private int userId;
-    private String content;
-
-    // getters and setters
-}
-
-//菜品列表适配器
-public class DishAdapter extends RecyclerView.Adapter<DishAdapter.ViewHolder> {
-    private List<Dish> dishes;
-
-    public DishAdapter(List<Dish> dishes) {
-        this.dishes = dishes;
-    }
-
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.dish_item, parent, false);
-        return new ViewHolder(view);
-    }
-
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        Dish dish = dishes.get(position);
-        holder.nameTextView.setText(dish.getName());
-        holder.descriptionTextView.setText(dish.getDescription());
-        holder.priceTextView.setText(String.valueOf(dish.getPrice()));
-        holder.imageView.setImageResource(R.drawable.default_image);
-        //加载图片
-        Glide.with(holder.imageView.getContext()).load(dish.getImageUrl()).into(holder.imageView);
-    }
-
-    @Override
-    public int getItemCount() {
-        return dishes.size();
-    }
-
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView nameTextView;
-        public TextView descriptionTextView;
-        public TextView priceTextView;
-        public ImageView imageView;
-
-        public ViewHolder(View itemView) {
-            super(itemView);
-            nameTextView = itemView.findViewById(R.id.name_text_view);
-            descriptionTextView = itemView.findViewById(R.id.description_text_view);
-            priceTextView = itemView.findViewById(R.id.price_text_view);
-            imageView = itemView.findViewById(R.id.image_view);
-        }
-    }
-}
-
-//登录系统
-public class LoginActivity extends AppCompatActivity {
-    private EditText usernameEditText;
-    private EditText passwordEditText;
-    private Button loginButton;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-
-        usernameEditText = findViewById(R.id.username_edit_text);
-        passwordEditText = findViewById(R.id.password_edit_text);
-        loginButton = findViewById(R.id.login_button);
-
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String username = usernameEditText.getText().toString();
-                String password = passwordEditText.getText().toString();
-
-                //验证用户名和密码
-                if (validateUsernameAndPassword(username, password)) {
-                    //登录成功，跳转到主界面
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(LoginActivity.this, "用户名或密码错误", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-    }
-
-    private boolean validateUsernameAndPassword(String username, String password) {
-        //模拟验证，实际应使用数据库或网络请求验证
-        return username.equals("admin") && password.equals("admin");
-    }
-}
-
-//主界面
-public class MainActivity extends AppCompatActivity {
-    private RecyclerView dishRecyclerView;
-    private DishAdapter dishAdapter;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        dishRecyclerView = findViewById(R.id.dish_recycler_view);
-
-        //模拟数据
-        List<Dish> dishes = new ArrayList<>();
-        dishes.add(new Dish(1, "菜品1", "描述1", 10.99, "https://example.com/image1.jpg"));
-        dishes.add(new Dish(2, "菜品2", "描述2", 9.99, "https://example.com/image2.jpg"));
-        dishes.add(new Dish(3, "菜品3", "描述3", 12.99, "https://example.com/image3.jpg"));
-
-        dishAdapter = new DishAdapter(dishes);
-        dishRecyclerView.setAdapter(dishAdapter);
-        dishRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-    }
-}
-
-//上传照片和文字介绍
-public class UploadActivity extends AppCompatActivity {
-    private EditText nameEditText;
-    private EditText descriptionEditText;
-    private EditText priceEditText;
-    private Button uploadButton;
-    private ImageView imageView;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_upload);
-
-        nameEditText = findViewById(R.id.name_edit_text);
-        descriptionEditText = findViewById(R.id.description_edit_text);
-        priceEditText = findViewById(R.id.price_edit_text);
-        uploadButton = findViewById(R.id.upload_button);
-        imageView = findViewById(R.id.image_view);
-
-        uploadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String name = nameEditText.getText().toString();
-                String description = descriptionEditText.getText().toString();
-                double price = Double.parseDouble(priceEditText.getText().toString());
-
-                //上传照片和文字介绍
-                //模拟上传，实际应使用网络请求上传
-                Toast.makeText(UploadActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-}
-
-//留言系统
-public class CommentActivity extends AppCompatActivity {
-    private EditText commentEditText;
-    private Button commentButton;
-    private RecyclerView commentRecyclerView;
-    private CommentAdapter commentAdapter;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_comment);
-
-        commentEditText = findViewById(R.id.comment_edit_text);
-        commentButton = findViewById(R.id.comment_button);
-        commentRecyclerView = findViewById(R.id.comment_recycler_view);
-
-        commentButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String comment = commentEditText.getText().toString();
-
-                //添加留言
-                //模拟添加，实际应使用网络请求添加
-                Toast.makeText(CommentActivity.this, "留言成功", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        //模拟数据
-        List<Comment> comments = new ArrayList<>();
-        comments.add(new Comment(1, 1, 1, "留言1"));
-        comments.add(new Comment(2, 1, 2, "留言2"));
-        comments.add(new Comment(3, 1, 3, "留言3"));
-
-        commentAdapter = new CommentAdapter(comments);
-        commentRecyclerView.setAdapter(commentAdapter);
-        commentRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-    }
-}
-
-//留言适配器
-public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHolder> {
-    private List<Comment> comments;
-
-    public CommentAdapter(List<Comment> comments) {
-        this.comments = comments;
-    }
-
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.comment_item, parent, false);
-        return new ViewHolder(view);
-    }
-
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        Comment comment = comments.get(position);
-        holder.commentTextView.setText(comment.getContent());
-    }
-
-    @Override
-    public int getItemCount() {
-        return comments.size();
-    }
-
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView commentTextView;
-
-        public ViewHolder(View itemView) {
-            super(itemView);
-            commentTextView = itemView.findViewById(R.id.comment_text_view);
-        }
-    }
-}
-```
-
-JSON数据结构：
 ```json
 {
-    "dishes": [
+  "dishes": [
+    {
+      "id": 1,
+      "name": "菜品1",
+      "description": "这是菜品1的描述",
+      "price": 10.99,
+      "image": "https://example.com/image1.jpg",
+      "comments": [
         {
-            "id": 1,
-            "name": "菜品1",
-            "description": "描述1",
-            "price": 10.99,
-            "imageUrl": "https://example.com/image1.jpg"
+          "id": 1,
+          "content": "很好吃",
+          "username": "用户1"
         },
         {
-            "id": 2,
-            "name": "菜品2",
-            "description": "描述2",
-            "price": 9.99,
-            "imageUrl": "https://example.com/image2.jpg"
-        },
-        {
-            "id": 3,
-            "name": "菜品3",
-            "description": "描述3",
-            "price": 12.99,
-            "imageUrl": "https://example.com/image3.jpg"
+          "id": 2,
+          "content": "不错",
+          "username": "用户2"
         }
-    ],
-    "comments": [
+      ]
+    },
+    {
+      "id": 2,
+      "name": "菜品2",
+      "description": "这是菜品2的描述",
+      "price": 9.99,
+      "image": "https://example.com/image2.jpg",
+      "comments": [
         {
-            "id": 1,
-            "dishId": 1,
-            "userId": 1,
-            "content": "留言1"
-        },
-        {
-            "id": 2,
-            "dishId": 1,
-            "userId": 2,
-            "content": "留言2"
-        },
-        {
-            "id": 3,
-            "dishId": 1,
-            "userId": 3,
-            "content": "留言3"
+          "id": 3,
+          "content": "很好",
+          "username": "用户3"
         }
-    ]
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "username": "用户1",
+      "password": "密码1"
+    },
+    {
+      "id": 2,
+      "username": "用户2",
+      "password": "密码2"
+    }
+  ]
 }
 ```
-注意：上述代码和JSON数据结构仅为示例，实际开发中需要根据具体需求进行修改和完善。
+
+**安卓app代码：**
+
+```java
+// MainActivity.java
+public class MainActivity extends AppCompatActivity {
+  private ListView dishList;
+  private DishAdapter dishAdapter;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+
+    dishList = findViewById(R.id.dish_list);
+    dishAdapter = new DishAdapter(this, getDishes());
+    dishList.setAdapter(dishAdapter);
+  }
+
+  private List<DishModel> getDishes() {
+    // 从JSON数据中获取菜品列表
+    List<DishModel> dishes = new ArrayList<>();
+    // ...
+    return dishes;
+  }
+}
+
+// DishActivity.java
+public class DishActivity extends AppCompatActivity {
+  private ImageView dishImage;
+  private TextView dishName;
+  private TextView dishDescription;
+  private TextView dishPrice;
+  private Button uploadButton;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_dish);
+
+    dishImage = findViewById(R.id.dish_image);
+    dishName = findViewById(R.id.dish_name);
+    dishDescription = findViewById(R.id.dish_description);
+    dishPrice = findViewById(R.id.dish_price);
+    uploadButton = findViewById(R.id.upload_button);
+
+    // 设置菜品信息
+    DishModel dish = (DishModel) getIntent().getSerializableExtra("dish");
+    dishImage.setImageResource(dish.getImage());
+    dishName.setText(dish.getName());
+    dishDescription.setText(dish.getDescription());
+    dishPrice.setText(String.valueOf(dish.getPrice()));
+
+    uploadButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        // 跳转到上传活动
+        Intent intent = new Intent(DishActivity.this, UploadActivity.class);
+        startActivity(intent);
+      }
+    });
+  }
+}
+
+// UploadActivity.java
+public class UploadActivity extends AppCompatActivity {
+  private EditText uploadDescription;
+  private Button uploadButton;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_upload);
+
+    uploadDescription = findViewById(R.id.upload_description);
+    uploadButton = findViewById(R.id.upload_button);
+
+    uploadButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        // 上传照片和文字介绍
+        String description = uploadDescription.getText().toString();
+        // ...
+      }
+    });
+  }
+}
+
+// LoginActivity.java
+public class LoginActivity extends AppCompatActivity {
+  private EditText usernameEditText;
+  private EditText passwordEditText;
+  private Button loginButton;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_login);
+
+    usernameEditText = findViewById(R.id.username_edit_text);
+    passwordEditText = findViewById(R.id.password_edit_text);
+    loginButton = findViewById(R.id.login_button);
+
+    loginButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        // 登录
+        String username = usernameEditText.getText().toString();
+        String password = passwordEditText.getText().toString();
+        // ...
+      }
+    });
+  }
+}
+
+// MessageActivity.java
+public class MessageActivity extends AppCompatActivity {
+  private ListView messageList;
+  private MessageAdapter messageAdapter;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_message);
+
+    messageList = findViewById(R.id.message_list);
+    messageAdapter = new MessageAdapter(this, getMessages());
+    messageList.setAdapter(messageAdapter);
+  }
+
+  private List<MessageModel> getMessages() {
+    // 从JSON数据中获取留言列表
+    List<MessageModel> messages = new ArrayList<>();
+    // ...
+    return messages;
+  }
+}
+```
+
+注意：上述代码仅为示例，需要根据实际需求进行修改和完善。同时，需要添加错误处理、数据存储和网络请求等功能。
