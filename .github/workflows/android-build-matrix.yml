@@ -5,10 +5,6 @@ on:
   repository_dispatch:
     types: [generate-apk]
 
-concurrency:
-  group: android-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,7 +19,6 @@ jobs:
           java-version: 17
           cache: gradle
 
-      # 读取前端传入的 payload；兼容驼峰/下划线两种命名
       - name: Extract inputs
         id: in
         run: |
@@ -32,12 +27,11 @@ jobs:
           echo "api_base=${{ github.event.client_payload.api_base || github.event.client_payload.apiBase }}" >> "$GITHUB_OUTPUT"
           echo "api_secret=${{ github.event.client_payload.api_secret || github.event.client_payload.apiSecret }}" >> "$GITHUB_OUTPUT"
 
-      # 打印解析结果（secret 会被掩码），方便确认参数是否带过来
       - name: Show resolved inputs (masked)
         env:
-          TEMPLATE:   ${{ steps.in.outputs.template }}
-          APP_NAME:   ${{ steps.in.outputs.app_name }}
-          API_BASE:   ${{ steps.in.outputs.api_base }}
+          TEMPLATE:  ${{ steps.in.outputs.template }}
+          APP_NAME:  ${{ steps.in.outputs.app_name }}
+          API_BASE:  ${{ steps.in.outputs.api_base }}
           API_SECRET: ${{ steps.in.outputs.api_secret }}
         shell: bash
         run: |
@@ -54,7 +48,6 @@ jobs:
       - name: Ensure gradlew executable
         run: chmod +x templates/**/gradlew || true
 
-      # 模板目录存在性检查
       - name: Check template directory
         shell: bash
         run: |
@@ -64,12 +57,11 @@ jobs:
             exit 1
           fi
 
-      # 写入 API 信息到 strings.xml（保持你原有逻辑）
       - name: Inject API data into template
         env:
-          TEMPLATE:   ${{ steps.in.outputs.template }}
-          APP_NAME:   ${{ steps.in.outputs.app_name }}
-          API_BASE:   ${{ steps.in.outputs.api_base }}
+          TEMPLATE:  ${{ steps.in.outputs.template }}
+          APP_NAME:  ${{ steps.in.outputs.app_name }}
+          API_BASE:  ${{ steps.in.outputs.api_base }}
           API_SECRET: ${{ steps.in.outputs.api_secret }}
         shell: bash
         run: |
@@ -81,7 +73,6 @@ jobs:
           STYLES="${VALUES}/styles.xml"
           mkdir -p "${VALUES}"
 
-          # 1) strings.xml 不存在则写空骨架
           if [ ! -f "${STRINGS}" ]; then
             cat >"${STRINGS}" <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
@@ -90,7 +81,6 @@ jobs:
           EOF
           fi
 
-          # 2) styles.xml 不存在则写默认主题，避免 R 缺资源
           if [ ! -f "${STYLES}" ]; then
             cat >"${STYLES}" <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
@@ -100,7 +90,6 @@ jobs:
           EOF
           fi
 
-          # 3) 清理旧项并写入新项
           sed -i '/name="app_name"/d'   "${STRINGS}" || true
           sed -i '/name="api_base"/d'   "${STRINGS}" || true
           sed -i '/name="api_secret"/d' "${STRINGS}" || true
@@ -116,7 +105,6 @@ jobs:
             { print }
           ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
 
-      # 简要校验并打印片段，便于核对
       - name: Verify written resources
         shell: bash
         run: |
@@ -128,74 +116,21 @@ jobs:
           grep -q 'name="api_base"'  "$VALUES" && \
           grep -q 'name="api_secret"' "$VALUES" || { echo "strings.xml missing expected entries"; exit 1; }
 
-      # （可选）还原签名；存在则走 release 构建，不存在只打 debug
-      - name: Restore keystore (optional)
-        shell: bash
-        env:
-          KEYSTORE_BASE64:        ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD:      ${{ secrets.KEYSTORE_PASSWORD }}
-          KEYSTORE_ALIAS:         ${{ secrets.KEYSTORE_ALIAS }}
-          KEYSTORE_ALIAS_PASSWORD:${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
-        run: |
-          set -e
-          if [ -n "${KEYSTORE_BASE64:-}" ]; then
-            echo "[signing] restore keystore"
-            echo "$KEYSTORE_BASE64" | base64 -d > keystore.jks
-            echo "KEYSTORE_PATH=$PWD/keystore.jks" >> $GITHUB_ENV
-            echo "HAVE_KEYSTORE=true" >> $GITHUB_ENV
-          else
-            echo "HAVE_KEYSTORE=false" >> $GITHUB_ENV
-          fi
-
-      # 构建：始终打 debug；若有 keystore 再打 release & bundle；日志放大并保存
-      - name: Build (debug + optional release) with verbose logs
+      - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
-        env:
-          ORG_GRADLE_PROJECT_org.gradle.jvmargs: -Xmx2g -Dfile.encoding=UTF-8
-        shell: bash
-        run: |
-          set -e
-          ./gradlew :app:clean :app:assembleDebug --stacktrace --info --no-daemon | tee ../../gradle.log
-          if [ "${HAVE_KEYSTORE}" = "true" ]; then
-            echo "[build] found keystore -> building release & bundle"
-            ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace --info --no-daemon | tee -a ../../gradle.log
-          else
-            echo "[build] no keystore -> skip release"
-          fi
+        run: ./gradlew clean assembleDebug
 
-      # 列出输出，快速定位真实产物路径
-      - name: List build outputs
-        run: |
-          echo "== outputs =="
-          ls -R templates/${{ steps.in.outputs.template }}/app/build/outputs || true
-          echo "== found =="
-          find templates/${{ steps.in.outputs.template }}/app/build/outputs -type f \( -name "*.apk" -o -name "*.aab" \) -print || true
-
-      # 没有任何 APK/AAB 就让构建失败（给出清晰错误）
-      - name: Verify artifact exists
-        run: |
-          COUNT=$(find templates/${{ steps.in.outputs.template }}/app/build/outputs -type f \( -name "*.apk" -o -name "*.aab" \) | wc -l)
-          if [ "$COUNT" -eq 0 ]; then
-            echo "No APK/AAB produced under templates/${{ steps.in.outputs.template }}/app/build/outputs"
-            exit 1
-          fi
-
-      # 上传 apk/aab（递归兜底；兼容 unsigned、多风味）
-      - name: Upload APK/AAB
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ steps.in.outputs.template }}
-          path: |
-            templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/**/*.apk
-            templates/${{ steps.in.outputs.template }}/app/build/outputs/bundle/**/*.aab
+          name: debug
+          path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
 
-      # 把 gradle.log 与 values/Manifest 上传便于排查
-      - name: Upload debug artifacts
+      - name: Upload values for audit
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: debug-logs-and-res-${{ steps.in.outputs.template }}
+          name: values-${{ steps.in.outputs.template }}
           path: |
-            gradle.log
             templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml
             templates/${{ steps.in.outputs.template }}/app/src/main/AndroidManifest.xml
