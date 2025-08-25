@@ -5,23 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/input"
-        android:hint="@string/hint_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <Button
-        android:id="@+id/btnAdd"
-        android:text="@string/btn_add"
+    <TextView
+        android:id="@+id/tvDesc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"/>
+        android:textSize="14sp"
+        android:textColor="#CCCCCC"
+        android:paddingBottom="8dp" />
 
-    <ListView
-        android:id="@+id/list"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerScreens"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="12dp"/>
+        android:layout_height="match_parent"/>
 </LinearLayout>
