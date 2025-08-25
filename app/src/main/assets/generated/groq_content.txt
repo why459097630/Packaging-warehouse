@@ -2,24 +2,24 @@
 
 **安卓app源代码结构：**
 
-1. `MainActivity.java`：主活动，负责显示菜品列表和导航到其他活动。
-2. `DishActivity.java`：菜品活动，负责显示菜品详情，包括照片、文字介绍、价格等。
-3. `UploadActivity.java`：上传活动，负责上传照片和文字介绍。
-4. `LoginActivity.java`：登录活动，负责用户登录。
-5. `MessageActivity.java`：留言活动，负责显示和发送留言。
-6. `DishAdapter.java`：菜品适配器，负责将菜品数据绑定到列表视图。
-7. `DishModel.java`：菜品模型，负责存储菜品数据。
+1. `MainActivity.java`：主活动，负责显示菜品列表和跳转到详细页面
+2. `DetailActivity.java`：详细页面，负责显示菜品详细信息和上传照片
+3. `UploadActivity.java`：上传页面，负责上传照片和文字介绍
+4. `LoginActivity.java`：登录页面，负责用户登录
+5. `MessageActivity.java`：留言页面，负责显示和发送留言
+6. `MenuAdapter.java`：菜品适配器，负责显示菜品列表
+7. `MenuModel.java`：菜品模型，负责存储菜品信息
 
 **JSON数据结构：**
 
 ```json
 {
-  "dishes": [
+  "menu": [
     {
       "id": 1,
       "name": "菜品1",
-      "description": "这是菜品1的描述",
       "price": 10.99,
+      "description": "这是菜品1的描述",
       "image": "https://example.com/image1.jpg",
       "comments": [
         {
@@ -30,15 +30,15 @@
         {
           "id": 2,
           "username": "用户2",
-          "content": "我也喜欢这道菜"
+          "content": "我也很喜欢这道菜"
         }
       ]
     },
     {
       "id": 2,
       "name": "菜品2",
-      "description": "这是菜品2的描述",
       "price": 9.99,
+      "description": "这是菜品2的描述",
       "image": "https://example.com/image2.jpg",
       "comments": [
         {
@@ -69,95 +69,85 @@
 ```java
 // MainActivity.java
 public class MainActivity extends AppCompatActivity {
-  private ListView dishList;
+  private ListView listView;
+  private MenuAdapter adapter;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    dishList = (ListView) findViewById(R.id.dish_list);
+    listView = (ListView) findViewById(R.id.listView);
+    adapter = new MenuAdapter(this, getMenuData());
+    listView.setAdapter(adapter);
 
-    // 加载菜品数据
-    loadDishData();
+    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+        intent.putExtra("menuId", position);
+        startActivity(intent);
+      }
+    });
   }
 
-  private void loadDishData() {
-    // 从JSON数据中加载菜品数据
-    String jsonData = loadJsonData();
-    JSONObject jsonObject = new JSONObject(jsonData);
-    JSONArray dishes = jsonObject.getJSONArray("dishes");
-
-    // 创建菜品适配器
-    DishAdapter adapter = new DishAdapter(this, dishes);
-    dishList.setAdapter(adapter);
+  private List<MenuModel> getMenuData() {
+    // 从JSON数据中解析菜品列表
+    List<MenuModel> menuList = new ArrayList<>();
+    // ...
+    return menuList;
   }
 }
 
-// DishActivity.java
-public class DishActivity extends AppCompatActivity {
-  private ImageView dishImage;
-  private TextView dishName;
-  private TextView dishDescription;
-  private TextView dishPrice;
-  private EditText commentEditText;
-  private Button commentButton;
+// DetailActivity.java
+public class DetailActivity extends AppCompatActivity {
+  private TextView nameTextView;
+  private TextView priceTextView;
+  private TextView descriptionTextView;
+  private ImageView imageView;
+  private Button uploadButton;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_dish);
+    setContentView(R.layout.activity_detail);
 
-    // 初始化视图
-    dishImage = (ImageView) findViewById(R.id.dish_image);
-    dishName = (TextView) findViewById(R.id.dish_name);
-    dishDescription = (TextView) findViewById(R.id.dish_description);
-    dishPrice = (TextView) findViewById(R.id.dish_price);
-    commentEditText = (EditText) findViewById(R.id.comment_edit_text);
-    commentButton = (Button) findViewById(R.id.comment_button);
+    nameTextView = (TextView) findViewById(R.id.nameTextView);
+    priceTextView = (TextView) findViewById(R.id.priceTextView);
+    descriptionTextView = (TextView) findViewById(R.id.descriptionTextView);
+    imageView = (ImageView) findViewById(R.id.imageView);
+    uploadButton = (Button) findViewById(R.id.uploadButton);
 
-    // 加载菜品数据
-    loadDishData();
+    Intent intent = getIntent();
+    int menuId = intent.getIntExtra("menuId", 0);
+
+    // 从JSON数据中解析菜品详细信息
+    MenuModel menuModel = getMenuModel(menuId);
+    nameTextView.setText(menuModel.getName());
+    priceTextView.setText(String.valueOf(menuModel.getPrice()));
+    descriptionTextView.setText(menuModel.getDescription());
+    imageView.setImageResource(menuModel.getImage());
+
+    uploadButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        Intent intent = new Intent(DetailActivity.this, UploadActivity.class);
+        startActivity(intent);
+      }
+    });
   }
 
-  private void loadDishData() {
-    // 从Intent中获取菜品ID
-    int dishId = getIntent().getIntExtra("dish_id", 0);
-
-    // 从JSON数据中加载菜品数据
-    String jsonData = loadJsonData();
-    JSONObject jsonObject = new JSONObject(jsonData);
-    JSONArray dishes = jsonObject.getJSONArray("dishes");
-    JSONObject dish = dishes.getJSONObject(dishId);
-
-    // 显示菜品数据
-    dishImage.setImageResource(R.drawable.dish_image);
-    dishName.setText(dish.getString("name"));
-    dishDescription.setText(dish.getString("description"));
-    dishPrice.setText(String.valueOf(dish.getDouble("price")));
-  }
-
-  // 上传评论
-  public void comment(View view) {
-    // 获取评论内容
-    String comment = commentEditText.getText().toString();
-
-    // 上传评论
-    uploadComment(comment);
-  }
-
-  private void uploadComment(String comment) {
-    // 上传评论到服务器
+  private MenuModel getMenuModel(int menuId) {
+    // 从JSON数据中解析菜品模型
+    MenuModel menuModel = new MenuModel();
     // ...
+    return menuModel;
   }
 }
 
 // UploadActivity.java
 public class UploadActivity extends AppCompatActivity {
-  private ImageView dishImage;
-  private EditText dishNameEditText;
-  private EditText dishDescriptionEditText;
-  private EditText dishPriceEditText;
+  private EditText descriptionEditText;
   private Button uploadButton;
 
   @Override
@@ -165,31 +155,17 @@ public class UploadActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_upload);
 
-    // 初始化视图
-    dishImage = (ImageView) findViewById(R.id.dish_image);
-    dishNameEditText = (EditText) findViewById(R.id.dish_name_edit_text);
-    dishDescriptionEditText = (EditText) findViewById(R.id.dish_description_edit_text);
-    dishPriceEditText = (EditText) findViewById(R.id.dish_price_edit_text);
-    uploadButton = (Button) findViewById(R.id.upload_button);
+    descriptionEditText = (EditText) findViewById(R.id.descriptionEditText);
+    uploadButton = (Button) findViewById(R.id.uploadButton);
 
-    // 上传菜品
     uploadButton.setOnClickListener(new View.OnClickListener() {
       @Override
-      public void onClick(View view) {
-        // 获取菜品数据
-        String dishName = dishNameEditText.getText().toString();
-        String dishDescription = dishDescriptionEditText.getText().toString();
-        double dishPrice = Double.parseDouble(dishPriceEditText.getText().toString());
-
-        // 上传菜品到服务器
-        uploadDish(dishName, dishDescription, dishPrice);
+      public void onClick(View v) {
+        String description = descriptionEditText.getText().toString();
+        // 上传照片和文字介绍
+        // ...
       }
     });
-  }
-
-  private void uploadDish(String dishName, String dishDescription, double dishPrice) {
-    // 上传菜品到服务器
-    // ...
   }
 }
 
@@ -204,58 +180,52 @@ public class LoginActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_login);
 
-    // 初始化视图
-    usernameEditText = (EditText) findViewById(R.id.username_edit_text);
-    passwordEditText = (EditText) findViewById(R.id.password_edit_text);
-    loginButton = (Button) findViewById(R.id.login_button);
+    usernameEditText = (EditText) findViewById(R.id.usernameEditText);
+    passwordEditText = (EditText) findViewById(R.id.passwordEditText);
+    loginButton = (Button) findViewById(R.id.loginButton);
 
-    // 登录
     loginButton.setOnClickListener(new View.OnClickListener() {
       @Override
-      public void onClick(View view) {
-        // 获取用户名和密码
+      public void onClick(View v) {
         String username = usernameEditText.getText().toString();
         String password = passwordEditText.getText().toString();
-
-        // 登录到服务器
-        login(username, password);
+        // 登录验证
+        // ...
       }
     });
-  }
-
-  private void login(String username, String password) {
-    // 登录到服务器
-    // ...
   }
 }
 
 // MessageActivity.java
 public class MessageActivity extends AppCompatActivity {
-  private ListView messageList;
+  private ListView listView;
+  private MessageAdapter adapter;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_message);
 
-    // 初始化视图
-    messageList = (ListView) findViewById(R.id.message_list);
+    listView = (ListView) findViewById(R.id.listView);
+    adapter = new MessageAdapter(this, getMessageData());
+    listView.setAdapter(adapter);
 
-    // 加载留言数据
-    loadMessageData();
+    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        // 显示留言详细信息
+        // ...
+      }
+    });
   }
 
-  private void loadMessageData() {
-    // 从JSON数据中加载留言数据
-    String jsonData = loadJsonData();
-    JSONObject jsonObject = new JSONObject(jsonData);
-    JSONArray messages = jsonObject.getJSONArray("messages");
-
-    // 创建留言适配器
-    MessageAdapter adapter = new MessageAdapter(this, messages);
-    messageList.setAdapter(adapter);
+  private List<MessageModel> getMessageData() {
+    // 从JSON数据中解析留言列表
+    List<MessageModel> messageList = new ArrayList<>();
+    // ...
+    return messageList;
   }
 }
 ```
 
-注意：上述代码仅为示例，需要根据实际需求进行修改和完善。同时，需要实现服务器端的逻辑来处理上传、登录、留言等功能。
+注意：上述代码仅为示例，需要根据实际需求进行修改和补充。同时，需要实现登录验证、上传照片和文字介绍、显示留言详细信息等功能。
