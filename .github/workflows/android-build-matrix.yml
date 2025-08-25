@@ -36,6 +36,7 @@ jobs:
           java-version: 17
           cache: gradle
 
+      # 解析前端或 repository_dispatch 传入的参数
       - name: Extract inputs
         id: in
         run: |
@@ -55,13 +56,21 @@ jobs:
           echo "[inputs] template = $TEMPLATE"
           echo "[inputs] app_name = $APP_NAME"
           echo "[inputs] api_base  = $API_BASE"
-          echo "[inputs] api_secret = $([ -z "$API_SECRET" ] && echo '(empty)' || echo '(masked)')"
+          if [ -z "$API_SECRET" ]; then
+            echo "[inputs] api_secret = (empty)"
+          else
+            echo "[inputs] api_secret = (masked)"
+          fi
 
       - name: Check template directory
         run: |
+          set -e
           T="templates/${{ steps.in.outputs.template }}"
-          [ -d "$T" ] || { echo "Template directory not found: $T"; exit 1; }
+          if [ ! -d "$T" ]; then
+            echo "Template directory not found: $T"; exit 1
+          fi
 
+      # 注入 strings.xml/styles.xml（若不存在则创建），写入 app_name/api_base/api_secret
       - name: Inject API data into template
         env:
           TEMPLATE:   ${{ steps.in.outputs.template }}
@@ -76,18 +85,26 @@ jobs:
           STYLES="${VALUES}/styles.xml"
           mkdir -p "${VALUES}"
 
-          [ -f "${STRINGS}" ] || cat >"${STRINGS}" <<'EOF'
+          # strings.xml skeleton
+          if [ ! -f "${STRINGS}" ]; then
+            cat >"${STRINGS}" <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
-          <resources></resources>
+          <resources>
+          </resources>
           EOF
+          fi
 
-          [ -f "${STYLES}" ] || cat >"${STYLES}" <<'EOF'
+          # styles.xml skeleton（提供 AppTheme）
+          if [ ! -f "${STYLES}" ]; then
+            cat >"${STYLES}" <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
             <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
           </resources>
           EOF
+          fi
 
+          # 写入三项
           sed -i '/name="app_name"/d'   "${STRINGS}" || true
           sed -i '/name="api_base"/d'   "${STRINGS}" || true
           sed -i '/name="api_secret"/d' "${STRINGS}" || true
@@ -103,10 +120,13 @@ jobs:
             { print }
           ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
 
+      # 同步根仓库生成的 assets/raw 到模板（若存在）
       - name: Sync generated assets into template
+        env:
+          TEMPLATE: ${{ steps.in.outputs.template }}
         run: |
           set -e
-          T="templates/${{ steps.in.outputs.template }}"
+          T="templates/${TEMPLATE}"
           SRC_ASSETS="app/src/main/assets/generated"
           DST_ASSETS="$T/app/src/main/assets/generated"
           if [ -d "$SRC_ASSETS" ]; then
@@ -119,57 +139,97 @@ jobs:
             mkdir -p "$DST_RAW"
             cp -r "$SRC_RAW/." "$DST_RAW/"
           fi
-          if [ -f "$DST_ASSETS/catalog.json" ]; then
+          # 如果只有 catalog.json，则顺手生成一份 spec.json 方便 App 读取
+          if [ -f "$DST_ASSETS/catalog.json" ] && [ ! -f "$DST_ASSETS/spec.json" ]; then
             cp "$DST_ASSETS/catalog.json" "$DST_ASSETS/spec.json"
           fi
 
       - name: Verify template has wrapper & settings
+        env:
+          TEMPLATE: ${{ steps.in.outputs.template }}
         run: |
-          T="templates/${{ steps.in.outputs.template }}"
-          test -f "$T/gradlew" || { echo "gradlew missing in $T"; exit 1; }
+          set -e
+          T="templates/${TEMPLATE}"
+          [ -f "$T/gradlew" ] || { echo "gradlew missing in $T"; exit 1; }
           if [ ! -f "$T/settings.gradle" ] && [ ! -f "$T/settings.gradle.kts" ]; then
-            echo "settings.gradle not found in $T"; exit 1;
+            echo "settings.gradle not found in $T"; exit 1
           fi
 
       - name: Make gradlew executable
+        env:
+          TEMPLATE: ${{ steps.in.outputs.template }}
         run: chmod +x templates/${{ steps.in.outputs.template }}/gradlew
 
-      - name: Build debug APK
-        working-directory: templates/${{ steps.in.outputs.template }}
-        run: ./gradlew --no-daemon --stacktrace -i clean assembleDebug
+      # ===== 新增：自动补齐缺失 @string/xxx（从 res/ 中扫描引用）=====
+      - name: Auto-fill missing string resources (safety net)
+        env:
+          TEMPLATE: ${{ steps.in.outputs.template }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          RES="templates/${TEMPLATE}/app/src/main/res"
+          STRINGS="${RES}/values/strings.xml"
+          mkdir -p "$(dirname "$STRINGS")"
+          [ -f "$STRINGS" ] || echo '<?xml version="1.0" encoding="utf-8"?><resources/>' > "$STRINGS"
 
+          # 找到所有 @string/xxx
+          missing=()
+          mapfile -t keys < <(grep -Roh '@string/[A-Za-z0-9_]\+' "$RES" 2>/dev/null | sed 's|.*@string/||' | sort -u)
+          for k in "${keys[@]}"; do
+            if ! grep -q "name=\"$k\"" "$STRINGS"; then
+              missing+=("$k")
+            fi
+          done
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "Auto adding missing strings: ${missing[*]}"
+            tmp="${STRINGS}.tmp"
+            awk -v add="$(IFS=,; echo "${missing[*]}")" '
+              BEGIN{ n=split(add, arr, ","); }
+              /<\/resources>/ && !done {
+                for(i=1;i<=n;i++){
+                  gsub(/\r/,"",arr[i]);
+                  if(length(arr[i])>0){
+                    printf "    <string name=\"%s\">%s</string>\n", arr[i], arr[i];
+                  }
+                }
+                done=1
+              }
+              { print }
+            ' "$STRINGS" > "$tmp" && mv "$tmp" "$STRINGS"
+          else
+            echo "No missing strings detected."
+          fi
+
+      # ===== 使用 tee 保存完整 Gradle 输出，失败也能上传 =====
+      - name: Build debug APK (with full log)
+        id: gradle
+        working-directory: templates/${{ steps.in.outputs.template }}
+        shell: bash
+        run: |
+          set -e
+          ./gradlew --no-daemon --stacktrace -i clean assembleDebug | tee ../../gradle_debug.log
+          test ${PIPESTATUS[0]} -eq 0
+
+      # 上传日志、清单合并报告等（无论成功与否）
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-logs-${{ steps.in.outputs.template }}
+          path: |
+            templates/gradle_debug.log
+            templates/${{ steps.in.outputs.template }}/app/build/outputs/logs/**
+            templates/${{ steps.in.outputs.template }}/app/build/reports/**
+            templates/${{ steps.in.outputs.template }}/app/build/intermediates/merged_manifest/**
+
+      # 成功时，从 APK 抽取证明文件
       - name: Prove assets are inside APK
+        if: success()
+        shell: bash
         run: |
           set -e
           APK=$(ls templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk | head -n1)
           echo "APK => $APK"
           unzip -l "$APK" | grep 'assets/generated' || true
-          unzip -p "$APK" assets/generated/spec.json        > spec_from_apk.json        || true
-          unzip -p "$APK" assets/generated/groq_content.txt > groq_from_apk.txt         || true
-          head -n 40 spec_from_apk.json || true
-          head -n 20 groq_from_apk.txt  || true
-
-      - name: Dump manifest merger report
-        if: failure()
-        run: |
-          REPORT_DIR="templates/${{ steps.in.outputs.template }}/app/build/outputs/logs"
-          ls -lah "$REPORT_DIR" || true
-          tail -n 200 "$REPORT_DIR/manifest-merger-debug-report.txt" || true
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug
-          path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
-
-      - name: Upload proof & logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: proof-${{ steps.in.outputs.template }}
-          path: |
-            spec_from_apk.json
-            groq_from_apk.txt
-            templates/${{ steps.in.outputs.template }}/app/src/main/AndroidManifest.xml
-            templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml
-            templates/${{ steps.in.outputs.template }}/app/build/outputs/logs/*
+          unzip -p
