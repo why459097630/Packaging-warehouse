@@ -36,7 +36,7 @@ jobs:
           java-version: 17
           cache: gradle
 
-      # 兼容两种触发方式：workflow_dispatch(inputs) & repository_dispatch(client_payload)
+      # 兼容 workflow_dispatch(inputs) 与 repository_dispatch(client_payload)
       - name: Extract inputs
         id: in
         run: |
@@ -70,6 +70,7 @@ jobs:
             echo "Template directory not found: templates/${{ steps.in.outputs.template }}"; exit 1;
           fi
 
+      # 将 app_name/api_base/api_secret 注入到模板的 strings.xml（如有需要在模板里使用）
       - name: Inject API data into template
         env:
           TEMPLATE:   ${{ steps.in.outputs.template }}
@@ -124,7 +125,7 @@ jobs:
           grep -q 'name="api_base"'  "$VALUES" && \
           grep -q 'name="api_secret"' "$VALUES" || { echo "strings.xml missing expected entries"; exit 1; }
 
-      # ========= 方案A：把根目录生成的文件同步到模板 =========
+      # —— 方案A：把根目录生成的 assets/raw 同步进模板 —— #
       - name: Sync generated assets into template
         shell: bash
         run: |
@@ -150,7 +151,12 @@ jobs:
           else
             echo "WARN: $SRC_RAW not found (skip)"
           fi
-      # =====================================================
+
+          # 兼容旧路径：同时生成 spec.json
+          if [ -f "$DST_ASSETS/catalog.json" ]; then
+            cp "$DST_ASSETS/catalog.json" "$DST_ASSETS/spec.json"
+            echo "Duplicated catalog.json -> spec.json"
+          fi
 
       - name: Verify template has wrapper & settings
         run: |
@@ -168,17 +174,20 @@ jobs:
         working-directory: templates/${{ steps.in.outputs.template }}
         run: ./gradlew --no-daemon --stacktrace clean assembleDebug
 
-      # 构建后从 APK 中验证 assets/generated 是否已包含（证据）
+      # 从 APK 中证明 assets 已包含，并导出片段
       - name: Prove assets are inside APK
         shell: bash
         run: |
-          APK="templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/app-debug.apk"
-          echo "== List generated files in APK =="
+          set -e
+          APK=$(ls templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk | head -n1)
+          echo "APK => $APK"
+          echo "== List assets/generated in APK =="
           unzip -l "$APK" | grep 'assets/generated' || true
-          echo "== Preview spec.json from APK =="
-          unzip -p "$APK" assets/generated/spec.json | head -n 30 || true
-          echo "== Preview groq_content.txt from APK =="
-          unzip -p "$APK" assets/generated/groq_content.txt | head -n 30 || true
+          echo "== Export spec.json & groq_content.txt =="
+          unzip -p "$APK" assets/generated/spec.json       > spec_from_apk.json       || true
+          unzip -p "$APK" assets/generated/groq_content.txt > groq_from_apk.txt       || true
+          head -n 40 spec_from_apk.json || true
+          head -n 20 groq_from_apk.txt || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -186,11 +195,13 @@ jobs:
           name: debug
           path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
 
-      - name: Upload values for audit
+      - name: Upload proof & values for audit
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: values-${{ steps.in.outputs.template }}
+          name: proof-${{ steps.in.outputs.template }}
           path: |
+            spec_from_apk.json
+            groq_from_apk.txt
             templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml
             templates/${{ steps.in.outputs.template }}/app/src/main/AndroidManifest.xml
