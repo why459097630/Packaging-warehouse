@@ -63,14 +63,10 @@ jobs:
         shell: bash
         run: |
           set -e
-          if [ -z "${{ steps.in.outputs.template }}" ]; then
-            echo "template is empty"; exit 1;
-          fi
-          if [ ! -d "templates/${{ steps.in.outputs.template }}" ]; then
-            echo "Template directory not found: templates/${{ steps.in.outputs.template }}"; exit 1;
-          fi
+          T="templates/${{ steps.in.outputs.template }}"
+          [ -d "$T" ] || { echo "Template directory not found: $T"; exit 1; }
 
-      # 将 app_name/api_base/api_secret 注入到模板的 strings.xml（如有需要在模板里使用）
+      # 注入 strings/styles（供模板使用）
       - name: Inject API data into template
         env:
           TEMPLATE:   ${{ steps.in.outputs.template }}
@@ -88,8 +84,7 @@ jobs:
 
           [ -f "${STRINGS}" ] || cat >"${STRINGS}" <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-          </resources>
+          <resources></resources>
           EOF
 
           [ -f "${STYLES}" ] || cat >"${STYLES}" <<'EOF'
@@ -125,13 +120,12 @@ jobs:
           grep -q 'name="api_base"'  "$VALUES" && \
           grep -q 'name="api_secret"' "$VALUES" || { echo "strings.xml missing expected entries"; exit 1; }
 
-      # —— 方案A：把根目录生成的 assets/raw 同步进模板 —— #
+      # 把根目录生成的 assets/raw 同步进模板
       - name: Sync generated assets into template
         shell: bash
         run: |
           set -e
           T="templates/${{ steps.in.outputs.template }}"
-
           SRC_ASSETS="app/src/main/assets/generated"
           DST_ASSETS="$T/app/src/main/assets/generated"
           if [ -d "$SRC_ASSETS" ]; then
@@ -170,11 +164,12 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x templates/${{ steps.in.outputs.template }}/gradlew
 
+      # ⭐ 用详细日志构建，清单/资源错误会更直观
       - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
-        run: ./gradlew --no-daemon --stacktrace clean assembleDebug
+        run: ./gradlew --no-daemon --stacktrace -i clean assembleDebug
 
-      # 从 APK 中证明 assets 已包含，并导出片段
+      # 从 APK 中导出证据
       - name: Prove assets are inside APK
         shell: bash
         run: |
@@ -184,10 +179,21 @@ jobs:
           echo "== List assets/generated in APK =="
           unzip -l "$APK" | grep 'assets/generated' || true
           echo "== Export spec.json & groq_content.txt =="
-          unzip -p "$APK" assets/generated/spec.json       > spec_from_apk.json       || true
-          unzip -p "$APK" assets/generated/groq_content.txt > groq_from_apk.txt       || true
+          unzip -p "$APK" assets/generated/spec.json        > spec_from_apk.json        || true
+          unzip -p "$APK" assets/generated/groq_content.txt > groq_from_apk.txt         || true
           head -n 40 spec_from_apk.json || true
-          head -n 20 groq_from_apk.txt || true
+          head -n 20 groq_from_apk.txt  || true
+
+      # ❗失败时把清单合并报告吐出来（定位最快）
+      - name: Dump manifest merger report
+        if: failure()
+        shell: bash
+        run: |
+          REPORT_DIR="templates/${{ steps.in.outputs.template }}/app/build/outputs/logs"
+          echo "=== manifest reports in $REPORT_DIR ==="
+          ls -lah "$REPORT_DIR" || true
+          echo "=== manifest-merger-debug-report.txt (tail) ==="
+          tail -n 200 "$REPORT_DIR/manifest-merger-debug-report.txt" || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -195,7 +201,7 @@ jobs:
           name: debug
           path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
 
-      - name: Upload proof & values for audit
+      - name: Upload proof & logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -203,5 +209,6 @@ jobs:
           path: |
             spec_from_apk.json
             groq_from_apk.txt
-            templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml
             templates/${{ steps.in.outputs.template }}/app/src/main/AndroidManifest.xml
+            templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml
+            templates/${{ steps.in.outputs.template }}/app/build/outputs/logs/*
