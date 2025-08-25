@@ -1,282 +1,416 @@
-以下是一个基本的安卓app源代码结构和JSON数据结构，用于介绍菜品的app：
+以下是一个基本的安卓app源代码结构，使用Java语言和Android Studio开发环境。这个app可以实现上传照片和文字介绍、标价、登录系统和留言系统等功能。
 
-**安卓app源代码结构：**
+**项目结构：**
 
-1. `MainActivity.java`：主活动，负责显示菜品列表和导航到其他活动。
-2. `DishActivity.java`：菜品活动，负责显示菜品详情，包括照片、文字介绍、价格等。
-3. `UploadActivity.java`：上传活动，负责上传照片和文字介绍。
-4. `LoginActivity.java`：登录活动，负责用户登录。
-5. `MessageActivity.java`：留言活动，负责显示和发送留言。
-6. `DishAdapter.java`：菜品适配器，负责将菜品数据绑定到列表视图。
-7. `DishModel.java`：菜品模型，负责存储菜品数据。
+* `com.example.foodapp` (包名)
+	+ `MainActivity.java` (主活动)
+	+ `FoodItem.java` (菜品实体类)
+	+ `FoodAdapter.java` (菜品适配器)
+	+ `LoginActivity.java` (登录活动)
+	+ `RegisterActivity.java` (注册活动)
+	+ `CommentActivity.java` (留言活动)
+	+ `FoodDetailActivity.java` (菜品详情活动)
+	+ `utils` (工具类包)
+		- `HttpUtils.java` (HTTP请求工具类)
+		- `ImageUtils.java` (图片处理工具类)
+	+ `adapter` (适配器包)
+		- `FoodAdapter.java` (菜品适配器)
+	+ `bean` (实体类包)
+		- `FoodItem.java` (菜品实体类)
+		- `User.java` (用户实体类)
+	+ `layout` (布局文件包)
+		- `activity_main.xml` (主活动布局)
+		- `activity_login.xml` (登录活动布局)
+		- `activity_register.xml` (注册活动布局)
+		- `activity_comment.xml` (留言活动布局)
+		- `activity_food_detail.xml` (菜品详情活动布局)
+		- `item_food.xml` (菜品项布局)
+
+**MainActivity.java：**
+```java
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ListView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.foodapp.adapter.FoodAdapter;
+import com.example.foodapp.bean.FoodItem;
+import com.example.foodapp.utils.HttpUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity {
+    private ListView lvFood;
+    private FoodAdapter foodAdapter;
+    private List<FoodItem> foodList;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        lvFood = findViewById(R.id.lv_food);
+        foodList = new ArrayList<>();
+        foodAdapter = new FoodAdapter(this, foodList);
+        lvFood.setAdapter(foodAdapter);
+
+        // 加载菜品数据
+        HttpUtils.getFoodList(new HttpUtils.Callback() {
+            @Override
+            public void onSuccess(List<FoodItem> list) {
+                foodList.clear();
+                foodList.addAll(list);
+                foodAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onFailure(String error) {
+                Toast.makeText(MainActivity.this, error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void addFood(View view) {
+        Intent intent = new Intent(this, AddFoodActivity.class);
+        startActivity(intent);
+    }
+}
+```
+
+**FoodItem.java：**
+```java
+public class FoodItem {
+    private int id;
+    private String name;
+    private String description;
+    private double price;
+    private String imageUrl;
+
+    public FoodItem(int id, String name, String description, double price, String imageUrl) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.imageUrl = imageUrl;
+    }
+
+    // getters and setters
+}
+```
+
+**FoodAdapter.java：**
+```java
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.example.foodapp.bean.FoodItem;
+
+import java.util.List;
+
+public class FoodAdapter extends BaseAdapter {
+    private Context context;
+    private List<FoodItem> foodList;
+
+    public FoodAdapter(Context context, List<FoodItem> foodList) {
+        this.context = context;
+        this.foodList = foodList;
+    }
+
+    @Override
+    public int getCount() {
+        return foodList.size();
+    }
+
+    @Override
+    public Object getItem(int position) {
+        return foodList.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        View view = LayoutInflater.from(context).inflate(R.layout.item_food, parent, false);
+
+        FoodItem foodItem = foodList.get(position);
+        ImageView ivImage = view.findViewById(R.id.iv_image);
+        TextView tvName = view.findViewById(R.id.tv_name);
+        TextView tvDescription = view.findViewById(R.id.tv_description);
+        TextView tvPrice = view.findViewById(R.id.tv_price);
+
+        ivImage.setImageResource(R.drawable.default_image);
+        tvName.setText(foodItem.getName());
+        tvDescription.setText(foodItem.getDescription());
+        tvPrice.setText(String.valueOf(foodItem.getPrice()));
+
+        return view;
+    }
+}
+```
+
+**LoginActivity.java：**
+```java
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.foodapp.utils.HttpUtils;
+
+public class LoginActivity extends AppCompatActivity {
+    private EditText etUsername;
+    private EditText etPassword;
+    private Button btnLogin;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
+
+        etUsername = findViewById(R.id.et_username);
+        etPassword = findViewById(R.id.et_password);
+        btnLogin = findViewById(R.id.btn_login);
+
+        btnLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String username = etUsername.getText().toString();
+                String password = etPassword.getText().toString();
+
+                HttpUtils.login(username, password, new HttpUtils.Callback() {
+                    @Override
+                    public void onSuccess(String token) {
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void onFailure(String error) {
+                        Toast.makeText(LoginActivity.this, error, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+    }
+}
+```
+
+**CommentActivity.java：**
+```java
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.foodapp.utils.HttpUtils;
+
+public class CommentActivity extends AppCompatActivity {
+    private EditText etComment;
+    private Button btnComment;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_comment);
+
+        etComment = findViewById(R.id.et_comment);
+        btnComment = findViewById(R.id.btn_comment);
+
+        btnComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String comment = etComment.getText().toString();
+
+                HttpUtils.comment(comment, new HttpUtils.Callback() {
+                    @Override
+                    public void onSuccess(String message) {
+                        Toast.makeText(CommentActivity.this, message, Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(String error) {
+                        Toast.makeText(CommentActivity.this, error, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+    }
+}
+```
+
+**FoodDetailActivity.java：**
+```java
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.foodapp.bean.FoodItem;
+
+public class FoodDetailActivity extends AppCompatActivity {
+    private FoodItem foodItem;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_food_detail);
+
+        Intent intent = getIntent();
+        foodItem = (FoodItem) intent.getSerializableExtra("foodItem");
+
+        ImageView ivImage = findViewById(R.id.iv_image);
+        TextView tvName = findViewById(R.id.tv_name);
+        TextView tvDescription = findViewById(R.id.tv_description);
+        TextView tvPrice = findViewById(R.id.tv_price);
+
+        ivImage.setImageResource(R.drawable.default_image);
+        tvName.setText(foodItem.getName());
+        tvDescription.setText(foodItem.getDescription());
+        tvPrice.setText(String.valueOf(foodItem.getPrice()));
+
+        Button btnComment = findViewById(R.id.btn_comment);
+        btnComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(FoodDetailActivity.this, CommentActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+}
+```
+
+**HttpUtils.java：**
+```java
+import android.util.Log;
+
+import com.example.foodapp.bean.FoodItem;
+import com.example.foodapp.bean.User;
+
+import java.io.IOException;
+import java.util.List;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
+public class HttpUtils {
+    private static final String BASE_URL = "https://example.com/api/";
+
+    public interface Callback {
+        void onSuccess(String message);
+        void onFailure(String error);
+    }
+
+    public static void getFoodList(final Callback callback) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(BASE_URL + "food/list")
+                .build();
+
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, IOException e) {
+                callback.onFailure(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(okhttp3.Call call, Response response) throws IOException {
+                String responseBody = response.body().string();
+                List<FoodItem> foodList = parseFoodList(responseBody);
+                callback.onSuccess(foodList);
+            }
+        });
+    }
+
+    public static void login(String username, String password, final Callback callback) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(BASE_URL + "login")
+                .post(RequestBody.create(MediaType.get("application/json"), "{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}"))
+                .build();
+
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, IOException e) {
+                callback.onFailure(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(okhttp3.Call call, Response response) throws IOException {
+                String responseBody = response.body().string();
+                String token = parseToken(responseBody);
+                callback.onSuccess(token);
+            }
+        });
+    }
+
+    public static void comment(String comment, final Callback callback) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(BASE_URL + "comment")
+                .post(RequestBody.create(MediaType.get("application/json"), "{\"comment\":\"" + comment + "\"}"))
+                .build();
+
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, IOException e) {
+                callback.onFailure(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(okhttp3.Call call, Response response) throws IOException {
+                String responseBody = response.body().string();
+                String message = parseMessage(responseBody);
+                callback.onSuccess(message);
+            }
+        });
+    }
+
+    private static List<FoodItem> parseFoodList(String responseBody) {
+        // 解析菜品列表
+        return null;
+    }
+
+    private static String parseToken(String responseBody) {
+        // 解析token
+        return null;
+    }
+
+    private static String parseMessage(String responseBody) {
+        // 解析消息
+        return null;
+    }
+}
+```
 
 **JSON数据结构：**
 
-```json
-{
-  "dishes": [
-    {
-      "id": 1,
-      "name": "菜品1",
-      "description": "这是菜品1的描述",
-      "price": 10.99,
-      "image": "https://example.com/image1.jpg",
-      "comments": [
-        {
-          "id": 1,
-          "content": "很好吃",
-          "username": "用户1"
-        },
-        {
-          "id": 2,
-          "content": "不错",
-          "username": "用户2"
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "name": "菜品2",
-      "description": "这是菜品2的描述",
-      "price": 9.99,
-      "image": "https://example.com/image2.jpg",
-      "comments": [
-        {
-          "id": 3,
-          "content": "很好",
-          "username": "用户3"
-        }
-      ]
-    }
-  ],
-  "users": [
-    {
-      "id": 1,
-      "username": "用户1",
-      "password": "密码1"
-    },
-    {
-      "id": 2,
-      "username": "用户2",
-      "password": "密码2"
-    }
-  ]
-}
-```
+* 菜品列表：`[{"id":1,"name":"菜品1","description":"描述1","price":10.99,"imageUrl":"https://example.com/image1.jpg"},{"id":2,"name":"菜品2","description":"描述2","price":9.99,"imageUrl":"https://example.com/image2.jpg"}]`
+* token：`{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaGFuIjoiMjMwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"}`
+* 消息：`{"message":"评论成功"}"`
 
-**安卓app源代码：**
-
-```java
-// MainActivity.java
-public class MainActivity extends AppCompatActivity {
-  private ListView dishList;
-
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_main);
-
-    dishList = findViewById(R.id.dish_list);
-
-    // 加载菜品数据
-    loadDishData();
-  }
-
-  private void loadDishData() {
-    // 从JSON数据中加载菜品数据
-    String jsonData = loadJsonData();
-    JSONObject jsonObject = new JSONObject(jsonData);
-    JSONArray dishes = jsonObject.getJSONArray("dishes");
-
-    // 创建菜品适配器
-    DishAdapter dishAdapter = new DishAdapter(this, dishes);
-
-    // 设置菜品列表适配器
-    dishList.setAdapter(dishAdapter);
-  }
-}
-
-// DishActivity.java
-public class DishActivity extends AppCompatActivity {
-  private ImageView dishImage;
-  private TextView dishName;
-  private TextView dishDescription;
-  private TextView dishPrice;
-  private EditText commentEditText;
-  private Button commentButton;
-
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_dish);
-
-    // 初始化视图
-    dishImage = findViewById(R.id.dish_image);
-    dishName = findViewById(R.id.dish_name);
-    dishDescription = findViewById(R.id.dish_description);
-    dishPrice = findViewById(R.id.dish_price);
-    commentEditText = findViewById(R.id.comment_edit_text);
-    commentButton = findViewById(R.id.comment_button);
-
-    // 加载菜品数据
-    loadDishData();
-  }
-
-  private void loadDishData() {
-    // 从JSON数据中加载菜品数据
-    String jsonData = loadJsonData();
-    JSONObject jsonObject = new JSONObject(jsonData);
-    JSONArray dishes = jsonObject.getJSONArray("dishes");
-    JSONObject dish = dishes.getJSONObject(0);
-
-    // 设置菜品数据
-    dishImage.setImageResource(R.drawable.dish_image);
-    dishName.setText(dish.getString("name"));
-    dishDescription.setText(dish.getString("description"));
-    dishPrice.setText(String.valueOf(dish.getDouble("price")));
-  }
-
-  public void comment(View view) {
-    // 发送留言
-    String comment = commentEditText.getText().toString();
-    // 保存留言到JSON数据中
-    saveComment(comment);
-  }
-}
-
-// UploadActivity.java
-public class UploadActivity extends AppCompatActivity {
-  private ImageView uploadImage;
-  private EditText uploadName;
-  private EditText uploadDescription;
-  private EditText uploadPrice;
-
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_upload);
-
-    // 初始化视图
-    uploadImage = findViewById(R.id.upload_image);
-    uploadName = findViewById(R.id.upload_name);
-    uploadDescription = findViewById(R.id.upload_description);
-    uploadPrice = findViewById(R.id.upload_price);
-
-    // 设置上传按钮点击事件
-    uploadImage.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        // 上传照片
-        uploadPhoto();
-      }
-    });
-  }
-
-  private void uploadPhoto() {
-    // 上传照片到服务器
-    // ...
-  }
-
-  public void upload(View view) {
-    // 上传菜品数据
-    String name = uploadName.getText().toString();
-    String description = uploadDescription.getText().toString();
-    double price = Double.parseDouble(uploadPrice.getText().toString());
-    // 保存菜品数据到JSON数据中
-    saveDish(name, description, price);
-  }
-}
-
-// LoginActivity.java
-public class LoginActivity extends AppCompatActivity {
-  private EditText usernameEditText;
-  private EditText passwordEditText;
-  private Button loginButton;
-
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_login);
-
-    // 初始化视图
-    usernameEditText = findViewById(R.id.username_edit_text);
-    passwordEditText = findViewById(R.id.password_edit_text);
-    loginButton = findViewById(R.id.login_button);
-
-    // 设置登录按钮点击事件
-    loginButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        // 登录
-        login();
-      }
-    });
-  }
-
-  private void login() {
-    // 登录到服务器
-    // ...
-  }
-}
-
-// MessageActivity.java
-public class MessageActivity extends AppCompatActivity {
-  private ListView messageList;
-
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_message);
-
-    // 初始化视图
-    messageList = findViewById(R.id.message_list);
-
-    // 加载留言数据
-    loadMessageData();
-  }
-
-  private void loadMessageData() {
-    // 从JSON数据中加载留言数据
-    String jsonData = loadJsonData();
-    JSONObject jsonObject = new JSONObject(jsonData);
-    JSONArray comments = jsonObject.getJSONArray("comments");
-
-    // 创建留言适配器
-    MessageAdapter messageAdapter = new MessageAdapter(this, comments);
-
-    // 设置留言列表适配器
-    messageList.setAdapter(messageAdapter);
-  }
-}
-```
-
-**JSON数据操作：**
-
-```java
-// 加载JSON数据
-private String loadJsonData() {
-  // 从文件或服务器加载JSON数据
-  // ...
-  return jsonData;
-}
-
-// 保存菜品数据
-private void saveDish(String name, String description, double price) {
-  // 将菜品数据添加到JSON数据中
-  JSONObject dish = new JSONObject();
-  dish.put("name", name);
-  dish.put("description", description);
-  dish.put("price", price);
-  // ...
-}
-
-// 保存留言数据
-private void saveComment(String comment) {
-  // 将留言数据添加到JSON数据中
-  JSONObject commentObject = new JSONObject();
-  commentObject.put("content", comment);
-  // ...
-}
-```
-
-注意：以上代码仅为示例，需要根据实际需求进行修改和扩展。同时，需要处理错误和异常情况，例如网络请求失败、数据解析错误等。
+注意：上述代码仅为示例，需要根据实际需求进行修改和完善。同时，需要注意安全性和性能问题，例如使用HTTPS、校验用户输入、处理异常等。
