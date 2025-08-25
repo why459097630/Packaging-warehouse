@@ -12,7 +12,7 @@ on:
       - 'gradle.properties'
   workflow_dispatch:
 
-# 同一分支只保留最后一次构建，防止排队占用
+# 同一分支只保留最后一次，避免排队
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
@@ -24,7 +24,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
 
     steps:
       - name: Checkout
@@ -56,27 +56,44 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
-      - name: Build release
+      # 关键：打开详细日志并保存到 gradle.log，失败时方便定位
+      - name: Build release (verbose)
         env:
-          # 若 app/build.gradle(.kts) 里从环境读取签名密码，确保下面四个都已设置在仓库 Secrets
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
           KEYSTORE_ALIAS_PASSWORD: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
-          # 可选：提升稳定性
           ORG_GRADLE_PROJECT_org.gradle.jvmargs: -Xmx2g -Dfile.encoding=UTF-8
-        run: ./gradlew clean assembleRelease --stacktrace --no-daemon
+        run: |
+          set -e
+          ./gradlew clean assembleRelease --stacktrace --info --no-daemon | tee gradle.log
+          echo "---- DUPLICATE CHECK: strings ----"
+          grep -Rn '<string name="app_name"' app/src/main/res || true
+          echo "----------------------------------"
+
+      # 无论成功失败，都把调试信息打包上传，方便下载查看
+      - name: Upload debug artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-logs-and-reports
+          path: |
+            gradle.log
+            app/build/outputs/logs/**/*
+            app/build/outputs/manifest/**/*
+            ~/.gradle/daemon/**/daemon-*.out.log
 
       - name: Upload APK artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: app/build/outputs/apk/release/*.apk
 
       - name: Publish GitHub Release
+        if: success()
         uses: softprops/action-gh-release@v2
         with:
           files: app/build/outputs/apk/release/*.apk
-          # 用 SHA 做 tag；后续如果你把 requestId 带进来，可改成 ndjc-${{ env.REQUEST_ID }}
           tag_name: ndjc-${{ github.sha }}
           fail_on_unmatched_files: true
         env:
