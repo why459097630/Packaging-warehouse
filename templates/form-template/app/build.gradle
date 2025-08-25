@@ -4,46 +4,40 @@ plugins {
 }
 
 android {
-    // 必须与 MainActivity.kt 的 package 完全一致（见下文）
+    compileSdkVersion 34
     namespace "com.ndjc.generated"
 
-    compileSdk 34
-
     defaultConfig {
-        // applicationId 可以与 namespace 相同，或者用外部传入的 apk_id
         applicationId "com.ndjc.generated"
-        minSdk 24
-        targetSdk 34
+        minSdkVersion 24
+        targetSdkVersion 34
         versionCode 1
-        versionName "1.0.0"
-    }
-
-    buildTypes {
-        debug {
-            debuggable true
-        }
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = '17'
+        versionName "1.0"
     }
 
     buildFeatures {
         viewBinding true
     }
+
+    // 如需明显看到 APK 体积变化，可取消下行注释禁用文本压缩：
+    // androidResources { noCompress += ["json","txt","md"] }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+        }
+    }
 }
 
 dependencies {
-    implementation "androidx.core:core-ktx:1.13.1"
-    implementation "androidx.appcompat:appcompat:1.7.0"
-    implementation "com.google.android.material:material:1.12.0"
-    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.24"
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
 }
