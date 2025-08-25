@@ -2,81 +2,251 @@
 
 **安卓app源代码结构：**
 
-1. `MainActivity.java`：主活动，负责展示菜品列表和登录注册功能
-2. `DishActivity.java`：菜品详情活动，负责展示菜品信息和上传照片
-3. `LoginActivity.java`：登录活动，负责处理登录逻辑
-4. `RegisterActivity.java`：注册活动，负责处理注册逻辑
-5. `CommentActivity.java`：留言活动，负责处理留言逻辑
-6. `DishAdapter.java`：菜品适配器，负责展示菜品列表
-7. `DishModel.java`：菜品模型，负责存储菜品信息
-8. `UserModel.java`：用户模型，负责存储用户信息
+1. `MainActivity.java`：主活动，负责显示菜品列表和导航到其他活动。
+2. `DishActivity.java`：菜品详情活动，负责显示菜品的照片、文字介绍、价格等信息。
+3. `UploadActivity.java`：上传活动，负责上传菜品的照片和文字介绍。
+4. `LoginActivity.java`：登录活动，负责用户登录和注册。
+5. `MessageActivity.java`：留言活动，负责显示和发送留言。
+6. `DishAdapter.java`：菜品适配器，负责将菜品数据绑定到列表视图中。
+7. `DishModel.java`：菜品模型，负责存储菜品的数据。
 
 **JSON数据结构：**
 
-1. `dish.json`：菜品数据，包含菜品名称、价格、描述、照片等信息
 ```json
-[
-  {
-    "id": 1,
-    "name": "菜品1",
-    "price": 10.99,
-    "description": "这是菜品1的描述",
-    "photo": "https://example.com/dish1.jpg"
-  },
-  {
-    "id": 2,
-    "name": "菜品2",
-    "price": 9.99,
-    "description": "这是菜品2的描述",
-    "photo": "https://example.com/dish2.jpg"
-  }
-]
+{
+  "dishes": [
+    {
+      "id": 1,
+      "name": "菜品1",
+      "description": "菜品1的描述",
+      "price": 10.99,
+      "image": "https://example.com/image1.jpg",
+      "comments": [
+        {
+          "id": 1,
+          "content": "留言1",
+          "username": "用户1"
+        },
+        {
+          "id": 2,
+          "content": "留言2",
+          "username": "用户2"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "菜品2",
+      "description": "菜品2的描述",
+      "price": 9.99,
+      "image": "https://example.com/image2.jpg",
+      "comments": [
+        {
+          "id": 3,
+          "content": "留言3",
+          "username": "用户3"
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "username": "用户1",
+      "password": "密码1"
+    },
+    {
+      "id": 2,
+      "username": "用户2",
+      "password": "密码2"
+    }
+  ]
+}
 ```
-2. `user.json`：用户数据，包含用户名称、密码、头像等信息
-```json
-[
-  {
-    "id": 1,
-    "username": "user1",
-    "password": "password1",
-    "avatar": "https://example.com/avatar1.jpg"
-  },
-  {
-    "id": 2,
-    "username": "user2",
-    "password": "password2",
-    "avatar": "https://example.com/avatar2.jpg"
+
+**安卓app源代码：**
+
+```java
+// MainActivity.java
+public class MainActivity extends AppCompatActivity {
+  private ListView listView;
+  private DishAdapter dishAdapter;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+
+    listView = findViewById(R.id.listView);
+    dishAdapter = new DishAdapter(this, getDishes());
+    listView.setAdapter(dishAdapter);
   }
-]
-```
-3. `comment.json`：留言数据，包含留言内容、用户ID、菜品ID等信息
-```json
-[
-  {
-    "id": 1,
-    "content": "这是留言1的内容",
-    "userId": 1,
-    "dishId": 1
-  },
-  {
-    "id": 2,
-    "content": "这是留言2的内容",
-    "userId": 2,
-    "dishId": 2
+
+  private List<DishModel> getDishes() {
+    // 从JSON数据中获取菜品列表
+    List<DishModel> dishes = new ArrayList<>();
+    // ...
+    return dishes;
   }
-]
+}
+
+// DishActivity.java
+public class DishActivity extends AppCompatActivity {
+  private DishModel dish;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_dish);
+
+    dish = (DishModel) getIntent().getSerializableExtra("dish");
+    // 显示菜品信息
+    TextView nameTextView = findViewById(R.id.nameTextView);
+    nameTextView.setText(dish.getName());
+    // ...
+  }
+}
+
+// UploadActivity.java
+public class UploadActivity extends AppCompatActivity {
+  private EditText nameEditText;
+  private EditText descriptionEditText;
+  private Button uploadButton;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_upload);
+
+    nameEditText = findViewById(R.id.nameEditText);
+    descriptionEditText = findViewById(R.id.descriptionEditText);
+    uploadButton = findViewById(R.id.uploadButton);
+
+    uploadButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        // 上传菜品信息
+        String name = nameEditText.getText().toString();
+        String description = descriptionEditText.getText().toString();
+        // ...
+      }
+    });
+  }
+}
+
+// LoginActivity.java
+public class LoginActivity extends AppCompatActivity {
+  private EditText usernameEditText;
+  private EditText passwordEditText;
+  private Button loginButton;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_login);
+
+    usernameEditText = findViewById(R.id.usernameEditText);
+    passwordEditText = findViewById(R.id.passwordEditText);
+    loginButton = findViewById(R.id.loginButton);
+
+    loginButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        // 登录
+        String username = usernameEditText.getText().toString();
+        String password = passwordEditText.getText().toString();
+        // ...
+      }
+    });
+  }
+}
+
+// MessageActivity.java
+public class MessageActivity extends AppCompatActivity {
+  private ListView listView;
+  private MessageAdapter messageAdapter;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_message);
+
+    listView = findViewById(R.id.listView);
+    messageAdapter = new MessageAdapter(this, getMessages());
+    listView.setAdapter(messageAdapter);
+  }
+
+  private List<MessageModel> getMessages() {
+    // 从JSON数据中获取留言列表
+    List<MessageModel> messages = new ArrayList<>();
+    // ...
+    return messages;
+  }
+}
 ```
-**安卓app功能实现：**
 
-1. 登录注册功能：使用`LoginActivity`和`RegisterActivity`实现登录注册逻辑，存储用户信息到`user.json`文件中。
-2. 菜品列表功能：使用`DishAdapter`和`DishModel`展示菜品列表，读取菜品数据从`dish.json`文件中。
-3. 菜品详情功能：使用`DishActivity`展示菜品信息，包括菜品名称、价格、描述、照片等。
-4. 上传照片功能：使用`DishActivity`实现上传照片功能，存储照片到服务器或本地文件中。
-5. 留言功能：使用`CommentActivity`实现留言功能，存储留言数据到`comment.json`文件中。
-6. 标价功能：使用`DishModel`存储菜品价格信息，展示在菜品详情页面中。
+**DishAdapter.java**
+```java
+public class DishAdapter extends BaseAdapter {
+  private List<DishModel> dishes;
+  private Context context;
 
-**注意：**
+  public DishAdapter(Context context, List<DishModel> dishes) {
+    this.context = context;
+    this.dishes = dishes;
+  }
 
-* 以上代码结构和JSON数据结构仅为示例，需要根据实际需求进行修改和扩展。
-* 安卓app的实现需要使用安卓开发框架和工具，例如Android Studio、Java或Kotlin语言等。
-* 服务器端的实现需要使用服务器端语言和框架，例如Node.js、Python、Ruby等。
+  @Override
+  public int getCount() {
+    return dishes.size();
+  }
+
+  @Override
+  public Object getItem(int position) {
+    return dishes.get(position);
+  }
+
+  @Override
+  public long getItemId(int position) {
+    return position;
+  }
+
+  @Override
+  public View getView(int position, View convertView, ViewGroup parent) {
+    View view = LayoutInflater.from(context).inflate(R.layout.item_dish, null);
+    DishModel dish = dishes.get(position);
+    // 绑定菜品数据
+    TextView nameTextView = view.findViewById(R.id.nameTextView);
+    nameTextView.setText(dish.getName());
+    // ...
+    return view;
+  }
+}
+```
+
+**DishModel.java**
+```java
+public class DishModel implements Serializable {
+  private int id;
+  private String name;
+  private String description;
+  private double price;
+  private String image;
+  private List<CommentModel> comments;
+
+  // getters and setters
+}
+```
+
+**CommentModel.java**
+```java
+public class CommentModel implements Serializable {
+  private int id;
+  private String content;
+  private String username;
+
+  // getters and setters
+}
+```
+
+注意：以上代码只是一个基本的示例，需要根据实际需求进行修改和扩展。同时，需要注意安卓app的安全性和用户体验。
