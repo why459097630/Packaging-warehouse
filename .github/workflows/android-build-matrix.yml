@@ -1,131 +1,62 @@
-name: android-build-matrix
+name: Android Build
 
 on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'requests/**'
+      - 'app/**'
+      - 'build.gradle*'
+      - 'settings.gradle*'
   workflow_dispatch:
-  repository_dispatch:
-    types: [generate-apk]
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
-          cache: gradle
+          java-version: '17'
 
-      # 解析前端 payload（兼容驼峰/下划线；提供默认值）
-      - name: Extract inputs
-        id: in
-        shell: bash
-        run: |
-          set -euo pipefail
-          T="${{ github.event.client_payload.template || '' }}"
-          A="${{ github.event.client_payload.app_name || github.event.client_payload.appName || 'MyApp' }}"
-          B="${{ github.event.client_payload.api_base || github.event.client_payload.apiBase || '' }}"
-          S="${{ github.event.client_payload.api_secret || github.event.client_payload.apiSecret || '' }}"
-          : "${T:=form-template}"
-          echo "template=$T"   >> "$GITHUB_OUTPUT"
-          echo "app_name=$A"   >> "$GITHUB_OUTPUT"
-          echo "api_base=$B"   >> "$GITHUB_OUTPUT"
-          echo "api_secret=$S" >> "$GITHUB_OUTPUT"
-
-      - name: Resolve template paths
-        id: paths
-        shell: bash
-        run: |
-          set -euo pipefail
-          TP="templates/${{ steps.in.outputs.template }}"
-          if [[ ! -d "$TP" ]]; then
-            echo "::error::Template not found: $TP"
-            exit 1
-          fi
-          echo "tp=$TP"      >> "$GITHUB_OUTPUT"
-          echo "app=$TP/app" >> "$GITHUB_OUTPUT"
-
-      - name: Ensure gradlew executable
-        shell: bash
-        run: chmod +x "${{ steps.paths.outputs.tp }}/gradlew" || true
-
-      # 写入 strings.xml / styles.xml（避免复杂 heredoc，尽量降低 YAML 解析风险）
-      - name: Inject resources (strings.xml, styles.xml)
-        shell: bash
-        run: |
-          set -euo pipefail
-          ROOT="${{ steps.paths.outputs.app }}/src/main"
-          VAL="$ROOT/res/values"
-          STR="$VAL/strings.xml"
-          STY="$VAL/styles.xml"
-          mkdir -p "$VAL"
-
-          if [[ ! -f "$STR" ]]; then
-            printf '%s\n' \
-'<?xml version="1.0" encoding="utf-8"?>' \
-'<resources>' \
-'</resources>' > "$STR"
-          fi
-
-          if [[ ! -f "$STY" ]]; then
-            printf '%s\n' \
-'<?xml version="1.0" encoding="utf-8"?>' \
-'<resources>' \
-'  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>' \
-'</resources>' > "$STY"
-          fi
-
-          # 删除旧项并在 </resources> 前插入新项
-          sed -i '/name="app_name"/d;/name="api_base"/d;/name="api_secret"/d' "$STR" || true
-
-          tmp="$STR.tmp"
-          awk -v a="${{ steps.in.outputs.app_name }}" \
-              -v b="${{ steps.in.outputs.api_base }}" \
-              -v s="${{ steps.in.outputs.api_secret }}" '
-            /<\/resources>/ && !done {
-              print "    <string name=\"app_name\">" a "</string>";
-              if (b != "") print "    <string name=\"api_base\">" b "</string>";
-              if (s != "") print "    <string name=\"api_secret\">" s "</string>";
-              done=1
-            }
-            { print }
-          ' "$STR" > "$tmp" && mv "$tmp" "$STR"
-
-          echo "===== strings.xml preview ====="
-          sed -n '1,120p' "$STR" || true
-          echo "================================"
-
-      - name: Build debug APK (with full log)
-        working-directory: ${{ steps.paths.outputs.tp }}
-        shell: bash
-        run: ./gradlew --no-daemon --stacktrace -i clean :app:assembleDebug
-
-      - name: Upload APK
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Gradle cache
+        uses: actions/cache@v4
         with:
-          name: debug
-          path: ${{ steps.paths.outputs.tp }}/app/build/outputs/apk/debug/*.apk
-
-      - name: Upload values for audit
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: values-${{ steps.in.outputs.template }}
           path: |
-            ${{ steps.paths.outputs.app }}/src/main/res/values/strings.xml
-            ${{ steps.paths.outputs.app }}/src/main/AndroidManifest.xml
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-      - name: Upload Gradle logs & reports (on failure)
-        if: failure()
+      - name: Restore keystore
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > keystore.jks
+          echo "KEYSTORE_PATH=$PWD/keystore.jks" >> $GITHUB_ENV
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+
+      - name: Build release
+        run: ./gradlew clean assembleRelease --stacktrace --no-daemon
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: gradle-logs
-          path: |
-            ${{ steps.paths.outputs.tp }}/app/build/outputs/logs/**
-            ${{ steps.paths.outputs.tp }}/app/build/reports/**
-          if-no-files-found: ignore
+          name: app-release
+          path: app/build/outputs/apk/release/*.apk
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/release/*.apk
+          tag_name: ndjc-${{ github.sha }}
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
