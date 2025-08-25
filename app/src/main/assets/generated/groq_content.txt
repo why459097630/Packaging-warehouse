@@ -64,13 +64,12 @@
 }
 ```
 
-**安卓app代码：**
+**安卓app源代码：**
 
 ```java
 // MainActivity.java
 public class MainActivity extends AppCompatActivity {
   private ListView dishList;
-  private DishAdapter dishAdapter;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -78,15 +77,22 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
 
     dishList = findViewById(R.id.dish_list);
-    dishAdapter = new DishAdapter(this, getDishes());
-    dishList.setAdapter(dishAdapter);
+
+    // 加载菜品数据
+    loadDishData();
   }
 
-  private List<DishModel> getDishes() {
-    // 从JSON数据中获取菜品列表
-    List<DishModel> dishes = new ArrayList<>();
-    // ...
-    return dishes;
+  private void loadDishData() {
+    // 从JSON数据中加载菜品数据
+    String jsonData = loadJsonData();
+    JSONObject jsonObject = new JSONObject(jsonData);
+    JSONArray dishes = jsonObject.getJSONArray("dishes");
+
+    // 创建菜品适配器
+    DishAdapter dishAdapter = new DishAdapter(this, dishes);
+
+    // 设置菜品列表适配器
+    dishList.setAdapter(dishAdapter);
   }
 }
 
@@ -96,58 +102,88 @@ public class DishActivity extends AppCompatActivity {
   private TextView dishName;
   private TextView dishDescription;
   private TextView dishPrice;
-  private Button uploadButton;
+  private EditText commentEditText;
+  private Button commentButton;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_dish);
 
+    // 初始化视图
     dishImage = findViewById(R.id.dish_image);
     dishName = findViewById(R.id.dish_name);
     dishDescription = findViewById(R.id.dish_description);
     dishPrice = findViewById(R.id.dish_price);
-    uploadButton = findViewById(R.id.upload_button);
+    commentEditText = findViewById(R.id.comment_edit_text);
+    commentButton = findViewById(R.id.comment_button);
 
-    // 设置菜品信息
-    DishModel dish = (DishModel) getIntent().getSerializableExtra("dish");
-    dishImage.setImageResource(dish.getImage());
-    dishName.setText(dish.getName());
-    dishDescription.setText(dish.getDescription());
-    dishPrice.setText(String.valueOf(dish.getPrice()));
+    // 加载菜品数据
+    loadDishData();
+  }
 
-    uploadButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        // 跳转到上传活动
-        Intent intent = new Intent(DishActivity.this, UploadActivity.class);
-        startActivity(intent);
-      }
-    });
+  private void loadDishData() {
+    // 从JSON数据中加载菜品数据
+    String jsonData = loadJsonData();
+    JSONObject jsonObject = new JSONObject(jsonData);
+    JSONArray dishes = jsonObject.getJSONArray("dishes");
+    JSONObject dish = dishes.getJSONObject(0);
+
+    // 设置菜品数据
+    dishImage.setImageResource(R.drawable.dish_image);
+    dishName.setText(dish.getString("name"));
+    dishDescription.setText(dish.getString("description"));
+    dishPrice.setText(String.valueOf(dish.getDouble("price")));
+  }
+
+  public void comment(View view) {
+    // 发送留言
+    String comment = commentEditText.getText().toString();
+    // 保存留言到JSON数据中
+    saveComment(comment);
   }
 }
 
 // UploadActivity.java
 public class UploadActivity extends AppCompatActivity {
+  private ImageView uploadImage;
+  private EditText uploadName;
   private EditText uploadDescription;
-  private Button uploadButton;
+  private EditText uploadPrice;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_upload);
 
+    // 初始化视图
+    uploadImage = findViewById(R.id.upload_image);
+    uploadName = findViewById(R.id.upload_name);
     uploadDescription = findViewById(R.id.upload_description);
-    uploadButton = findViewById(R.id.upload_button);
+    uploadPrice = findViewById(R.id.upload_price);
 
-    uploadButton.setOnClickListener(new View.OnClickListener() {
+    // 设置上传按钮点击事件
+    uploadImage.setOnClickListener(new View.OnClickListener() {
       @Override
-      public void onClick(View v) {
-        // 上传照片和文字介绍
-        String description = uploadDescription.getText().toString();
-        // ...
+      public void onClick(View view) {
+        // 上传照片
+        uploadPhoto();
       }
     });
+  }
+
+  private void uploadPhoto() {
+    // 上传照片到服务器
+    // ...
+  }
+
+  public void upload(View view) {
+    // 上传菜品数据
+    String name = uploadName.getText().toString();
+    String description = uploadDescription.getText().toString();
+    double price = Double.parseDouble(uploadPrice.getText().toString());
+    // 保存菜品数据到JSON数据中
+    saveDish(name, description, price);
   }
 }
 
@@ -162,44 +198,85 @@ public class LoginActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_login);
 
+    // 初始化视图
     usernameEditText = findViewById(R.id.username_edit_text);
     passwordEditText = findViewById(R.id.password_edit_text);
     loginButton = findViewById(R.id.login_button);
 
+    // 设置登录按钮点击事件
     loginButton.setOnClickListener(new View.OnClickListener() {
       @Override
-      public void onClick(View v) {
+      public void onClick(View view) {
         // 登录
-        String username = usernameEditText.getText().toString();
-        String password = passwordEditText.getText().toString();
-        // ...
+        login();
       }
     });
+  }
+
+  private void login() {
+    // 登录到服务器
+    // ...
   }
 }
 
 // MessageActivity.java
 public class MessageActivity extends AppCompatActivity {
   private ListView messageList;
-  private MessageAdapter messageAdapter;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_message);
 
+    // 初始化视图
     messageList = findViewById(R.id.message_list);
-    messageAdapter = new MessageAdapter(this, getMessages());
-    messageList.setAdapter(messageAdapter);
+
+    // 加载留言数据
+    loadMessageData();
   }
 
-  private List<MessageModel> getMessages() {
-    // 从JSON数据中获取留言列表
-    List<MessageModel> messages = new ArrayList<>();
-    // ...
-    return messages;
+  private void loadMessageData() {
+    // 从JSON数据中加载留言数据
+    String jsonData = loadJsonData();
+    JSONObject jsonObject = new JSONObject(jsonData);
+    JSONArray comments = jsonObject.getJSONArray("comments");
+
+    // 创建留言适配器
+    MessageAdapter messageAdapter = new MessageAdapter(this, comments);
+
+    // 设置留言列表适配器
+    messageList.setAdapter(messageAdapter);
   }
 }
 ```
 
-注意：上述代码仅为示例，需要根据实际需求进行修改和完善。同时，需要添加错误处理、数据存储和网络请求等功能。
+**JSON数据操作：**
+
+```java
+// 加载JSON数据
+private String loadJsonData() {
+  // 从文件或服务器加载JSON数据
+  // ...
+  return jsonData;
+}
+
+// 保存菜品数据
+private void saveDish(String name, String description, double price) {
+  // 将菜品数据添加到JSON数据中
+  JSONObject dish = new JSONObject();
+  dish.put("name", name);
+  dish.put("description", description);
+  dish.put("price", price);
+  // ...
+}
+
+// 保存留言数据
+private void saveComment(String comment) {
+  // 将留言数据添加到JSON数据中
+  JSONObject commentObject = new JSONObject();
+  commentObject.put("content", comment);
+  // ...
+}
+```
+
+注意：以上代码仅为示例，需要根据实际需求进行修改和扩展。同时，需要处理错误和异常情况，例如网络请求失败、数据解析错误等。
