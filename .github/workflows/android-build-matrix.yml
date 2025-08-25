@@ -2,6 +2,23 @@ name: android-build-matrix
 
 on:
   workflow_dispatch:
+    inputs:
+      template:
+        description: "Which template to build (form-template/core-template/simple-template)"
+        required: false
+        default: "form-template"
+      app_name:
+        description: "App name"
+        required: false
+        default: "MyApp"
+      api_base:
+        description: "API base (optional)"
+        required: false
+        default: ""
+      api_secret:
+        description: "API secret (optional)"
+        required: false
+        default: ""
   repository_dispatch:
     types: [generate-apk]
 
@@ -19,16 +36,15 @@ jobs:
           java-version: 17
           cache: gradle
 
-      # 读取前端传入的 payload；兼容驼峰/下划线两种命名
+      # 兼容两种触发方式：workflow_dispatch(inputs) & repository_dispatch(client_payload)
       - name: Extract inputs
         id: in
         run: |
-          echo "template=${{ github.event.client_payload.template }}" >> "$GITHUB_OUTPUT"
-          echo "app_name=${{ github.event.client_payload.app_name || github.event.client_payload.appName }}" >> "$GITHUB_OUTPUT"
-          echo "api_base=${{ github.event.client_payload.api_base || github.event.client_payload.apiBase }}" >> "$GITHUB_OUTPUT"
-          echo "api_secret=${{ github.event.client_payload.api_secret || github.event.client_payload.apiSecret }}" >> "$GITHUB_OUTPUT"
+          echo "template=${{ github.event.inputs.template || github.event.client_payload.template || 'form-template' }}" >> "$GITHUB_OUTPUT"
+          echo "app_name=${{ github.event.inputs.app_name || github.event.client_payload.app_name || github.event.client_payload.appName || 'MyApp' }}" >> "$GITHUB_OUTPUT"
+          echo "api_base=${{ github.event.inputs.api_base || github.event.client_payload.api_base || github.event.client_payload.apiBase || '' }}" >> "$GITHUB_OUTPUT"
+          echo "api_secret=${{ github.event.inputs.api_secret || github.event.client_payload.api_secret || github.event.client_payload.apiSecret || '' }}" >> "$GITHUB_OUTPUT"
 
-      # 打印解析结果（secret 会被掩码）
       - name: Show resolved inputs (masked)
         env:
           TEMPLATE:   ${{ steps.in.outputs.template }}
@@ -41,23 +57,19 @@ jobs:
           echo "[inputs] template = $TEMPLATE"
           echo "[inputs] app_name = $APP_NAME"
           echo "[inputs] api_base  = $API_BASE"
-          if [ -z "$API_SECRET" ]; then
-            echo "[inputs] api_secret = (empty)"
-          else
-            echo "[inputs] api_secret = (masked)"
-          fi
+          echo "[inputs] api_secret = $([ -z "$API_SECRET" ] && echo '(empty)' || echo '(masked)')"
 
-      # 模板目录存在性检查
       - name: Check template directory
         shell: bash
         run: |
           set -e
+          if [ -z "${{ steps.in.outputs.template }}" ]; then
+            echo "template is empty"; exit 1;
+          fi
           if [ ! -d "templates/${{ steps.in.outputs.template }}" ]; then
-            echo "Template directory not found: templates/${{ steps.in.outputs.template }}"
-            exit 1
+            echo "Template directory not found: templates/${{ steps.in.outputs.template }}"; exit 1;
           fi
 
-      # 写 strings.xml / styles.xml
       - name: Inject API data into template
         env:
           TEMPLATE:   ${{ steps.in.outputs.template }}
@@ -73,29 +85,23 @@ jobs:
           STYLES="${VALUES}/styles.xml"
           mkdir -p "${VALUES}"
 
-          # 1) strings.xml
-          if [ ! -f "${STRINGS}" ]; then
-            cat >"${STRINGS}" <<'EOF'
+          [ -f "${STRINGS}" ] || cat >"${STRINGS}" <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
           </resources>
           EOF
-          fi
 
-          # 2) styles.xml（避免缺资源）
-          if [ ! -f "${STYLES}" ]; then
-            cat >"${STYLES}" <<'EOF'
+          [ -f "${STYLES}" ] || cat >"${STYLES}" <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
             <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
           </resources>
           EOF
-          fi
 
-          # 3) 写入键值
           sed -i '/name="app_name"/d'   "${STRINGS}" || true
           sed -i '/name="api_base"/d'   "${STRINGS}" || true
           sed -i '/name="api_secret"/d' "${STRINGS}" || true
+
           tmp="${STRINGS}.tmp"
           awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
             /<\/resources>/ && !done {
@@ -107,7 +113,6 @@ jobs:
             { print }
           ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
 
-      # 预览写入结果
       - name: Verify written resources
         shell: bash
         run: |
@@ -119,7 +124,6 @@ jobs:
           grep -q 'name="api_base"'  "$VALUES" && \
           grep -q 'name="api_secret"' "$VALUES" || { echo "strings.xml missing expected entries"; exit 1; }
 
-      # 校验模板有自己的一套 wrapper & settings
       - name: Verify template has wrapper & settings
         run: |
           T="templates/${{ steps.in.outputs.template }}"
@@ -129,7 +133,6 @@ jobs:
           fi
           echo "OK: wrapper & settings exist in $T"
 
-      # 在模板目录执行模板自带的 gradlew（会使用模板的 settings.gradle）
       - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
         run: ./gradlew --no-daemon --stacktrace clean assembleDebug
@@ -140,7 +143,6 @@ jobs:
           name: debug
           path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
 
-      # 上传 values/Manifest 以便审计
       - name: Upload values for audit
         if: always()
         uses: actions/upload-artifact@v4
