@@ -8,9 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
 
     steps:
       - name: Checkout
@@ -23,38 +20,42 @@ jobs:
           java-version: 17
           cache: gradle
 
-      # 读取前端 payload（兼容驼峰/下划线；给出默认 template/app_name）
+      # 解析前端 payload（兼容驼峰/下划线；提供默认值）
       - name: Extract inputs
         id: in
+        shell: bash
         run: |
           set -euo pipefail
           T="${{ github.event.client_payload.template || '' }}"
           A="${{ github.event.client_payload.app_name || github.event.client_payload.appName || 'MyApp' }}"
           B="${{ github.event.client_payload.api_base || github.event.client_payload.apiBase || '' }}"
           S="${{ github.event.client_payload.api_secret || github.event.client_payload.apiSecret || '' }}"
-          : "${T:=form-template}"   # 默认 form-template
-          echo "template=$T"    >> "$GITHUB_OUTPUT"
-          echo "app_name=$A"    >> "$GITHUB_OUTPUT"
-          echo "api_base=$B"    >> "$GITHUB_OUTPUT"
-          echo "api_secret=$S"  >> "$GITHUB_OUTPUT"
+          : "${T:=form-template}"
+          echo "template=$T"   >> "$GITHUB_OUTPUT"
+          echo "app_name=$A"   >> "$GITHUB_OUTPUT"
+          echo "api_base=$B"   >> "$GITHUB_OUTPUT"
+          echo "api_secret=$S" >> "$GITHUB_OUTPUT"
 
       - name: Resolve template paths
         id: paths
+        shell: bash
         run: |
           set -euo pipefail
           TP="templates/${{ steps.in.outputs.template }}"
           if [[ ! -d "$TP" ]]; then
-            echo "::error::Template directory not found: $TP"
+            echo "::error::Template not found: $TP"
             exit 1
           fi
-          echo "tp=$TP"           >> "$GITHUB_OUTPUT"
-          echo "app=$TP/app"      >> "$GITHUB_OUTPUT"
+          echo "tp=$TP"      >> "$GITHUB_OUTPUT"
+          echo "app=$TP/app" >> "$GITHUB_OUTPUT"
 
       - name: Ensure gradlew executable
+        shell: bash
         run: chmod +x "${{ steps.paths.outputs.tp }}/gradlew" || true
 
-      # 写入 strings.xml / styles.xml（安全插入，不再使用容易报错的安全网脚本）
+      # 写入 strings.xml / styles.xml（避免复杂 heredoc，尽量降低 YAML 解析风险）
       - name: Inject resources (strings.xml, styles.xml)
+        shell: bash
         run: |
           set -euo pipefail
           ROOT="${{ steps.paths.outputs.app }}/src/main"
@@ -64,25 +65,24 @@ jobs:
           mkdir -p "$VAL"
 
           if [[ ! -f "$STR" ]]; then
-            cat >"$STR" <<'EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-</resources>
-EOF
+            printf '%s\n' \
+'<?xml version="1.0" encoding="utf-8"?>' \
+'<resources>' \
+'</resources>' > "$STR"
           fi
 
           if [[ ! -f "$STY" ]]; then
-            cat >"$STY" <<'EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
-</resources>
-EOF
+            printf '%s\n' \
+'<?xml version="1.0" encoding="utf-8"?>' \
+'<resources>' \
+'  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>' \
+'</resources>' > "$STY"
           fi
 
-          # 清理旧项并插入新项（插到 </resources> 之前）
+          # 删除旧项并在 </resources> 前插入新项
           sed -i '/name="app_name"/d;/name="api_base"/d;/name="api_secret"/d' "$STR" || true
 
+          tmp="$STR.tmp"
           awk -v a="${{ steps.in.outputs.app_name }}" \
               -v b="${{ steps.in.outputs.api_base }}" \
               -v s="${{ steps.in.outputs.api_secret }}" '
@@ -93,7 +93,7 @@ EOF
               done=1
             }
             { print }
-          ' "$STR" > "$STR.tmp" && mv "$STR.tmp" "$STR"
+          ' "$STR" > "$tmp" && mv "$tmp" "$STR"
 
           echo "===== strings.xml preview ====="
           sed -n '1,120p' "$STR" || true
@@ -101,17 +101,15 @@ EOF
 
       - name: Build debug APK (with full log)
         working-directory: ${{ steps.paths.outputs.tp }}
-        run: |
-          set -e
-          ./gradlew --no-daemon --stacktrace -i clean :app:assembleDebug
+        shell: bash
+        run: ./gradlew --no-daemon --stacktrace -i clean :app:assembleDebug
 
       - name: Upload APK
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: debug
-          path: |
-            ${{ steps.paths.outputs.tp }}/app/build/outputs/apk/debug/*.apk
+          path: ${{ steps.paths.outputs.tp }}/app/build/outputs/apk/debug/*.apk
 
       - name: Upload values for audit
         if: always()
