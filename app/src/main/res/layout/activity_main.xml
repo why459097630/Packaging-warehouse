@@ -7,6 +7,18 @@
     android:padding="16dp">
 
     <!-- NDJC:VIEWS -->
+<TextView
+    android:id="@+id/tvResult"
+    android:text="-"
+    android:textSize="32sp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
+<Button
+    android:id="@+id/btnRoll"
+    android:text="Roll"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
+
     <!-- 生成器会在这里插入需要的控件（例如 tvTitle/btnAction 或 tvResult/btnRoll） -->
 
 </LinearLayout>
