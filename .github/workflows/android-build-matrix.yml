@@ -1,4 +1,4 @@
-name: Android Build
+name: Android Build (diagnostic)
 
 on:
   push:
@@ -11,10 +11,6 @@ on:
       - 'gradle/**'
       - 'gradle.properties'
   workflow_dispatch:
-
-concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -54,34 +50,42 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
+      # ========= 关键：先只跑资源任务，打开详细日志 =========
+      - name: Diagnose resource task
+        run: |
+          ./gradlew :app:processReleaseResources \
+            --stacktrace --no-daemon --warning-mode all --console=plain --info
+        continue-on-error: true
+
+      # 把资源目录和 gradle 信息打包，失败也会上传
+      - name: Collect debug artifacts
+        if: always()
+        run: |
+          mkdir -p debug-logs
+          ./gradlew -version > debug-logs/gradle-info.txt
+          cp -r app/src/main/res debug-logs/res || true
+          # 收集 Gradle 缓存下的 aapt2 日志（如果有）
+          find ~/.gradle -type f -name "*.log" | head -n 50 | xargs -I{} sh -c 'echo "==== {} ====" >> debug-logs/gradle-caches.txt; tail -n 200 "{}" >> debug-logs/gradle-caches.txt || true'
+      - name: Upload debug artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-logs
+          path: debug-logs/**
+
+      # 诊断通过后再真正打包（如果上一阶段失败，这一步不会执行）
       - name: Build release
+        if: success()   # 只有上一步资源任务成功才继续
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
           KEYSTORE_ALIAS_PASSWORD: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
           ORG_GRADLE_PROJECT_org.gradle.jvmargs: -Xmx2g -Dfile.encoding=UTF-8
-        run: ./gradlew clean assembleRelease --stacktrace --no-daemon
+        run: ./gradlew clean assembleRelease --stacktrace --no-daemon --warning-mode all --console=plain
 
       - name: Upload APK artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: app/build/outputs/apk/release/*.apk
-
-      # 可观测性：把 plan / apply 日志也打包上传
-      - name: Upload planning logs
-        uses: actions/upload-artifact@v4
-        with:
-          name: ndjc-plans-and-logs
-          path: |
-            requests/*.plan.json
-            requests/*.apply.log.json
-
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: app/build/outputs/apk/release/*.apk
-          tag_name: ndjc-${{ github.sha }}
-          fail_on_unmatched_files: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
