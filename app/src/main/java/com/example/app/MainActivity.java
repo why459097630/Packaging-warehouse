@@ -13,6 +13,10 @@ import java.util.Random;
 
 import android.widget.Button;
 import android.widget.TextView;
+import java.util.Random;
+
+import android.widget.Button;
+import android.widget.TextView;
 
 import android.widget.Button;
 import android.widget.TextView;
@@ -31,6 +35,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // NDJC:ONCREATE
+Button btn = findViewById(R.id.btnRoll);
+TextView tv = findViewById(R.id.tvResult);
+Random r = new Random();
+btn.setOnClickListener(v -> tv.setText(String.valueOf(1 + r.nextInt(6))));
+
 Button btn = findViewById(R.id.btnRoll);
 TextView tv = findViewById(R.id.tvResult);
 Random r = new Random();
@@ -60,6 +69,8 @@ btn.setOnClickListener(v -> tv.setText("DiceRoller clicked"));
     }
 
     // NDJC:FUNCTIONS
+// dice functions
+
 // dice functions
 
 // dice functions
