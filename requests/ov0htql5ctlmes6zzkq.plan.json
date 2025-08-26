@@ -1,0 +1,32 @@
+{
+  "requestId": "ov0htql5ctlmes6zzkq",
+  "appName": "Dice Roller",
+  "packageName": "com.example.app",
+  "files": [
+    {
+      "path": "app/src/main/java/com/example/app/MainActivity.java",
+      "mode": "patch",
+      "patches": [
+        {
+          "anchor": "NDJC:ONCREATE",
+          "insert": "((android.widget.Button) findViewById(R.id.btnRoll)).setOnClickListener(v -> ((android.widget.TextView) findViewById(R.id.tvResult)).setText(String.valueOf(1 + new java.util.Random().nextInt(6))));\n"
+        },
+        {
+          "anchor": "NDJC:FUNCTIONS",
+          "insert": "// dice functions\n"
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "mode": "patch",
+      "patches": [
+        {
+          "anchor": "NDJC:VIEWS",
+          "insert": "<TextView\n    android:id=\"@+id/tvResult\"\n    android:text=\"-\"\n    android:textSize=\"32sp\"\n    android:layout_width=\"wrap_content\"\n    android:layout_height=\"wrap_content\" />\n<Button\n    android:id=\"@+id/btnRoll\"\n    android:text=\"Roll\"\n    android:layout_width=\"wrap_content\"\n    android:layout_height=\"wrap_content\" />\n"
+        }
+      ]
+    }
+  ],
+  "ts": 1756191372507
+}
