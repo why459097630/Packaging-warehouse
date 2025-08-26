@@ -1,4 +1,4 @@
-name: Android Build (diagnostic)
+name: Android Build (deep-diagnose)
 
 on:
   push:
@@ -18,7 +18,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
+    env:
+      # 提高日志级别
+      GRADLE_OPTS: -Dorg.gradle.logging.level=INFO -Dfile.encoding=UTF-8
 
     steps:
       - name: Checkout
@@ -50,38 +53,43 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
-      # ========= 关键：先只跑资源任务，打开详细日志 =========
-      - name: Diagnose resource task
+      # ======================== 关键：完整日志落盘 ========================
+      - name: Build (full log to file)
+        id: build
+        shell: bash
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+          KEYSTORE_ALIAS_PASSWORD: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
         run: |
-          ./gradlew :app:processReleaseResources \
-            --stacktrace --no-daemon --warning-mode all --console=plain --info
-        continue-on-error: true
+          set -o pipefail
+          mkdir -p debug-logs
+          echo "=== Gradle version ===" | tee debug-logs/gradle-info.txt
+          ./gradlew -version | tee -a debug-logs/gradle-info.txt
 
-      # 把资源目录和 gradle 信息打包，失败也会上传
-      - name: Collect debug artifacts
+          echo "=== Running assembleRelease with DEBUG logs ===" | tee debug-logs/gradle-build.txt
+          ./gradlew clean assembleRelease \
+            --stacktrace --no-daemon --warning-mode all --console=plain --debug \
+            2>&1 | tee -a debug-logs/gradle-build.txt
+
+      # 总是收集这些文件，失败也会上传
+      - name: Collect build artifacts
         if: always()
         run: |
           mkdir -p debug-logs
-          ./gradlew -version > debug-logs/gradle-info.txt
+          # 资源、报告、清单等
           cp -r app/src/main/res debug-logs/res || true
-          # 收集 Gradle 缓存下的 aapt2 日志（如果有）
-          find ~/.gradle -type f -name "*.log" | head -n 50 | xargs -I{} sh -c 'echo "==== {} ====" >> debug-logs/gradle-caches.txt; tail -n 200 "{}" >> debug-logs/gradle-caches.txt || true'
-      - name: Upload debug artifacts
+          cp -r app/build/outputs/logs debug-logs/outputs-logs || true
+          cp -r app/build/reports debug-logs/reports || true
+          cp -r app/build/intermediates/merged_manifests/release debug-logs/merged-manifest || true
+          # 这次计划 & 应用日志，也打包一下便于对照
+          cp -r requests debug-logs/requests || true
+      - name: Upload debug logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: debug-logs
           path: debug-logs/**
-
-      # 诊断通过后再真正打包（如果上一阶段失败，这一步不会执行）
-      - name: Build release
-        if: success()   # 只有上一步资源任务成功才继续
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
-          KEYSTORE_ALIAS_PASSWORD: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
-          ORG_GRADLE_PROJECT_org.gradle.jvmargs: -Xmx2g -Dfile.encoding=UTF-8
-        run: ./gradlew clean assembleRelease --stacktrace --no-daemon --warning-mode all --console=plain
 
       - name: Upload APK artifact
         if: success()
