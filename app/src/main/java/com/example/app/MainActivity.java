@@ -31,13 +31,9 @@ public class MainActivity extends AppCompatActivity {
             btnAction.setOnClickListener(v -> tvTitle.setText("Clicked"));
         }
 
-        // NDJC:IMPORTS（保留锚点，生成器不会再插重复 import）
+        // NDJC:IMPORTS
         // NDJC:ONCREATE
-((android.widget.Button) findViewById(R.id.btnRoll)).setOnClickListener(v -> ((android.widget.TextView) findViewById(R.id.tvResult)).setText(String.valueOf(1 + new java.util.Random().nextInt(6))));
-（生成器以后在此追加事件绑定，不会再声明重复局部变量）
         // NDJC:FUNCTIONS
-// dice functions
-（生成器可在类尾追加方法）
     }
 
     // NDJC:FUNCTIONS
