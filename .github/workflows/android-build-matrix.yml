@@ -68,7 +68,7 @@ jobs:
           name: app-release
           path: app/build/outputs/apk/release/*.apk
 
-      # —— 新增：把计划与应用日志也上传，便于核对 Groq 输出与锚点命中
+      # 可观测性：把 plan / apply 日志也打包上传
       - name: Upload planning logs
         uses: actions/upload-artifact@v4
         with:
