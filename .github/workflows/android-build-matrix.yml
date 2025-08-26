@@ -1,15 +1,9 @@
 name: Android Build (deep-diagnose)
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'requests/**'
-      - 'app/**'
-      - 'build.gradle*'
-      - 'settings.gradle*'
-      - 'gradle/**'
-      - 'gradle.properties'
+  # 接收任何 repository_dispatch（不限制 types）
+  repository_dispatch:
+  # 手动触发，便于调试
   workflow_dispatch:
 
 permissions:
@@ -18,14 +12,20 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
-    env:
-      # 提高日志级别
-      GRADLE_OPTS: -Dorg.gradle.logging.level=INFO -Dfile.encoding=UTF-8
+    timeout-minutes: 15
 
     steps:
+      - name: Show triggering event and payload
+        run: |
+          echo "event_name=${{ github.event_name }}"
+          echo "event.action(event_type)=${{ github.event.action }}"
+          echo "client_payload:"
+          echo '${{ toJson(github.event.client_payload) }}'
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -33,67 +33,25 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Gradle cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
       - name: Fix gradlew permission
-        run: chmod +x ./gradlew
+        run: chmod +x gradlew
 
-      - name: Restore keystore
-        run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > keystore.jks
-          echo "KEYSTORE_PATH=$PWD/keystore.jks" >> $GITHUB_ENV
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      - name: Build release
+        run: ./gradlew clean assembleRelease --stacktrace --no-daemon
 
-      # ======================== 关键：完整日志落盘 ========================
-      - name: Build (full log to file)
-        id: build
-        shell: bash
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
-          KEYSTORE_ALIAS_PASSWORD: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
-        run: |
-          set -o pipefail
-          mkdir -p debug-logs
-          echo "=== Gradle version ===" | tee debug-logs/gradle-info.txt
-          ./gradlew -version | tee -a debug-logs/gradle-info.txt
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: warn
 
-          echo "=== Running assembleRelease with DEBUG logs ===" | tee debug-logs/gradle-build.txt
-          ./gradlew clean assembleRelease \
-            --stacktrace --no-daemon --warning-mode all --console=plain --debug \
-            2>&1 | tee -a debug-logs/gradle-build.txt
-
-      # 总是收集这些文件，失败也会上传
-      - name: Collect build artifacts
-        if: always()
-        run: |
-          mkdir -p debug-logs
-          # 资源、报告、清单等
-          cp -r app/src/main/res debug-logs/res || true
-          cp -r app/build/outputs/logs debug-logs/outputs-logs || true
-          cp -r app/build/reports debug-logs/reports || true
-          cp -r app/build/intermediates/merged_manifests/release debug-logs/merged-manifest || true
-          # 这次计划 & 应用日志，也打包一下便于对照
-          cp -r requests debug-logs/requests || true
       - name: Upload debug logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: debug-logs
-          path: debug-logs/**
-
-      - name: Upload APK artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release
-          path: app/build/outputs/apk/release/*.apk
+          path: |
+            **/build/*.log
+            **/outputs/**/*
+          if-no-files-found: ignore
