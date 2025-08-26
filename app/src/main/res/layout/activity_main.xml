@@ -1,129 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:padding="16dp">
 
-    <!-- NDJC:VIEWS -->
-<TextView
-    android:id="@+id/tvResult"
-    android:text="-"
-    android:textSize="32sp"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
-<Button
-    android:id="@+id/btnRoll"
-    android:text="Roll"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
+    <!-- 标题 -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dice Roller"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/>
 
-<TextView
-    android:id="@+id/tvResult"
-    android:text="-"
-    android:textSize="32sp"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
-<Button
-    android:id="@+id/btnRoll"
-    android:text="Roll"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
+    <!-- 掷骰子按钮 -->
+    <Button
+        android:id="@+id/btnRoll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Roll Dice" />
 
-<TextView
-    android:id="@+id/tvResult"
-    android:text="-"
-    android:textSize="32sp"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
-<Button
-    android:id="@+id/btnRoll"
-    android:text="Roll"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
+    <!-- 结果显示 -->
+    <TextView
+        android:id="@+id/tvResult"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Result will appear here"
+        android:textSize="18sp"
+        android:layout_marginTop="16dp"/>
 
-<TextView
-    android:id="@+id/tvResult"
-    android:text="-"
-    android:textSize="32sp"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
-<Button
-    android:id="@+id/btnRoll"
-    android:text="Roll"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
-
-<TextView
-    android:id="@+id/tvResult"
-    android:text="-"
-    android:textSize="32sp"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
-<Button
-    android:id="@+id/btnRoll"
-    android:text="Roll"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
-
-<TextView
-    android:id="@+id/tvResult"
-    android:text="-"
-    android:textSize="32sp"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
-<Button
-    android:id="@+id/btnRoll"
-    android:text="Roll"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
-
-<TextView
-  android:id="@+id/tvTitle"
-  android:text="Dice Roller"
-  android:textSize="22sp"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
-<Button
-  android:id="@+id/btnAction"
-  android:text="Action"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
-
-<TextView
-  android:id="@+id/tvTitle"
-  android:text="Dice Roller"
-  android:textSize="22sp"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
-<Button
-  android:id="@+id/btnAction"
-  android:text="Action"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
-
-<TextView
-  android:id="@+id/tvTitle"
-  android:text="Dice Roller"
-  android:textSize="22sp"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
-<Button
-  android:id="@+id/btnAction"
-  android:text="Action"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
-
-<TextView
-  android:id="@+id/tvTitle"
-  android:text="Dice Roller"
-  android:textSize="22sp"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
-<Button
-  android:id="@+id/btnAction"
-  android:text="Action"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
+    <!-- 额外操作按钮 -->
+    <Button
+        android:id="@+id/btnAction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Extra Action"
+        android:layout_marginTop="24dp"/>
 
 </LinearLayout>
