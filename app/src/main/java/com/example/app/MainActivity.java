@@ -33,7 +33,11 @@ public class MainActivity extends AppCompatActivity {
 
         // NDJC:IMPORTS
         // NDJC:ONCREATE
+((android.widget.Button) findViewById(R.id.btnRoll)).setOnClickListener(v -> ((android.widget.TextView) findViewById(R.id.tvResult)).setText(String.valueOf(1 + new java.util.Random().nextInt(6))));
+
         // NDJC:FUNCTIONS
+// dice functions
+
     }
 
     // NDJC:FUNCTIONS
