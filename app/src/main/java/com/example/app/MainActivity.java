@@ -2,10 +2,6 @@ package com.example.app;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-import android.widget.Button;
-import android.widget.TextView;
-
-import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -14,31 +10,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // —— 骰子功能：tvResult + btnRoll 同时存在才绑定
-        TextView tvResult = findViewById(R.id.tvResult);
-        Button btnRoll = findViewById(R.id.btnRoll);
-        if (tvResult != null && btnRoll != null) {
-            Random r = new Random();
-            btnRoll.setOnClickListener(v ->
-                tvResult.setText(String.valueOf(1 + r.nextInt(6)))
-            );
-        }
-
-        // —— 默认功能：tvTitle + btnAction 同时存在才绑定
-        TextView tvTitle = findViewById(R.id.tvTitle);
-        Button btnAction = findViewById(R.id.btnAction);
-        if (tvTitle != null && btnAction != null) {
-            btnAction.setOnClickListener(v -> tvTitle.setText("Clicked"));
-        }
-
-        // NDJC:IMPORTS
         // NDJC:ONCREATE
-((android.widget.Button) findViewById(R.id.btnRoll)).setOnClickListener(v -> ((android.widget.TextView) findViewById(R.id.tvResult)).setText(String.valueOf(1 + new java.util.Random().nextInt(6))));
-
-        // NDJC:FUNCTIONS
-// dice functions
-
+        // 生成器会在这里插入事件绑定（如为按钮设置 onClickListener）
     }
 
     // NDJC:FUNCTIONS
+    // 生成器需要时会在这里追加辅助方法
 }
