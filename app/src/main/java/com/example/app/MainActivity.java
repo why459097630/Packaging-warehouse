@@ -16,6 +16,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // NDJC:ONCREATE
+((android.widget.Button) findViewById(R.id.btnRoll)).setOnClickListener(v -> ((android.widget.TextView) findViewById(R.id.tvResult)).setText(String.valueOf(1 + new java.util.Random().nextInt(6))));
+
         // —— Dice（tvResult / btnRoll）：仅当两者都存在时才绑定监听，避免找不到 id 导致 NPE。
         TextView tvResult = findViewById(R.id.tvResult);
         Button btnRoll = findViewById(R.id.btnRoll);
@@ -38,5 +40,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // NDJC:FUNCTIONS
+// dice functions
+
     // 生成器可在此处继续插入辅助方法（不会影响 onCreate 的局部变量作用域）。
 }
