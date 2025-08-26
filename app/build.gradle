@@ -1,10 +1,9 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android' // 如果你项目里没用 Kotlin 可以删掉
 }
 
 android {
-    namespace "com.example.app"
+    namespace 'com.example.app'
     compileSdk 34
 
     defaultConfig {
@@ -13,6 +12,9 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
+
+        // 如果有本地化或矢量图支持，按需打开
+        // vectorDrawables { useSupportLibrary = true }
     }
 
     buildTypes {
@@ -20,19 +22,28 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug { }
     }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+
+    // 如遇到重复文件报错，可放开以下配置
+    // packaging {
+    //     resources {
+    //         excludes += ['META-INF/*']
+    //     }
+    // }
 }
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.activity:activity:1.9.2'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    // ✅ 关键：Gson 依赖（SpecLoader 需要）
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
