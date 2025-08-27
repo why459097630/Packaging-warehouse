@@ -12,20 +12,31 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
+    }
 
-        // 如果开启矢量在低版本支持，按需打开
-        // vectorDrawables { useSupportLibrary = true }
+    // ✅ 正式签名配置：从环境变量读取（GHA Secrets 注入）
+    signingConfigs {
+        release {
+            storeFile file("release.keystore")
+            storePassword System.getenv("ANDROID_STORE_PASSWORD")
+            keyAlias System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release   // ✅ 开启 release 签名
+            // 如需混淆，再开启上面的 proguard
+            // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-        debug { }
+        debug {
+            // debug 默认用 debug.keystore 自动签名
+        }
     }
 
-    // ✅ 关键修改：release 源集若不存在则回退到 main，避免 javac 报 not found
+    // （保留我们之前的修复）release 源集不存在则回退 main，避免 javac 找不到目录
     sourceSets {
         release {
             def rel = file('src/release/java')
@@ -41,13 +52,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-
-    // 如遇到重复文件报错，可按需开启
-    // packaging {
-    //     resources {
-    //         excludes += ['META-INF/*']
-    //     }
-    // }
 }
 
 dependencies {
@@ -55,7 +59,5 @@ dependencies {
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.activity:activity:1.9.2'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-
-    // ✅ 关键：Gson 依赖（SpecLoader 需要）
     implementation 'com.google.code.gson:gson:2.10.1'
 }
