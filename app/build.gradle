@@ -13,7 +13,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        // 如果有本地化或矢量图支持，按需打开
+        // 如果开启矢量在低版本支持，按需打开
         // vectorDrawables { useSupportLibrary = true }
     }
 
@@ -25,12 +25,24 @@ android {
         debug { }
     }
 
+    // ✅ 关键修改：release 源集若不存在则回退到 main，避免 javac 报 not found
+    sourceSets {
+        release {
+            def rel = file('src/release/java')
+            if (rel.exists()) {
+                java.srcDirs = ['src/release/java']
+            } else {
+                java.srcDirs = ['src/main/java']
+            }
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    // 如遇到重复文件报错，可放开以下配置
+    // 如遇到重复文件报错，可按需开启
     // packaging {
     //     resources {
     //         excludes += ['META-INF/*']
