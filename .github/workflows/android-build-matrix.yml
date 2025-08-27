@@ -1,19 +1,18 @@
-name: Android Build (ndjc_apply)
+name: Android Build (deep-diagnose)
 
 on:
+  workflow_dispatch:
   repository_dispatch:
     types: [ndjc_apply]
-  workflow_dispatch:
-
-permissions:
-  contents: write
-  actions: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set up job
+        run: echo "start"
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -23,8 +22,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
-          cache: gradle
+          java-version: '17'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -33,67 +31,62 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Show triggering event and payload
+        if: ${{ github.event_name == 'repository_dispatch' }}
         run: |
-          echo "event=$GITHUB_EVENT_NAME"
-          echo "ref=$GITHUB_REF"
-          echo "sha=$GITHUB_SHA"
-          echo "payload:" && cat "$GITHUB_EVENT_PATH" || true
+          echo "Event: ${{ github.event.action }}"
+          echo 'Payload:'
+          echo '${{ toJson(github.event.client_payload) }}'
 
-      # 构建：高日志 & 保存控制台输出
+      # 关键信息：将 gradle 控制台完整写入 gradle-console.log
       - name: Build release (with console log)
+        id: build
         run: |
           set -o pipefail
-          ./gradlew --version
-          ./gradlew clean :app:assembleRelease \
-            --no-daemon --stacktrace -i --warning-mode all | tee gradle-console.log
+          ./gradlew --stacktrace --no-daemon --console=plain \
+            :app:assembleRelease :app:compileReleaseJavaWithJavac \
+            -Pci=true -Dorg.gradle.jvmargs="-Xmx2g -Dfile.encoding=UTF-8" \
+            -Dorg.gradle.workers.max=2 | tee gradle-console.log
+          test ${PIPESTATUS[0]} -eq 0
 
       - name: Upload APK artifact
-        if: success()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: app/build/outputs/apk/release/*.apk
-          if-no-files-found: warn
+          name: app-release-apk
+          path: app/build/outputs/**/*.apk
+          if-no-files-found: ignore
 
-      # ===== 失败时诊断输出 =====
+      # AAPT2 资源阶段的典型错误（若有）
       - name: Grep AAPT2 errors (on failure)
         if: failure()
         run: |
           echo "---- AAPT2 errors ----"
-          grep -RIn "Android resource linking failed" app/build || true
-          grep -RIn "^error:" app/build/outputs || true
-          grep -RIn "AAPT: error" app/build || true
+          egrep -n "error: resource .* not found|error:.*failed linking references|AAPT: error" -R app/build || true
 
+      # 关键修改：直接从 gradle-console.log 抓取 javac 错误，并附上下文
       - name: Grep Java compile errors (on failure)
         if: failure()
         run: |
-          echo "---- JAVAC errors ----"
-          grep -RIn "cannot find symbol" app/build || true
-          grep -RIn "symbol:" app/build || true
-          grep -RIn "\.java:[0-9]\+:" gradle-console.log || true
-          tail -n 200 gradle-console.log || true
-          echo "---- END ----"
+          echo "---- JAVAC errors (from gradle-console.log) ----"
+          egrep -n "error:|cannot find symbol|package .* does not exist|class file for .* not found" gradle-console.log || true
+          echo "---- Context (10 lines before & after each error) ----"
+          awk '
+            /error:|cannot find symbol|package .* does not exist|class file for .* not found/ {for(i=NR-10;i<=NR+10;i++) if (i>0) ctx[i]=1}
+            {line[NR]=$0}
+            END {for(i=1;i<=NR;i++) if (ctx[i]) printf "%6d: %s\n", i, line[i]}
+          ' gradle-console.log | sed -n '1,1200p'
 
-      # 额外：对比 Java 里用到的 R.id 与布局里定义的 id，直接列出缺失项
+      # 额外：R.id 交叉对比，若 Java 引用了但 XML 未定义会打印 MISSING
       - name: Diff resource IDs (on failure)
         if: failure()
-        shell: bash
         run: |
           echo "---- Referenced IDs in Java ----"
-          mkdir -p /tmp
-          grep -Rho "R\.id\.[A-Za-z0-9_]\+" app/src/main/java || true \
-            | sed 's/.*R\.id\.//' | sort -u > /tmp/java_ids.txt || true
+          grep -Rho "R\\.id\\.[A-Za-z0-9_]\+" app/src/main/java | sed 's/.*R\.id\.//' | sort -u > /tmp/java_ids.txt || true
           cat /tmp/java_ids.txt || true
           echo "---- IDs defined in layouts ----"
-          grep -Rho "@\+id/[A-Za-z0-9_]\+" app/src/main/res/layout || true \
-            | sed 's/@+id\///' | sort -u > /tmp/layout_ids.txt || true
-          cat /tmp/layout_ids.txt || true
+          grep -Rho '@\+id/[A-Za-z0-9_]\+' app/src/main/res/layout | sed 's/.*@+id\///' | sort -u > /tmp/xml_ids.txt || true
           echo "---- Missing (referenced but not defined) ----"
-          if [ -s /tmp/java_ids.txt ]; then
-            comm -23 /tmp/java_ids.txt /tmp/layout_ids.txt || true
-          else
-            echo "(no R.id.* referenced under app/src/main/java)"
-          fi
+          comm -13 /tmp/xml_ids.txt /tmp/java_ids.txt | sed 's/^/MISSING: /' || true
 
       - name: Upload build logs (on failure)
         if: failure()
@@ -102,7 +95,6 @@ jobs:
           name: app-build-logs
           path: |
             gradle-console.log
-            app/build/outputs/
-            app/build/reports/
-            **/*.log
-            **/*.txt
+            app/build/**/logs/*
+            app/build/**/out/*
+          if-no-files-found: warn
