@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 新流程的占位 id，保证能生成 R.id.*，避免编译期报错 -->
+    <item type="id" name="ndjcPrimary"/>
+    <item type="id" name="ndjcTitle"/>
+    <item type="id" name="ndjcBody"/>
+</resources>
