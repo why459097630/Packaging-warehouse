@@ -6,7 +6,7 @@
     android:padding="16dp">
 
     <!-- NDJC:BEGIN(header) -->
-<TextView
+    <TextView
         android:id="@+id/ndjcTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,24 +14,36 @@
         android:textSize="22sp"
         android:textStyle="bold"
         android:paddingBottom="12dp"/>
-<!-- NDJC:END(header) -->
+    <!-- NDJC:END(header) -->
 
     <!-- NDJC:BEGIN(body) -->
-<TextView
+    <TextView
         android:id="@+id/ndjcBody"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="生成一个介绍中国历史朝代的安卓app，要有图片和文字介绍"
+        android:text="Hello from NDJC"
         android:textSize="16sp"
         android:paddingBottom="16dp"/>
-<!-- NDJC:END(body) -->
+    <!-- NDJC:END(body) -->
 
     <!-- NDJC:BEGIN(actions) -->
-<Button
+    <Button
         android:id="@+id/ndjcPrimary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Get Started"/>
-<!-- NDJC:END(actions) -->
+        android:text="Get started"/>
+    <!-- NDJC:END(actions) -->
+
+    <!-- 兼容：给旧代码里可能引用的 ID 占位，防止 Javac 报 “cannot find symbol R.id.*” -->
+    <View
+        android:id="@+id/textView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"/>
+    <View
+        android:id="@+id/button"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"/>
 
 </LinearLayout>
