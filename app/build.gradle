@@ -14,37 +14,32 @@ android {
         versionName "1.0"
     }
 
-    // ✅ 正式签名配置：从环境变量读取（GHA Secrets 注入）
+    // ✅ Release 正式签名（从 Secrets 注入的环境变量读取）
     signingConfigs {
         release {
             storeFile file("release.keystore")
-            storePassword System.getenv("ANDROID_STORE_PASSWORD")
-            keyAlias System.getenv("ANDROID_KEY_ALIAS")
-            keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            keyAlias      System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword   System.getenv("ANDROID_KEY_PASSWORD")
         }
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            signingConfig signingConfigs.release   // ✅ 开启 release 签名
-            // 如需混淆，再开启上面的 proguard
+            signingConfig signingConfigs.release     // ✅ 启用 release 签名
             // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            // debug 默认用 debug.keystore 自动签名
+            // 使用默认 debug.keystore
         }
     }
 
-    // （保留我们之前的修复）release 源集不存在则回退 main，避免 javac 找不到目录
+    // 如果没有 src/release/java，就回退到 main，避免 "not found"
     sourceSets {
         release {
             def rel = file('src/release/java')
-            if (rel.exists()) {
-                java.srcDirs = ['src/release/java']
-            } else {
-                java.srcDirs = ['src/main/java']
-            }
+            java.srcDirs = rel.exists() ? ['src/release/java'] : ['src/main/java']
         }
     }
 
