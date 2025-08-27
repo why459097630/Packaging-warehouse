@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,7 +19,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -26,20 +27,27 @@ jobs:
       - name: Fix gradlew permission
         run: chmod +x ./gradlew
 
-      # ✅ 写入发布签名 keystore（需要 ANDROID_KEYSTORE_BASE64 Secret）
+      # ✅ 写入 release.keystore（对应 ANDROID_KEYSTORE_BASE64）
       - name: Write release keystore
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > release.keystore
           ls -l release.keystore
 
-      # ✅ 构建 Release（会使用上面的 signingConfigs.release）
+      # ✅ 这些变量在 Gradle 里通过 System.getenv 读取（已在 build.gradle 对应）
+      - name: Export signing env
+        run: |
+          echo "ANDROID_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
+          echo "ANDROID_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> $GITHUB_ENV
+
+      # ✅ 构建 Release
       - name: Build release (with console log)
         run: |
           set -o pipefail
           ./gradlew :app:assembleRelease --no-daemon --stacktrace -i --warning-mode all | tee gradle-console.log
           test ${PIPESTATUS[0]} -eq 0
 
-      # ✅ 验证 APK 签名（apksigner verify -v 必须通过）
+      # ✅ 验证 APK 签名
       - name: Verify APK signature
         run: |
           APK="$(ls app/build/outputs/apk/release/*.apk | head -n1)"
@@ -47,7 +55,7 @@ jobs:
           SIGTOOL="$(ls -d $ANDROID_HOME/build-tools/* | sort | tail -n1)/apksigner"
           "$SIGTOOL" verify -v "$APK"
 
-      # ✅ 上传 Release APK
+      # ✅ 上传 APK 产物
       - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
@@ -55,7 +63,6 @@ jobs:
           path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
-      # （可选）上传控制台日志，便于排错
       - name: Upload build logs (always)
         if: always()
         uses: actions/upload-artifact@v4
