@@ -34,16 +34,10 @@
         android:text="Get started"/>
     <!-- NDJC:END(actions) -->
 
-    <!-- 兼容旧代码里可能用到的历史 ID，避免 Javac 报 cannot find symbol -->
-    <View
-        android:id="@+id/textView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone"/>
-    <View
-        android:id="@+id/button"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone"/>
+    <!-- 兼容：给旧代码里可能引用的 ID 占位，避免 Javac 报 cannot find symbol -->
+    <View android:id="@+id/textView"
+        android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+    <View android:id="@+id/button"
+        android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
 
 </LinearLayout>
