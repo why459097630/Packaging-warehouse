@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 新流程的占位 id，保证能生成 R.id.*，避免编译期报错 -->
-    <item type="id" name="ndjcPrimary"/>
-    <item type="id" name="ndjcTitle"/>
-    <item type="id" name="ndjcBody"/>
+  <!-- 兜底 id，保证 Java/Kotlin 编译期可引用 -->
+  <item name="ndjcTitle" type="id"/>
+  <item name="ndjcBody" type="id"/>
+  <item name="ndjcPrimary" type="id"/>
 </resources>
