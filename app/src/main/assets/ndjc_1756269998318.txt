@@ -1,0 +1,5 @@
+NDJC APPLY
+time=2025-08-27T04:46:38.318Z
+appName=NDJCApp
+template=form-template
+prompt=生成一个介绍中国历史朝代的安卓app，要有图片和文字介绍
