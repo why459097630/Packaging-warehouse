@@ -1,54 +1,146 @@
-// /app/api/generate-apk/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { commitAndBuild } from "@/lib/ndjc/generator";
+// app/api/generate-apk/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { Octokit } from 'octokit';
 
-// 差量文件类型
-type ApplyFile = { path: string; content: string; base64?: boolean };
+// 运行在 Node（非 Edge），避免某些 Node-only API 受限
+export const runtime = 'nodejs';
 
-/**
- * 临时差量注入器：始终生成一个 assets 文件
- * 用于验证 requests/* 和 commit 是否落盘
- */
-async function buildDiffFilesFromGroq(input: {
-  prompt: string;
-  template?: string;
-  appName?: string;
-}): Promise<ApplyFile[]> {
-  const ts = Date.now();
-  const lines = [
-    `NDJC APPLY`,
-    `time=${new Date(ts).toISOString()}`,
-    `appName=${input.appName || ""}`,
-    `template=${input.template || ""}`,
-    `prompt=${(input.prompt || "").replace(/\r?\n/g, " ")}`,
-  ];
-  return [
-    {
-      path: "app/src/main/assets/ndjc_" + ts + ".txt",
-      content: lines.join("\n"),
-    },
-  ];
+type FileSpec = {
+  path: string;                 // 例如: "app/src/main/res/layout/activity_main.xml"
+  content: string;              // 纯文本内容（默认按 utf-8 处理）
+  encoding?: 'utf-8' | 'base64' // 可选，默认 'utf-8'
+};
+
+function b64(s: string) {
+  return Buffer.from(s, 'utf8').toString('base64');
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  // 1) 简单鉴权（与现有一致）
+  if (req.headers.get('x-api-secret') !== process.env.X_API_SECRET) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
 
-  const prompt = body.prompt || "";
-  const template = body.template || "core-template";
-  const appName = body.appName || "NDJCApp";
+  const body = await req.json().catch(() => null);
+  if (!body) {
+    return NextResponse.json({ ok: false, error: 'Bad JSON body' }, { status: 400 });
+  }
 
-  // 1) 调用差量注入器（未来替换成 GROQ→模板差量逻辑）
-  const files = await buildDiffFilesFromGroq({ prompt, template, appName });
+  // 2) 读取参数（默认值按你仓库来）
+  const {
+    owner = process.env.GH_OWNER ?? 'why459097630',
+    repo  = process.env.GH_REPO  ?? 'Packaging-warehouse',
+    branch = process.env.GH_BRANCH ?? 'main',
 
-  // 2) 落盘并写入 requests/*，再触发构建
-  const { requestId } = await commitAndBuild({
-    owner: process.env.GH_OWNER!,               // e.g. "why459097630"
-    repo: process.env.PACKAGING_REPO!,          // e.g. "Packaging-warehouse"
-    branch: process.env.PACKAGING_BRANCH || "main",
+    // 由“API 编排器/代码生成器”最终汇总后的文件清单
     files,
-    meta: { prompt, template, appName },
-    githubToken: process.env.GH_TOKEN!,         // 你的 Fine-grained Token
-  });
+    // 可选：额外拼进提交信息尾巴，方便在 Actions 列表里辨识
+    messageSuffix = '',
+    // 可选：runId 用于日志文件命名；不传就用时间戳
+    runId = `ndjc_${Date.now()}`
+  } = body as {
+    owner?: string;
+    repo?: string;
+    branch?: string;
+    files: FileSpec[];
+    messageSuffix?: string;
+    runId?: string;
+  };
 
-  return NextResponse.json({ ok: true, requestId });
+  if (!Array.isArray(files) || files.length === 0) {
+    return NextResponse.json({ ok: false, error: 'files[] required' }, { status: 400 });
+  }
+
+  // 3) GitHub Token（与原逻辑保持一致的 env 名称；任选其一）
+  const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;
+  if (!token) {
+    return NextResponse.json({ ok: false, error: 'GITHUB_TOKEN (or GH_TOKEN) missing' }, { status: 500 });
+  }
+
+  const octokit = new Octokit({ auth: token });
+
+  try {
+    // 4) 读取分支 head 提交
+    const ref = await octokit.rest.git.getRef({ owner, repo, ref: `heads/${branch}` });
+    const latestCommitSha = ref.data.object.sha;
+
+    const latestCommit = await octokit.rest.git.getCommit({
+      owner, repo, commit_sha: latestCommitSha
+    });
+    const baseTreeSha = latestCommit.data.tree.sha;
+
+    // 5) 为每个文件创建 blob（一次性写入，不再拆多次提交）
+    const blobs = await Promise.all(
+      files.map(async (f) => {
+        const contentBase64 =
+          f.encoding === 'base64' ? f.content : Buffer.from(f.content, 'utf8').toString('base64');
+
+        const blob = await octokit.rest.git.createBlob({
+          owner, repo,
+          content: contentBase64,
+          encoding: 'base64'
+        });
+
+        return {
+          path: f.path,
+          mode: '100644',
+          type: 'blob' as const,
+          sha: blob.data.sha
+        };
+      })
+    );
+
+    // 6) 在同一个提交里附带一份“apply 日志文件”（不再额外 commit）
+    const applyLog = {
+      runId,
+      files: files.map(f => f.path),
+      ts: new Date().toISOString()
+    };
+    const logBlob = await octokit.rest.git.createBlob({
+      owner, repo,
+      content: b64(JSON.stringify(applyLog, null, 2)),
+      encoding: 'base64'
+    });
+    blobs.push({
+      path: `app/src/main/assets/${runId}.json`,
+      mode: '100644',
+      type: 'blob',
+      sha: logBlob.data.sha
+    });
+
+    // 7) 基于 base tree 创建新 tree
+    const tree = await octokit.rest.git.createTree({
+      owner, repo,
+      base_tree: baseTreeSha,
+      tree: blobs
+    });
+
+    // 8) 创建**唯一**一次提交（不再有 request/plan/apply.log 的中间提交）
+    const commitMessage = `NDJC:${runId} apply ${messageSuffix}`.trim();
+    const newCommit = await octokit.rest.git.createCommit({
+      owner, repo,
+      message: commitMessage,
+      tree: tree.data.sha,
+      parents: [latestCommitSha]
+    });
+
+    // 9) 更新分支引用到这次提交（触发一次 Actions）
+    await octokit.rest.git.updateRef({
+      owner, repo,
+      ref: `heads/${branch}`,
+      sha: newCommit.data.sha,
+      force: true
+    });
+
+    return NextResponse.json({
+      ok: true,
+      runId,
+      committed: files.map(f => f.path).concat(`app/src/main/assets/${runId}.json`),
+      commitSha: newCommit.data.sha,
+      commitMessage
+    });
+  } catch (err: any) {
+    console.error('[NDJC] atomic commit failed:', err?.message || err);
+    return NextResponse.json({ ok: false, error: err?.message || String(err) }, { status: 500 });
+  }
 }
