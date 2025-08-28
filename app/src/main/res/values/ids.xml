@@ -1,7 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <!-- 兜底 id，保证 Java/Kotlin 编译期可引用 -->
-  <item name="ndjcTitle" type="id"/>
-  <item name="ndjcBody" type="id"/>
-  <item name="ndjcPrimary" type="id"/>
+    <!-- you can add id resources here -->
 </resources>
