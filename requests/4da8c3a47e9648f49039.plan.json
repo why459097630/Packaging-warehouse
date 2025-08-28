@@ -1,0 +1,17 @@
+{
+  "requestId": "4da8c3a47e9648f49039",
+  "plan": [
+    {
+      "path": "app/src/main/res/values/ids.xml",
+      "size": 215
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "size": 951
+    },
+    {
+      "path": "app/src/main/assets/ndjc_1756360202957.txt",
+      "size": 78
+    }
+  ]
+}
