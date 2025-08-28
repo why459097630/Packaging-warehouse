@@ -1,128 +1,66 @@
+# .github/workflows/android-build-matrix.yml
 name: Android Build
 
 on:
-  # 后端 /api/generate-apk 调用 repository_dispatch（event_type = ndjc_apply）时触发
-  repository_dispatch:
-    types: [ndjc_apply]
-
-  # 方便在 Actions 页面手动触发一次
-  workflow_dispatch:
-
-  # 兜底：当有代码（尤其是 app/**）被写入提交时也触发
   push:
     branches: [ main ]
-    paths:
-      - 'app/**'
-      - 'templates/**'
-      - '.github/workflows/android-build-matrix.yml'
-
-permissions:
-  contents: write
-
-env:
-  JAVA_VERSION: '17'
-  ANDROID_COMPILE_SDK: '34'
-  ANDROID_BUILD_TOOLS: '34.0.0'
+  workflow_dispatch:
 
 jobs:
   build:
-    name: build
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup Java ${{ env.JAVA_VERSION }}
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: 'gradle'
+          distribution: temurin
+          java-version: 17
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          api-level: ${{ env.ANDROID_COMPILE_SDK }}
-          build-tools: ${{ env.ANDROID_BUILD_TOOLS }}
 
-      - name: Fix gradlew permission
+      - name: Grant gradlew execute permission
         run: chmod +x ./gradlew
 
-      # 将仓库 Secret 中的 keystore 写到 app/release.keystore
+      # ✅ 写 keystore 到 app/release.keystore（用 printf 防止多换行）
       - name: Write release keystore
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
-        run: |
-          echo "${ANDROID_KEYSTORE_BASE64}" | base64 -d > app/release.keystore
-          ls -l app/release.keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p app
+          printf "%s" "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
+          chmod 600 app/release.keystore
+          echo "---- keystore info ----"
+          ls -l app/release.keystore || true
+          file app/release.keystore || true
 
-      # 暴露签名变量给 Gradle（你的 app/build.gradle 会从这些 env 读取）
+      # ✅ 导出签名环境变量（Gradle 会读取）
       - name: Export signing env
         run: |
-          echo "ANDROID_KEYSTORE_PATH=$GITHUB_WORKSPACE/app/release.keystore" >> $GITHUB_ENV
-          echo "ANDROID_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "ANDROID_KEYSTORE_FILE=$GITHUB_WORKSPACE/app/release.keystore" >> $GITHUB_ENV
           echo "ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
           echo "ANDROID_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> $GITHUB_ENV
+          echo "ANDROID_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
 
-      - name: Build release (with console log)
-        run: |
-          set -o pipefail
-          ./gradlew :app:assembleRelease --no-daemon --stacktrace | tee gradle-console.log
-
-      # 校验 APK 是否已签名；若没生成 APK 会直接失败，便于定位
-      - name: Verify APK signature
-        if: always()
-        run: |
-          APK=$(ls app/build/outputs/apk/release/*.apk 2>/dev/null | head -n 1 || true)
-          if [ -z "$APK" ]; then
-            echo "No APK produced under app/build/outputs/apk/release/"
-            exit 1
-          fi
-          echo "APK=$APK" >> $GITHUB_ENV
-          $ANDROID_SDK_ROOT/build-tools/${{ env.ANDROID_BUILD_TOOLS }}/apksigner verify --print-certs "$APK"
+      - name: Build release
+        run: ./gradlew clean :app:assembleRelease --stacktrace
 
       - name: Upload release APK
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: ${{ env.APK || 'app/build/outputs/apk/release/*.apk' }}
-          if-no-files-found: warn
-
-      # —— 失败诊断（可选但很有用）——
-      - name: Grep AAPT2 errors (on failure)
-        if: failure()
-        run: |
-          echo "---- AAPT2 errors ----"
-          grep -RIn --color=always "AAPT" app/build/outputs  || true
-
-      - name: Grep Java compile errors (on failure)
-        if: failure()
-        run: |
-          echo "---- JAVAC errors ----"
-          grep -RIn --color=always "error: cannot find symbol" gradle-console.log || true
-          grep -RIn --color=always "error:" app/build/** || true
-
-      - name: Diff resource IDs (on failure)
-        if: failure()
-        run: |
-          echo "---- Referenced IDs in Java ----"
-          grep -Rho "R\.id\.[a-zA-Z0-9_]\+" app/src/main/java | sort -u > /tmp/java_ids.txt || true
-          cat /tmp/java_ids.txt || true
-          echo "---- IDs defined in layouts ----"
-          grep -Rho 'android:id=\"@\+id/[a-zA-Z0-9_]\+' app/src/main/res/layout | sed 's/.*@+id\///' | sort -u > /tmp/layout_ids.txt || true
-          echo "---- Missing (referenced but not defined) ----"
-          comm -13 /tmp/layout_ids.txt /tmp/java_ids.txt || true
+          name: app-release.apk
+          path: app/build/outputs/apk/release/app-release.apk
 
       - name: Upload build logs (always)
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: app-build-logs
           path: |
-            gradle-console.log
-            app/build/outputs/**
+            **/*.log
+            app/build/outputs/**/*.txt
