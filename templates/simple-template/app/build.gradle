@@ -16,6 +16,20 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
+    // ===== 签名：由环境变量控制（GitHub Actions 注入）=====
+    def signingEnabled = System.getenv("SIGNING_ENABLED") == "true"
+
+    signingConfigs {
+        if (signingEnabled) {
+            release {
+                storeFile file("release.keystore") // workflow 会写入 app/release.keystore
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             minifyEnabled false
@@ -23,6 +37,9 @@ android {
         release {
             minifyEnabled {{NDJC_MINIFY_ENABLED}}
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (signingEnabled) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 
@@ -32,12 +49,8 @@ android {
     }
     kotlinOptions { jvmTarget = '17' }
 
-    buildFeatures {
-        compose true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.5.14'
-    }
+    buildFeatures { compose true }
+    composeOptions { kotlinCompilerExtensionVersion '1.5.14' }
 }
 
 dependencies {
