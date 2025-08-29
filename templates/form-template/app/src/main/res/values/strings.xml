@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name">MyApp</string>
-    <string name="api_base">https://example.com/</string>
-    <string name="api_secret">dev-secret</string>
+  <string name="app_name">{{NDJC_APP_NAME}}</string>
+  <string name="title_home">{{NDJC_HOME_TITLE}}</string>
+  <string name="action_primary">{{NDJC_ACTION_PRIMARY_TEXT}}</string>
+  <string name="action_secondary">{{NDJC_ACTION_SECONDARY_TEXT}}</string>
 </resources>
