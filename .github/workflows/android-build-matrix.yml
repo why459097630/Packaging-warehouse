@@ -82,15 +82,19 @@ jobs:
           grep -R --line-number "NDJC-" app || true
           set -e
 
-      # ✅ 关键修复：if 表达式外层必须用 ${{ ... }}
+      # ✅ 不用 YAML 的 if: 表达式，改为 shell 内判断，杜绝“Unrecognized named-value: secrets”
       - name: Prepare release keystore (if provided)
-        if: ${{ secrets.SIGNING_KEYSTORE_B64 != '' }}
         run: |
-          echo "${{ secrets.SIGNING_KEYSTORE_B64 }}" | base64 -d > release.keystore
-          echo "STORE_FILE=$(pwd)/release.keystore" >> $GITHUB_ENV
-          echo "STORE_PASSWORD=${{ secrets.SIGNING_PASS }}" >> $GITHUB_ENV
-          echo "KEY_ALIAS=${{ secrets.SIGNING_ALIAS }}" >> $GITHUB_ENV
-          echo "KEY_PASSWORD=${{ secrets.SIGNING_PASS }}" >> $GITHUB_ENV
+          if [ -n "${{ secrets.SIGNING_KEYSTORE_B64 }}" ]; then
+            echo "${{ secrets.SIGNING_KEYSTORE_B64 }}" | base64 -d > release.keystore
+            echo "STORE_FILE=$(pwd)/release.keystore" >> $GITHUB_ENV
+            echo "STORE_PASSWORD=${{ secrets.SIGNING_PASS }}" >> $GITHUB_ENV
+            echo "KEY_ALIAS=${{ secrets.SIGNING_ALIAS }}" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=${{ secrets.SIGNING_PASS }}" >> $GITHUB_ENV
+            echo "Keystore prepared."
+          else
+            echo "No keystore secrets provided, skipping signing keystore."
+          fi
 
       - name: Build (assembleRelease)
         run: |
