@@ -12,7 +12,7 @@ on:
       - "settings.gradle*"
       - "build.gradle*"
       - ".github/workflows/android-build-matrix.yml"
-      - "requests/**"             # ← 通过写入 requests/ 来触发构建
+      - "requests/**"
   workflow_dispatch:
 
 permissions:
@@ -28,8 +28,6 @@ env:
   JAVA_VERSION: "17"
   ANDROID_API_LEVEL: "34"
   ANDROID_BUILD_TOOLS: "34.0.0"
-  # 你的 keystore 与密钥可通过 GitHub Secrets 注入
-  # SIGNING_KEYSTORE_B64, SIGNING_ALIAS, SIGNING_PASS 可选
 
 jobs:
   build:
@@ -42,12 +40,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
-          cache: 'gradle'
+          cache: gradle
 
       - name: Install Android SDK
         uses: android-actions/setup-android@v3
@@ -55,41 +53,36 @@ jobs:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           build-tools: ${{ env.ANDROID_BUILD_TOOLS }}
 
-      # 可选缓存，服务偶尔不可用时只给出 warning，不影响构建结果
       - name: Cache Gradle
-        id: cache-gradle
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: v9-gradle|linux|android|build (ndjc)-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: v9-gradle|linux|android|${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
-            v9-gradle|linux|android|build (ndjc)-
+            v9-gradle|linux|android|
 
       - name: Ensure ImageMagick & jq
         run: |
           sudo apt-get update -y
           sudo apt-get install -y imagemagick jq
 
-      # （可选）根据 app/icon.* 生成自适应前景图
       - name: Build launcher foregrounds
         run: |
           if [ -f app/icon.png ] || [ -f app/icon.svg ]; then
-            echo "Icon source found. Generating foregrounds..."
-            # 这里放你的生成脚本；没有就跳过
+            echo "Icon source found. (optional) Generate foregrounds here."
           else
-            echo "No icon source found (app/icon.png or app/icon.svg). Skipping."
+            echo "No icon source found. Skipping."
           fi
 
-      # （可选）检查未解析的 NDJC 锚点，仅打印告警
       - name: Check unresolved NDJC anchors (warn only)
         run: |
           set +e
           grep -R --line-number "NDJC-" app || true
           set -e
 
-      # （可选）准备签名，如不提供将用 debug 签名或未签名
+      # ✅ 关键修复：if 表达式外层必须用 ${{ ... }}
       - name: Prepare release keystore (if provided)
         if: ${{ secrets.SIGNING_KEYSTORE_B64 != '' }}
         run: |
@@ -114,10 +107,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      # ⬇️ 新增：回显最近一次报告的“注入/跳过”锚点
       - name: Show NDJC build report (if any)
         run: |
-          set -e
           LAST=$(ls -t requests/*/report.json 2>/dev/null | head -n 1 || true)
           if [ -n "$LAST" ]; then
             echo "NDJC Report: $LAST"
@@ -129,7 +120,6 @@ jobs:
             echo "No report.json found under requests/"
           fi
 
-      # ⬇️ 新增：上传审计资料（prompt/raw/normalized/report 与 APK 内 meta）
       - name: Upload NDJC report
         if: always()
         uses: actions/upload-artifact@v4
