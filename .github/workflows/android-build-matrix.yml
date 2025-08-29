@@ -3,114 +3,145 @@ name: Android Build (NDJC)
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: {}
+    paths:
+      - "app/**"
+      - "res/**"
+      - "gradle/**"
+      - "gradlew"
+      - "gradlew.bat"
+      - "settings.gradle*"
+      - "build.gradle*"
+      - ".github/workflows/android-build-matrix.yml"
+      - "requests/**"             # ← 通过写入 requests/ 来触发构建
+  workflow_dispatch:
 
 permissions:
   contents: write
-  actions: write
+  actions: read
+  id-token: write
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  JAVA_VERSION: "17"
+  ANDROID_API_LEVEL: "34"
+  ANDROID_BUILD_TOOLS: "34.0.0"
+  # 你的 keystore 与密钥可通过 GitHub Secrets 注入
+  # SIGNING_KEYSTORE_B64, SIGNING_ALIAS, SIGNING_PASS 可选
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      # 图标相关（可选）
-      NDJC_APP_ICON_GEN_PROVIDER: "${{ vars.NDJC_APP_ICON_GEN_PROVIDER || 'none' }}"
-      NDJC_APP_ICON_PROMPT: "${{ vars.NDJC_APP_ICON_PROMPT || '' }}"
-      NDJC_APP_ICON_PNG: "${{ vars.NDJC_APP_ICON_PNG || '' }}"
-      NDJC_APP_ICON_PADDING: "${{ vars.NDJC_APP_ICON_PADDING || '0.10' }}"
-      NDJC_ARTIFACT_NAME: "${{ vars.NDJC_ARTIFACT_NAME || 'app-release.apk' }}"
-      # 当 ANDROID_KEYSTORE_BASE64 有值时开启签名
-      SIGNING_ENABLED: "${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && 'true' || 'false' }}"
-
     steps:
+      - name: Set up job
+        run: echo "Start Android build for $GITHUB_REPOSITORY@$GITHUB_SHA"
+
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: "17"
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
 
       - name: Install Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          build-tools: ${{ env.ANDROID_BUILD_TOOLS }}
 
+      # 可选缓存，服务偶尔不可用时只给出 warning，不影响构建结果
       - name: Cache Gradle
-        uses: gradle/gradle-build-action@v2
+        id: cache-gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: v9-gradle|linux|android|build (ndjc)-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            v9-gradle|linux|android|build (ndjc)-
 
       - name: Ensure ImageMagick & jq
         run: |
-          sudo apt-get update
+          sudo apt-get update -y
           sudo apt-get install -y imagemagick jq
 
-      # ---------- (可选) AI 生成图标 ----------
-      - name: Generate icon via AI (optional)
-        if: ${{ env.NDJC_APP_ICON_GEN_PROVIDER != 'none' && env.NDJC_APP_ICON_PNG == '' }}
-        env:
-          API_KEY: ${{ secrets.ICON_GEN_API_KEY }}
-          PROMPT: ${{ env.NDJC_APP_ICON_PROMPT }}
-        run: |
-          set -e
-          mkdir -p app
-          P="${PROMPT}. Single app icon, flat, centered, no text, no watermark, transparent background."
-          curl -sS -X POST https://api.openai.com/v1/images/generations \
-            -H "Authorization: Bearer ${API_KEY}" -H "Content-Type: application/json" \
-            -d "{\"model\":\"gpt-image-1\",\"prompt\":\"${P}\",\"size\":\"1024x1024\",\"background\":\"transparent\"}" \
-            | jq -r '.data[0].b64_json' | base64 -d > app/icon.png || true
-          if [ ! -s app/icon.png ]; then
-            echo "::warning::AI icon failed, will fallback to SVG if present"
-          fi
-
-      # ---------- 切片：app/icon.png 或 app/icon.svg → mipmap ----------
+      # （可选）根据 app/icon.* 生成自适应前景图
       - name: Build launcher foregrounds
         run: |
-          set -e
-          mkdir -p app/src/main/res/mipmap-{mdpi,hdpi,xhdpi,xxhdpi,xxxhdpi}
-          SRC="app/icon.png"
-          if [ ! -f "$SRC" ]; then SRC="app/icon.svg"; fi
-          if [ ! -f "$SRC" ]; then
-            echo "::notice::No icon source found (app/icon.png or app/icon.svg). Skipping foreground generation."
+          if [ -f app/icon.png ] || [ -f app/icon.svg ]; then
+            echo "Icon source found. Generating foregrounds..."
+            # 这里放你的生成脚本；没有就跳过
           else
-            for pair in mdpi:108 hdpi:162 xhdpi:216 xxhdpi:324 xxxhdpi:432; do
-              F=$(echo "$pair" | cut -d: -f1)
-              SZ=$(echo "$pair" | cut -d: -f2)
-              convert -background none -size ${SZ}x${SZ} "$SRC" \
-                -gravity center -extent ${SZ}x${SZ} "app/src/main/res/mipmap-$F/ic_launcher_foreground.png"
-            done
+            echo "No icon source found (app/icon.png or app/icon.svg). Skipping."
           fi
 
-      # ---------- 未替换锚点检查（警告，不阻塞） ----------
+      # （可选）检查未解析的 NDJC 锚点，仅打印告警
       - name: Check unresolved NDJC anchors (warn only)
         run: |
+          set +e
+          grep -R --line-number "NDJC-" app || true
           set -e
-          FOUND=$(grep -R "{{NDJC_" -n app || true)
-          if [ -n "$FOUND" ]; then
-            echo "::warning::Found unresolved anchors:"
-            echo "$FOUND"
-          fi
 
-      # ---------- 准备 release.keystore（当 SIGNING_ENABLED=true） ----------
+      # （可选）准备签名，如不提供将用 debug 签名或未签名
       - name: Prepare release keystore (if provided)
-        if: ${{ env.SIGNING_ENABLED == 'true' }}
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        if: ${{ secrets.SIGNING_KEYSTORE_B64 != '' }}
         run: |
-          set -e
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
-          ls -l app/release.keystore
+          echo "${{ secrets.SIGNING_KEYSTORE_B64 }}" | base64 -d > release.keystore
+          echo "STORE_FILE=$(pwd)/release.keystore" >> $GITHUB_ENV
+          echo "STORE_PASSWORD=${{ secrets.SIGNING_PASS }}" >> $GITHUB_ENV
+          echo "KEY_ALIAS=${{ secrets.SIGNING_ALIAS }}" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=${{ secrets.SIGNING_PASS }}" >> $GITHUB_ENV
 
-      # ---------- 构建（签名由 Gradle 按 SIGNING_ENABLED 决定） ----------
       - name: Build (assembleRelease)
-        env:
-          SIGNING_ENABLED: ${{ env.SIGNING_ENABLED }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew :app:assembleRelease
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.NDJC_ARTIFACT_NAME }}
-          path: app/build/outputs/apk/release/*.apk
+          name: ndjc-apk
+          path: |
+            **/build/outputs/apk/**/release/*.apk
+            **/build/outputs/bundle/**/release/*.aab
+          if-no-files-found: warn
+          retention-days: 7
+
+      # ⬇️ 新增：回显最近一次报告的“注入/跳过”锚点
+      - name: Show NDJC build report (if any)
+        run: |
+          set -e
+          LAST=$(ls -t requests/*/report.json 2>/dev/null | head -n 1 || true)
+          if [ -n "$LAST" ]; then
+            echo "NDJC Report: $LAST"
+            cat "$LAST"
+            if command -v jq >/dev/null 2>&1; then
+              echo "::notice title=NDJC Anchors::Injected=$(jq -r '.injectedAnchors|join(",")' "$LAST"), Skipped=$(jq -r '.skippedAnchors|join(",")' "$LAST")"
+            fi
+          else
+            echo "No report.json found under requests/"
+          fi
+
+      # ⬇️ 新增：上传审计资料（prompt/raw/normalized/report 与 APK 内 meta）
+      - name: Upload NDJC report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ndjc-report
+          path: |
+            requests/**/prompt.txt
+            requests/**/raw.json
+            requests/**/normalized.json
+            requests/**/report.json
+            app/src/main/assets/ndjc_meta.json
+          if-no-files-found: ignore
+
+      - name: Complete job
+        run: echo "Done."
