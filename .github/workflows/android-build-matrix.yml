@@ -1,28 +1,35 @@
 name: Android Build (NDJC)
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  actions: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # 简单起见，把可变参数放在 job 级 env，全部用字符串，避免 YAML 解析坑
     env:
-      # 这些环境变量由前端生成器写入（可通过仓库变量/工作流输入传入）
-      NDJC_APP_ICON_GEN_PROVIDER: ${{ vars.NDJC_APP_ICON_GEN_PROVIDER || 'none' }}
-      NDJC_APP_ICON_PROMPT: ${{ vars.NDJC_APP_ICON_PROMPT || '' }}
-      NDJC_APP_ICON_PNG: ${{ vars.NDJC_APP_ICON_PNG || '' }}
-      NDJC_APP_ICON_PADDING: ${{ vars.NDJC_APP_ICON_PADDING || '0.1' }}
+      NDJC_APP_ICON_GEN_PROVIDER: "${{ vars.NDJC_APP_ICON_GEN_PROVIDER || 'none' }}"
+      NDJC_APP_ICON_PROMPT: "${{ vars.NDJC_APP_ICON_PROMPT || '' }}"
+      NDJC_APP_ICON_PNG: "${{ vars.NDJC_APP_ICON_PNG || '' }}"
+      NDJC_APP_ICON_PADDING: "${{ vars.NDJC_APP_ICON_PADDING || '0.10' }}"
+      NDJC_ARTIFACT_NAME: "${{ vars.NDJC_ARTIFACT_NAME || 'app-release.apk' }}"
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: "17"
 
       - name: Install Android SDK
         uses: android-actions/setup-android@v3
@@ -30,21 +37,12 @@ jobs:
       - name: Cache Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Ensure ImageMagick
+      - name: Ensure ImageMagick & jq
         run: |
           sudo apt-get update
           sudo apt-get install -y imagemagick jq
 
-      - name: Check NDJC anchors residuals
-        run: |
-          set -e
-          FOUND=$(grep -R "{{NDJC_" -n app || true)
-          if [ -n "$FOUND" ]; then
-            echo "::warning::Found unresolved anchors:"
-            echo "$FOUND"
-          fi
-
-      # （可选）AI 生成图标（用户未上传PNG且开启AI时）
+      # 可选：AI 生成图标（默认关闭；需要在仓库 Secrets 配置 ICON_GEN_API_KEY）
       - name: Generate icon via AI (optional)
         if: ${{ env.NDJC_APP_ICON_GEN_PROVIDER != 'none' && env.NDJC_APP_ICON_PNG == '' }}
         env:
@@ -59,27 +57,42 @@ jobs:
             -d "{\"model\":\"gpt-image-1\",\"prompt\":\"${P}\",\"size\":\"1024x1024\",\"background\":\"transparent\"}" \
             | jq -r '.data[0].b64_json' | base64 -d > app/icon.png || true
           if [ ! -s app/icon.png ]; then
-            echo "::warning::AI icon failed, fallback to SVG"
+            echo "::warning::AI icon failed, will fallback to SVG if present"
           fi
 
-      # 切片：把 app/icon.png（或 app/icon.svg）变成各密度 ic_launcher_foreground.png
+      # 把 app/icon.png 或 app/icon.svg 切成 mipmap 前景
       - name: Build launcher foregrounds
         run: |
           set -e
           mkdir -p app/src/main/res/mipmap-{mdpi,hdpi,xhdpi,xxhdpi,xxxhdpi}
           SRC="app/icon.png"
           if [ ! -f "$SRC" ]; then SRC="app/icon.svg"; fi
-          for pair in mdpi:108 hdpi:162 xhdpi:216 xxhdpi:324 xxxhdpi:432; do
-            F=$(echo $pair | cut -d: -f1); SZ=$(echo $pair | cut -d: -f2)
-            convert -background none -size ${SZ}x${SZ} "$SRC" \
-              -gravity center -extent ${SZ}x${SZ} "app/src/main/res/mipmap-$F/ic_launcher_foreground.png"
-          done
+          if [ ! -f "$SRC" ]; then
+            echo "::notice::No icon source found (app/icon.png or app/icon.svg). Skipping foreground generation."
+          else
+            for pair in mdpi:108 hdpi:162 xhdpi:216 xxhdpi:324 xxxhdpi:432; do
+              F=$(echo "$pair" | cut -d: -f1)
+              SZ=$(echo "$pair" | cut -d: -f2)
+              convert -background none -size ${SZ}x${SZ} "$SRC" \
+                -gravity center -extent ${SZ}x${SZ} "app/src/main/res/mipmap-$F/ic_launcher_foreground.png"
+            done
+          fi
 
-      - name: Build
+      # 可选：检查是否仍有未替换锚点（警告，不阻塞）
+      - name: Check unresolved NDJC anchors (warn only)
+        run: |
+          set -e
+          FOUND=$(grep -R "{{NDJC_" -n app || true)
+          if [ -n "$FOUND" ]; then
+            echo "::warning::Found unresolved anchors:"
+            echo "$FOUND"
+          fi
+
+      - name: Build (assembleRelease)
         run: ./gradlew :app:assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: {{NDJC_ARTIFACT_NAME}}
+          name: ${{ env.NDJC_ARTIFACT_NAME }}
           path: app/build/outputs/apk/release/*.apk
