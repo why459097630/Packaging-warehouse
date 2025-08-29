@@ -13,13 +13,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # 简单起见，把可变参数放在 job 级 env，全部用字符串，避免 YAML 解析坑
     env:
+      # 图标相关（可选）
       NDJC_APP_ICON_GEN_PROVIDER: "${{ vars.NDJC_APP_ICON_GEN_PROVIDER || 'none' }}"
       NDJC_APP_ICON_PROMPT: "${{ vars.NDJC_APP_ICON_PROMPT || '' }}"
       NDJC_APP_ICON_PNG: "${{ vars.NDJC_APP_ICON_PNG || '' }}"
       NDJC_APP_ICON_PADDING: "${{ vars.NDJC_APP_ICON_PADDING || '0.10' }}"
       NDJC_ARTIFACT_NAME: "${{ vars.NDJC_ARTIFACT_NAME || 'app-release.apk' }}"
+      # 当 ANDROID_KEYSTORE_BASE64 有值时开启签名
+      SIGNING_ENABLED: "${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && 'true' || 'false' }}"
 
     steps:
       - name: Checkout
@@ -42,7 +44,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y imagemagick jq
 
-      # 可选：AI 生成图标（默认关闭；需要在仓库 Secrets 配置 ICON_GEN_API_KEY）
+      # ---------- (可选) AI 生成图标 ----------
       - name: Generate icon via AI (optional)
         if: ${{ env.NDJC_APP_ICON_GEN_PROVIDER != 'none' && env.NDJC_APP_ICON_PNG == '' }}
         env:
@@ -60,7 +62,7 @@ jobs:
             echo "::warning::AI icon failed, will fallback to SVG if present"
           fi
 
-      # 把 app/icon.png 或 app/icon.svg 切成 mipmap 前景
+      # ---------- 切片：app/icon.png 或 app/icon.svg → mipmap ----------
       - name: Build launcher foregrounds
         run: |
           set -e
@@ -78,7 +80,7 @@ jobs:
             done
           fi
 
-      # 可选：检查是否仍有未替换锚点（警告，不阻塞）
+      # ---------- 未替换锚点检查（警告，不阻塞） ----------
       - name: Check unresolved NDJC anchors (warn only)
         run: |
           set -e
@@ -88,7 +90,23 @@ jobs:
             echo "$FOUND"
           fi
 
+      # ---------- 准备 release.keystore（当 SIGNING_ENABLED=true） ----------
+      - name: Prepare release keystore (if provided)
+        if: ${{ env.SIGNING_ENABLED == 'true' }}
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -e
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
+          ls -l app/release.keystore
+
+      # ---------- 构建（签名由 Gradle 按 SIGNING_ENABLED 决定） ----------
       - name: Build (assembleRelease)
+        env:
+          SIGNING_ENABLED: ${{ env.SIGNING_ENABLED }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew :app:assembleRelease
 
       - name: Upload APK
