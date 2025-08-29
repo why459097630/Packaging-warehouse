@@ -1,45 +1,28 @@
 plugins {
     id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    namespace 'com.example.app'
-    compileSdk 34
+    namespace "{{NDJC_PACKAGE_ID}}"
+    compileSdk {{NDJC_TARGET_SDK}}
 
     defaultConfig {
-        applicationId "com.example.app"
-        minSdk 24
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
-    }
-
-    // ✅ Release 正式签名（从 Secrets 注入的环境变量读取）
-    signingConfigs {
-        release {
-            storeFile file("release.keystore")
-            storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-            keyAlias      System.getenv("ANDROID_KEY_ALIAS")
-            keyPassword   System.getenv("ANDROID_KEY_PASSWORD")
-        }
+        applicationId "{{NDJC_PACKAGE_ID}}"
+        minSdk {{NDJC_MIN_SDK}}
+        targetSdk {{NDJC_TARGET_SDK}}
+        versionCode {{NDJC_VERSION_CODE}}
+        versionName "{{NDJC_VERSION_NAME}}"
+        vectorDrawables { useSupportLibrary = true }
     }
 
     buildTypes {
-        release {
-            minifyEnabled false
-            signingConfig signingConfigs.release     // ✅ 启用 release 签名
-            // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
         debug {
-            // 使用默认 debug.keystore
+            minifyEnabled false
         }
-    }
-
-    // 如果没有 src/release/java，就回退到 main，避免 "not found"
-    sourceSets {
         release {
-            def rel = file('src/release/java')
-            java.srcDirs = rel.exists() ? ['src/release/java'] : ['src/main/java']
+            minifyEnabled {{NDJC_MINIFY_ENABLED}}
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -47,12 +30,31 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    kotlinOptions { jvmTarget = '17' }
+
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.14'
+    }
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
-    implementation 'androidx.activity:activity:1.9.2'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.google.code.gson:gson:2.10.1'
+    // Compose 基础
+    implementation "androidx.activity:activity-compose:1.9.2"
+    implementation "androidx.compose.ui:ui:1.6.8"
+    implementation "androidx.compose.ui:ui-tooling-preview:1.6.8"
+    debugImplementation "androidx.compose.ui:ui-tooling:1.6.8"
+
+    // Material3（按开关）
+    {{#NDJC_ENABLE_MATERIAL3}}
+    implementation "androidx.compose.material3:material3:1.2.1"
+    {{/NDJC_ENABLE_MATERIAL3}}
+
+    // DataStore（主题偏好）
+    implementation "androidx.datastore:datastore-preferences:1.1.1"
+
+    // 其他依赖占位
+    {{NDJC_LIB_DEPENDENCIES}}
 }
