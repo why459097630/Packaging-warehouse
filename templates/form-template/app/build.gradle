@@ -1,38 +1,40 @@
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+  id 'com.android.application'
+  id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    namespace "com.example.formtemplate"
-    compileSdk 34
+  namespace "com.ndjc.formapp"
+  compileSdk 34
 
-    defaultConfig {
-        applicationId "com.example.formtemplate"
-        minSdk 24
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
-    }
+  defaultConfig {
+    applicationId "com.ndjc.formapp"
+    minSdk 24
+    targetSdk 34
+    versionCode 1
+    versionName "1.0"
+  }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
+  }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = '17'
-    }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+  kotlinOptions { jvmTarget = '17' }
 }
 
 dependencies {
-    implementation "androidx.core:core-ktx:1.12.0"
-    implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "com.google.android.material:material:1.9.0"
+  implementation "androidx.core:core-ktx:1.10.1"   // ✅ 修复 <color> 问题
+  implementation "androidx.appcompat:appcompat:1.6.1"
+  implementation "com.google.android.material:material:1.10.0"
+
+  // NDJC-BEGIN[deps]
+  // 在这两行注释之间按需追加三方依赖
+  // NDJC-END[deps]
 }
