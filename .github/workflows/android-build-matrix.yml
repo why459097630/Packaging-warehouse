@@ -16,25 +16,26 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
           cache: gradle
 
       # 读取前端传入的 payload；兼容驼峰/下划线两种命名
       - name: Extract inputs
         id: in
+        shell: bash
         run: |
           echo "template=${{ github.event.client_payload.template }}" >> "$GITHUB_OUTPUT"
           echo "app_name=${{ github.event.client_payload.app_name || github.event.client_payload.appName }}" >> "$GITHUB_OUTPUT"
           echo "api_base=${{ github.event.client_payload.api_base || github.event.client_payload.apiBase }}" >> "$GITHUB_OUTPUT"
           echo "api_secret=${{ github.event.client_payload.api_secret || github.event.client_payload.apiSecret }}" >> "$GITHUB_OUTPUT"
 
-      # 打印解析结果（secret 会被掩码），方便确认参数是否带过来
+      # 打印解析结果（secret 会被掩码）
       - name: Show resolved inputs (masked)
         env:
           TEMPLATE:  ${{ steps.in.outputs.template }}
           APP_NAME:  ${{ steps.in.outputs.app_name }}
           API_BASE:  ${{ steps.in.outputs.api_base }}
-          API_SECRET: ${{ steps.in.outputs.api_secret }}   # 注意这里冒号后有空格
+          API_SECRET: ${{ steps.in.outputs.api_secret }}
         shell: bash
         run: |
           echo "::add-mask::$API_SECRET"
@@ -47,55 +48,51 @@ jobs:
             echo "[inputs] api_secret = (masked)"
           fi
 
-      - name: Ensure gradlew executable
-        run: chmod +x templates/**/gradlew || true
-
-      # 模板目录存在性检查
+      # 模板目录存在性检查 + 列目录
       - name: Check template directory
         shell: bash
         run: |
-          set -e
-          if [ ! -d "templates/${{ steps.in.outputs.template }}" ]; then
-            echo "Template directory not found: templates/${{ steps.in.outputs.template }}"
-            exit 1
-          fi
+          set -eux
+          T="templates/${{ steps.in.outputs.template }}"
+          test -d "$T" || { echo "Template directory not found: $T"; exit 1; }
+          echo "===== tree of $T ====="
+          ls -al "$T" || true
+          ls -al "$T/app" || true
+          ls -al "$T/app/src/main" || true
 
+      # 注入 strings.xml（保留你现有逻辑）
       - name: Inject API data into template
         env:
           TEMPLATE:  ${{ steps.in.outputs.template }}
           APP_NAME:  ${{ steps.in.outputs.app_name }}
           API_BASE:  ${{ steps.in.outputs.api_base }}
-          API_SECRET: ${{ steps.in.outputs.api_secret }}   # 这里也要留空格
+          API_SECRET: ${{ steps.in.outputs.api_secret }}
         shell: bash
         run: |
           set -euo pipefail
-
           ROOT="templates/${TEMPLATE}/app/src/main"
           VALUES="${ROOT}/res/values"
           STRINGS="${VALUES}/strings.xml"
           STYLES="${VALUES}/styles.xml"
           mkdir -p "${VALUES}"
 
-          # 1) strings.xml 不存在则写空骨架
           if [ ! -f "${STRINGS}" ]; then
             cat >"${STRINGS}" <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-          </resources>
-          EOF
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+</resources>
+EOF
           fi
 
-          # 2) styles.xml 不存在则写默认主题，避免 R 缺资源
           if [ ! -f "${STYLES}" ]; then
             cat >"${STYLES}" <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-            <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
-          </resources>
-          EOF
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
+</resources>
+EOF
           fi
 
-          # 3) 清理旧项并写入新项
           sed -i '/name="app_name"/d'   "${STRINGS}" || true
           sed -i '/name="api_base"/d'   "${STRINGS}" || true
           sed -i '/name="api_secret"/d' "${STRINGS}" || true
@@ -111,7 +108,6 @@ jobs:
             { print }
           ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
 
-      # 简要校验并打印片段，便于核对
       - name: Verify written resources
         shell: bash
         run: |
@@ -123,9 +119,27 @@ jobs:
           grep -q 'name="api_base"'  "$VALUES" && \
           grep -q 'name="api_secret"' "$VALUES" || { echo "strings.xml missing expected entries"; exit 1; }
 
+      # 关键修复：若没有 gradlew，自动下载 Gradle 并生成 wrapper，再执行
       - name: Build debug APK
+        shell: bash
         working-directory: templates/${{ steps.in.outputs.template }}
-        run: ./gradlew clean assembleDebug
+        run: |
+          set -eux
+          if [ -x ./gradlew ]; then
+            ./gradlew --version
+            ./gradlew clean assembleDebug
+          else
+            echo "gradlew not found, bootstrapping wrapper..."
+            GRADLE_VERSION=8.7
+            curl -fsSL "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" -o /tmp/gradle.zip
+            unzip -q /tmp/gradle.zip -d "$HOME/gradle"
+            export PATH="$HOME/gradle/gradle-${GRADLE_VERSION}/bin:$PATH"
+            gradle --version
+            gradle wrapper --gradle-version "${GRADLE_VERSION}"
+            chmod +x ./gradlew
+            ./gradlew --version
+            ./gradlew clean assembleDebug
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -133,7 +147,6 @@ jobs:
           name: debug
           path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
 
-      # 把 values 一并上传，便于排查“到底写进了什么”
       - name: Upload values for audit
         if: always()
         uses: actions/upload-artifact@v4
