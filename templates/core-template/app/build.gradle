@@ -1,56 +1,17 @@
-// templates/core-template/app/build.gradle
-
-plugins {
-  id 'com.android.application'
-  id 'org.jetbrains.kotlin.android'
-}
-
-android {
-  namespace "com.ndjc.app"
-  compileSdk 34
-
-  defaultConfig {
-    applicationId "com.ndjc.app"
-    minSdk 24
-    targetSdk 34
-    versionCode 1
-    versionName "1.0"
-    vectorDrawables { useSupportLibrary = true }
-  }
-
-  buildTypes {
-    debug { minifyEnabled false }
-    release {
-      minifyEnabled false
-      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-    }
-  }
-
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_17
-    targetCompatibility JavaVersion.VERSION_17
-  }
-  kotlinOptions { jvmTarget = '17' }
-
-  buildFeatures { compose true }
-  composeOptions { kotlinCompilerExtensionVersion '1.5.14' }
-}
-
 dependencies {
-  // 基础 & Compose
-  implementation "androidx.core:core-ktx:1.10.1"   // ✅ 降级修复 <color> 问题
-  implementation "androidx.activity:activity-compose:1.9.2"
-  implementation "androidx.compose.ui:ui:1.6.8"
-  implementation "androidx.compose.ui:ui-tooling-preview:1.6.8"
-  debugImplementation "androidx.compose.ui:ui-tooling:1.6.8"
-
-  // Material3
-  implementation "androidx.compose.material3:material3:1.2.1"
-
-  // DataStore
-  implementation "androidx.datastore:datastore-preferences:1.1.1"
-
-  // NDJC-BEGIN[deps]
-  // 在这两行注释之间按需追加三方依赖
-  // NDJC-END[deps]
+    // 原有依赖...
+    
+    // 显式声明 core / core-ktx 版本
+    implementation "androidx.core:core:1.10.1"
+    implementation "androidx.core:core-ktx:1.10.1"
+    
+    // 防止被其它库传递地抬升到 1.12/1.13
+    constraints {
+        implementation("androidx.core:core:1.10.1") {
+            because("避免 1.12/1.13 中 values.xml 的 <color> 导致 AAPT2 Invalid <color>")
+        }
+        implementation("androidx.core:core-ktx:1.10.1") {
+            because("与 core 版本保持一致，避免被抬升")
+        }
+    }
 }
