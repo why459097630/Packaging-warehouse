@@ -61,7 +61,7 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:1.6.8"
 
     // Material3（按开关）
-    {{#NDJC_ENABLE_MATERIAL3}}
+    {{NDJC_ENABLE_MATERIAL3}}
     implementation "androidx.compose.material3:material3:1.2.1"
     {{/NDJC_ENABLE_MATERIAL3}}
 
