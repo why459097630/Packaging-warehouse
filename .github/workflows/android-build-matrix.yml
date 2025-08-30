@@ -10,58 +10,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
           cache: gradle
 
-      # —— 显式安装 Android cmdline-tools 与 SDK 34（稳定可靠）——
+      # 明确安装 Android cmdline-tools 与 SDK 34，避免 runner 漂移
       - name: Install Android Commandline Tools
         run: |
           set -eux
           export ANDROID_SDK_ROOT="$HOME/android-sdk"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-          curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdtools.zip
+          curl -fsSL "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -o /tmp/cmdtools.zip
           unzip -q /tmp/cmdtools.zip -d /tmp/
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          # 把压缩包中的 cmdline-tools/* 直接放入 latest/ 下（避免多一层目录）
           mv /tmp/cmdline-tools/* "$ANDROID_SDK_ROOT/cmdline-tools/latest/"
-          # PATH
-          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/platform-tools"           >> $GITHUB_PATH
-          ls -R "$ANDROID_SDK_ROOT/cmdline-tools/latest" || true
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
 
       - name: Install Android SDK packages (34 / 34.0.0)
         run: |
           set -eux
           SDKMGR="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-          # 某些 runner 目录会是 latest/cmdline-tools/bin
           if [ ! -x "$SDKMGR" ]; then
             SDKMGR="$ANDROID_SDK_ROOT/cmdline-tools/latest/cmdline-tools/bin/sdkmanager"
           fi
           "$SDKMGR" --version
-
-          # 接受许可证（禁用 pipefail，避免 yes Broken pipe 导致失败）
           set +o pipefail
           yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
           set -o pipefail
-
-          # 安装必须的包（带简单重试以抗网络波动）
           for i in 1 2 3; do
             if yes | "$SDKMGR" "platform-tools" "platforms;android-34" "build-tools;34.0.0"; then
               break
             fi
-            echo "sdkmanager attempt $i failed, retrying in 5s..."
+            echo "sdkmanager attempt $i failed, retrying..."
             sleep 5
           done
-
-          test -d "$ANDROID_SDK_ROOT/platforms/android-34"
-          test -d "$ANDROID_SDK_ROOT/build-tools/34.0.0"
 
       - name: Extract inputs
         id: in
@@ -73,11 +63,10 @@ jobs:
 
       - name: Show resolved inputs (masked)
         env:
-          TEMPLATE:   ${{ steps.in.outputs.template }}
-          APP_NAME:   ${{ steps.in.outputs.app_name }}
-          API_BASE:   ${{ steps.in.outputs.api_base }}
+          TEMPLATE: ${{ steps.in.outputs.template }}
+          APP_NAME: ${{ steps.in.outputs.app_name }}
+          API_BASE: ${{ steps.in.outputs.api_base }}
           API_SECRET: ${{ steps.in.outputs.api_secret }}
-        shell: bash
         run: |
           echo "::add-mask::$API_SECRET"
           echo "[inputs] template = $TEMPLATE"
@@ -93,7 +82,6 @@ jobs:
         run: chmod +x templates/**/gradlew || true
 
       - name: Check template directory
-        shell: bash
         run: |
           set -e
           if [ ! -d "templates/${{ steps.in.outputs.template }}" ]; then
@@ -103,20 +91,17 @@ jobs:
 
       - name: Inject API data into template (with XML escaping)
         env:
-          TEMPLATE:   ${{ steps.in.outputs.template }}
-          APP_NAME:   ${{ steps.in.outputs.app_name }}
-          API_BASE:   ${{ steps.in.outputs.api_base }}
+          TEMPLATE: ${{ steps.in.outputs.template }}
+          APP_NAME: ${{ steps.in.outputs.app_name }}
+          API_BASE: ${{ steps.in.outputs.api_base }}
           API_SECRET: ${{ steps.in.outputs.api_secret }}
-        shell: bash
         run: |
           set -euo pipefail
 
-          # XML 转义函数
           xml_escape() {
             local s="$1"
             s="${s//&/&amp;}"
             s="${s//</&lt;}"
-            s="${s//> /&gt; }"   # 保留>后空格
             s="${s//>/&gt;}"
             s="${s//\"/&quot;}"
             s="${s//\'/&apos;}"
@@ -131,19 +116,18 @@ jobs:
           VALUES="${ROOT}/res/values"
           STRINGS="${VALUES}/strings.xml"
           STYLES="${VALUES}/styles.xml"
-          mkdir -p "${VALUES}"
+          mkdir -p "$VALUES"
 
-          # 若 strings.xml / styles.xml 不存在则创建
-          if [ ! -f "${STRINGS}" ]; then
-            cat >"${STRINGS}" <<'EOF'
+          if [ ! -f "$STRINGS" ]; then
+            cat >"$STRINGS" <<'EOF'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 </resources>
 EOF
           fi
 
-          if [ ! -f "${STYLES}" ]; then
-            cat >"${STYLES}" <<'EOF'
+          if [ ! -f "$STYLES" ]; then
+            cat >"$STYLES" <<'EOF'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
@@ -151,15 +135,11 @@ EOF
 EOF
           fi
 
-          # 删除旧条目
-          sed -i '/name="app_name"/d'   "${STRINGS}" || true
-          sed -i '/name="api_base"/d'   "${STRINGS}" || true
-          sed -i '/name="api_secret"/d' "${STRINGS}" || true
+          sed -i '/name="app_name"/d' "$STRINGS" || true
+          sed -i '/name="api_base"/d' "$STRINGS" || true
+          sed -i '/name="api_secret"/d' "$STRINGS" || true
+          grep -q '</resources>' "$STRINGS" || echo '</resources>' >> "$STRINGS"
 
-          # 确保存在 </resources>，若没有则补上
-          grep -q '</resources>' "${STRINGS}" || echo '</resources>' >> "${STRINGS}"
-
-          # 注入新条目（插入到 </resources> 前）
           tmp="${STRINGS}.tmp"
           awk -v app="$APP_ESC" -v base="$BASE_ESC" -v secret="$SEC_ESC" '
             /<\/resources>/ && !done {
@@ -169,18 +149,17 @@ EOF
               done=1
             }
             { print }
-          ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
+          ' "$STRINGS" > "$tmp" && mv "$tmp" "$STRINGS"
 
       - name: Verify written resources
-        shell: bash
         run: |
           VALUES="templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml"
           echo "===== strings.xml preview ====="
           sed -n '1,200p' "$VALUES" || true
           echo "================================"
-          grep -q 'name="app_name"'   "$VALUES" && \
-          grep -q 'name="api_base"'   "$VALUES" && \
-          grep -q 'name="api_secret"' "$VALUES" || { echo "strings.xml missing expected entries"; exit 1; }
+          grep -q 'name="app_name"' "$VALUES"
+          grep -q 'name="api_base"' "$VALUES"
+          grep -q 'name="api_secret"' "$VALUES"
 
       - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
