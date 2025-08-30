@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -29,14 +30,14 @@ jobs:
           echo "api_base=${{ github.event.client_payload.api_base || github.event.client_payload.apiBase }}" >> "$GITHUB_OUTPUT"
           echo "api_secret=${{ github.event.client_payload.api_secret || github.event.client_payload.apiSecret }}" >> "$GITHUB_OUTPUT"
 
-      # 打印解析结果（secret 会被掩码）
+      # 打印解析结果（secret 会被掩码），方便确认参数是否带过来
       - name: Show resolved inputs (masked)
+        shell: bash
         env:
           TEMPLATE:  ${{ steps.in.outputs.template }}
           APP_NAME:  ${{ steps.in.outputs.app_name }}
           API_BASE:  ${{ steps.in.outputs.api_base }}
           API_SECRET: ${{ steps.in.outputs.api_secret }}
-        shell: bash
         run: |
           echo "::add-mask::$API_SECRET"
           echo "[inputs] template = $TEMPLATE"
@@ -48,103 +49,107 @@ jobs:
             echo "[inputs] api_secret = (masked)"
           fi
 
-      # 模板目录存在性检查 + 列目录
+      - name: Ensure gradlew executable
+        shell: bash
+        run: chmod +x templates/**/gradlew || true
+
+      # 模板目录存在性检查
       - name: Check template directory
         shell: bash
         run: |
-          set -eux
-          T="templates/${{ steps.in.outputs.template }}"
-          test -d "$T" || { echo "Template directory not found: $T"; exit 1; }
-          echo "===== tree of $T ====="
-          ls -al "$T" || true
-          ls -al "$T/app" || true
-          ls -al "$T/app/src/main" || true
+          set -e
+          if [ ! -d "templates/${{ steps.in.outputs.template }}" ]; then
+            echo "Template directory not found: templates/${{ steps.in.outputs.template }}"
+            exit 1
+          fi
 
-      # 注入 strings.xml（保留你现有逻辑）
-      - name: Inject API data into template
+      - name: Inject API data into template (safe, no heredoc)
+        shell: bash
         env:
           TEMPLATE:  ${{ steps.in.outputs.template }}
           APP_NAME:  ${{ steps.in.outputs.app_name }}
           API_BASE:  ${{ steps.in.outputs.api_base }}
           API_SECRET: ${{ steps.in.outputs.api_secret }}
-        shell: bash
         run: |
           set -euo pipefail
+
+          # XML 转义（避免特殊字符破坏 XML）
+          esc() { python3 - <<'PY' "$1"
+import html,sys
+print(html.escape(sys.argv[1] if len(sys.argv)>1 else "", quote=True))
+PY
+          }
+
+          APP_ESC="$(esc "${APP_NAME:-NDJC App}")"
+          BASE_ESC="$(esc "${API_BASE:-}")"
+          SEC_ESC="$(esc "${API_SECRET:-}")"
+
           ROOT="templates/${TEMPLATE}/app/src/main"
           VALUES="${ROOT}/res/values"
           STRINGS="${VALUES}/strings.xml"
           STYLES="${VALUES}/styles.xml"
           mkdir -p "${VALUES}"
 
+          # strings.xml 骨架
           if [ ! -f "${STRINGS}" ]; then
-            cat >"${STRINGS}" <<'EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-</resources>
-EOF
+            printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>' '</resources>' > "${STRINGS}"
           fi
 
+          # styles.xml 骨架
           if [ ! -f "${STYLES}" ]; then
-            cat >"${STYLES}" <<'EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
-</resources>
-EOF
+            {
+              printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>'
+              printf '<resources>\n'
+              printf '  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>\n'
+              printf '</resources>\n'
+            } > "${STYLES}"
           fi
 
+          # 去重旧项
           sed -i '/name="app_name"/d'   "${STRINGS}" || true
           sed -i '/name="api_base"/d'   "${STRINGS}" || true
           sed -i '/name="api_secret"/d' "${STRINGS}" || true
 
-          tmp="${STRINGS}.tmp"
-          awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
-            /<\/resources>/ && !done {
-              print "    <string name=\"app_name\">"  app    "</string>";
-              print "    <string name=\"api_base\">"  base   "</string>";
-              print "    <string name=\"api_secret\">" secret "</string>";
-              done=1
-            }
-            { print }
-          ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
+          # 如果最后一行是 </resources>，先删掉，稍后再补回
+          tail -n 1 "${STRINGS}" | grep -q '</resources>' && sed -i '$d' "${STRINGS}"
+
+          # 追加新项并补回 </resources>
+          {
+            printf '  <string name="app_name">%s</string>\n'  "$APP_ESC"
+            printf '  <string name="api_base">%s</string>\n'  "$BASE_ESC"
+            printf '  <string name="api_secret">%s</string>\n' "$SEC_ESC"
+            printf '</resources>\n'
+          } >> "${STRINGS}"
+
+          echo "===== strings.xml preview ====="
+          sed -n '1,120p' "${STRINGS}" || true
+          echo "================================"
 
       - name: Verify written resources
         shell: bash
         run: |
           VALUES="templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml"
-          echo "===== strings.xml preview ====="
-          sed -n '1,120p' "$VALUES" || true
-          echo "================================"
           grep -q 'name="app_name"'  "$VALUES" && \
           grep -q 'name="api_base"'  "$VALUES" && \
           grep -q 'name="api_secret"' "$VALUES" || { echo "strings.xml missing expected entries"; exit 1; }
 
-      # 关键修复：若没有 gradlew，自动下载 Gradle 并生成 wrapper，再执行
       - name: Build debug APK
         shell: bash
         working-directory: templates/${{ steps.in.outputs.template }}
         run: |
-          set -eux
-          if [ -x ./gradlew ]; then
-            ./gradlew --version
-            ./gradlew clean assembleDebug
-          else
-            echo "gradlew not found, bootstrapping wrapper..."
-            GRADLE_VERSION=8.7
-            curl -fsSL "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" -o /tmp/gradle.zip
-            unzip -q /tmp/gradle.zip -d "$HOME/gradle"
-            export PATH="$HOME/gradle/gradle-${GRADLE_VERSION}/bin:$PATH"
-            gradle --version
-            gradle wrapper --gradle-version "${GRADLE_VERSION}"
-            chmod +x ./gradlew
-            ./gradlew --version
-            ./gradlew clean assembleDebug
+          set -e
+          if [ ! -f ./gradlew ]; then
+            echo "gradlew not found in $(pwd). Listing:"
+            ls -la
+            exit 1
           fi
+          chmod +x ./gradlew
+          ./gradlew clean assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: debug
+          name: debug-${{ steps.in.outputs.template }}
           path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
 
       - name: Upload values for audit
