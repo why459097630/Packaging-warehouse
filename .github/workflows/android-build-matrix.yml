@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,7 +35,6 @@ jobs:
           if [ ! -x "$SDKMGR" ]; then
             SDKMGR="$ANDROID_SDK_ROOT/cmdline-tools/latest/cmdline-tools/bin/sdkmanager"
           fi
-          "$SDKMGR" --version || true
           set +o pipefail
           yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
           set -o pipefail
@@ -71,7 +69,7 @@ jobs:
           set -e
           test -d "templates/${{ steps.in.outputs.template }}" || { echo "Template not found"; exit 1; }
 
-      - name: Inject API data into template (XML escaped)
+      - name: Inject API data into template (safe, no awk)
         env:
           TEMPLATE:  ${{ steps.in.outputs.template }}
           APP_NAME:  ${{ steps.in.outputs.app_name }}
@@ -79,33 +77,43 @@ jobs:
           API_SECRET: ${{ steps.in.outputs.api_secret }}
         run: |
           set -euo pipefail
-          xml_escape() { local s="$1"; s="${s//&/&amp;}"; s="${s//</&lt;}"; s="${s//>/&gt;}"; s="${s//\"/&quot;}"; s="${s//\'/&apos;}"; printf "%s" "$s"; }
-          APP_ESC="$(xml_escape "${APP_NAME:-NDJC App}")"
-          BASE_ESC="$(xml_escape "${API_BASE:-}")"
-          SEC_ESC="$(xml_escape "${API_SECRET:-}")"
+          esc () { python3 - <<'PY'
+import html,sys
+print(html.escape(sys.argv[1], quote=True))
+PY
+          }
+
+          APP_ESC="$(esc "${APP_NAME:-NDJC App}")"
+          BASE_ESC="$(esc "${API_BASE:-}")"
+          SEC_ESC="$(esc "${API_SECRET:-}")"
+
           ROOT="templates/${TEMPLATE}/app/src/main"
-          VALUES="${ROOT}/res/values"
-          STRINGS="${VALUES}/strings.xml"
+          VALUES="$ROOT/res/values"
+          STRINGS="$VALUES/strings.xml"
           mkdir -p "$VALUES"
-          [ -f "$STRINGS" ] || cat >"$STRINGS" <<'EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-</resources>
-EOF
-          sed -i '/name="app_name"/d' "$STRINGS" || true
-          sed -i '/name="api_base"/d' "$STRINGS" || true
+
+          if [ ! -f "$STRINGS" ]; then
+            printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>' '</resources>' > "$STRINGS"
+          fi
+
+          # 去重旧条目
+          sed -i '/name="app_name"/d'   "$STRINGS" || true
+          sed -i '/name="api_base"/d'   "$STRINGS" || true
           sed -i '/name="api_secret"/d' "$STRINGS" || true
-          grep -q '</resources>' "$STRINGS" || echo '</resources>' >> "$STRINGS"
-          tmp="${STRINGS}.tmp"
-          awk -v app="$APP_ESC" -v base="$BASE_ESC" -v secret="$SEC_ESC" '
-            /<\/resources>/ && !done {
-              print "    <string name=\"app_name\">"  app    "</string>";
-              print "    <string name=\"api_base\">"  base   "</string>";
-              print "    <string name=\"api_secret\">" secret "</string>";
-              done=1
-            }
-            { print }
-          ' "$STRINGS" > "$tmp" && mv "$tmp" "$STRINGS"
+
+          # 去掉结尾 </resources>
+          grep -q '</resources>' "$STRINGS" && sed -i '$d' "$STRINGS"
+
+          # 追加新条目并补回 </resources>
+          {
+            printf '    <string name="app_name">%s</string>\n'  "$APP_ESC"
+            printf '    <string name="api_base">%s</string>\n'  "$BASE_ESC"
+            printf '    <string name="api_secret">%s</string>\n' "$SEC_ESC"
+            printf '</resources>\n'
+          } >> "$STRINGS"
+
+          echo "===== strings.xml preview ====="
+          sed -n '1,120p' "$STRINGS" || true
 
       - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
