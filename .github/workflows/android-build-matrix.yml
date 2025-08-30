@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,6 +21,7 @@ jobs:
           cache: gradle
 
       - name: Install Android cmdline-tools + SDK 34
+        shell: bash
         run: |
           set -eux
           export ANDROID_SDK_ROOT="$HOME/android-sdk"
@@ -27,24 +29,25 @@ jobs:
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
           curl -fsSL "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -o /tmp/cmdtools.zip
           unzip -q /tmp/cmdtools.zip -d /tmp/
+          # 兼容两种解压结构
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          # 解包后是 /tmp/cmdline-tools/cmdline-tools/*，直接把内部内容放到 latest/
-          mv /tmp/cmdline-tools/* "$ANDROID_SDK_ROOT/cmdline-tools/latest/"
+          if [ -d /tmp/cmdline-tools/cmdline-tools ]; then
+            mv /tmp/cmdline-tools/cmdline-tools/* "$ANDROID_SDK_ROOT/cmdline-tools/latest/"
+          else
+            mv /tmp/cmdline-tools/* "$ANDROID_SDK_ROOT/cmdline-tools/latest/"
+          fi
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
           echo "$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
-
           SDKMGR="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
           if [ ! -x "$SDKMGR" ]; then
             SDKMGR="$ANDROID_SDK_ROOT/cmdline-tools/latest/cmdline-tools/bin/sdkmanager"
           fi
-
-          set +o pipefail
-          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
-          set -o pipefail
+          yes | "$SDKMGR" --licenses || true
           yes | "$SDKMGR" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Extract inputs
         id: in
+        shell: bash
         run: |
           echo "template=${{ github.event.client_payload.template }}" >> "$GITHUB_OUTPUT"
           echo "app_name=${{ github.event.client_payload.app_name || github.event.client_payload.appName }}" >> "$GITHUB_OUTPUT"
@@ -57,6 +60,7 @@ jobs:
           APP_NAME:  ${{ steps.in.outputs.app_name }}
           API_BASE:  ${{ steps.in.outputs.api_base }}
           API_SECRET: ${{ steps.in.outputs.api_secret }}
+        shell: bash
         run: |
           echo "::add-mask::$API_SECRET"
           echo "[inputs] template = $TEMPLATE"
@@ -65,28 +69,23 @@ jobs:
           if [ -z "$API_SECRET" ]; then echo "[inputs] api_secret = (empty)"; else echo "[inputs] api_secret = (masked)"; fi
 
       - name: Ensure gradlew executable
+        shell: bash
         run: chmod +x "templates/${{ steps.in.outputs.template }}/gradlew" || true
 
       - name: Check template directory exists
-        run: |
-          set -e
-          test -d "templates/${{ steps.in.outputs.template }}" || { echo "Template not found"; exit 1; }
+        shell: bash
+        run: test -d "templates/${{ steps.in.outputs.template }}" || { echo "Template not found"; exit 1; }
 
-      - name: Inject API data into template (safe, no awk)
+      - name: Inject API data into template
         env:
           TEMPLATE:  ${{ steps.in.outputs.template }}
           APP_NAME:  ${{ steps.in.outputs.app_name }}
           API_BASE:  ${{ steps.in.outputs.api_base }}
           API_SECRET: ${{ steps.in.outputs.api_secret }}
+        shell: bash
         run: |
           set -euo pipefail
-
-          esc () { python3 - "$1" <<'PY'
-import html,sys
-print(html.escape(sys.argv[1], quote=True))
-PY
-          }
-
+          esc() { python3 -c 'import html,sys; print(html.escape(sys.argv[1] if len(sys.argv)>1 else "", quote=True))' "$1"; }
           APP_ESC="$(esc "${APP_NAME:-NDJC App}")"
           BASE_ESC="$(esc "${API_BASE:-}")"
           SEC_ESC="$(esc "${API_SECRET:-}")"
@@ -95,35 +94,26 @@ PY
           VALUES="$ROOT/res/values"
           STRINGS="$VALUES/strings.xml"
           mkdir -p "$VALUES"
-
           if [ ! -f "$STRINGS" ]; then
             printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>' '</resources>' > "$STRINGS"
           fi
-
-          # 去重旧条目
           sed -i '/name="app_name"/d'   "$STRINGS" || true
           sed -i '/name="api_base"/d'   "$STRINGS" || true
           sed -i '/name="api_secret"/d' "$STRINGS" || true
-
-          # 去掉结尾 </resources>
-          if grep -q '</resources>' "$STRINGS"; then
-            # 只删除最后一行（假定最后一行就是 </resources>）
-            sed -i '$d' "$STRINGS"
-          fi
-
-          # 追加新条目并补回 </resources>
+          # 删除最后一个 </resources>
+          tac "$STRINGS" | sed '0,/<\/resources>/{/<\/resources>/d;}' | tac > "$STRINGS.tmp" && mv "$STRINGS.tmp" "$STRINGS"
           {
             printf '    <string name="app_name">%s</string>\n'  "$APP_ESC"
             printf '    <string name="api_base">%s</string>\n'  "$BASE_ESC"
             printf '    <string name="api_secret">%s</string>\n' "$SEC_ESC"
             printf '</resources>\n'
           } >> "$STRINGS"
-
           echo "===== strings.xml preview ====="
           sed -n '1,120p' "$STRINGS" || true
 
       - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
+        shell: bash
         run: ./gradlew clean assembleDebug
 
       - name: Upload APK
