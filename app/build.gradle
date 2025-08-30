@@ -1,46 +1,56 @@
+// app/build.gradle
 plugins {
     id 'com.android.application'
 }
 
 android {
-    compileSdkVersion 34
-
-    // 从流水线/环境变量/gradle.properties 注入 APP_ID；没有就给一个默认
-    def appId = (System.getenv("APP_ID")
-            ?: (project.findProperty("APP_ID") ?: "com.app.generated"))
-
-    // AGP 8 要求在这里声明 namespace
-    namespace appId
+    namespace 'com.example.app'
+    compileSdk 34
 
     defaultConfig {
-        applicationId appId
-        minSdkVersion 24
-        targetSdkVersion 34
+        applicationId "com.example.app"
+        minSdk 24
+        targetSdk 34
         versionCode 1
         versionName "1.0"
+    }
 
-        // 如果你用到 FileProvider，这样让 authority 跟随 applicationId
-        manifestPlaceholders = [
-                fileProviderAuthority: "${appId}.provider"
-        ]
+    // ✅ 读取 CI 导出的环境变量（并回落到 app/release.keystore）
+    signingConfigs {
+        release {
+            def ksFile = System.getenv("ANDROID_KEYSTORE_FILE") ?: "$rootDir/app/release.keystore"
+            if (!file(ksFile).exists()) {
+                println("WARNING: keystore file not found at " + ksFile)
+            }
+            storeFile file(ksFile)
+            storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            keyAlias System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+        }
     }
 
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        // 如需 debug 包也用同一把签名，可保留；不需要可删除
         debug {
-            debuggable true
+            signingConfig signingConfigs.release
         }
     }
 
-    // 可选：如果用到 ViewBinding/Compose 再开
-    // buildFeatures { viewBinding true }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.activity:activity:1.9.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.code.gson:gson:2.10.1'
 }

@@ -1,0 +1,10 @@
+{
+  "requestId": "da3e0c12bb634f768f1d",
+  "meta": {
+    "prompt": "生成一个介绍菜品的安卓app，要可以上传照片和文字介绍，要有标价，要有登录系统，还有留言系统",
+    "template": "form-template",
+    "appName": "NDJCApp"
+  },
+  "count": 3,
+  "at": "2025-08-28T03:55:48.329Z"
+}
