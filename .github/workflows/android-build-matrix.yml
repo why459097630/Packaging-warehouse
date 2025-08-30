@@ -19,12 +19,12 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      # 读取前端传来的 payload；兼容驼峰/下划线
+      # 读取前端 payload（兼容驼峰/下划线）；template 设一个兜底
       - name: Extract inputs
         id: in
         shell: bash
         run: |
-          echo "template=${{ github.event.client_payload.template }}" >> "$GITHUB_OUTPUT"
+          echo "template=${{ github.event.client_payload.template || 'core-template' }}" >> "$GITHUB_OUTPUT"
           echo "app_name=${{ github.event.client_payload.app_name || github.event.client_payload.appName }}" >> "$GITHUB_OUTPUT"
           echo "api_base=${{ github.event.client_payload.api_base || github.event.client_payload.apiBase }}" >> "$GITHUB_OUTPUT"
           echo "api_secret=${{ github.event.client_payload.api_secret || github.event.client_payload.apiSecret }}" >> "$GITHUB_OUTPUT"
@@ -44,19 +44,24 @@ jobs:
           echo "[inputs] api_base  = $API_BASE"
           echo "[inputs] api_secret = " $([ -n "$API_SECRET" ] && echo "(masked)" || echo "(empty)")
 
-      # 检查模板目录
-      - name: Check template directory exists
+      # 预检：目录存在、gradlew 存在 & 可执行，顺手修正 CRLF 行尾
+      - name: Preflight – locate gradlew
         shell: bash
         run: |
-          set -e
-          test -d "templates/${{ steps.in.outputs.template }}" || { echo "Template not found: templates/${{ steps.in.outputs.template }}"; exit 1; }
+          set -eux
+          TDIR="templates/${{ steps.in.outputs.template }}"
+          test -d "$TDIR" || { echo "Template not found: $TDIR"; exit 1; }
+          ls -la "$TDIR"
+          if [ ! -f "$TDIR/gradlew" ]; then
+            echo "::error:: gradlew not found in $TDIR"
+            find templates -maxdepth 2 -name gradlew -printf '%p\n' || true
+            exit 1
+          fi
+          sed -i 's/\r$//' "$TDIR/gradlew"   # 修正 CRLF
+          chmod +x "$TDIR/gradlew"
+          bash -lc "$TDIR/gradlew --version"
 
-      # 确保 gradlew 可执行
-      - name: Ensure gradlew executable
-        shell: bash
-        run: chmod +x "templates/${{ steps.in.outputs.template }}/gradlew" || true
-
-      # 用 Python 安全写入 strings.xml / styles.xml（避免 heredoc 引起的 YAML 解析问题）
+      # 用 Python 安全写入 strings.xml / styles.xml（避免 heredoc 的 YAML 坑）
       - name: Inject API data into template (safe)
         env:
           TEMPLATE:  ${{ steps.in.outputs.template }}
