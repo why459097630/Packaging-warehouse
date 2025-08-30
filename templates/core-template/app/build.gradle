@@ -4,18 +4,23 @@ plugins {
 }
 
 android {
-    namespace "com.example.coretemplate"
+    namespace "com.ndjc.coretemplate"
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.coretemplate"
+        applicationId "com.ndjc.coretemplate"
         minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
+
+        vectorDrawables { useSupportLibrary = true }
     }
 
     buildTypes {
+        debug {
+            minifyEnabled false
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -34,14 +39,14 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion "1.5.1"
+        // 与项目中其它模块一致的 Compose 编译器版本
+        kotlinCompilerExtensionVersion '1.5.14'
     }
 }
 
 dependencies {
     implementation "androidx.core:core-ktx:1.12.0"
     implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "com.google.android.material:material:1.9.0"
 
     // Jetpack Compose
     implementation "androidx.activity:activity-compose:1.9.2"
@@ -50,6 +55,6 @@ dependencies {
     implementation "androidx.compose.material3:material3:1.2.1"
     debugImplementation "androidx.compose.ui:ui-tooling:1.6.8"
 
-    // Datastore (preferences)
+    // Preferences DataStore（主题/配置等用）
     implementation "androidx.datastore:datastore-preferences:1.1.1"
 }
