@@ -1,0 +1,29 @@
+{
+  "title": "Lamborghini Encyclopedia",
+  "generatedAt": "2025-08-17T08:08:06.257Z",
+  "prompt": "Build an Android app called \"Lamborghini Encyclopedia\".\nCover every Lamborghini model with year, engine, power, and a photo for each.\nInclude search and filters by decade.",
+  "template": "simple-template",
+  "smart": true,
+  "models": [
+    {
+      "name": "350 GT",
+      "years": "1964–1966",
+      "engine": "3.5L V12",
+      "decade": "1960s",
+      "summary": "Lamborghini’s first production car.",
+      "images": [
+        "https://upload.wikimedia.org/wikipedia/commons/3/3a/Lamborghini_350_GT.jpg"
+      ]
+    },
+    {
+      "name": "Miura",
+      "years": "1966–1973",
+      "engine": "3.9L V12",
+      "decade": "1960s",
+      "summary": "Iconic mid-engine supercar often credited with starting the genre.",
+      "images": [
+        "https://upload.wikimedia.org/wikipedia/commons/2/2c/Lamborghini_Miura_S.jpg"
+      ]
+    }
+  ]
+}
