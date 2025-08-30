@@ -4,42 +4,21 @@ plugins {
 }
 
 android {
-    namespace "{{NDJC_PACKAGE_ID}}"
-    compileSdk {{NDJC_TARGET_SDK}}
+    namespace "com.example.formtemplate"
+    compileSdk 34
 
     defaultConfig {
-        applicationId "{{NDJC_PACKAGE_ID}}"
-        minSdk {{NDJC_MIN_SDK}}
-        targetSdk {{NDJC_TARGET_SDK}}
-        versionCode {{NDJC_VERSION_CODE}}
-        versionName "{{NDJC_VERSION_NAME}}"
-        vectorDrawables { useSupportLibrary = true }
-    }
-
-    // ===== 签名：由环境变量控制（GitHub Actions 注入）=====
-    def signingEnabled = System.getenv("SIGNING_ENABLED") == "true"
-
-    signingConfigs {
-        if (signingEnabled) {
-            release {
-                storeFile file("release.keystore") // workflow 会写入 app/release.keystore
-                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
-            }
-        }
+        applicationId "com.example.formtemplate"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
     }
 
     buildTypes {
-        debug {
-            minifyEnabled false
-        }
         release {
-            minifyEnabled {{NDJC_MINIFY_ENABLED}}
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            if (signingEnabled) {
-                signingConfig signingConfigs.release
-            }
         }
     }
 
@@ -47,27 +26,13 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = '17' }
-
-    buildFeatures { compose true }
-    composeOptions { kotlinCompilerExtensionVersion '1.5.14' }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
 }
 
 dependencies {
-    // Compose 基础
-    implementation "androidx.activity:activity-compose:1.9.2"
-    implementation "androidx.compose.ui:ui:1.6.8"
-    implementation "androidx.compose.ui:ui-tooling-preview:1.6.8"
-    debugImplementation "androidx.compose.ui:ui-tooling:1.6.8"
-
-    // Material3（按开关）
-    {{NDJC_ENABLE_MATERIAL3}}
-    implementation "androidx.compose.material3:material3:1.2.1"
-    {{/NDJC_ENABLE_MATERIAL3}}
-
-    // DataStore（主题偏好）
-    implementation "androidx.datastore:datastore-preferences:1.1.1"
-
-    // 其他依赖占位
-    {{NDJC_LIB_DEPENDENCIES}}
+    implementation "androidx.core:core-ktx:1.12.0"
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "com.google.android.material:material:1.9.0"
 }
