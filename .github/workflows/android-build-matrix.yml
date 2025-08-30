@@ -8,9 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
 
     steps:
       - uses: actions/checkout@v4
@@ -22,88 +19,99 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      # 读取 payload（兼容下划线/驼峰）
+      # 读取前端传来的 payload；兼容驼峰/下划线
       - name: Extract inputs
         id: in
+        shell: bash
         run: |
-          {
-            echo "template=${{ github.event.client_payload.template }}";
-            echo "app_name=${{ github.event.client_payload.app_name || github.event.client_payload.appName }}";
-            echo "api_base=${{ github.event.client_payload.api_base || github.event.client_payload.apiBase }}";
-            echo "api_secret=${{ github.event.client_payload.api_secret || github.event.client_payload.apiSecret }}";
-          } >> "$GITHUB_OUTPUT"
+          echo "template=${{ github.event.client_payload.template }}" >> "$GITHUB_OUTPUT"
+          echo "app_name=${{ github.event.client_payload.app_name || github.event.client_payload.appName }}" >> "$GITHUB_OUTPUT"
+          echo "api_base=${{ github.event.client_payload.api_base || github.event.client_payload.apiBase }}" >> "$GITHUB_OUTPUT"
+          echo "api_secret=${{ github.event.client_payload.api_secret || github.event.client_payload.apiSecret }}" >> "$GITHUB_OUTPUT"
 
+      # 打印解析结果（secret 为空时不 add-mask，避免 warning）
       - name: Show resolved inputs (masked)
         env:
-          TEMPLATE: "${{ steps.in.outputs.template }}"
-          APP_NAME: "${{ steps.in.outputs.app_name }}"
-          API_BASE: "${{ steps.in.outputs.api_base }}"
-          API_SECRET: "${{ steps.in.outputs.api_secret }}"
+          TEMPLATE:  ${{ steps.in.outputs.template }}
+          APP_NAME:  ${{ steps.in.outputs.app_name }}
+          API_BASE:  ${{ steps.in.outputs.api_base }}
+          API_SECRET: ${{ steps.in.outputs.api_secret }}
+        shell: bash
         run: |
-          if [ -n "$API_SECRET" ]; then
-            echo "::add-mask::$API_SECRET"
-            echo "[inputs] api_secret = (masked)"
-          else
-            echo "[inputs] api_secret = (empty)"
-          fi
+          if [ -n "$API_SECRET" ]; then echo "::add-mask::$API_SECRET"; fi
           echo "[inputs] template = $TEMPLATE"
           echo "[inputs] app_name = $APP_NAME"
           echo "[inputs] api_base  = $API_BASE"
+          echo "[inputs] api_secret = " $([ -n "$API_SECRET" ] && echo "(masked)" || echo "(empty)")
 
-      - name: Ensure gradlew executable
-        run: |
-          chmod +x "templates/${{ steps.in.outputs.template }}/gradlew" || true
-
+      # 检查模板目录
       - name: Check template directory exists
+        shell: bash
         run: |
+          set -e
           test -d "templates/${{ steps.in.outputs.template }}" || { echo "Template not found: templates/${{ steps.in.outputs.template }}"; exit 1; }
 
+      # 确保 gradlew 可执行
+      - name: Ensure gradlew executable
+        shell: bash
+        run: chmod +x "templates/${{ steps.in.outputs.template }}/gradlew" || true
+
+      # 用 Python 安全写入 strings.xml / styles.xml（避免 heredoc 引起的 YAML 解析问题）
       - name: Inject API data into template (safe)
         env:
-          TEMPLATE: "${{ steps.in.outputs.template }}"
-          APP_NAME: "${{ steps.in.outputs.app_name }}"
-          API_BASE: "${{ steps.in.outputs.api_base }}"
-          API_SECRET: "${{ steps.in.outputs.api_secret }}"
+          TEMPLATE:  ${{ steps.in.outputs.template }}
+          APP_NAME:  ${{ steps.in.outputs.app_name }}
+          API_BASE:  ${{ steps.in.outputs.api_base }}
+          API_SECRET: ${{ steps.in.outputs.api_secret }}
+        shell: bash
         run: |
-          set -euo pipefail
+          python3 - <<'PY'
+          import os, re, html, pathlib
+          tpl = os.getenv('TEMPLATE')
+          app = os.getenv('APP_NAME') or 'NDJC App'
+          base = os.getenv('API_BASE') or ''
+          sec  = os.getenv('API_SECRET') or ''
+          def esc(x): return html.escape(x, quote=True)
 
-          # 安全转义（避免把 &, <, >, " 等写坏到 XML）
-          esc() { python3 -c 'import html,sys; print(html.escape(sys.argv[1] if len(sys.argv)>1 else "", quote=True))' "$1"; }
+          root   = pathlib.Path(f"templates/{tpl}/app/src/main")
+          values = root / "res" / "values"
+          values.mkdir(parents=True, exist_ok=True)
+          strings = values / "strings.xml"
+          styles  = values / "styles.xml"
 
-          APP_ESC="$(esc "${APP_NAME:-NDJC App}")"
-          BASE_ESC="$(esc "${API_BASE:-}")"
-          SEC_ESC="$(esc "${API_SECRET:-}")"
+          # 读取/初始化 strings.xml
+          if strings.exists():
+              txt = strings.read_text(encoding="utf-8")
+          else:
+              txt = '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n</resources>\n'
 
-          ROOT="templates/${TEMPLATE}/app/src/main"
-          VALUES="$ROOT/res/values"
-          STRINGS="$VALUES/strings.xml"
-          STYLES="$VALUES/styles.xml"
-          mkdir -p "$VALUES"
+          # 删除旧条目
+          for key in ("app_name","api_base","api_secret"):
+              txt = re.sub(r'\s*<string name="%s">.*?</string>\s*' % key, '\n', txt, flags=re.S)
 
-          # 不存在就初始化
-          [ -f "$STRINGS" ] || printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources></resources>' > "$STRINGS"
-          [ -f "$STYLES" ]  || cat >"$STYLES" <<'EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
-</resources>
-EOF
+          # 在 </resources> 前插入新条目（带 XML 转义）
+          insert = (
+              f'    <string name="app_name">{esc(app)}</string>\n'
+              f'    <string name="api_base">{esc(base)}</string>\n'
+              f'    <string name="api_secret">{esc(sec)}</string>\n'
+          )
+          txt = txt.replace('</resources>', insert + '</resources>')
+          strings.write_text(txt, encoding="utf-8")
 
-          # 去重并在 </resources> 之前插入三条
-          sed -i '/name="app_name"/d;/name="api_base"/d;/name="api_secret"/d' "$STRINGS" || true
-          tmp="${STRINGS}.tmp"
-          awk -v a="$APP_ESC" -v b="$BASE_ESC" -v s="$SEC_ESC" '
-            /<\/resources>/ && !x {
-              print "  <string name=\"app_name\">" a "</string>";
-              print "  <string name=\"api_base\">" b "</string>";
-              print "  <string name=\"api_secret\">" s "</string>";
-              x=1
-            }
-            { print }
-          ' "$STRINGS" > "$tmp" && mv "$tmp" "$STRINGS"
+          # styles.xml 不存在则补一个主题，避免编译缺资源
+          if not styles.exists():
+              styles.write_text(
+                  '<?xml version="1.0" encoding="utf-8"?>\n'
+                  '<resources>\n'
+                  '  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>\n'
+                  '</resources>\n',
+                  encoding="utf-8"
+              )
+          PY
 
       - name: Build debug APK
-        working-directory: "templates/${{ steps.in.outputs.template }}"
+        working-directory: templates/${{ steps.in.outputs.template }}
+        shell: bash
         run: ./gradlew clean assembleDebug
 
       - name: Upload APK
@@ -119,4 +127,4 @@ EOF
           name: values-${{ steps.in.outputs.template }}
           path: |
             templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml
-            templates/${{ steps.in.outputs.template }}/app/src/main/AndroidManifest.xml
+            templates/${{ steps.in.outputs.template }}/app/src/main/res/values/styles.xml
