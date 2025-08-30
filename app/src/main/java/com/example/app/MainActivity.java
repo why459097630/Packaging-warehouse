@@ -1,31 +1,26 @@
-package com.example.app; // ← 与 appId 保持一致
+package com.example.app;
 
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-    @Override protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
 
-        EditText input = findViewById(R.id.input);
-        Button btnAdd = findViewById(R.id.btnAdd);
-        ListView list = findViewById(R.id.list);
+    Button   primary = findViewById(R.id.ndjcPrimary);
+    TextView title   = findViewById(R.id.ndjcTitle);
+    TextView body    = findViewById(R.id.ndjcBody);
 
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
-        list.setAdapter(adapter);
-
-        btnAdd.setOnClickListener(v -> {
-            String text = input.getText().toString().trim();
-            if (!text.isEmpty()) {
-                adapter.add(text);
-                input.setText("");
-            }
-        });
+    if (primary != null) {
+      primary.setOnClickListener(v -> {
+        if (title != null) title.setText("Dice Roller clicked");
+        if (body  != null) body.setText(String.valueOf(1 + new Random().nextInt(6)));
+      });
     }
+  }
 }

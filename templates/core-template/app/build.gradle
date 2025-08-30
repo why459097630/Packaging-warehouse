@@ -1,56 +1,17 @@
-plugins {
-    id 'com.android.application'
-    // 如果模板是 Kotlin，再打开下一行：
-    // id 'org.jetbrains.kotlin.android'
-}
-
-android {
-    compileSdkVersion 34
-
-    // 统一来源的 APP ID（优先环境变量，其次 gradle.properties，最后默认）
-    def appId = (System.getenv("APP_ID")
-            ?: (project.findProperty("APP_ID") ?: "com.app.generated"))
-
-    // AGP 8 必须：Manifest 不能再写 package，这里声明命名空间
-    namespace appId
-
-    defaultConfig {
-        applicationId appId
-        minSdkVersion 24
-        targetSdkVersion 34
-        versionCode 1
-        versionName "1.0"
-
-        // 如用到 FileProvider 等，用占位符随 applicationId 变化
-        manifestPlaceholders = [
-            fileProviderAuthority: "${appId}.provider"
-        ]
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            debuggable true
-        }
-    }
-
-    // JDK 17（AGP 8.x 要求）
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-    // 如果模板是 Kotlin，再打开：
-    // kotlinOptions { jvmTarget = '17' }
-
-    // 可按需开启
-    // buildFeatures { viewBinding true }
-}
-
 dependencies {
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.12.0'
+    // 原有依赖...
+    
+    // 显式声明 core / core-ktx 版本
+    implementation "androidx.core:core:1.10.1"
+    implementation "androidx.core:core-ktx:1.10.1"
+    
+    // 防止被其它库传递地抬升到 1.12/1.13
+    constraints {
+        implementation("androidx.core:core:1.10.1") {
+            because("避免 1.12/1.13 中 values.xml 的 <color> 导致 AAPT2 Invalid <color>")
+        }
+        implementation("androidx.core:core-ktx:1.10.1") {
+            because("与 core 版本保持一致，避免被抬升")
+        }
+    }
 }
