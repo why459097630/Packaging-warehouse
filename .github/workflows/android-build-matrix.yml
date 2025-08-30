@@ -20,8 +20,7 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      # 明确安装 Android cmdline-tools 与 SDK 34，避免 runner 漂移
-      - name: Install Android Commandline Tools
+      - name: Install Android cmdline-tools + SDK 34
         run: |
           set -eux
           export ANDROID_SDK_ROOT="$HOME/android-sdk"
@@ -33,25 +32,15 @@ jobs:
           mv /tmp/cmdline-tools/* "$ANDROID_SDK_ROOT/cmdline-tools/latest/"
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
           echo "$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
-
-      - name: Install Android SDK packages (34 / 34.0.0)
-        run: |
-          set -eux
           SDKMGR="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
           if [ ! -x "$SDKMGR" ]; then
             SDKMGR="$ANDROID_SDK_ROOT/cmdline-tools/latest/cmdline-tools/bin/sdkmanager"
           fi
-          "$SDKMGR" --version
+          "$SDKMGR" --version || true
           set +o pipefail
           yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
           set -o pipefail
-          for i in 1 2 3; do
-            if yes | "$SDKMGR" "platform-tools" "platforms;android-34" "build-tools;34.0.0"; then
-              break
-            fi
-            echo "sdkmanager attempt $i failed, retrying..."
-            sleep 5
-          done
+          yes | "$SDKMGR" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Extract inputs
         id: in
@@ -63,83 +52,50 @@ jobs:
 
       - name: Show resolved inputs (masked)
         env:
-          TEMPLATE: ${{ steps.in.outputs.template }}
-          APP_NAME: ${{ steps.in.outputs.app_name }}
-          API_BASE: ${{ steps.in.outputs.api_base }}
+          TEMPLATE:  ${{ steps.in.outputs.template }}
+          APP_NAME:  ${{ steps.in.outputs.app_name }}
+          API_BASE:  ${{ steps.in.outputs.api_base }}
           API_SECRET: ${{ steps.in.outputs.api_secret }}
         run: |
           echo "::add-mask::$API_SECRET"
           echo "[inputs] template = $TEMPLATE"
           echo "[inputs] app_name = $APP_NAME"
           echo "[inputs] api_base  = $API_BASE"
-          if [ -z "$API_SECRET" ]; then
-            echo "[inputs] api_secret = (empty)"
-          else
-            echo "[inputs] api_secret = (masked)"
-          fi
+          if [ -z "$API_SECRET" ]; then echo "[inputs] api_secret = (empty)"; else echo "[inputs] api_secret = (masked)"; fi
 
       - name: Ensure gradlew executable
-        run: chmod +x templates/**/gradlew || true
+        run: chmod +x "templates/${{ steps.in.outputs.template }}/gradlew" || true
 
-      - name: Check template directory
+      - name: Check template directory exists
         run: |
           set -e
-          if [ ! -d "templates/${{ steps.in.outputs.template }}" ]; then
-            echo "Template directory not found: templates/${{ steps.in.outputs.template }}"
-            exit 1
-          fi
+          test -d "templates/${{ steps.in.outputs.template }}" || { echo "Template not found"; exit 1; }
 
-      - name: Inject API data into template (with XML escaping)
+      - name: Inject API data into template (XML escaped)
         env:
-          TEMPLATE: ${{ steps.in.outputs.template }}
-          APP_NAME: ${{ steps.in.outputs.app_name }}
-          API_BASE: ${{ steps.in.outputs.api_base }}
+          TEMPLATE:  ${{ steps.in.outputs.template }}
+          APP_NAME:  ${{ steps.in.outputs.app_name }}
+          API_BASE:  ${{ steps.in.outputs.api_base }}
           API_SECRET: ${{ steps.in.outputs.api_secret }}
         run: |
           set -euo pipefail
-
-          xml_escape() {
-            local s="$1"
-            s="${s//&/&amp;}"
-            s="${s//</&lt;}"
-            s="${s//>/&gt;}"
-            s="${s//\"/&quot;}"
-            s="${s//\'/&apos;}"
-            printf "%s" "$s"
-          }
-
+          xml_escape() { local s="$1"; s="${s//&/&amp;}"; s="${s//</&lt;}"; s="${s//>/&gt;}"; s="${s//\"/&quot;}"; s="${s//\'/&apos;}"; printf "%s" "$s"; }
           APP_ESC="$(xml_escape "${APP_NAME:-NDJC App}")"
           BASE_ESC="$(xml_escape "${API_BASE:-}")"
           SEC_ESC="$(xml_escape "${API_SECRET:-}")"
-
           ROOT="templates/${TEMPLATE}/app/src/main"
           VALUES="${ROOT}/res/values"
           STRINGS="${VALUES}/strings.xml"
-          STYLES="${VALUES}/styles.xml"
           mkdir -p "$VALUES"
-
-          if [ ! -f "$STRINGS" ]; then
-            cat >"$STRINGS" <<'EOF'
+          [ -f "$STRINGS" ] || cat >"$STRINGS" <<'EOF'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 </resources>
 EOF
-          fi
-
-          if [ ! -f "$STYLES" ]; then
-            cat >"$STYLES" <<'EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
-</resources>
-EOF
-          fi
-
           sed -i '/name="app_name"/d' "$STRINGS" || true
           sed -i '/name="api_base"/d' "$STRINGS" || true
           sed -i '/name="api_secret"/d' "$STRINGS" || true
           grep -q '</resources>' "$STRINGS" || echo '</resources>' >> "$STRINGS"
-
           tmp="${STRINGS}.tmp"
           awk -v app="$APP_ESC" -v base="$BASE_ESC" -v secret="$SEC_ESC" '
             /<\/resources>/ && !done {
@@ -151,16 +107,6 @@ EOF
             { print }
           ' "$STRINGS" > "$tmp" && mv "$tmp" "$STRINGS"
 
-      - name: Verify written resources
-        run: |
-          VALUES="templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml"
-          echo "===== strings.xml preview ====="
-          sed -n '1,200p' "$VALUES" || true
-          echo "================================"
-          grep -q 'name="app_name"' "$VALUES"
-          grep -q 'name="api_base"' "$VALUES"
-          grep -q 'name="api_secret"' "$VALUES"
-
       - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
         run: ./gradlew clean assembleDebug
@@ -171,11 +117,9 @@ EOF
           name: debug-${{ steps.in.outputs.template }}
           path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
 
-      - name: Upload values for audit
+      - name: Upload strings.xml for audit
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: values-${{ steps.in.outputs.template }}
-          path: |
-            templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml
-            templates/${{ steps.in.outputs.template }}/app/src/main/AndroidManifest.xml
+          path: templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml
