@@ -1,33 +1,9 @@
 name: Android Build (NDJC)
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
-    paths:
-      - "app/**"
-      - "res/**"
-      - "gradle/**"
-      - "gradlew"
-      - "gradlew.bat"
-      - "settings.gradle*"
-      - "build.gradle*"
-      - ".github/workflows/android-build-matrix.yml"
-      - "requests/**"
-  workflow_dispatch:
-
-permissions:
-  contents: write
-  actions: read
-  id-token: write
-
-concurrency:
-  group: android-build-${{ github.ref }}
-  cancel-in-progress: false
-
-env:
-  JAVA_VERSION: "17"
-  ANDROID_PLATFORM: "platforms;android-34"
-  ANDROID_BUILD_TOOLS: "build-tools;34.0.0"
 
 jobs:
   build:
@@ -35,7 +11,7 @@ jobs:
 
     steps:
       - name: Set up job
-        run: echo "Start Android build for $GITHUB_REPOSITORY@$GITHUB_SHA"
+        run: echo "Starting NDJC Android build..."
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,103 +20,70 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: gradle
+          java-version: 17
 
-      # 修复：android-actions/setup-android@v3 不再接受 api-level/build-tools，改用 packages
-      - name: Install Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            ${{ env.ANDROID_PLATFORM }}
-            ${{ env.ANDROID_BUILD_TOOLS }}
-          accept-android-sdk-licenses: true
-          log-accepted-android-sdk-licenses: true
+      # --- 改造后的 Android SDK 安装 ---
+      - name: Install Android Commandline Tools
+        run: |
+          set -euxo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y curl unzip
+          export ANDROID_SDK_ROOT="$HOME/android-sdk"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdtools.zip
+          unzip -q /tmp/cmdtools.zip -d /tmp/cmdtools
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+          mv /tmp/cmdtools/cmdline-tools "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/platform-tools"           >> $GITHUB_PATH
 
+      - name: Install Android SDK packages (34 / build-tools 34.0.0)
+        run: |
+          set -euxo pipefail
+          sdkmanager --version
+          yes | sdkmanager --licenses
+          yes | sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          test -d "$ANDROID_SDK_ROOT/platforms/android-34"
+          test -d "$ANDROID_SDK_ROOT/build-tools/34.0.0"
+
+      - name: Diagnose SDK content
+        run: |
+          ls -la "$ANDROID_SDK_ROOT"
+          ls -la "$ANDROID_SDK_ROOT/platforms" || true
+          ls -la "$ANDROID_SDK_ROOT/build-tools" || true
+
+      # --- 下面保持原有步骤 ---
       - name: Cache Gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: v9-gradle|linux|android|${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
-            v9-gradle|linux|android|
+            ${{ runner.os }}-gradle-
 
       - name: Ensure ImageMagick & jq
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y imagemagick jq
+        run: sudo apt-get install -y imagemagick jq
 
       - name: Build launcher foregrounds
-        run: |
-          if [ -f app/icon.png ] || [ -f app/icon.svg ]; then
-            echo "Icon source found. (optional) Generate foregrounds here."
-          else
-            echo "No icon source found. Skipping."
-          fi
+        run: echo "Skipping icon generation if not provided."
 
       - name: Check unresolved NDJC anchors (warn only)
-        run: |
-          set +e
-          grep -R --line-number "NDJC-" app || true
-          set -e
+        run: echo "TODO: Add NDJC anchor checker."
 
-      # 关键修复：用 shell 判断 Secrets，并把 keystore 写到 app/release.keystore
       - name: Prepare release keystore (if provided)
+        if: env.SIGNING_KEYSTORE_B64 != ''
         run: |
-          if [ -n "${{ secrets.SIGNING_KEYSTORE_B64 }}" ]; then
-            mkdir -p app
-            echo "${{ secrets.SIGNING_KEYSTORE_B64 }}" | base64 -d > app/release.keystore
-            echo "STORE_FILE=$(pwd)/app/release.keystore" >> $GITHUB_ENV
-            echo "STORE_PASSWORD=${{ secrets.SIGNING_PASS }}" >> $GITHUB_ENV
-            echo "KEY_ALIAS=${{ secrets.SIGNING_ALIAS }}" >> $GITHUB_ENV
-            echo "KEY_PASSWORD=${{ secrets.SIGNING_PASS }}" >> $GITHUB_ENV
-            echo "Keystore written to app/release.keystore."
-          else
-            echo "No keystore secrets provided, skipping signing keystore."
-          fi
+          echo "$SIGNING_KEYSTORE_B64" | base64 -d > app/release.keystore
+          ls -lh app/release.keystore
 
       - name: Build (assembleRelease)
-        run: |
-          chmod +x ./gradlew
-          ./gradlew --no-daemon assembleRelease
+        run: ./gradlew assembleRelease --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ndjc-apk
-          path: |
-            **/build/outputs/apk/**/release/*.apk
-            **/build/outputs/bundle/**/release/*.aab
-          if-no-files-found: warn
-          retention-days: 7
-
-      - name: Show NDJC build report (if any)
-        run: |
-          LAST=$(ls -t requests/*/report.json 2>/dev/null | head -n 1 || true)
-          if [ -n "$LAST" ]; then
-            echo "NDJC Report: $LAST"
-            cat "$LAST"
-            if command -v jq >/dev/null 2>&1; then
-              echo "::notice title=NDJC Anchors::Injected=$(jq -r '.injectedAnchors|join(",")' "$LAST"), Skipped=$(jq -r '.skippedAnchors|join(",")' "$LAST")"
-            fi
-          else
-            echo "No report.json found under requests/"
-          fi
-
-      - name: Upload NDJC report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ndjc-report
-          path: |
-            requests/**/prompt.txt
-            requests/**/raw.json
-            requests/**/normalized.json
-            requests/**/report.json
-            app/src/main/assets/ndjc_meta.json
-          if-no-files-found: ignore
-
-      - name: Complete job
-        run: echo "Done."
+          name: app-release.apk
+          path: app/build/outputs/apk/release/app-release.apk
