@@ -10,121 +10,135 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: 17
           cache: gradle
 
-      - name: Install Android cmdline-tools + SDK 34
-        shell: bash
-        run: |
-          set -eux
-          export ANDROID_SDK_ROOT="$HOME/android-sdk"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
-          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-          curl -fsSL "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -o /tmp/cmdtools.zip
-          unzip -q /tmp/cmdtools.zip -d /tmp/
-          # 兼容两种解压结构
-          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          if [ -d /tmp/cmdline-tools/cmdline-tools ]; then
-            mv /tmp/cmdline-tools/cmdline-tools/* "$ANDROID_SDK_ROOT/cmdline-tools/latest/"
-          else
-            mv /tmp/cmdline-tools/* "$ANDROID_SDK_ROOT/cmdline-tools/latest/"
-          fi
-          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
-          echo "$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
-          SDKMGR="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-          if [ ! -x "$SDKMGR" ]; then
-            SDKMGR="$ANDROID_SDK_ROOT/cmdline-tools/latest/cmdline-tools/bin/sdkmanager"
-          fi
-          yes | "$SDKMGR" --licenses || true
-          yes | "$SDKMGR" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
-
+      # 读取前端传入的 payload；兼容驼峰/下划线两种命名
       - name: Extract inputs
         id: in
-        shell: bash
         run: |
           echo "template=${{ github.event.client_payload.template }}" >> "$GITHUB_OUTPUT"
           echo "app_name=${{ github.event.client_payload.app_name || github.event.client_payload.appName }}" >> "$GITHUB_OUTPUT"
           echo "api_base=${{ github.event.client_payload.api_base || github.event.client_payload.apiBase }}" >> "$GITHUB_OUTPUT"
           echo "api_secret=${{ github.event.client_payload.api_secret || github.event.client_payload.apiSecret }}" >> "$GITHUB_OUTPUT"
 
+      # 打印解析结果（secret 会被掩码），方便确认参数是否带过来
       - name: Show resolved inputs (masked)
         env:
           TEMPLATE:  ${{ steps.in.outputs.template }}
           APP_NAME:  ${{ steps.in.outputs.app_name }}
           API_BASE:  ${{ steps.in.outputs.api_base }}
-          API_SECRET: ${{ steps.in.outputs.api_secret }}
+          API_SECRET: ${{ steps.in.outputs.api_secret }}   # 注意这里冒号后有空格
         shell: bash
         run: |
           echo "::add-mask::$API_SECRET"
           echo "[inputs] template = $TEMPLATE"
           echo "[inputs] app_name = $APP_NAME"
           echo "[inputs] api_base  = $API_BASE"
-          if [ -z "$API_SECRET" ]; then echo "[inputs] api_secret = (empty)"; else echo "[inputs] api_secret = (masked)"; fi
+          if [ -z "$API_SECRET" ]; then
+            echo "[inputs] api_secret = (empty)"
+          else
+            echo "[inputs] api_secret = (masked)"
+          fi
 
       - name: Ensure gradlew executable
-        shell: bash
-        run: chmod +x "templates/${{ steps.in.outputs.template }}/gradlew" || true
+        run: chmod +x templates/**/gradlew || true
 
-      - name: Check template directory exists
+      # 模板目录存在性检查
+      - name: Check template directory
         shell: bash
-        run: test -d "templates/${{ steps.in.outputs.template }}" || { echo "Template not found"; exit 1; }
+        run: |
+          set -e
+          if [ ! -d "templates/${{ steps.in.outputs.template }}" ]; then
+            echo "Template directory not found: templates/${{ steps.in.outputs.template }}"
+            exit 1
+          fi
 
       - name: Inject API data into template
         env:
           TEMPLATE:  ${{ steps.in.outputs.template }}
           APP_NAME:  ${{ steps.in.outputs.app_name }}
           API_BASE:  ${{ steps.in.outputs.api_base }}
-          API_SECRET: ${{ steps.in.outputs.api_secret }}
+          API_SECRET: ${{ steps.in.outputs.api_secret }}   # 这里也要留空格
         shell: bash
         run: |
           set -euo pipefail
-          esc() { python3 -c 'import html,sys; print(html.escape(sys.argv[1] if len(sys.argv)>1 else "", quote=True))' "$1"; }
-          APP_ESC="$(esc "${APP_NAME:-NDJC App}")"
-          BASE_ESC="$(esc "${API_BASE:-}")"
-          SEC_ESC="$(esc "${API_SECRET:-}")"
 
           ROOT="templates/${TEMPLATE}/app/src/main"
-          VALUES="$ROOT/res/values"
-          STRINGS="$VALUES/strings.xml"
-          mkdir -p "$VALUES"
-          if [ ! -f "$STRINGS" ]; then
-            printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>' '</resources>' > "$STRINGS"
+          VALUES="${ROOT}/res/values"
+          STRINGS="${VALUES}/strings.xml"
+          STYLES="${VALUES}/styles.xml"
+          mkdir -p "${VALUES}"
+
+          # 1) strings.xml 不存在则写空骨架
+          if [ ! -f "${STRINGS}" ]; then
+            cat >"${STRINGS}" <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+          </resources>
+          EOF
           fi
-          sed -i '/name="app_name"/d'   "$STRINGS" || true
-          sed -i '/name="api_base"/d'   "$STRINGS" || true
-          sed -i '/name="api_secret"/d' "$STRINGS" || true
-          # 删除最后一个 </resources>
-          tac "$STRINGS" | sed '0,/<\/resources>/{/<\/resources>/d;}' | tac > "$STRINGS.tmp" && mv "$STRINGS.tmp" "$STRINGS"
-          {
-            printf '    <string name="app_name">%s</string>\n'  "$APP_ESC"
-            printf '    <string name="api_base">%s</string>\n'  "$BASE_ESC"
-            printf '    <string name="api_secret">%s</string>\n' "$SEC_ESC"
-            printf '</resources>\n'
-          } >> "$STRINGS"
+
+          # 2) styles.xml 不存在则写默认主题，避免 R 缺资源
+          if [ ! -f "${STYLES}" ]; then
+            cat >"${STYLES}" <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+            <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
+          </resources>
+          EOF
+          fi
+
+          # 3) 清理旧项并写入新项
+          sed -i '/name="app_name"/d'   "${STRINGS}" || true
+          sed -i '/name="api_base"/d'   "${STRINGS}" || true
+          sed -i '/name="api_secret"/d' "${STRINGS}" || true
+
+          tmp="${STRINGS}.tmp"
+          awk -v app="${APP_NAME}" -v base="${API_BASE}" -v secret="${API_SECRET}" '
+            /<\/resources>/ && !done {
+              print "    <string name=\"app_name\">"  app    "</string>";
+              print "    <string name=\"api_base\">"  base   "</string>";
+              print "    <string name=\"api_secret\">" secret "</string>";
+              done=1
+            }
+            { print }
+          ' "${STRINGS}" > "${tmp}" && mv "${tmp}" "${STRINGS}"
+
+      # 简要校验并打印片段，便于核对
+      - name: Verify written resources
+        shell: bash
+        run: |
+          VALUES="templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml"
           echo "===== strings.xml preview ====="
-          sed -n '1,120p' "$STRINGS" || true
+          sed -n '1,120p' "$VALUES" || true
+          echo "================================"
+          grep -q 'name="app_name"'  "$VALUES" && \
+          grep -q 'name="api_base"'  "$VALUES" && \
+          grep -q 'name="api_secret"' "$VALUES" || { echo "strings.xml missing expected entries"; exit 1; }
 
       - name: Build debug APK
         working-directory: templates/${{ steps.in.outputs.template }}
-        shell: bash
         run: ./gradlew clean assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: debug-${{ steps.in.outputs.template }}
+          name: debug
           path: templates/${{ steps.in.outputs.template }}/app/build/outputs/apk/debug/*.apk
 
-      - name: Upload strings.xml for audit
+      # 把 values 一并上传，便于排查“到底写进了什么”
+      - name: Upload values for audit
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: values-${{ steps.in.outputs.template }}
-          path: templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml
+          path: |
+            templates/${{ steps.in.outputs.template }}/app/src/main/res/values/strings.xml
+            templates/${{ steps.in.outputs.template }}/app/src/main/AndroidManifest.xml
