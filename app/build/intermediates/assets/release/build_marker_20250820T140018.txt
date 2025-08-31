@@ -1,3 +1,0 @@
-prompt: 生成一个介绍菜品的安卓app，要可以上传照片和文字介绍，要可以标价，要有登录系统
-template: core-template
-when: 2025-08-20T14:00:18.964Z

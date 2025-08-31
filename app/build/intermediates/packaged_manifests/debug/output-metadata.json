@@ -4,7 +4,7 @@
     "type": "PACKAGED_MANIFESTS",
     "kind": "Directory"
   },
-  "applicationId": "com.app.generated",
+  "applicationId": "com.ndjc.app",
   "variantName": "debug",
   "elements": [
     {

@@ -1,8 +1,25 @@
 {
     "logs": [
         {
-            "outputFile": "com.app.generated.app-mergeDebugResources-29:/values-hu/values-hu.xml",
+            "outputFile": "com.ndjc.app-mergeDebugResources-29:/values-hu/values-hu.xml",
             "map": [
+                {
+                    "source": "C:\\Users\\Administrator\\.gradle\\caches\\transforms-3\\021bc9d44df6f42012b7058b9255f71b\\transformed\\core-1.13.0\\res\\values-hu\\values-hu.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,152,254,356,457,560,667,777",
+                        "endColumns": "96,101,101,100,102,106,109,100",
+                        "endOffsets": "147,249,351,452,555,662,772,873"
+                    },
+                    "to": {
+                        "startLines": "38,39,40,41,42,43,44,116",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "3471,3568,3670,3772,3873,3976,4083,9930",
+                        "endColumns": "96,101,101,100,102,106,109,100",
+                        "endOffsets": "3563,3665,3767,3868,3971,4078,4188,10026"
+                    }
+                },
                 {
                     "source": "C:\\Users\\Administrator\\.gradle\\caches\\transforms-3\\bd46501434d9f5c2fbf0fb7f8583495b\\transformed\\material-1.12.0\\res\\values-hu\\values-hu.xml",
                     "from": {
@@ -37,23 +54,6 @@
                         "startOffsets": "313,421,513,628,712,827,950,1027,1102,1193,1286,1381,1475,1575,1668,1763,1858,1949,2040,2123,2233,2343,2443,2554,2663,2782,2964,9611",
                         "endColumns": "107,91,114,83,114,122,76,74,90,92,94,93,99,92,94,94,90,90,82,109,109,99,110,108,118,181,102,83",
                         "endOffsets": "416,508,623,707,822,945,1022,1097,1188,1281,1376,1470,1570,1663,1758,1853,1944,2035,2118,2228,2338,2438,2549,2658,2777,2959,3062,9690"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\Administrator\\.gradle\\caches\\transforms-3\\f109e6edadff96f2e47ce714afacc873\\transformed\\core-1.13.1\\res\\values-hu\\values-hu.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,152,254,356,457,560,667,777",
-                        "endColumns": "96,101,101,100,102,106,109,100",
-                        "endOffsets": "147,249,351,452,555,662,772,873"
-                    },
-                    "to": {
-                        "startLines": "38,39,40,41,42,43,44,116",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "3471,3568,3670,3772,3873,3976,4083,9930",
-                        "endColumns": "96,101,101,100,102,106,109,100",
-                        "endOffsets": "3563,3665,3767,3868,3971,4078,4188,10026"
                     }
                 }
             ]

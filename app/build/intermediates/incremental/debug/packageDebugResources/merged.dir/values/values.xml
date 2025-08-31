@@ -7,7 +7,8 @@
     <color name="teal_200">#03DAC5</color>
     <color name="teal_700">#018786</color>
     <color name="white">#FFFFFF</color>
-    <string name="app_name">MyApp</string>
+    <string name="app_name">Dice Roller</string>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar"/>
     <style name="Theme.QRCodeGenerator" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         
         <item name="colorPrimary">@color/purple_500</item>

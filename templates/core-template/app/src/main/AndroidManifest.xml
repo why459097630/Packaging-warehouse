@@ -1,9 +1,8 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="{{NDJC_PACKAGE_ID}}">
+﻿<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 权限（按需注入） -->
+    <!-- 鏉冮檺锛堟寜闇€娉ㄥ叆锛?-->
     {{#NDJC_PERMISSIONS}}
-    <!-- 例如：<uses-permission android:name="android.permission.INTERNET"/> -->
+    <!-- 渚嬪锛?uses-permission android:name="android.permission.INTERNET"/> -->
     {{/NDJC_PERMISSIONS}}
 
     <application
