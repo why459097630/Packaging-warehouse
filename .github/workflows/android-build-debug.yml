@@ -1,69 +1,46 @@
 name: Android Debug Build
-
 on:
-  workflow_dispatch:
-  repository_dispatch:
-    types: [generate-apk]
-
-concurrency:
-  group: android-debug-${{ github.ref }}
-  cancel-in-progress: true
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
-      - name: Gradle cache
-        uses: gradle/gradle-build-action@v3
+      # 仅做 Gradle 缓存/初始化；真正执行要用 run: ./gradlew ...
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
+      # 可选：保留你现有的“写入 ndjc_info.json”和“准备 debug.keystore”的脚本
+      # - name: Write NDJC info asset + request logs
+      #   run: |
+      #     # 你的脚本…
 
-      # 写入 APK 内的摘要 + 请求日志（可留空由 CI 触发方注入）
-      - name: Write NDJC info asset + request logs
+      # - name: Ensure debug keystore
+      #   run: |
+      #     # 你的脚本…
+
+      - name: Build Debug APK
         run: |
-          node -e "const fs=require('fs'),p=require('path');
-          const nd=(d)=>fs.mkdirSync(d,{recursive:true});
-          const day=new Date().toISOString().slice(0,10);
-          const buildId=process.env.NDJC_BUILD_ID || ('ci_'+Date.now());
-          const anchors=(process.env.NDJC_ANCHORS||'').split(',').filter(Boolean);
-          const api=(process.env.NDJC_API||'{}');
-          const ad=p.join('app','src','main','assets'); nd(ad);
-          const info={template:process.env.NDJC_TEMPLATE||'core-template',
-                      prompt:process.env.NDJC_PROMPT||'demo',
-                      buildId, anchors, apiPreview: api.slice(0,8192),
-                      buildTime:new Date().toISOString()};
-          fs.writeFileSync(p.join(ad,'ndjc_info.json'), JSON.stringify(info,null,2),'utf8');
-          const rd=p.join('requests',day,buildId); nd(rd);
-          fs.writeFileSync(p.join(rd,'meta.json'), JSON.stringify(info,null,2),'utf8');
-          fs.writeFileSync(p.join(rd,'api_response.json'), api, 'utf8');
-          console.log('written:', rd);"
-        env:
-          NDJC_TEMPLATE: ${{ github.event.client_payload.template }}
-          NDJC_PROMPT:   ${{ github.event.client_payload.prompt }}
-          NDJC_BUILD_ID: ${{ github.event.client_payload.buildId }}
-          NDJC_ANCHORS:  ${{ join(github.event.client_payload.anchors, ',') }}
-          NDJC_API:      ${{ toJson(github.event.client_payload.apiResponse) }}
+          chmod +x ./gradlew
+          ./gradlew --no-daemon clean assembleDebug
+          echo "=== APKs produced ==="
+          ls -lah app/build/outputs/apk/debug || true
 
-      # ★ 关键修复：CI 上生成默认 debug.keystore
-      - name: Ensure debug keystore
-        run: |
-          mkdir -p ~/.android
-          if [ ! -f ~/.android/debug.keystore ]; then
-            keytool -genkeypair -v \
-              -keystore ~/.android/debug.keystore \
-              -storepass android -keypass android \
-              -alias androiddebugkey \
-              -dname "CN=Android Debug,O=Android,C=US" \
-              -keyalg RSA -keysize 2048 -validity 10000
-          fi
-          ls -l ~/.android
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
