@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.app.generated.app-mergeDebugResources-29:/values-nb/values-nb.xml",
+            "outputFile": "com.ndjc.app-mergeDebugResources-29:/values-nb/values-nb.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Administrator\\.gradle\\caches\\transforms-3\\0ddc4e1d5520ba01ea7f7bb0fac75a8d\\transformed\\appcompat-1.7.0\\res\\values-nb\\values-nb.xml",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Administrator\\.gradle\\caches\\transforms-3\\f109e6edadff96f2e47ce714afacc873\\transformed\\core-1.13.1\\res\\values-nb\\values-nb.xml",
+                    "source": "C:\\Users\\Administrator\\.gradle\\caches\\transforms-3\\021bc9d44df6f42012b7058b9255f71b\\transformed\\core-1.13.0\\res\\values-nb\\values-nb.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",

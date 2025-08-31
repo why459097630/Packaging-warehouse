@@ -1,0 +1,29 @@
+﻿--------- beginning of crash
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: FATAL EXCEPTION: main
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: Process: com.ndjc.app, PID: 4645
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: java.lang.RuntimeException: Unable to start activity ComponentInfo{com.ndjc.app/com.ndjc.app.MainActivity}: java.lang.IllegalStateException: You need to use a Theme.AppCompat theme (or descendant) with this activity.
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4280)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:4467)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:222)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeNonLifecycleItem(TransactionExecutor.java:133)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeTransactionItems(TransactionExecutor.java:103)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:80)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2823)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:110)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:248)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:338)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:9067)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:593)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:932)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: Caused by: java.lang.IllegalStateException: You need to use a Theme.AppCompat theme (or descendant) with this activity.
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at androidx.appcompat.app.AppCompatDelegateImpl.createSubDecor(AppCompatDelegateImpl.java:902)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at androidx.appcompat.app.AppCompatDelegateImpl.ensureSubDecor(AppCompatDelegateImpl.java:865)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at androidx.appcompat.app.AppCompatDelegateImpl.setContentView(AppCompatDelegateImpl.java:748)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at androidx.appcompat.app.AppCompatActivity.setContentView(AppCompatActivity.java:197)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at com.ndjc.app.MainActivity.onCreate(MainActivity.java:12)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:9155)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:9133)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1521)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4262)
+08-31 04:35:40.694  4645  4645 E AndroidRuntime: 	... 13 more

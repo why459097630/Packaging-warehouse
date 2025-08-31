@@ -1,7 +1,5 @@
 # Lamborghini Encyclopedia
-Generated at: 2025-08-17T08:08:06.796Z
+Generated at: 2025-08-25T07:53:39.099Z
 
 Prompt:
-> Build an Android app called "Lamborghini Encyclopedia".
-Cover every Lamborghini model with year, engine, power, and a photo for each.
-Include search and filters by decade.
+> 测试：生成一个介绍菜品的安卓app，要可以上传照片和文字介绍，要有标价，要有登录系统，还有留言系统
