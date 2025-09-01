@@ -1,3 +1,0 @@
-prompt: 生成一个介绍菜品的app，可以自由上传图片和文字介绍，要有标价，要有用户登录系统
-template: form-template
-when: 2025-08-21T03:26:32.384Z
