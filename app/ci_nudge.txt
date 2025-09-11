@@ -1,3 +1,0 @@
-2025-08-19T12:39:45.805Z
-com.example.app
-form-template

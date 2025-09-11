@@ -1,85 +1,84 @@
-// app/build.gradle  （Groovy DSL）
 plugins {
     id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
 }
+
+/** 可选签名：环境变量控制
+ *  NDJC_SIGNING_DISABLED=1           → 关闭签名
+ *  NDJC_KEYSTORE_PATH/…(其余密码等)   → 开启签名所需参数
+ */
+def SIGNING_DISABLED = (System.getenv('NDJC_SIGNING_DISABLED') ?: '0') == '1'
+def KEYSTORE_PATH    = System.getenv('NDJC_KEYSTORE_PATH')
+def HAS_KEYSTORE     = (KEYSTORE_PATH != null && KEYSTORE_PATH.trim())
 
 android {
     namespace "com.ndjc.app"
-
-    // 与 CI 的 Java 17 对齐
     compileSdk 34
 
     defaultConfig {
         applicationId "com.ndjc.app"
         minSdk 24
         targetSdk 34
-
         versionCode 1
         versionName "1.0"
-    }
-
-    // Java 17（AGP 8+ 推荐）
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-
-    // 你在 MainActivity 里用到了 ViewBinding
-    buildFeatures {
-        viewBinding true
-        // dataBinding false // 如无需要可保持默认
+        // NDJC:LOCALE_CONFIG
     }
 
     signingConfigs {
-        // 只配置 release，debug 走 AGP 默认的 debug.keystore（不存在会自动生成）
         release {
-            // CI/本地通过环境变量注入：SIGNING_STORE_FILE / SIGNING_STORE_PASSWORD / SIGNING_KEY_ALIAS / SIGNING_KEY_PASSWORD
-            def sf = System.getenv("SIGNING_STORE_FILE")
-            def sp = System.getenv("SIGNING_STORE_PASSWORD")
-            def ka = System.getenv("SIGNING_KEY_ALIAS")
-            def kp = System.getenv("SIGNING_KEY_PASSWORD")
-
-            if (sf && sp && ka && kp) {
-                storeFile file(sf)
-                storePassword sp
-                keyAlias ka
-                keyPassword kp
-            } else {
-                // 可选降级：本地没有正式签名时，如果机器上已有 debug.keystore，则临时使用，保证 release 构建也能过
-                def homeDir = System.properties['user.home']
-                def dbg = file("${homeDir}/.android/debug.keystore")
-                if (dbg.exists()) {
-                    storeFile dbg
-                    storePassword "android"
-                    keyAlias "androiddebugkey"
-                    keyPassword "android"
-                }
+            // 只有在未禁用签名且提供了 keystore 路径时才配置签名文件与口令
+            if (!SIGNING_DISABLED && HAS_KEYSTORE) {
+                storeFile file(KEYSTORE_PATH)
+                storePassword (System.getenv('NDJC_KEYSTORE_PASSWORD') ?: '')
+                keyAlias      (System.getenv('NDJC_KEY_ALIAS')          ?: '')
+                keyPassword   (System.getenv('NDJC_KEY_PASSWORD')       ?: '')
             }
         }
     }
 
     buildTypes {
-        debug {
-            // 不指定 signingConfig → 使用/自动生成默认 debug.keystore
-            // 关闭混淆，便于调试
-            minifyEnabled false
-        }
         release {
-            signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt') /* NDJC:PROGUARD_FILES_EXTRA */
+
+            // 仅在签名可用时挂载到 release，否则不要触发解析期错误
+            if (!SIGNING_DISABLED && HAS_KEYSTORE) {
+                signingConfig signingConfigs.release
+            }
+        }
+        debug {
             minifyEnabled false
-            shrinkResources false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    packagingOptions {
+        /* NDJC:PACKAGING_RULES */
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+
+    buildFeatures { compose true }
+    composeOptions { kotlinCompilerExtensionVersion '1.5.3' }
 }
 
 dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation "androidx.datastore:datastore-preferences:1.1.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
 
-    // 需要的话再加测试依赖
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    implementation platform('androidx.compose:compose-bom:2024.05.00')
+    implementation 'androidx.activity:activity-compose:1.8.2'
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.material3:material3'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
 }

@@ -4,10 +4,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
 
+// 如果你用了上面的 NdjcCornerRadius（类型是 Dp），直接传即可
 val AppShapes = Shapes(
-  extraSmall = RoundedCornerShape({{NDJC_CORNER_RADIUS_DP}}.dp),
-  small      = RoundedCornerShape({{NDJC_CORNER_RADIUS_DP}}.dp),
-  medium     = RoundedCornerShape({{NDJC_CORNER_RADIUS_DP}}.dp),
-  large      = RoundedCornerShape({{NDJC_CORNER_RADIUS_DP}}.dp),
-  extraLarge = RoundedCornerShape({{NDJC_CORNER_RADIUS_DP}}.dp)
+    extraSmall = RoundedCornerShape(NdjcCornerRadius),
+    small      = RoundedCornerShape(NdjcCornerRadius),
+    medium     = RoundedCornerShape(NdjcCornerRadius),
+    large      = RoundedCornerShape(NdjcCornerRadius),
+    extraLarge = RoundedCornerShape(NdjcCornerRadius),
 )

@@ -1,17 +1,39 @@
-dependencies {
-    // 原有依赖...
-    
-    // 显式声明 core / core-ktx 版本
-    implementation "androidx.core:core:1.10.1"
-    implementation "androidx.core:core-ktx:1.10.1"
-    
-    // 防止被其它库传递地抬升到 1.12/1.13
-    constraints {
-        implementation("androidx.core:core:1.10.1") {
-            because("避免 1.12/1.13 中 values.xml 的 <color> 导致 AAPT2 Invalid <color>")
-        }
-        implementation("androidx.core:core-ktx:1.10.1") {
-            because("与 core 版本保持一致，避免被抬升")
-        }
+plugins {
+    //NDJC:PLUGINS_EXTRA
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace "com.ndjc.app"
+    compileSdk NDJC:COMPILE_SDK
+
+    defaultConfig {
+        applicationId "NDJC:PACKAGE_NAME"
+        minSdk NDJC:MIN_SDK
+        targetSdk NDJC:TARGET_SDK
+        versionCode NDJC:VERSION_CODE
+        versionName "NDJC:VERSION_NAME"
     }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug { }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+}
+
+dependencies {
+    //NDJC:DEPENDENCIES_EXTRA
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
 }

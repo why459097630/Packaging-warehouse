@@ -1,12 +1,12 @@
 pluginManagement {
     repositories {
+        gradlePluginPortal()
         google()
         mavenCentral()
-        gradlePluginPortal()
     }
     plugins {
-        id("com.android.application") version "8.2.2"
-        id("org.jetbrains.kotlin.android") version "1.9.0"
+        id("com.android.application") version "8.2.1"
+        id("org.jetbrains.kotlin.android") version "1.9.10"   // <<< 关键
     }
 }
 
@@ -18,5 +18,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "form-template"
+rootProject.name = "NDJCApp"
 include(":app")

@@ -1,8 +1,15 @@
 name: Android Debug Build
+
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      runId:
+        description: "NDJC run id (for tracing)"
+        type: string
+        required: false
+        default: ""
 
 jobs:
   build:
@@ -18,29 +25,20 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # 仅做 Gradle 缓存/初始化；真正执行要用 run: ./gradlew ...
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # 可选：保留你现有的“写入 ndjc_info.json”和“准备 debug.keystore”的脚本
-      # - name: Write NDJC info asset + request logs
-      #   run: |
-      #     # 你的脚本…
-
-      # - name: Ensure debug keystore
-      #   run: |
-      #     # 你的脚本…
+      - name: Make gradlew executable
+        working-directory: app
+        run: chmod +x ./gradlew
 
       - name: Build Debug APK
-        run: |
-          chmod +x ./gradlew
-          ./gradlew --no-daemon clean assembleDebug
-          echo "=== APKs produced ==="
-          ls -lah app/build/outputs/apk/debug || true
+        working-directory: app
+        run: ./gradlew --no-daemon clean assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug.apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: app-debug
+          path: app/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error

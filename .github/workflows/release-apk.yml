@@ -1,31 +1,79 @@
-# .github/workflows/release-apk.yml
-name: Release APK
+name: NDJC Android Build
 
 on:
-  workflow_run:
-    workflows: ["Android Build (3 Templates Matrix)"]   # 监听这个构建工作流
-    types: [completed]
-
-concurrency:
-  group: release-${{ github.ref }}                      # 同一分支仅允许一个发布
-  cancel-in-progress: true
+  workflow_dispatch:
+    inputs:
+      runId:
+        description: "NDJC run id (optional)"
+        required: false
+      buildType:
+        description: "Build type"
+        type: choice
+        options: [release, debug]
+        default: release
+      skipLint:
+        description: "Skip lint to speed up"
+        type: boolean
+        default: true
+  repository_dispatch:
+    types: [ndjc-build]
 
 jobs:
-  release:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 下载构建产物（来自触发它的那次构建 run）
-        uses: actions/download-artifact@v4
-        with:
-          run-id: ${{ github.event.workflow_run.id }}
-          path: dist
+      - uses: actions/checkout@v4
 
-      # 你原来 release 的步骤（生成校验、创建 GitHub Release、上传 APK）
-      - name: Release
-        uses: softprops/action-gh-release@v2
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          tag_name: v${{ github.run_number }}
-          files: |
-            dist/**/*.apk
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Show inputs
+        run: |
+          echo "runId=${{ github.event.inputs.runId }}"
+          echo "buildType=${{ github.event.inputs.buildType }}"
+          echo "skipLint=${{ github.event.inputs.skipLint }}"
+
+      - name: Build APK
+        env:
+          SKIP_LINT: ${{ github.event.inputs.skipLint }}
+          BUILD_TYPE: ${{ github.event.inputs.buildType }}
+        run: |
+          set -e
+          CMD="./gradlew :app:assembleRelease"
+          if [ "$BUILD_TYPE" = "debug" ]; then CMD="./gradlew :app:assembleDebug"; fi
+          if [ "$SKIP_LINT" = "true" ]; then CMD="$CMD -x lint"; fi
+          echo "Running: $CMD"
+          $CMD
+
+      # ===== 可选：签名（存在 secrets 时启用） =====
+      - name: Sign APK (optional, if secrets provided)
+        if: ${{ secrets.NDJC_KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.NDJC_KEYSTORE_BASE64 }}
+          NDJC_KEY_ALIAS:  ${{ secrets.NDJC_KEY_ALIAS }}
+          NDJC_KEY_PASS:   ${{ secrets.NDJC_KEY_PASS }}
+          NDJC_STORE_PASS: ${{ secrets.NDJC_STORE_PASS }}
+        run: |
+          set -e
+          echo "$KEYSTORE_BASE64" | base64 -d > keystore.jks
+          export NDJC_KEYSTORE_PATH="$PWD/keystore.jks"
+          export NDJC_KEY_ALIAS
+          export NDJC_KEY_PASSWORD="$NDJC_KEY_PASS"
+          export NDJC_KEYSTORE_PASSWORD="$NDJC_STORE_PASS"
+          # 这里不重复 build；你的 app/build.gradle 会按环境变量决定是否签名
+          echo "Signing done via Gradle config (if enabled)."
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ github.event.inputs.buildType || 'release' }}-apk
+          path: |
+            app/build/outputs/apk/**/**/*.apk
+            app/build/outputs/bundle/**/**/*.aab

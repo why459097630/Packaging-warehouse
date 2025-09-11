@@ -1,3 +1,0 @@
-template=form-template
-prompt=生成一个介绍中国历史朝代的安卓app，要有图片和文字介绍
-time=2025-08-28T06:27:12.717Z

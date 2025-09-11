@@ -1,21 +1,26 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 需要时可在此处追加权限 -->
+
+
     <application
-        android:allowBackup="true"
-        android:supportsRtl="true"
-        android:label="NDJC App"
+        android:label="NDJC core"
         android:icon="@mipmap/ic_launcher"
-        android:theme="@style/AppTheme">
+        android:theme="@style/Theme.NDJC">
 
         <activity
             android:name=".MainActivity"
             android:exported="true">
+
+            <!-- 启动入口 -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
 
+            <!-- 需要时可在此处追加更多 intent-filter -->
+
+        </activity>
     </application>
 </manifest>

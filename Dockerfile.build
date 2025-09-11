@@ -1,0 +1,62 @@
+# ---------- NDJC Android Build Environment (with pwsh) ----------
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 1) apt 换国内镜像（可按需改为清华/腾讯）
+RUN sed -i 's@//archive.ubuntu.com/@//mirrors.aliyun.com/@g' /etc/apt/sources.list \
+ && sed -i 's@//security.ubuntu.com/@//mirrors.aliyun.com/@g' /etc/apt/sources.list
+
+# 2) 基础工具 + JDK
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl wget unzip git zip \
+    openssh-client locales tzdata fontconfig \
+    openjdk-17-jdk gpg apt-transport-https software-properties-common \
+ && rm -rf /var/lib/apt/lists/*
+
+# 3) 安装 PowerShell（pwsh）
+RUN apt-get update && apt-get install -y --no-install-recommends wget apt-transport-https software-properties-common \
+ && wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb \
+ && dpkg -i packages-microsoft-prod.deb \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends powershell \
+ && rm -rf /var/lib/apt/lists/* packages-microsoft-prod.deb
+
+# 4) 时区/语言
+RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo Asia/Shanghai > /etc/timezone \
+ && locale-gen en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
+# 5) ANDROID SDK 变量
+ENV ANDROID_SDK_ROOT=/opt/android-sdk
+ENV ANDROID_HOME=${ANDROID_SDK_ROOT}
+ENV PATH=$PATH:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools
+
+# 6) 复制你已下载好的 commandline tools ZIP（放到仓库根目录）
+#    官方地址： https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+COPY commandlinetools-linux-11076708_latest.zip /tmp/
+
+# 7) 解压到 cmdline-tools/latest
+RUN mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools/tmp \
+ && unzip -q /tmp/commandlinetools-linux-11076708_latest.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools/tmp \
+ && mv ${ANDROID_SDK_ROOT}/cmdline-tools/tmp/cmdline-tools ${ANDROID_SDK_ROOT}/cmdline-tools/latest \
+ && rm -rf ${ANDROID_SDK_ROOT}/cmdline-tools/tmp /tmp/commandlinetools-linux-11076708_latest.zip
+
+# 8) sdkmanager：接受许可 + 安装固定版本组件（33）
+ARG ANDROID_PLATFORM=android-33
+ARG BUILD_TOOLS=33.0.1
+RUN mkdir -p /root/.android && touch /root/.android/repositories.cfg
+RUN yes | sdkmanager --licenses >/dev/null \
+ && sdkmanager --no_https \
+    "platform-tools" \
+    "platforms;${ANDROID_PLATFORM}" \
+    "build-tools;${BUILD_TOOLS}"
+
+# 8.1) 追加：预装 34 平台与 34.0.0 构建工具（避免构建时再联网下载）
+RUN sdkmanager --no_https "platforms;android-34" "build-tools;34.0.0"
+
+# 9) 工作目录 & 默认 shell
+WORKDIR /workspace
+SHELL ["pwsh", "-Command"]
+CMD ["pwsh"]
