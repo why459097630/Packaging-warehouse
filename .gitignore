@@ -6,3 +6,12 @@ local.properties
 *.keystore
 *.jks
 **/*.apk
+
+# NDJC ignore
+*.zip
+*.tar.gz
+*.apk
+*.aab
+app/build/
+**/build/
+
