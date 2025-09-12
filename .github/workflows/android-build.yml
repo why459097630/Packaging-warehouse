@@ -16,6 +16,7 @@ jobs:
           fetch-depth: 0
           clean: true
 
+      # 调试：看看工作目录里到底有什么
       - name: Show workspace (debug)
         run: |
           set -x
@@ -39,9 +40,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # 先用 Git 索引找（最快）
           GW=$(git ls-files | grep -x 'gradlew' || true)
-          # 若索引没找到，再实际扫描一层子目录
           if [ -z "${GW}" ]; then
             GW=$(find . -maxdepth 2 -type f -name 'gradlew' -print -quit || true)
           fi
@@ -54,7 +53,7 @@ jobs:
           echo "gw=${GW}" >> "$GITHUB_OUTPUT"
           chmod +x "${GW}"
 
-      # （可选）解码签名；直接判断 secrets 是否存在
+      # 可选签名
       - name: Decode keystore (optional)
         if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         run: |
