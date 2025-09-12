@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0
           clean: true
 
-      # 调试：看看工作目录里到底有什么
+      # 调试：看当前工作目录到底有什么
       - name: Show workspace (debug)
         run: |
           set -x
@@ -34,7 +34,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # 关键：定位 gradlew 的真实路径
+      # 关键：定位 gradlew 的真实路径，并赋权
       - name: Locate gradlew
         id: gw
         shell: bash
@@ -45,7 +45,7 @@ jobs:
             GW=$(find . -maxdepth 2 -type f -name 'gradlew' -print -quit || true)
           fi
           if [ -z "${GW}" ]; then
-            echo "❌ gradlew not found in workspace. Listing tree for debug:"
+            echo "❌ gradlew not found in workspace. Tree:"
             find . -maxdepth 2 -printf '%p\n'
             exit 1
           fi
@@ -53,7 +53,7 @@ jobs:
           echo "gw=${GW}" >> "$GITHUB_OUTPUT"
           chmod +x "${GW}"
 
-      # 可选签名
+      # （可选）解码签名
       - name: Decode keystore (optional)
         if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         run: |
