@@ -1,12 +1,13 @@
-name: Android Build
+name: Android Debug Build
 
 on:
   workflow_dispatch:
-    inputs:
-      runId:
-        description: "optional trace id"
-        required: false
-        default: ""
+  push:
+    paths:
+      - 'app/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - '.github/workflows/android-build.yml'
 
 jobs:
   build:
@@ -20,71 +21,64 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
-      - name: Gradle cache
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # ====== 可选签名：只有配置了 ANDROID_KEYSTORE_BASE64 才会执行 ======
+      # ---------- 可选签名（和你之前一致） ----------
       - name: Decode keystore (optional)
         if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
-        shell: bash
-        run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$HOME/release.jks"
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > $HOME/release.jks
 
       - name: Export signing env (optional)
         if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
-        shell: bash
         run: |
-          echo "NDJC_KEYSTORE_PATH=$HOME/release.jks" >> "$GITHUB_ENV"
-          echo "NDJC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> "$GITHUB_ENV"
-          echo "NDJC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> "$GITHUB_ENV"
-          echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> "$GITHUB_ENV"
+          echo "NDJC_KEYSTORE_PATH=$HOME/release.jks" >> $GITHUB_ENV
+          echo "NDJC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "NDJC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
+          echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> $GITHUB_ENV
 
-      # ====== 调试：看看 Runner 里是否能看到 gradlew ======
-      - name: Show tree (debug)
-        shell: bash
-        run: |
-          echo "== root ==" && ls -la
-          echo "== app ==" && ls -la app || true
-
-      # 自动定位 gradlew（在根或 app/ 下）
+      # ---------- 定位 gradlew 并设置可执行 ----------
       - name: Locate gradlew
         id: gw
         shell: bash
         run: |
-          if [ -f ./gradlew ]; then
-            echo "path=./gradlew" >> $GITHUB_OUTPUT
-          elif [ -f ./app/gradlew ]; then
-            echo "path=./app/gradlew" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          WRAPPER="$(git ls-files | grep -E '(^|/)gradlew$' | head -n1 || true)"
+          if [[ -n "$WRAPPER" ]]; then
+            echo "Found wrapper at: $WRAPPER"
+            echo "path=$WRAPPER" >> "$GITHUB_OUTPUT"
           else
-            echo "❌ gradlew not found"; exit 1
+            echo "No gradlew found; will use 'gradle' command provided by setup-gradle action."
+            echo "path=" >> "$GITHUB_OUTPUT"
           fi
-          echo "Using $(cat $GITHUB_OUTPUT)"
 
-      # ====== 构建（未配签名则自动关闭）======
+      - name: Make gradlew executable (if exists)
+        if: ${{ steps.gw.outputs.path != '' }}
+        run: chmod +x '${{ steps.gw.outputs.path }}'
+
+      # ---------- 构建 ----------
       - name: Build release
-        shell: bash
         env:
+          # 没配置签名就自动关闭签名
           NDJC_SIGNING_DISABLED: ${{ secrets.ANDROID_KEYSTORE_BASE64 == '' && '1' || '' }}
+        shell: bash
         run: |
-          set -e
-          bash "${{ steps.gw.outputs.path }}" :app:clean || bash "${{ steps.gw.outputs.path }}" clean
-          bash "${{ steps.gw.outputs.path }}" :app:assembleRelease -x lint || \
-          bash "${{ steps.gw.outputs.path }}" assembleRelease -x lint
+          set -euxo pipefail
+          if [[ -n "${{ steps.gw.outputs.path }}" ]]; then
+            G="${{ steps.gw.outputs.path }}"
+          else
+            G="gradle"   # fallback：直接用 gradle 命令
+          fi
+          $G :app:clean
+          $G :app:assembleRelease -x lint
 
       - name: Grab APK
         id: apk
         shell: bash
         run: |
-          set -e
-          APK=$(ls -t app/build/outputs/apk/release/*.apk 2>/dev/null | head -n1 || true)
-          if [ -z "$APK" ]; then
-            APK=$(ls -t build/outputs/apk/release/*.apk 2>/dev/null | head -n1 || true)
-          fi
-          if [ -z "$APK" ]; then
-            echo "❌ APK not found"; exit 1
-          fi
+          APK=$(ls -t app/build/outputs/apk/release/*.apk | head -n1)
           echo "apk=$APK" >> "$GITHUB_OUTPUT"
           ls -lh "$APK"
 
