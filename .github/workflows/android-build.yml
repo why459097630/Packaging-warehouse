@@ -77,6 +77,25 @@ jobs:
           chmod +x ./gradlew
           ./gradlew --version
 
+      # 便于快速定位 build.gradle 是否被错误替换（如 android {{）
+      - name: Show Gradle file (head)
+        run: |
+          echo "==== list app dir ===="
+          ls -al app || true
+
+          FILE=""
+          if [ -f app/build.gradle ]; then FILE=app/build.gradle; fi
+          if [ -f app/build.gradle.kts ]; then FILE=app/build.gradle.kts; fi
+          if [ -z "$FILE" ]; then
+            echo "No app/build.gradle(.kts) found"; exit 1
+          fi
+          echo "Using $FILE"
+
+          echo "---- $FILE head (1..120) ----"
+          nl -ba "$FILE" | sed -n '1,120p'
+          echo "---- $FILE tail (last 30) ----"
+          nl -ba "$FILE" | tail -n 30
+
       # ===== 解码签名（可选）======
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
