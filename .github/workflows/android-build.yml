@@ -3,20 +3,30 @@ name: Android Debug Build
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
+    paths:
+      - 'requests/**/05_summary.md'  # 仅最终摘要触发一次
+      - 'app/**'                     # 代码改动也可触发
+      - 'templates/**'               # 模板改动也可触发
+  workflow_dispatch: {}
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         shell: bash
         working-directory: ${{ github.workspace }}
 
     steps:
-      # 方便排错：指纹+列目录
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: FINGERPRINT
         run: |
@@ -54,9 +64,8 @@ jobs:
           ./gradlew --version
 
       # ===== 解码签名（可选）======
-      # 关键：先把 secret 放进 env.KS，再用 if: env.KS != '' 判断
       - name: Decode keystore (optional)
-        if: ${{ env.KS != '' }}
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         env:
           KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
