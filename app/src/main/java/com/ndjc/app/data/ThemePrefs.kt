@@ -1,40 +1,46 @@
 package com.ndjc.app.data
 
 import android.content.Context
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import com.ndjc.app.ui.theme.ThemeMode
 
-// 为 Context 创建 DataStore 委托（文件名可自定义）
-private const val DS_NAME = "settings"
-val Context.dataStore by preferencesDataStore(name = DS_NAME)
-
-object ThemePrefs {
-    private val KEY_DARK_MODE = booleanPreferencesKey("dark_mode")
-    private val KEY_ACCENT    = intPreferencesKey("accent_color")
-
-    /** 是否深色模式 */
-    fun isDark(context: Context): Flow<Boolean> =
-        context.dataStore.data.map { prefs: Preferences ->
-            prefs[KEY_DARK_MODE] ?: false
-        }
-
-    /** 设置深色模式 */
-    suspend fun setDark(context: Context, value: Boolean) {
-        context.dataStore.edit { it[KEY_DARK_MODE] = value }
+private val Context.dataStore by preferencesDataStore(name = "ui_prefs")
+object ThemeKeys {
+  val MODE = intPreferencesKey("theme_mode")      // 0=SYSTEM 1=LIGHT 2=DARK
+  val DYNAMIC = booleanPreferencesKey("dynamic")  // 动态色开关
+}
+class ThemePrefs(private val context: Context) {
+  val themeMode: Flow<ThemeMode> = context.dataStore.data.map {
+    when (it[ThemeKeys.MODE] ?: modeFromDefault()) {
+      1 -> ThemeMode.LIGHT
+      2 -> ThemeMode.DARK
+      else -> ThemeMode.SYSTEM
     }
-
-    /** 强调色（示例：0 表示默认） */
-    fun accent(context: Context): Flow<Int> =
-        context.dataStore.data.map { prefs: Preferences ->
-            prefs[KEY_ACCENT] ?: 0
-        }
-
-    suspend fun setAccent(context: Context, value: Int) {
-        context.dataStore.edit { it[KEY_ACCENT] = value }
+  }
+  val dynamicColor: Flow<Boolean> = context.dataStore.data.map {
+    it[ThemeKeys.DYNAMIC] ?: true
+  }
+  suspend fun setThemeMode(mode: ThemeMode) {
+    context.dataStore.edit {
+      it[ThemeKeys.MODE] = when (mode) {
+        ThemeMode.SYSTEM -> 0
+        ThemeMode.LIGHT  -> 1
+        ThemeMode.DARK   -> 2
+      }
+    }
+  }
+  suspend fun setDynamicColor(enabled: Boolean) {
+    context.dataStore.edit { it[ThemeKeys.DYNAMIC] = enabled }
+  }
+  private fun modeFromDefault(): Int =
+    when ("{{NDJC_THEME_MODE}}".lowercase()) {
+      "light" -> 1
+      "dark"  -> 2
+      else    -> 0
     }
 }
