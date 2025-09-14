@@ -2,11 +2,13 @@ name: Android Debug Build
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - 'ndjc-run/**'          # ← 新增：从 API 推送 app 到独立分支时触发
     paths:
-      - 'requests/**/05_summary.md'
-      - 'app/**'
+      - 'app/**'               # ← 分支上 app 目录变化触发
       - 'templates/**'
+      - 'requests/**/05_summary.md'  # 如果仍把审计产物写到 main，也可用它触发
   workflow_dispatch: {}
 
 concurrency:
@@ -69,7 +71,7 @@ jobs:
 
       # ===== 解码签名（可选）======
       - name: Decode keystore (optional)
-        if: ${{ env.KS != '' }}             # ✅ 这里用 env.KS
+        if: ${{ env.KS != '' }}     # ✅ 用 job 级 env 判断是否提供了签名
         run: |
           echo "${KS}" | base64 -d > "$HOME/release.jks"
           {
