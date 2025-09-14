@@ -4,9 +4,9 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'requests/**/05_summary.md'  # 仅最终摘要触发一次
-      - 'app/**'                     # 代码改动也可触发
-      - 'templates/**'               # 模板改动也可触发
+      - 'requests/**/05_summary.md'
+      - 'app/**'
+      - 'templates/**'
   workflow_dispatch: {}
 
 concurrency:
@@ -16,6 +16,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # 把 keystore 提升为 job 级 env，供 if 使用
+    env:
+      KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
     defaults:
       run:
@@ -65,23 +69,21 @@ jobs:
 
       # ===== 解码签名（可选）======
       - name: Decode keystore (optional)
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
-        env:
-          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        if: ${{ env.KS != '' }}             # ✅ 这里用 env.KS
         run: |
-          echo "$KS" | base64 -d > "$HOME/release.jks"
-          echo "NDJC_KEYSTORE_PATH=$HOME/release.jks" >> $GITHUB_ENV
-          echo "NDJC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
-          echo "NDJC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
-          echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> $GITHUB_ENV
+          echo "${KS}" | base64 -d > "$HOME/release.jks"
+          {
+            echo "NDJC_KEYSTORE_PATH=$HOME/release.jks"
+            echo "NDJC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+            echo "NDJC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}"
+            echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}"
+          } >> "$GITHUB_ENV"
 
       # ===== 构建 =====
       - name: Build release
-        env:
-          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           # 没有 keystore 就禁用签名
-          if [ -z "$KS" ]; then export NDJC_SIGNING_DISABLED=1; fi
+          if [ -z "${KS}" ]; then export NDJC_SIGNING_DISABLED=1; fi
           ./gradlew :app:clean :app:assembleRelease -x lint
 
       - name: Locate APK
