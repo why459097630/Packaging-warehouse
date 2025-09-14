@@ -1,7 +1,7 @@
 ﻿package com.ndjc.app
 
-// Hello core
-// Start core
+// 美味菜品
+// 添加菜品
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
