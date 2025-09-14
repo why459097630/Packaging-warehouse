@@ -1,15 +1,22 @@
 name: Android Debug Build
 
 on:
-  push:
-    branches:
-      - main
-      - 'ndjc-run/**'          # ← 新增：从 API 推送 app 到独立分支时触发
-    paths:
-      - 'app/**'               # ← 分支上 app 目录变化触发
-      - 'templates/**'
-      - 'requests/**/05_summary.md'  # 如果仍把审计产物写到 main，也可用它触发
-  workflow_dispatch: {}
+  # 最干净：只允许 API/手动触发。由后端调用
+  # /actions/workflows/<this>.yml/dispatches 并指定 ref=ndjc-run/<runId>
+  workflow_dispatch:
+    inputs:
+      runId:
+        description: "NDJC run id"
+        required: false
+      template:
+        description: "template key (core/simple/form)"
+        required: false
+      appTitle:
+        description: "App title"
+        required: false
+      packageName:
+        description: "Android applicationId"
+        required: false
 
 concurrency:
   group: android-build-${{ github.ref }}
@@ -19,7 +26,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # 把 keystore 提升为 job 级 env，供 if 使用
+    # keystore 提升为 job 级 env，便于条件判断
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
@@ -33,6 +40,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # ref 默认就是触发该 workflow 的分支（后端 dispatch 时传入的 ref）
 
       - name: FINGERPRINT
         run: |
@@ -71,7 +79,7 @@ jobs:
 
       # ===== 解码签名（可选）======
       - name: Decode keystore (optional)
-        if: ${{ env.KS != '' }}     # ✅ 用 job 级 env 判断是否提供了签名
+        if: ${{ env.KS != '' }}
         run: |
           echo "${KS}" | base64 -d > "$HOME/release.jks"
           {
