@@ -1,15 +1,8 @@
 plugins {
+    //
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
 }
-
-/** 可选签名：环境变量控制
- *  NDJC_SIGNING_DISABLED=1           → 关闭签名
- *  NDJC_KEYSTORE_PATH/…(其余密码等)   → 开启签名所需参数
- */
-def SIGNING_DISABLED = (System.getenv('NDJC_SIGNING_DISABLED') ?: '0') == '1'
-def KEYSTORE_PATH    = System.getenv('NDJC_KEYSTORE_PATH')
-def HAS_KEYSTORE     = (KEYSTORE_PATH != null && KEYSTORE_PATH.trim())
 
 android {
     namespace "com.ndjc.app"
@@ -21,39 +14,35 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
-        // NDJC:LOCALE_CONFIG
+
+        // 可选：多语言配置（整行由生成器填充或留空）
+        'zh-rCN', 'en'
     }
 
     signingConfigs {
         release {
-            // 只有在未禁用签名且提供了 keystore 路径时才配置签名文件与口令
-            if (!SIGNING_DISABLED && HAS_KEYSTORE) {
-                storeFile file(KEYSTORE_PATH)
-                storePassword (System.getenv('NDJC_KEYSTORE_PASSWORD') ?: '')
-                keyAlias      (System.getenv('NDJC_KEY_ALIAS')          ?: '')
-                keyPassword   (System.getenv('NDJC_KEY_PASSWORD')       ?: '')
-            }
+            // 从环境变量读取签名参数
+            storeFile file(System.getenv('NDJC_KEYSTORE_PATH') ?: '')
+            storePassword System.getenv('NDJC_KEYSTORE_PASSWORD') ?: ''
+            keyAlias System.getenv('NDJC_KEY_ALIAS') ?: ''
+            keyPassword System.getenv('NDJC_KEY_PASSWORD') ?: ''
         }
-    }
 
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt') /* NDJC:PROGUARD_FILES_EXTRA */
-
-            // 仅在签名可用时挂载到 release，否则不要触发解析期错误
-            if (!SIGNING_DISABLED && HAS_KEYSTORE) {
-                signingConfig signingConfigs.release
-            }
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+            // 由生成器决定是否启用签名（为空则不注入）
+            signingConfig signingConfigs.release
         }
         debug {
             minifyEnabled false
         }
-    }
 
     packagingOptions {
-        /* NDJC:PACKAGING_RULES */
+        // 规则块整体由生成器填充或留空
+
     }
 
     compileOptions {
@@ -61,18 +50,14 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = '17' }
-
     buildFeatures { compose true }
     composeOptions { kotlinCompilerExtensionVersion '1.5.3' }
-}
 
 dependencies {
+    //
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation "androidx.datastore:datastore-preferences:1.1.1"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
 
     implementation platform('androidx.compose:compose-bom:2024.05.00')
     implementation 'androidx.activity:activity-compose:1.8.2'
