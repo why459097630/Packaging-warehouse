@@ -1,38 +1,30 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    //
 }
 
-/** 可选签名：环境变量控制
- *  NDJC_SIGNING_DISABLED=1           → 关闭签名
- *  NDJC_KEYSTORE_PATH/…(其余密码等)   → 开启签名所需参数
- */
-def SIGNING_DISABLED = (System.getenv('NDJC_SIGNING_DISABLED') ?: '0') == '1'
-def KEYSTORE_PATH    = System.getenv('NDJC_KEYSTORE_PATH')
-def HAS_KEYSTORE     = (KEYSTORE_PATH != null && KEYSTORE_PATH.trim())
-
 android {
-    namespace "com.ndjc.app"
-    compileSdk 34
+    namespace 'com.ndjc.app'          // com.meishishow
+    compileSdk 34                      // 34
 
     defaultConfig {
-        applicationId "com.ndjc.app"
-        minSdk 24
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
-        // NDJC:LOCALE_CONFIG
+        applicationId 'com.ndjc.app'  // com.meishishow
+        minSdk 24                      // 24
+        targetSdk 34                   // 34
+        versionCode 1                  // 1
+        versionName '1.0.0'            // 1.0.0
+
+        // resConfigs 'zh-rCN', 'en'            // 生成器会替换成：resConfigs 'en', 'zh-CN' 等
     }
 
     signingConfigs {
         release {
-            // 只有在未禁用签名且提供了 keystore 路径时才配置签名文件与口令
-            if (!SIGNING_DISABLED && HAS_KEYSTORE) {
-                storeFile file(KEYSTORE_PATH)
-                storePassword (System.getenv('NDJC_KEYSTORE_PASSWORD') ?: '')
-                keyAlias      (System.getenv('NDJC_KEY_ALIAS')          ?: '')
-                keyPassword   (System.getenv('NDJC_KEY_PASSWORD')       ?: '')
-            }
+            // 从环境变量读取签名参数（留空则构建时被忽略）
+            storeFile     file(System.getenv('NDJC_KEYSTORE_PATH') ?: '')
+            storePassword System.getenv('NDJC_KEYSTORE_PASSWORD') ?: ''
+            keyAlias      System.getenv('NDJC_KEY_ALIAS') ?: ''
+            keyPassword   System.getenv('NDJC_KEY_PASSWORD') ?: ''
         }
     }
 
@@ -40,12 +32,9 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt') /* NDJC:PROGUARD_FILES_EXTRA */
-
-            // 仅在签名可用时挂载到 release，否则不要触发解析期错误
-            if (!SIGNING_DISABLED && HAS_KEYSTORE) {
-                signingConfig signingConfigs.release
-            }
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            //
+            // signingConfig signingConfigs.release       // 生成器会注入：signingConfig signingConfigs.release
         }
         debug {
             minifyEnabled false
@@ -53,7 +42,7 @@ android {
     }
 
     packagingOptions {
-        /* NDJC:PACKAGING_RULES */
+        //
     }
 
     compileOptions {
@@ -70,9 +59,6 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation "androidx.datastore:datastore-preferences:1.1.1"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
 
     implementation platform('androidx.compose:compose-bom:2024.05.00')
     implementation 'androidx.activity:activity-compose:1.8.2'
@@ -81,4 +67,10 @@ dependencies {
     implementation 'androidx.compose.material3:material3'
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
+
+    // === Preferences DataStore（用于 ThemePrefs 等） ===
+    implementation 'androidx.datastore:datastore-preferences:1.1.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+
+    //
 }
