@@ -24,6 +24,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      # 用来判断是否存在签名材料
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
     steps:
@@ -58,7 +59,7 @@ jobs:
           chmod +x ./gradlew
           ./gradlew --version
 
-      # 可选：解码 keystore；存在即走 release 并期望签名
+      # 解码 keystore（有就解，没就跳过；模板会根据环境变量决定是否启用签名）
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
         run: |
@@ -71,6 +72,7 @@ jobs:
           } >> "$GITHUB_ENV"
           ls -lh "$HOME/release.jks" || true
 
+      # ===== 构建并鲁棒地定位 APK；用环境变量在步骤间传值 =====
       - name: Build
         id: build
         shell: bash
@@ -79,71 +81,88 @@ jobs:
           if [ -z "${KS}" ]; then
             echo "No keystore → build Debug"
             ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace
-            APK=$(ls -t app/build/outputs/apk/debug/*.apk | head -n1)
+            OUTDIR=app/build/outputs/apk/debug
             VARIANT=debug
           else
-            echo "Keystore present → build Release (Gradle will sign if build.gradle enables it)"
+            echo "Keystore present → build Release"
             ./gradlew :app:clean :app:assembleRelease -x lint --stacktrace
-            # 先尝试获取已签名的 release apk（过滤掉 -unsigned）
-            APK=$(ls -t app/build/outputs/apk/release/app-release*.apk | grep -v unsigned | head -n1 || true)
-            if [ -n "$APK" ]; then
-              VARIANT=release
-            else
-              # 暂时留空，交给后续“兜底签名”步骤处理
-              VARIANT=release
-              APK=""
-            fi
+            OUTDIR=app/build/outputs/apk/release
+            VARIANT=release
           fi
-          echo "apk=$APK" >> "$GITHUB_OUTPUT"
-          echo "variant=$VARIANT" >> "$GITHUB_OUTPUT"
-          if [ -n "$APK" ]; then ls -lh "$APK"; fi
-          ls -lh app/build/outputs/apk/release || true
 
-      # ✅ 兜底签名：如果只有 unsigned 且 keystore 存在，则现场签出 app-release.apk
+          echo "== list $OUTDIR =="
+          ls -lah "$OUTDIR" || true
+
+          SIGNED=$(ls -t "$OUTDIR"/*.apk 2>/dev/null | grep -Ev -- '-unsigned\.apk$' | head -n1 || true)
+          UNSIGNED=$(ls -t "$OUTDIR"/*-unsigned.apk 2>/dev/null | head -n1 || true)
+
+          APK=""
+          if [ -n "$SIGNED" ]; then
+            APK="$SIGNED"
+            echo "Found signed APK: $APK"
+          elif [ -n "$UNSIGNED" ]; then
+            APK="$UNSIGNED"
+            echo "Found unsigned APK: $APK"
+          else
+            echo "No APK found under $OUTDIR"
+          fi
+
+          echo "APK=$APK"       >> "$GITHUB_ENV"
+          echo "VARIANT=$VARIANT" >> "$GITHUB_ENV"
+          echo "apk=$APK"         >> "$GITHUB_OUTPUT"
+          echo "variant=$VARIANT" >> "$GITHUB_OUTPUT"
+
+      # 若 release 产物是 unsigned 且密钥存在，则现场签名并覆盖 APK 路径
       - name: Fallback sign release APK (if unsigned but keystore present)
-        if: ${{ env.KS != '' }}
+        if: ${{ env.KS != '' && env.VARIANT == 'release' }}
         shell: bash
         run: |
           set -e
-          # 若上一阶段没找到已签名 apk，就尝试签名 unsigned
-          if [ -z "${{ steps.build.outputs.apk }}" ]; then
-            UNS=$(ls -t app/build/outputs/apk/release/*-unsigned.apk 2>/dev/null | head -n1 || true)
-            if [ -n "$UNS" ]; then
-              OUT="${UNS%-unsigned.apk}.apk"
-              echo "Unsigned APK detected -> signing: $UNS -> $OUT"
-              "$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner" sign \
-                --ks "$NDJC_KEYSTORE_PATH" \
-                --ks-pass pass:"$NDJC_KEYSTORE_PASSWORD" \
-                --key-pass pass:"$NDJC_KEY_PASSWORD" \
-                --ks-key-alias "$NDJC_KEY_ALIAS" \
-                --out "$OUT" "$UNS"
-              echo "apk=$OUT" >> "$GITHUB_OUTPUT"
-              echo "variant=release" >> "$GITHUB_OUTPUT"
-              ls -lh "$OUT"
-            else
-              echo "No unsigned release APK found; nothing to sign."
-            fi
+          if [ -z "${APK}" ]; then
+            echo "No APK path from previous step; cannot sign."
+            exit 0
+          fi
+          if echo "${APK}" | grep -q -- '-unsigned\.apk$'; then
+            OUT="${APK%-unsigned.apk}.apk"
+            echo "Unsigned APK detected → signing: ${APK} -> ${OUT}"
+            "$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner" sign \
+              --ks "$NDJC_KEYSTORE_PATH" \
+              --ks-pass pass:"$NDJC_KEYSTORE_PASSWORD" \
+              --key-pass pass:"$NDJC_KEY_PASSWORD" \
+              --ks-key-alias "$NDJC_KEY_ALIAS" \
+              --out "$OUT" "$APK"
+            ls -lh "$OUT"
+            echo "APK=$OUT" >> "$GITHUB_ENV"
+          else
+            echo "APK appears signed already: ${APK}"
           fi
 
       - name: List release outputs
-        if: ${{ steps.build.outputs.variant == 'release' }}
+        if: ${{ env.VARIANT == 'release' }}
         run: ls -lh app/build/outputs/apk/release || true
 
       - name: Verify Release signature
-        if: ${{ steps.build.outputs.variant == 'release' }}
+        if: ${{ env.VARIANT == 'release' }}
         run: |
-          APK="${{ steps.build.outputs.apk }}"
-          if [ -z "$APK" ]; then
-            # 兜底步骤可能更新了输出，需要从 GITHUB_OUTPUT 接力（由前一步设置）
-            APK="$(grep '^apk=' $GITHUB_OUTPUT | tail -n1 | cut -d= -f2-)"
-          fi
-          test -n "$APK" || { echo "No release APK to verify"; exit 1; }
-          "$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner" verify --verbose --print-certs "$APK"
+          test -n "${APK}" || { echo "No release APK to verify"; exit 1; }
+          "$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner" verify --verbose --print-certs "${APK}"
 
       - name: Summarize
         run: |
-          P="${{ steps.build.outputs.apk }}"
-          if [ -z "$P" ]; then
-            P="$(grep '^apk=' $GITHUB_OUTPUT | tail -n1 | cut -d= -f2-)"
-          fi
-          APPID=$("$ANDROID_SDK_ROOT/cmdli
+          P="${APK}"
+          test -n "$P" || { echo "No APK to summarize"; exit 1; }
+          APPID=$("$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/apkanalyzer" manifest application-id "$P")
+          VC=$("$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/apkanalyzer" manifest version-code "$P")
+          VN=$("$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/apkanalyzer" manifest version-name "$P")
+          echo "### NDJC Android Build" >> $GITHUB_STEP_SUMMARY
+          echo "- Variant: **${VARIANT}**" >> $GITHUB_STEP_SUMMARY
+          echo "- Package: \`$APPID\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Version: \`$VN\` (code $VC)" >> $GITHUB_STEP_SUMMARY
+          echo "- Ref: \`${{ github.ref }}\`  Commit: \`$(git rev-parse --short HEAD)\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ env.VARIANT }}
+          path: ${{ env.APK }}
+          if-no-files-found: error
