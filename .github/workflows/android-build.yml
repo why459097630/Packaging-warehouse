@@ -1,6 +1,7 @@
 name: Android Build
 
 on:
+  # 后端 workflow_dispatch 触发，ref=ndjc-run/<runId>
   workflow_dispatch:
     inputs:
       runId:
@@ -35,7 +36,7 @@ jobs:
       - name: Fingerprint
         run: |
           echo "HEAD -> $(git rev-parse --short HEAD)"
-          echo "RunId: '${{ inputs.runId }}'  Template: '${{ inputs.template }}'  AppTitle: '${{ inputs.appTitle }}'  Pkg: '${{ inputs.packageName }}'"
+          echo "RunId='${{ inputs.runId }}' Template='${{ inputs.template }}' AppTitle='${{ inputs.appTitle }}' Pkg='${{ inputs.packageName }}'"
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -48,11 +49,11 @@ jobs:
 
       - name: Make gradlew executable
         run: |
-          test -f ./gradlew || { echo "gradlew not found"; exit 1; }
+          test -f ./gradlew || { echo "gradlew not found in repo root"; exit 1; }
           chmod +x ./gradlew
           ./gradlew --version
 
-      # ---- 解码 keystore（有密钥才执行） ----
+      # 解码 keystore（有密钥才执行）
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
         run: |
@@ -64,34 +65,42 @@ jobs:
             echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}"
           } >> "$GITHUB_ENV"
 
-      # ---- 选择构建类型：有密钥→Release；否则→Debug ----
+      # 构建：有 keystore -> release；否则 -> debug
       - name: Build
         id: build
         shell: bash
         run: |
           set -e
           if [ -z "${KS}" ]; then
-            echo "No keystore secrets: build Debug (already signed by debug keystore)"
+            echo "No keystore → build Debug"
             ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace
             APK=$(ls -t app/build/outputs/apk/debug/*.apk | head -n1)
-            BUILD_VARIANT=debug
+            VARIANT=debug
           else
-            echo "Keystore present: build Release (will be signed by Gradle)"
+            echo "Keystore present → build Release (Gradle will sign)"
             ./gradlew :app:clean :app:assembleRelease -x lint --stacktrace
-            APK=$(ls -t app/build/outputs/apk/release/*.apk | head -n1)
-            BUILD_VARIANT=release
+            # 只取已签名的，排除 -unsigned
+            APK=$(ls -t app/build/outputs/apk/release/app-release*.apk | grep -v unsigned | head -n1 || true)
+            if [ -z "$APK" ]; then
+              echo "No signed release APK found (only *-unsigned.apk). Check Gradle signing env."
+              ls -lh app/build/outputs/apk/release || true
+              exit 2
+            fi
+            VARIANT=release
           fi
           echo "apk=$APK" >> "$GITHUB_OUTPUT"
-          echo "variant=$BUILD_VARIANT" >> "$GITHUB_OUTPUT"
+          echo "variant=$VARIANT" >> "$GITHUB_OUTPUT"
           ls -lh "$APK"
 
-      # ---- 验签（仅 Release）----
+      - name: List release outputs
+        if: ${{ steps.build.outputs.variant == 'release' }}
+        run: ls -lh app/build/outputs/apk/release
+
       - name: Verify Release signature
         if: ${{ steps.build.outputs.variant == 'release' }}
         run: |
           "$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner" verify --verbose --print-certs "${{ steps.build.outputs.apk }}"
 
-      # ---- 提取包信息并写入 Summary ----
       - name: Summarize
         run: |
           P="${{ steps.build.outputs.apk }}"
