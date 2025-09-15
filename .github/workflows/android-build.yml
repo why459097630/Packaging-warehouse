@@ -1,155 +1,87 @@
 ### .github/workflows/android-build.yml
 name: Android Build
 
+
 on:
-  workflow_dispatch:
-    inputs:
-      runId:
-        description: "NDJC run id"
-        required: false
-      template:
-        description: "template key (core/simple/form)"
-        required: false
-      appTitle:
-        description: "App title"
-        required: false
-      packageName:
-        description: "Android applicationId"
-        required: false
+workflow_dispatch:
+inputs:
+runId:
+description: "NDJC run id"
+required: false
+template:
+description: "template key (core/simple/form)"
+required: false
+appTitle:
+description: "App title"
+required: false
+packageName:
+description: "Android applicationId"
+required: false
+
 
 concurrency:
-  group: android-build-${{ github.ref }}
-  cancel-in-progress: true
+group: android-build-${{ github.ref }}
+cancel-in-progress: true
+
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    env:
-      KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Make gradlew executable
-        run: |
-          chmod +x ./gradlew
-          ./gradlew --version
-
-      - name: Decode keystore (optional)
-        if: ${{ env.KS != '' }}
-        run: |
-          echo "${KS}" | base64 -d > "$HOME/release.jks"
-          {
-            echo "NDJC_KEYSTORE_PATH=$HOME/release.jks"
-            echo "NDJC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
-            echo "NDJC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}"
-            echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}"
-          } >> "$GITHUB_ENV"
-
-      - name: Build release
-        run: |
-          if [ -z "${KS}" ]; then
-            echo "⚠️ No keystore found -> building unsigned APK"
-            ./gradlew :app:clean :app:assembleRelease -x lint
-          else
-            echo "🔑 Keystore detected -> Gradle will sign APK"
-            ./gradlew :app:clean :app:assembleRelease -x lint
-          fi
-
-      - name: Locate APK
-        id: locate
-        run: |
-          APK=$(ls -t app/build/outputs/apk/release/*.apk | head -n1)
-          echo "apk=$APK" >> "$GITHUB_OUTPUT"
-          ls -lh "$APK"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release
-          path: ${{ steps.locate.outputs.apk }}
+build:
+runs-on: ubuntu-latest
 
 
-### templates/core-template/app/build.gradle
-plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
-    // NDJC:PLUGINS_EXTRA
-}
+env:
+KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
-android {
-    namespace 'com.ndjc.app'          // NDJC:PACKAGE_NAME
-    compileSdk 34                     // NDJC:COMPILE_SDK
 
-    defaultConfig {
-        applicationId 'com.ndjc.app'  // NDJC:PACKAGE_NAME
-        minSdk 24                     // NDJC:MIN_SDK
-        targetSdk 34                  // NDJC:TARGET_SDK
-        versionCode 1                 // NDJC:VERSION_CODE
-        versionName '1.0.0'           // NDJC:VERSION_NAME
+steps:
+- name: Checkout
+uses: actions/checkout@v4
+with:
+fetch-depth: 0
 
-        // NDJC:RES_CONFIGS
-    }
 
-    signingConfigs {
-        release {
-            storeFile     file(System.getenv('NDJC_KEYSTORE_PATH') ?: '')
-            storePassword System.getenv('NDJC_KEYSTORE_PASSWORD') ?: ''
-            keyAlias      System.getenv('NDJC_KEY_ALIAS') ?: ''
-            keyPassword   System.getenv('NDJC_KEY_PASSWORD') ?: ''
-        }
-    }
+- name: Setup Java 17
+uses: actions/setup-java@v4
+with:
+distribution: temurin
+java-version: "17"
 
-    buildTypes {
-        release {
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // NDJC:SIGNING_CONFIG   <-- 编排器会注入 signingConfig signingConfigs.release
-        }
-        debug {
-            minifyEnabled false
-        }
-    }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-    kotlinOptions { jvmTarget = '17' }
+- name: Setup Gradle
+uses: gradle/actions/setup-gradle@v3
 
-    buildFeatures { compose true }
-    composeOptions { kotlinCompilerExtensionVersion '1.5.3' }
-}
 
-dependencies {
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.12.0'
+- name: Make gradlew executable
+run: |
+chmod +x ./gradlew
+./gradlew --version
 
-    implementation platform('androidx.compose:compose-bom:2024.05.00')
-    implementation 'androidx.activity:activity-compose:1.8.2'
-    implementation 'androidx.compose.ui:ui'
-    implementation 'androidx.compose.ui:ui-tooling-preview'
-    implementation 'androidx.compose.material3:material3'
-    debugImplementation 'androidx.compose.ui:ui-tooling'
-    debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
-    implementation 'androidx.datastore:datastore-preferences:1.1.1'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+- name: Decode keystore (optional)
+if: ${{ env.KS != '' }}
+run: |
+echo "${KS}" | base64 -d > "$HOME/release.jks"
+{
+echo "NDJC_KEYSTORE_PATH=$HOME/release.jks"
+echo "NDJC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+echo "NDJC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}"
+echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}"
+} >> "$GITHUB_ENV"
 
-    // NDJC:DEPENDENCIES_EXTRA
-}
+
+- name: Build release
+run: |
+if [ -z "${KS}" ]; then
+echo "⚠️ No keystore found -> building unsigned APK"
+./gradlew :app:clean :app:assembleRelease -x lint
+else
+echo "🔑 Keystore detected -> Gradle will sign APK"
+./gradlew :app:clean :app:assembleRelease -x lint
+fi
+
+
+- name: Locate APK
+id: locate
+run: |
+APK=$(ls -t app/build/outputs/apk/release/*.apk | head -n1)
+path: ${{ steps.locate.outputs.apk }}
