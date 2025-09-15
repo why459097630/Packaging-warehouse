@@ -5,7 +5,7 @@
 
 
     <application
-        android:label="NDJC core"
+        android:label="牛太郎餐厅"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.NDJC">
 
