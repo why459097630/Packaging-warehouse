@@ -1,80 +1,99 @@
-plugins {
-id 'com.android.application'
-id 'org.jetbrains.kotlin.android'
-// NDJC:PLUGINS_EXTRA
-}
+// templates/core-template/app/build.gradle  （基于你现有版本的小改：自动启用签名）
 
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    // NDJC:PLUGINS_EXTRA
+}
 
 android {
-namespace 'com.ndjc.app' // NDJC:PACKAGE_NAME
-compileSdk 34 // NDJC:COMPILE_SDK
+    namespace 'com.ndjc.app'          // NDJC:PACKAGE_NAME
+    compileSdk 34                      // NDJC:COMPILE_SDK
 
+    defaultConfig {
+        applicationId 'com.ndjc.app'  // NDJC:PACKAGE_NAME
+        minSdk 24                      // NDJC:MIN_SDK
+        targetSdk 34                   // NDJC:TARGET_SDK
+        versionCode 1                  // NDJC:VERSION_CODE
+        versionName '1.0.0'            // NDJC:VERSION_NAME
 
-defaultConfig {
-applicationId 'com.ndjc.app' // NDJC:PACKAGE_NAME
-minSdk 24 // NDJC:MIN_SDK
-targetSdk 34 // NDJC:TARGET_SDK
-versionCode 1 // NDJC:VERSION_CODE
-versionName '1.0.0' // NDJC:VERSION_NAME
+        // NDJC:RES_CONFIGS            // 生成器会替换为：resConfigs 'en', 'zh-CN' 等
+    }
 
+    /**
+     * 从环境变量读取签名参数；若四项齐全且文件存在，则在 release 中自动启用签名。
+     * 这样即使编排器没有注入 NDJC:SIGNING_CONFIG，也能正常签名；否则输出 *-unsigned.apk。
+     */
+    def _ksPath   = System.getenv('NDJC_KEYSTORE_PATH') ?: ''
+    def _ksPass   = System.getenv('NDJC_KEYSTORE_PASSWORD') ?: ''
+    def _keyAlias = System.getenv('NDJC_KEY_ALIAS') ?: ''
+    def _keyPass  = System.getenv('NDJC_KEY_PASSWORD') ?: ''
+    def _ksFile   = _ksPath ? file(_ksPath) : null
+    def _hasSigning = _ksPath && _ksPass && _keyAlias && _keyPass &&
+            _ksFile != null && _ksFile.exists()
 
-// NDJC:RES_CONFIGS
+    signingConfigs {
+        release {
+            if (_ksFile != null) storeFile _ksFile
+            storePassword _ksPass
+            keyAlias      _keyAlias
+            keyPassword   _keyPass
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // NDJC:PROGUARD_FILES_EXTRA
+
+            // ✅ 自动启用签名（CI 解码并注入 NDJC_KEYSTORE_* 时）
+            if (_hasSigning) {
+                signingConfig signingConfigs.release
+                println("[NDJC] Signing enabled: ${_ksFile}")
+            } else {
+                println("[NDJC] Signing disabled (missing/invalid keystore env); output will be *-unsigned.apk")
+            }
+
+            // （保留锚点，编排器仍可注入。不与上方条件冲突）
+            // NDJC:SIGNING_CONFIG
+        }
+        debug {
+            minifyEnabled false
+        }
+    }
+
+    packagingOptions {
+        // NDJC:PACKAGING_RULES
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+
+    buildFeatures { compose true }
+    composeOptions { kotlinCompilerExtensionVersion '1.5.3' }
 }
-
-
-signingConfigs {
-release {
-storeFile file(System.getenv('NDJC_KEYSTORE_PATH') ?: '')
-storePassword System.getenv('NDJC_KEYSTORE_PASSWORD') ?: ''
-keyAlias System.getenv('NDJC_KEY_ALIAS') ?: ''
-keyPassword System.getenv('NDJC_KEY_PASSWORD') ?: ''
-}
-}
-
-
-buildTypes {
-release {
-minifyEnabled true
-shrinkResources true
-proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-// NDJC:SIGNING_CONFIG <-- 编排器会注入 signingConfig signingConfigs.release
-}
-debug {
-minifyEnabled false
-}
-}
-
-
-compileOptions {
-sourceCompatibility JavaVersion.VERSION_17
-targetCompatibility JavaVersion.VERSION_17
-}
-kotlinOptions { jvmTarget = '17' }
-
-
-buildFeatures { compose true }
-composeOptions { kotlinCompilerExtensionVersion '1.5.3' }
-}
-
 
 dependencies {
-implementation 'androidx.core:core-ktx:1.13.1'
-implementation 'androidx.appcompat:appcompat:1.7.0'
-implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
 
+    implementation platform('androidx.compose:compose-bom:2024.05.00')
+    implementation 'androidx.activity:activity-compose:1.8.2'
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.material3:material3'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
-implementation platform('androidx.compose:compose-bom:2024.05.00')
-implementation 'androidx.activity:activity-compose:1.8.2'
-implementation 'androidx.compose.ui:ui'
-implementation 'androidx.compose.ui:ui-tooling-preview'
-implementation 'androidx.compose.material3:material3'
-debugImplementation 'androidx.compose.ui:ui-tooling'
-debugImplementation 'androidx.compose.ui:ui-test-manifest'
+    // Preferences DataStore（ThemePrefs 依赖）
+    implementation 'androidx.datastore:datastore-preferences:1.1.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
 
-
-implementation 'androidx.datastore:datastore-preferences:1.1.1'
-implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
-
-
-// NDJC:DEPENDENCIES_EXTRA
+    // NDJC:DEPENDENCIES_EXTRA
 }
