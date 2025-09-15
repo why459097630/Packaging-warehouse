@@ -1,87 +1,131 @@
-### .github/workflows/android-build.yml
 name: Android Build
 
-
 on:
-workflow_dispatch:
-inputs:
-runId:
-description: "NDJC run id"
-required: false
-template:
-description: "template key (core/simple/form)"
-required: false
-appTitle:
-description: "App title"
-required: false
-packageName:
-description: "Android applicationId"
-required: false
+  workflow_dispatch:
+    inputs:
+      runId:
+        description: "NDJC run id"
+        required: false
+      template:
+        description: "template key (core/simple/form)"
+        required: false
+      appTitle:
+        description: "App title"
+        required: false
+      packageName:
+        description: "Android applicationId"
+        required: false
 
-
+# 可选：把 runId 带入并发分组，日志更清晰
 concurrency:
-group: android-build-${{ github.ref }}
-cancel-in-progress: true
-
+  group: android-build-${{ github.ref }}-${{ inputs.runId || 'NA' }}
+  cancel-in-progress: true
 
 jobs:
-build:
-runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
+    env:
+      # 是否提供了 keystore（存在即走已签名 release）
+      KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
-env:
-KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      # 防止半成品工程被触发（关键文件缺失时快速失败）
+      - name: Sanity check
+        run: |
+          test -f ./gradlew || { echo "gradlew missing"; exit 1; }
+          test -d app || { echo "app/ missing"; exit 1; }
+          test -f app/build.gradle -o -f app/build.gradle.kts || { echo "app Gradle file missing"; exit 1; }
 
-steps:
-- name: Checkout
-uses: actions/checkout@v4
-with:
-fetch-depth: 0
+      - name: Fingerprint
+        run: |
+          echo "HEAD -> $(git rev-parse --short HEAD)"
+          echo "RunId='${{ inputs.runId }}' Template='${{ inputs.template }}' AppTitle='${{ inputs.appTitle }}' Pkg='${{ inputs.packageName }}'"
 
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
 
-- name: Setup Java 17
-uses: actions/setup-java@v4
-with:
-distribution: temurin
-java-version: "17"
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
+      - name: Make gradlew executable
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --version
 
-- name: Setup Gradle
-uses: gradle/actions/setup-gradle@v3
+      # ===== 解码签名（可选：当且仅当配置了 keystore secrets）=====
+      - name: Decode keystore (optional)
+        if: ${{ env.KS != '' }}
+        run: |
+          echo "${KS}" | base64 -d > "$HOME/release.jks"
+          {
+            echo "NDJC_KEYSTORE_PATH=$HOME/release.jks"
+            echo "NDJC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+            echo "NDJC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}"
+            echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}"
+          } >> "$GITHUB_ENV"
 
+      # ===== 构建：有密钥→Release（Gradle 会签名）；无密钥→Debug =====
+      - name: Build
+        id: build
+        shell: bash
+        run: |
+          set -e
+          if [ -z "${KS}" ]; then
+            echo "No keystore → build Debug"
+            ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace
+            APK=$(ls -t app/build/outputs/apk/debug/*.apk | head -n1)
+            VARIANT=debug
+          else
+            echo "Keystore present → build Release (Gradle will sign if env is valid)"
+            ./gradlew :app:clean :app:assembleRelease -x lint --stacktrace
+            # 仅选择“已签名”APK，排除 -unsigned
+            APK=$(ls -t app/build/outputs/apk/release/app-release*.apk | grep -v unsigned | head -n1 || true)
+            if [ -z "$APK" ]; then
+              echo "No signed release APK found (only *-unsigned.apk). Check Gradle signing env and build.gradle."
+              ls -lh app/build/outputs/apk/release || true
+              exit 2
+            fi
+            VARIANT=release
+          fi
+          echo "apk=$APK" >> "$GITHUB_OUTPUT"
+          echo "variant=$VARIANT" >> "$GITHUB_OUTPUT"
+          ls -lh "$APK"
 
-- name: Make gradlew executable
-run: |
-chmod +x ./gradlew
-./gradlew --version
+      - name: List release outputs
+        if: ${{ steps.build.outputs.variant == 'release' }}
+        run: ls -lh app/build/outputs/apk/release
 
+      # 只有 release 才验签，并且验的是“已签名”的 APK
+      - name: Verify Release signature
+        if: ${{ steps.build.outputs.variant == 'release' }}
+        run: |
+          "$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner" verify --verbose --print-certs "${{ steps.build.outputs.apk }}"
 
-- name: Decode keystore (optional)
-if: ${{ env.KS != '' }}
-run: |
-echo "${KS}" | base64 -d > "$HOME/release.jks"
-{
-echo "NDJC_KEYSTORE_PATH=$HOME/release.jks"
-echo "NDJC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
-echo "NDJC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}"
-echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}"
-} >> "$GITHUB_ENV"
+      - name: Summarize
+        run: |
+          P="${{ steps.build.outputs.apk }}"
+          APPID=$("$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/apkanalyzer" manifest application-id "$P")
+          VC=$("$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/apkanalyzer" manifest version-code "$P")
+          VN=$("$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/apkanalyzer" manifest version-name "$P")
+          echo "### NDJC Android Build" >> $GITHUB_STEP_SUMMARY
+          echo "- Variant: **${{ steps.build.outputs.variant }}**" >> $GITHUB_STEP_SUMMARY
+          echo "- Package: \`$APPID\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Version: \`$VN\` (code $VC)" >> $GITHUB_STEP_SUMMARY
+          echo "- RunId: \`${{ inputs.runId }}\`  Template: \`${{ inputs.template }}\`  AppTitle: \`${{ inputs.appTitle }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Ref: \`${{ github.ref }}\`  Commit: \`$(git rev-parse --short HEAD)\`" >> $GITHUB_STEP_SUMMARY
 
-
-- name: Build release
-run: |
-if [ -z "${KS}" ]; then
-echo "⚠️ No keystore found -> building unsigned APK"
-./gradlew :app:clean :app:assembleRelease -x lint
-else
-echo "🔑 Keystore detected -> Gradle will sign APK"
-./gradlew :app:clean :app:assembleRelease -x lint
-fi
-
-
-- name: Locate APK
-id: locate
-run: |
-APK=$(ls -t app/build/outputs/apk/release/*.apk | head -n1)
-path: ${{ steps.locate.outputs.apk }}
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ steps.build.outputs.variant }}
+          path: ${{ steps.build.outputs.apk }}
+          if-no-files-found: error
