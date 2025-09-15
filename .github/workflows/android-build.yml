@@ -1,6 +1,14 @@
 name: Android Build
 
 on:
+  # 方式1：自动触发 —— 只有当 .ndjc/triggered 被推到 ndjc-run/* 分支时才触发
+  push:
+    branches:
+      - 'ndjc-run/**'
+    paths:
+      - '.ndjc/triggered'
+
+  # 方式2：保留手动/API 触发（后端暂时没写哨兵时仍可用）
   workflow_dispatch:
     inputs:
       runId:
@@ -16,17 +24,14 @@ on:
         description: "Android applicationId"
         required: false
 
-# 可选：把 runId 带入并发分组，日志更清晰
 concurrency:
-  group: android-build-${{ github.ref }}-${{ inputs.runId || 'NA' }}
+  group: android-build-${{ github.ref }}-${{ inputs.runId || 'auto' }}
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     env:
-      # 是否提供了 keystore（存在即走已签名 release）
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
     steps:
@@ -35,7 +40,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 防止半成品工程被触发（关键文件缺失时快速失败）
+      # 防止半成品触发（双保险：即使有人手动dispatch，也会在缺文件时快速失败）
       - name: Sanity check
         run: |
           test -f ./gradlew || { echo "gradlew missing"; exit 1; }
@@ -61,7 +66,6 @@ jobs:
           chmod +x ./gradlew
           ./gradlew --version
 
-      # ===== 解码签名（可选：当且仅当配置了 keystore secrets）=====
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
         run: |
@@ -73,7 +77,6 @@ jobs:
             echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}"
           } >> "$GITHUB_ENV"
 
-      # ===== 构建：有密钥→Release（Gradle 会签名）；无密钥→Debug =====
       - name: Build
         id: build
         shell: bash
@@ -90,7 +93,7 @@ jobs:
             # 仅选择“已签名”APK，排除 -unsigned
             APK=$(ls -t app/build/outputs/apk/release/app-release*.apk | grep -v unsigned | head -n1 || true)
             if [ -z "$APK" ]; then
-              echo "No signed release APK found (only *-unsigned.apk). Check Gradle signing env and build.gradle."
+              echo "No signed release APK found (only *-unsigned.apk). Check signing env/build.gradle."
               ls -lh app/build/outputs/apk/release || true
               exit 2
             fi
@@ -104,7 +107,6 @@ jobs:
         if: ${{ steps.build.outputs.variant == 'release' }}
         run: ls -lh app/build/outputs/apk/release
 
-      # 只有 release 才验签，并且验的是“已签名”的 APK
       - name: Verify Release signature
         if: ${{ steps.build.outputs.variant == 'release' }}
         run: |
@@ -120,7 +122,6 @@ jobs:
           echo "- Variant: **${{ steps.build.outputs.variant }}**" >> $GITHUB_STEP_SUMMARY
           echo "- Package: \`$APPID\`" >> $GITHUB_STEP_SUMMARY
           echo "- Version: \`$VN\` (code $VC)" >> $GITHUB_STEP_SUMMARY
-          echo "- RunId: \`${{ inputs.runId }}\`  Template: \`${{ inputs.template }}\`  AppTitle: \`${{ inputs.appTitle }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Ref: \`${{ github.ref }}\`  Commit: \`$(git rev-parse --short HEAD)\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload APK
