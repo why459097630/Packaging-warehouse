@@ -18,53 +18,51 @@ android {
         // NDJC:RES_CONFIGS            // 生成器会替换成：resConfigs 'en', 'zh-CN' 等
     }
 
-    // ===== 可选签名：从环境变量读取（CI 有密钥时自动启用） =====
+    // ===== 可选签名（从环境变量读取；CI 提供则启用）=====
     def ksPath = System.getenv('NDJC_KEYSTORE_PATH')
     def ksPass = System.getenv('NDJC_KEYSTORE_PASSWORD')
     def keyAlias = System.getenv('NDJC_KEY_ALIAS')
     def keyPass = System.getenv('NDJC_KEY_PASSWORD')
     def signingDisabled = System.getenv('NDJC_SIGNING_DISABLED') != null
 
-    def hasSigning = !signingDisabled &&
-                     ksPath && ksPath.trim() &&
-                     ksPass && ksPass.trim() &&
-                     keyAlias && keyAlias.trim() &&
-                     keyPass && keyPass.trim()
+    def hasSigning =
+        !signingDisabled &&
+        ksPath && ksPath.trim() &&
+        ksPass && ksPass.trim() &&
+        keyAlias && keyAlias.trim() &&
+        keyPass && keyPass.trim()
 
     if (hasSigning) {
         println ">> NDJC: release signing ENABLED (keystore from env)"
         signingConfigs {
             release {
-                storeFile     file(ksPath)
+                storeFile file(ksPath)
                 storePassword ksPass
-                keyAlias      keyAlias
-                keyPassword   keyPass
+                keyAlias keyAlias
+                keyPassword keyPass
                 enableV1Signing true
                 enableV2Signing true
                 enableV3Signing true
             }
         }
     } else {
-        println ">> NDJC: release signing DISABLED (no keystore or NDJC_SIGNING_DISABLED set)"
+        println ">> NDJC: release signing DISABLED (no keystore or NDJC_SIGNING_DISABLED)"
     }
 
     buildTypes {
         release {
-            // 体积优化（可按需调整）
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // NDJC:PROGUARD_FILES_EXTRA
 
-            // 只有在 hasSigning=true 时才指定签名配置，避免无密钥报错
             if (hasSigning) {
                 signingConfig signingConfigs.release
             }
-            // NDJC:SIGNING_CONFIG   // （保留占位，生成器若注入同名语句也不冲突）
+            // NDJC:SIGNING_CONFIG   // 生成器如注入同名语句也不冲突
         }
         debug {
             minifyEnabled false
-            // Debug 构建使用系统自带的 debug 签名
         }
     }
 
