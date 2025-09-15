@@ -1,10 +1,10 @@
 ﻿<resources>
     <!-- App 显示名 -->
-    <string name="app_name">NDJC core</string>
+    <string name="app_name">牛太郎餐厅</string>
 
     <!-- 页面标题 & 主按钮 -->
-    <string name="ndjc_home_title">Hello core</string>
-    <string name="ndjc_action_primary_text">Start core</string>
+    <string name="ndjc_home_title">牛太郎餐厅</string>
+    <string name="ndjc_action_primary_text">上传菜品</string>
 
     <!-- 其它保留 -->
     <string name="hello_world">Hello World!</string>
