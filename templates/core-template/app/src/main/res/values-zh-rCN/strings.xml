@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">NDJC 应用</string>
-    <string name="ndjc_home_title">你好，NDJC</string>
-    <string name="ndjc_action_primary_text">开始</string>
-
-    <string name="hello_world">你好，世界！</string>
-    <string name="title_home">首页</string>
-    <string name="title_dashboard">仪表盘</string>
-    <string name="title_notifications">通知</string>
+    <!-- NDJC:APP_LABEL --><string name="app_name">NDJC:APP_LABEL</string>
+    <!-- NDJC:HOME_TITLE --><string name="ndjc_home_title">NDJC:HOME_TITLE</string>
+    <!-- NDJC:MAIN_BUTTON --><string name="ndjc_action_primary_text">NDJC:MAIN_BUTTON</string>
 </resources>
