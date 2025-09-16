@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- NDJC:APP_LABEL --><string name="app_name">NDJCApp</string>
-    <!-- NDJC:HOME_TITLE --><string name="ndjc_home_title">Hello NDJC</string>
-    <!-- NDJC:MAIN_BUTTON --><string name="ndjc_action_primary_text">Start</string>
+    <!-- NDJC:APP_LABEL --><string name="app_name">NDJC:APP_LABEL</string>
+    <!-- NDJC:HOME_TITLE --><string name="ndjc_home_title">NDJC:HOME_TITLE</string>
+    <!-- NDJC:MAIN_BUTTON --><string name="ndjc_action_primary_text">NDJC:MAIN_BUTTON</string>
 </resources>
