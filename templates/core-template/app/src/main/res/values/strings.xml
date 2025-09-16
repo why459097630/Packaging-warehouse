@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 用锚点作为字符串值，生成器会把下列占位替换成真实文案 -->
     <!-- NDJC:APP_LABEL --><string name="app_name">NDJC:APP_LABEL</string>
     <!-- NDJC:HOME_TITLE --><string name="ndjc_home_title">NDJC:HOME_TITLE</string>
     <!-- NDJC:MAIN_BUTTON --><string name="ndjc_action_primary_text">NDJC:MAIN_BUTTON</string>
