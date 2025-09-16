@@ -1,27 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 需要时可能在此处追加权限 -->
-    <!-- //BLOCK:PERMISSIONS -->
+    <!-- 必须预留锚点 -->
+    <!-- NDJC:LOCALE_CONFIG -->
+
+    <!-- NDJC:PERMISSIONS -->
 
     <application
         android:label="NDJC:APP_LABEL"
         android:icon="@mipmap/ic_launcher"
-        android:theme="@style/Theme.NDJC"
-        NDJC:LOCALE_CONFIG>
+        android:theme="@style/Theme.NDJC">
 
         <activity
             android:name=".MainActivity"
             android:exported="true">
 
-            <!-- 默认启动入口 -->
+            <!-- 启动入口 -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- 需要时可能在此处追加更多 intent-filter -->
-            <!-- //BLOCK:INTENT_FILTERS -->
+            <!-- 额外的 intent filter 占位 -->
+            <!-- NDJC:INTENT_FILTERS -->
 
         </activity>
     </application>
