@@ -1,12 +1,14 @@
-﻿<resources>
+<resources>
     <!-- App 显示名 -->
-    <string name="app_name">NDJC core</string>
+    <!-- NDJC core --><string name="app_name">NDJCApp</string>
 
-    <!-- 页面标题 & 主按钮 -->
-    <string name="ndjc_home_title">Hello core</string>
-    <string name="ndjc_action_primary_text">Start core</string>
+    <!-- 首页标题 -->
+    <!-- Hello core --><string name="ndjc_home_title">Hello NDJC</string>
 
-    <!-- 其它保留 -->
+    <!-- 主按钮文案 -->
+    <!-- Start core --><string name="ndjc_action_primary_text">Start</string>
+
+    <!-- 其余保留 -->
     <string name="hello_world">Hello World!</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
