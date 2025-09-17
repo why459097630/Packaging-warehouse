@@ -10,10 +10,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.ndjc.app.ui.theme.AppTheme
 
 // NDJC:MAIN_ACTIVITY_IMPORTS_EXTRA
-// （生成器可在此追加：深链、埋点、路由、第三方 SDK 等所需 import）
+// （生成器可在此追加：深链、推送、路由、第三方 SDK 等所需 import）
 
 class MainActivity : ComponentActivity() {
 
@@ -26,14 +31,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AppTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    HomeScreen()
-                }
+                AppScaffold()
             }
         }
 
         // NDJC:ONCREATE_AFTER_SET_CONTENT
-        // （如：曝光埋点 / 请求权限弹窗 / 首屏引导 / 首次同步等）
+        // （如：埋点首帧 / 请求权限弹窗 / 启动引导等）
     }
 
     // NDJC:MAIN_ACTIVITY_EXTRA_FUNCS
@@ -41,7 +44,53 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomeScreen() {
+private fun AppScaffold() {
+    val nav = rememberNavController()
+
+    Scaffold(
+        topBar = { /* NDJC:BLOCK:NAV_TOPBAR */ },
+        bottomBar = { /* NDJC:BLOCK:NAV_BOTTOM */ }
+    ) { padding ->
+        NavGraph(modifier = Modifier.padding(padding), nav = nav)
+    }
+}
+
+/** 路由表 */
+private object Routes {
+    const val Login  = "login"                // NDJC:BLOCK:ROUTE_LOGIN
+    const val Feed   = "feed"                 // NDJC:BLOCK:FEATURE_FEED  /  NDJC:BLOCK:ROUTER_TABLE
+    const val Detail = "detail"               // NDJC:BLOCK:ROUTE_DETAIL
+    // NDJC:BLOCK:ROUTER_TABLE （生成器可在此追加更多常量）
+}
+
+@Composable
+private fun NavGraph(modifier: Modifier = Modifier, nav: NavController) {
+    NavHost(
+        navController = nav,
+        startDestination = Routes.Feed,       // NDJC:START_ROUTE（TEXT）
+        modifier = modifier
+    ) {
+        composable(Routes.Login) {
+            // NDJC:BLOCK:FEATURE_LOGIN
+            LoginScreen(onSuccess = { nav.navigate(Routes.Feed) })
+        }
+        composable(Routes.Feed) {
+            // NDJC:BLOCK:FEATURE_FEED
+            FeedScreen(onOpen = { id -> nav.navigate("${Routes.Detail}/$id") })
+        }
+        composable("${Routes.Detail}/{id}") { backStack ->
+            // NDJC:BLOCK:ROUTE_ARGS
+            val id = backStack.arguments?.getString("id") ?: ""
+            // NDJC:BLOCK:FEATURE_DETAIL
+            DetailScreen(id = id)
+        }
+        // NDJC:BLOCK:NAV_GRAPH （生成器追加更多页面）
+        // NDJC:BLOCK:NAV_DRAWER （如需）
+    }
+}
+
+@Composable
+private fun LoginScreen(onSuccess: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -49,18 +98,42 @@ fun HomeScreen() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = stringResource(R.string.ndjc_home_title),
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        Spacer(Modifier.height(16.dp))
-
         Button(onClick = {
-            // NDJC:PRIMARY_BUTTON_ACTION
-            // （生成器可注入：导航到某页面/打开 WebView/触发登录等）
-        }) {
-            Text(text = stringResource(R.string.ndjc_action_primary_text))
-        }
+            // NDJC:BLOCK:FEATURE_LOGIN （在这里接入真实登录/保存 token）
+            onSuccess()
+        }) { Text(text = stringResource(R.string.ndjc_action_primary_text)) }
+    }
+}
+
+@Composable
+private fun FeedScreen(onOpen: (String) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = stringResource(R.string.ndjc_home_title), style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = { onOpen("42") }) { Text("Open item #42") }
+        // NDJC:BLOCK:FEATURE_LIST
+        // NDJC:BLOCK:PULL_TO_REFRESH
+        // NDJC:BLOCK:EMPTY_STATE
+        // NDJC:BLOCK:LOADING_STATE
+    }
+}
+
+@Composable
+private fun DetailScreen(id: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Detail: $id")
+        // NDJC:BLOCK:FEATURE_DETAIL
     }
 }
