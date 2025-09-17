@@ -1,5 +1,3 @@
 package com.ndjc.app.work
-
-// WorkManager 任务与约束
-// NDJC:WORKERS
-// NDJC:WORK_CONSTRAINTS
+// NDJC:BLOCK:WORK_MANAGER
+// NDJC:BLOCK:FOREGROUND_SERVICE
