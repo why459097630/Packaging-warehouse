@@ -1,42 +1,37 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    // NDJC:PLUGINS_EXTRA         // ⬅ 额外 Gradle 插件（如 Hilt、KSP 等）
+    // NDJC:INTEGRATION_PLUGINS            // 三方 Gradle 插件（如：hilt、google-services 等）
 }
 
-/** 可选签名（环境变量控制）
- *  NDJC_SIGNING_DISABLED=1            → 关闭签名
- *  NDJC_KEYSTORE_PATH/…（及口令）     → 开启签名
- */
-def SIGNING_DISABLED = (System.getenv('NDJC_SIGNING_DISABLED') ?: '0') == '1'
-def KEYSTORE_PATH    = System.getenv('NDJC_KEYSTORE_PATH')
-def HAS_KEYSTORE     = (KEYSTORE_PATH != null && KEYSTORE_PATH.trim())
-
 android {
-    namespace "com.ndjc.app"          // NDJC:PACKAGE_NAME
-    compileSdk 34                      // NDJC:COMPILE_SDK
+    namespace "com.ndjc.app"
+    compileSdk 34
 
     defaultConfig {
-        applicationId "com.ndjc.app"  // NDJC:PACKAGE_NAME
-        minSdk 24                      // NDJC:MIN_SDK
-        targetSdk 34                   // NDJC:TARGET_SDK
-        versionCode 1                  // NDJC:VERSION_CODE
-        versionName "1.0.0"            // NDJC:VERSION_NAME
+        applicationId "com.ndjc.app"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
 
-        // NDJC:RES_CONFIGS            // 例: resConfigs 'en', 'zh-CN', 'zh-TW'
-        // NDJC:NDK_ABI_FILTERS        // 例: ndk { abiFilters 'arm64-v8a', 'armeabi-v7a' }
-        // NDJC:MANIFEST_PLACEHOLDERS  // 例: manifestPlaceholders = [appAuthRedirectScheme: 'ndjc-demo']
+        // 语言/地区、构建常量、占位符等
+        // NDJC:RES_CONFIGS                   // resConfigs 'en', 'zh-CN', 'zh-TW'
+        // NDJC:BUILD_CONFIG                  // buildConfigField "String","API_BASE","\"https://api.example.com\""
+        // NDJC:INTEGRATION_PLACEHOLDERS      // manifestPlaceholders += [UMENG_APPKEY:"...", CHANNEL:"official"]
     }
 
     signingConfigs {
         release {
-            if (!SIGNING_DISABLED && HAS_KEYSTORE) {
-                storeFile     file(KEYSTORE_PATH)
-                storePassword (System.getenv('NDJC_KEYSTORE_PASSWORD') ?: '')
-                keyAlias      (System.getenv('NDJC_KEY_ALIAS')          ?: '')
-                keyPassword   (System.getenv('NDJC_KEY_PASSWORD')       ?: '')
+            // 若环境变量提供签名，则自动启用；否则走未签名产物（后置签名）
+            def disabled = (System.getenv('NDJC_SIGNING_DISABLED') ?: '0') == '1'
+            def keystore = System.getenv('NDJC_KEYSTORE_PATH') ?: ''
+            if (!disabled && keystore?.trim()) {
+                storeFile file(keystore)
+                storePassword(System.getenv('NDJC_KEYSTORE_PASSWORD') ?: '')
+                keyAlias(System.getenv('NDJC_KEY_ALIAS') ?: '')
+                keyPassword(System.getenv('NDJC_KEY_PASSWORD') ?: '')
             }
-            // NDJC:SIGNING_CONFIG_EXTRA
         }
     }
 
@@ -45,23 +40,20 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // NDJC:PROGUARD_FILES_EXTRA   // 例: 追加自定义 proguard 文件
-
-            if (!SIGNING_DISABLED && HAS_KEYSTORE) {
+            // 有可用签名时挂载
+            if ((System.getenv('NDJC_SIGNING_DISABLED') ?: '0') != '1'
+                    && (System.getenv('NDJC_KEYSTORE_PATH') ?: '').trim()) {
                 signingConfig signingConfigs.release
             }
-
-            // NDJC:BUILD_RELEASE_EXTRA    // 例: 开启 R8 指标、关闭调试开关等
         }
         debug {
             minifyEnabled false
-            // NDJC:BUILD_DEBUG_EXTRA
         }
     }
 
-    packagingOptions {
-        // NDJC:PACKAGING_RULES         // 例: resources.excludes += ['META-INF/*.kotlin_module']
-    }
+    // 打包/资源/ABI/密钥等高级配置
+    // NDJC:INTEGRATION_PACKAGING
+    // packagingOptions { resources { excludes += ['META-INF/*'] } }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -69,13 +61,14 @@ android {
     }
     kotlinOptions { jvmTarget = '17' }
 
-    buildFeatures {
-        compose true
-        // NDJC:FEATURES_EXTRA          // 例: viewBinding = true, buildConfig = true
-    }
+    buildFeatures { compose true }
     composeOptions { kotlinCompilerExtensionVersion '1.5.3' }
 
-    // NDJC:ANDROID_BLOCK_EXTRA         // 任意其它 android { } 级别配置
+    testOptions {
+        // NDJC:TEST_OPTIONS
+        // unitTests.includeAndroidResources = true
+        // animationsDisabled = true
+    }
 }
 
 dependencies {
@@ -83,7 +76,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
 
-    // Compose (BOM)
+    // Compose
     implementation platform('androidx.compose:compose-bom:2024.05.00')
     implementation 'androidx.activity:activity-compose:1.8.2'
     implementation 'androidx.compose.ui:ui'
@@ -92,10 +85,20 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
-    // 协程 & DataStore
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
-    implementation 'androidx.datastore:datastore-preferences:1.1.1'
+    // 偏好/协程
+    implementation "androidx.datastore:datastore-preferences:1.1.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
 
-    // NDJC:DEPENDENCIES_EXTRA          // ⬅ 追加依赖（网络、图片、DI、导航、媒体、地图、支付等）
+    // NDJC:INTEGRATION_DEPENDENCIES        // 三方 SDK 依赖位
+    // api/implementation/kapt 等可由生成器补上
+
+    // 测试依赖
+    // NDJC:TEST_DEPS
+    // testImplementation 'junit:junit:4.13.2'
+    // androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    // androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
+
+// NDJC:INTEGRATION_PROGUARD_RULES_HINT
+// 若三方依赖需要混淆保留，请在 proguard-rules.pro 的 NDJC:INTEGRATION_KEEP_RULES 段位追加
