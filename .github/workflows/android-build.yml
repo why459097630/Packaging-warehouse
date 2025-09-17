@@ -15,6 +15,10 @@ on:
       packageName:
         description: "Android applicationId"
         required: false
+      # NDJC:CI_WF_INPUTS_EXTRA
+      # channel:
+      #   description: "release channel"
+      #   required: false
   # 允许后端通过 repository_dispatch 精确指定要编译的提交/分支
   repository_dispatch:
     types: [generate-apk]
@@ -27,10 +31,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # ====== 全局环境变量（可被 NDJC 注入/覆写）======
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      # NDJC:CI_ENV
+      # API_BASE: https://api.example.com
+      # TRACK: internal
 
     steps:
+      # NDJC:CI_PRECHECK_STEPS
+      # - name: Preflight - custom checks
+      #   run: echo "custom preflight"
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -96,6 +108,7 @@ jobs:
           echo "Ref   -> $GITHUB_REF"
           echo "RunId='${{ inputs.runId || github.event.client_payload.runId }}' Template='${{ inputs.template || github.event.client_payload.template }}' AppTitle='${{ inputs.appTitle || github.event.client_payload.appTitle }}' Pkg='${{ inputs.packageName || github.event.client_payload.packageName }}'"
 
+      # ===== JDK / Gradle =====
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -104,6 +117,12 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          # NDJC:CI_GRADLE_CACHE
+          # cache-read-only: false
+          # gradle-home-cache-includes: |
+          #   caches
+          #   notifications
 
       - name: Make gradlew executable
         run: |
@@ -123,11 +142,17 @@ jobs:
           } >> "$GITHUB_ENV"
           ls -lh "$HOME/release.jks" || true
 
+      # NDJC:CI_PRE_BUILD
+      # - name: Before build hook
+      #   run: echo "pre build hook"
+
       - name: Build
         id: build
         shell: bash
         run: |
           set -e
+          # NDJC:CI_BUILD_ARGS
+          # 可由生成器注入额外参数（例如：-Pchannel=${{ inputs.channel }}）
           if [ -z "${KS}" ]; then
             echo "No keystore → build Debug"
             ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace
@@ -196,6 +221,10 @@ jobs:
           test -n "${APK}" || { echo "No release APK to verify"; exit 1; }
           "$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner" verify --verbose --print-certs "${APK}"
 
+      # NDJC:CI_AFTER_BUILD
+      # - name: After build hook
+      #   run: echo "after build hook"
+
       - name: Summarize
         run: |
           P="${APK}"
@@ -208,6 +237,8 @@ jobs:
           echo "- Package: \`$APPID\`" >> $GITHUB_STEP_SUMMARY
           echo "- Version: \`$VN\` (code $VC)" >> $GITHUB_STEP_SUMMARY
           echo "- Ref: \`${{ github.ref }}\`  Commit: \`$(git rev-parse --short HEAD)\`" >> $GITHUB_STEP_SUMMARY
+          # NDJC:CI_SUMMARY_EXTRA
+          # echo "- Channel: \`${{ inputs.channel || 'NA' }}\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -215,3 +246,11 @@ jobs:
           name: app-${{ env.VARIANT }}
           path: ${{ env.APK }}
           if-no-files-found: error
+
+      # NDJC:CI_PUBLISH_STEPS
+      # - name: Publish to store / CDN
+      #   run: echo "upload to store"
+
+      # NDJC:CI_NOTIFY_STEPS
+      # - name: Notify
+      #   run: echo "notify slack/feishu"
