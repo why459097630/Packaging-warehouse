@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 应用名/主界面基础文案，生成器会注入 -->
-    <!-- NDJC:APP_LABEL   --><string name="app_name">NDJCApp</string>
-    <!-- NDJC:HOME_TITLE  --><string name="ndjc_home_title">Hello NDJC</string>
-    <!-- NDJC:MAIN_BUTTON --><string name="ndjc_action_primary_text">Start</string>
+    <!-- 应用名/主界面文案（生成器会替换具体文案） -->
+    <!-- NDJC:BLOCK:STRINGS -->
+    <string name="app_name">NDJCApp</string>                 <!-- NDJC:APP_LABEL / APP_NAME（TEXT锚点会来替换值） -->
+    <string name="ndjc_home_title">Hello NDJC</string>       <!-- 页面标题 -->
+    <string name="ndjc_action_primary_text">Start</string>   <!-- 主按钮文案 -->
 
-    <!-- 常见导航/菜单/设置类文案（可覆盖） -->
-    <string name="ndjc_menu_home">Home</string>
-    <string name="ndjc_menu_settings">Settings</string>
-    <string name="ndjc_menu_about">About</string>
+    <!-- 常见菜单/通用文案（可覆盖） -->
+    <string name="ndjc_menu_home">Home</string>              <!-- NDJC:BLOCK:FEATURE_FEED / FEATURE_SEARCH 等会复用 -->
+    <string name="ndjc_menu_settings">Settings</string>      <!-- NDJC:BLOCK:FEATURE_SETTINGS -->
+    <string name="ndjc_menu_about">About</string>            <!-- NDJC:BLOCK:ABOUT_PAGE -->
     <string name="ndjc_common_ok">OK</string>
     <string name="ndjc_common_cancel">Cancel</string>
 
-    <!-- 预留扩展文案（块锚点） -->
+    <!-- 追加文本锚点的容器位（生成器可在此区域注入更多字符串） -->
     <!-- NDJC:STRINGS_EXTRA -->
 </resources>
