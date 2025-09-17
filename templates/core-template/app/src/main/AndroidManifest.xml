@@ -1,28 +1,54 @@
-<manifest ...>
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <!-- 权限/查询/特性 -->
-  <!-- NDJC:PERMISSIONS -->
-  <!-- NDJC:QUERIES -->
-  <!-- NDJC:FEATURES -->
+    <!-- 必须/建议声明 -->
+    <!-- NDJC:LOCALE_CONFIG -->   <!-- 例：<application android:localeConfig="@xml/locales_config" …/> -->
 
-  <application
-      android:label="@string/app_name"
-      android:theme="@style/Theme.NDJC">
+    <!-- 运行时/普通权限（块锚点） -->
+    <!-- NDJC:PERMISSIONS -->
+    <!-- 例：
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    -->
 
-    <!-- DeepLink & 入口过滤 -->
-    <!-- NDJC:INTENT_FILTERS -->
+    <!-- 查询其它 App 能力（Android 11+） -->
+    <!-- NDJC:QUERIES -->
+    <!-- 例：
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="http"/>
+        </intent>
+    </queries>
+    -->
 
-    <!-- 服务/接收器/Provider -->
-    <!-- NDJC:SERVICES -->
-    <!-- NDJC:RECEIVERS -->
-    <!-- NDJC:PROVIDERS -->
+    <application
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.NDJC">
 
-    <!-- 通知通道（如走 res/xml/notification_channels.xml，可在此引用） -->
-    <!-- NDJC:NOTIFICATION_CHANNELS -->
+        <!-- Application 级别 meta-data（块锚点） -->
+        <!-- NDJC:APPLICATION_META -->
+        <!-- 例：<meta-data android:name="com.google.android.geo.API_KEY" android:value="@string/maps_api_key"/> -->
 
-    <!-- App Shortcuts / Widgets 声明 -->
-    <!-- NDJC:APP_SHORTCUTS -->
-    <!-- NDJC:WIDGETS -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <!-- 入口 Intent-Filter（可复用块锚点） -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+                <!-- NDJC:INTENT_FILTERS --> <!-- 例：<action android:name="android.intent.action.SEND"/> -->
+            </intent-filter>
+        </activity>
 
-  </application>
+        <!-- 组件扩展（块锚点） -->
+        <!-- NDJC:SERVICES -->
+        <!-- NDJC:RECEIVERS -->
+        <!-- NDJC:PROVIDERS -->
+
+        <!-- 备用 Activity / DeepLink / WebView 入口 等 -->
+        <!-- NDJC:ACTIVITIES_EXTRA -->
+
+    </application>
 </manifest>
