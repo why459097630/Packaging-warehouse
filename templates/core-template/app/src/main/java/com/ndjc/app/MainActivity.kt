@@ -4,16 +4,8 @@ package com.ndjc.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,7 +15,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.ndjc.app.ui.AppTheme
+import com.ndjc.app.ui.AppTheme   // 注意：对应 app/ui/Theme.kt 的 package
 
 // NDJC:MAIN_ACTIVITY_IMPORTS_EXTRA
 // （生成器可在此追加：路由/权限/三方 SDK 的 import）
@@ -61,12 +53,13 @@ private fun AppScaffold() {
     Scaffold(
         topBar = { /* NDJC:BLOCK:NAV_TOPBAR */ },
         bottomBar = { /* NDJC:BLOCK:NAV_BOTTOM */ }
+        // drawerContent 等也可放：NDJC:BLOCK:NAV_DRAWER
     ) { padding ->
         NavGraph(modifier = Modifier.padding(padding), nav = nav)
     }
 }
 
-/** 路由常量（可由生成器扩展） */
+/** 路由常量（生成器可在此扩展） */
 private object Routes {
     const val Login    = "login"      // NDJC:BLOCK:ROUTER_TABLE
     const val Feed     = "feed"       // NDJC:BLOCK:ROUTER_TABLE
@@ -97,20 +90,23 @@ private fun NavGraph(modifier: Modifier = Modifier, nav: NavController) {
             // NDJC:BLOCK:FEATURE_DETAIL
             DetailScreen(id = id)
         }
-        composable(Routes.Search)  { /* NDJC:BLOCK:FEATURE_SEARCH       */ }
-        composable(Routes.Profile) { /* NDJC:BLOCK:FEATURE_USER_PROFILE */ }
-        composable(Routes.Settings){ /* NDJC:BLOCK:SETTINGS_PAGE        */ }
 
-        // 这里是生成器追加更多页面/图的锚点
+        // === 你关心的 3 条新增挂载（若已有独立页面可替换为调用对应 Composable） ===
+        composable(Routes.Search)  { /* NDJC:BLOCK:FEATURE_SEARCH       */ Text("Search") }
+        composable(Routes.Profile) { /* NDJC:BLOCK:FEATURE_USER_PROFILE */ Text("Profile") }
+        composable(Routes.Settings){ /* NDJC:BLOCK:SETTINGS_PAGE        */ Text("Settings") }
+
+        // 生成器追加更多页面/图的锚点
         // NDJC:BLOCK:NAV_GRAPH
-        // NDJC:BLOCK:NAV_DRAWER
     }
 }
 
 @Composable
 private fun LoginScreen(onSuccess: () -> Unit) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -124,16 +120,21 @@ private fun LoginScreen(onSuccess: () -> Unit) {
 @Composable
 private fun FeedScreen(onOpen: (String) -> Unit) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = stringResource(R.string.ndjc_home_title),
-            style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text  = stringResource(R.string.ndjc_home_title),
+            style = MaterialTheme.typography.headlineMedium
+        )
 
         Spacer(Modifier.height(16.dp))
         Button(onClick = { onOpen("42") }) { Text("Open item #42") }
-        // 列表/分页/下拉刷新/空态/加载态等
+
+        // 列表/分页/下拉刷新/空态/加载态等扩展锚点
         // NDJC:BLOCK:FEATURE_LIST
         // NDJC:BLOCK:PULL_TO_REFRESH
         // NDJC:BLOCK:EMPTY_STATE
@@ -144,7 +145,9 @@ private fun FeedScreen(onOpen: (String) -> Unit) {
 @Composable
 private fun DetailScreen(id: String) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
