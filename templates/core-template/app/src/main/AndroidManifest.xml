@@ -1,28 +1,28 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest ...>
 
-    <!-- 必须预留锚点 -->
-    <!-- NDJC:LOCALE_CONFIG -->
+  <!-- 权限/查询/特性 -->
+  <!-- NDJC:PERMISSIONS -->
+  <!-- NDJC:QUERIES -->
+  <!-- NDJC:FEATURES -->
 
-    <!-- NDJC:PERMISSIONS -->
+  <application
+      android:label="@string/app_name"
+      android:theme="@style/Theme.NDJC">
 
-    <application
-        android:label="NDJC:APP_LABEL"
-        android:icon="@mipmap/ic_launcher"
-        android:theme="@style/Theme.NDJC">
+    <!-- DeepLink & 入口过滤 -->
+    <!-- NDJC:INTENT_FILTERS -->
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
+    <!-- 服务/接收器/Provider -->
+    <!-- NDJC:SERVICES -->
+    <!-- NDJC:RECEIVERS -->
+    <!-- NDJC:PROVIDERS -->
 
-            <!-- 启动入口 -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+    <!-- 通知通道（如走 res/xml/notification_channels.xml，可在此引用） -->
+    <!-- NDJC:NOTIFICATION_CHANNELS -->
 
-            <!-- 额外的 intent filter 占位 -->
-            <!-- NDJC:INTENT_FILTERS -->
+    <!-- App Shortcuts / Widgets 声明 -->
+    <!-- NDJC:APP_SHORTCUTS -->
+    <!-- NDJC:WIDGETS -->
 
-        </activity>
-    </application>
+  </application>
 </manifest>
