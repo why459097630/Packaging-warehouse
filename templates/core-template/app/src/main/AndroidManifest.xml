@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ndjc.app">
 
-    <!-- 运行时权限（生成器按需插入） -->
+    <!-- 运行时/普通权限（由生成器注入） -->
     <!-- NDJC:BLOCK:PERMISSIONS -->
 
     <application
@@ -12,10 +12,10 @@
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.Material3.DayNight">
 
-        <!-- 网络安全配置（若有则启用并提供 @xml/network_security_config） -->
+        <!-- 网络安全配置（若启用请提供 @xml/network_security_config） -->
         <!-- NDJC:BLOCK:NETWORK_SECURITY -->
 
-        <!-- FileProvider 配置（附带 @xml/file_paths） -->
+        <!-- FileProvider（若启用请提供 @xml/file_paths） -->
         <!-- NDJC:BLOCK:FILE_PROVIDER -->
 
         <!-- 通知/启动接收器、前台服务类型等 -->
@@ -23,19 +23,23 @@
         <!-- NDJC:BLOCK:BOOT_RECEIVER -->
         <!-- NDJC:BLOCK:FOREGROUND_SERVICE_TYPES -->
 
-        <!-- Shortcuts（见 res/xml/shortcuts.xml） -->
+        <!-- 动态 Shortcuts（见 res/xml/shortcuts.xml） -->
         <!-- NDJC:BLOCK:SHORTCUTS -->
+
+        <!-- 桌面小部件（真实落位处：receiver 节点；生成器在该锚点下方追加/替换） -->
+        <!-- NDJC:BLOCK:WIDGET -->
 
         <activity
             android:name=".MainActivity"
             android:exported="true">
+
             <!-- 启动入口 -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- 深链 / App Links（生成器注入） -->
+            <!-- 深链 & App Links（真实落位） -->
             <!-- NDJC:BLOCK:INTENT_FILTERS -->
             <!-- NDJC:BLOCK:DEEPLINK -->
             <!-- NDJC:BLOCK:APP_LINKS -->
