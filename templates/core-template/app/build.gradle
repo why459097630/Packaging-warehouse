@@ -7,19 +7,81 @@ plugins {
 
 android {
     namespace "com.ndjc.app"                 // NDJC:BLOCK:BUILD_CONFIG_FLAGS
-    compileSdk 34
+    compileSdk 34                             // NDJC:COMPILE_SDK
 
     defaultConfig {
-        applicationId "com.ndjc.app"         // NDJC:BLOCK:BUILD_CONFIG_FLAGS
-        minSdk 24
-        targetSdk 34
-        versionCode 1
-        versionName "1.0.0"
+        applicationId "com.ndjc.app"         // NDJC:PACKAGE_NAME / NDJC:BLOCK:BUILD_CONFIG_FLAGS
+        minSdk 24                             // NDJC:MIN_SDK
+        targetSdk 34                          // NDJC:TARGET_SDK
+        versionCode 1                         // NDJC:VERSION_CODE
+        versionName "1.0.0"                   // NDJC:VERSION_NAME
 
         // 语言/密钥/占位等（示例见你原注释）
         // NDJC:RES_CONFIGS                   // e.g. resConfigs 'en','zh-CN','zh-TW'
         // NDJC:BUILD_CONFIG                  // e.g. buildConfigField(...)
         // NDJC:INTEGRATION_PLACEHOLDERS      // e.g. manifestPlaceholders += [...]
+
+        // ===== BuildConfig 常量（TEXT 锚点落位） =====
+        // 基础网络
+        // NDJC:HTTP_BASE_URL
+        buildConfigField "String", "API_BASE", "\"https://api.example.com\""
+        // NDJC:HTTP_TIMEOUT
+        buildConfigField "int", "HTTP_TIMEOUT_MS", "15000"
+        // NDJC:HTTP_LOG_LEVEL
+        buildConfigField "int", "HTTP_LOG_LEVEL", "1"
+
+        // 启动/初始化
+        // NDJC:STARTUP_LIBS
+        buildConfigField "String", "STARTUP_LIBS", "\"\""
+        // NDJC:STARTUP_INITIALIZERS
+        buildConfigField "String", "STARTUP_INITIALIZERS", "\"\""
+
+        // 数据/名称
+        // NDJC:DB_NAME
+        buildConfigField "String", "DB_NAME", "\"ndjc.db\""
+        // NDJC:DATASTORE_NAME
+        buildConfigField "String", "DATASTORE_NAME", "\"ndjc_store\""
+        // NDJC:WORK_NAME
+        buildConfigField "String", "WORK_NAME", "\"ndjc_worker\""
+        // NDJC:ROUTER_TABLE_PKG
+        buildConfigField "String", "ROUTER_TABLE_PKG", "\"com.ndjc.app\""
+
+        // 渠道/环境
+        // NDJC:META_CHANNEL
+        buildConfigField "String", "META_CHANNEL", "\"official\""
+        // NDJC:META_ENV
+        buildConfigField "String", "META_ENV", "\"prod\""
+
+        // ===== Manifest 占位符（TEXT 锚点落位） =====
+        if (!project.hasProperty("manifestPlaceholders") || manifestPlaceholders == null) {
+            manifestPlaceholders = [:]
+        }
+        // NDJC:FILE_PROVIDER_AUTH
+        manifestPlaceholders += [ FILE_PROVIDER_AUTH: "${applicationId}.fileprovider" ]
+        // NDJC:APP_LINKS_DOMAIN
+        manifestPlaceholders += [ APP_LINKS_DOMAIN: "example.com" ]
+        // NDJC:DEEPLINK_HOST
+        manifestPlaceholders += [ DEEPLINK_HOST: "open" ]
+        // NDJC:DEEPLINK_SCHEME
+        manifestPlaceholders += [ DEEPLINK_SCHEME: "ndjc" ]
+        // NDJC:MAPS_API_KEY
+        manifestPlaceholders += [ MAPS_API_KEY: "" ]
+        // NDJC:BILLING_LICENSE_KEY
+        manifestPlaceholders += [ BILLING_LICENSE_KEY: "" ]
+        // NDJC:PLAY_INTEGRITY_TOKEN
+        manifestPlaceholders += [ PLAY_INTEGRITY_TOKEN: "" ]
+        // NDJC:REVIEW_FLOW
+        manifestPlaceholders += [ REVIEW_FLOW: "inapp" ]
+        // NDJC:APP_UPDATE_MODE
+        manifestPlaceholders += [ APP_UPDATE_MODE: "flexible" ]
+        // NDJC:AD_SDK_ID
+        manifestPlaceholders += [ AD_SDK_ID: "" ]
+        // NDJC:PRIVACY_POLICY_URL
+        manifestPlaceholders += [ PRIVACY_POLICY_URL: "https://example.com/privacy" ]
+        // NDJC:TERMS_URL
+        manifestPlaceholders += [ TERMS_URL: "https://example.com/terms" ]
+        // NDJC:SHORTCUTS_COUNT
+        manifestPlaceholders += [ SHORTCUTS_COUNT: "0" ]
     }
 
     signingConfigs {
@@ -42,6 +104,7 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // NDJC:BLOCK:PROGUARD_RULES
+            // NDJC:PROGUARD_FILES_EXTRA
         }
         debug {
             minifyEnabled false
@@ -60,7 +123,7 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '17'
+        jvmTarget = '17'                    // NDJC:KOTLIN_JVM_TARGET
     }
 
     buildFeatures {
@@ -68,8 +131,7 @@ android {
         // NDJC:BLOCK:BUILD_FEATURES
     }
     composeOptions {
-        // 维持你原来的版本
-        kotlinCompilerExtensionVersion '1.5.3'
+        kotlinCompilerExtensionVersion '1.5.3'   // NDJC:COMPOSE_COMPILER_EXT
         // NDJC:BLOCK:COMPOSE_THEME
     }
 
