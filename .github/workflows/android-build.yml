@@ -1,6 +1,7 @@
 name: Android Build
 
 on:
+  # 允许手动触发（前端/Actions 页面用）
   workflow_dispatch:
     inputs:
       runId:
@@ -15,12 +16,12 @@ on:
       packageName:
         description: "Android applicationId"
         required: false
-      # NDJC:CI_WF_INPUTS_EXTRA
+  # 允许后端通过 repository_dispatch 触发
   repository_dispatch:
     types: [generate-apk]
 
 concurrency:
-  group: android-build-${{ github.ref }}-${{ inputs.runId || github.event.client_payload.runId || 'NA' }}
+  group: android-build-${{ github.ref || github.event.client_payload.ref || 'NA' }}-${{ inputs.runId || github.event.client_payload.runId || 'NA' }}
   cancel-in-progress: true
 
 jobs:
@@ -29,18 +30,18 @@ jobs:
 
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-      # NDJC:CI_ENV
+      # NDJC:CI_ENV   # 这里可以加你的环境变量，例如 API_BASE/TRACK 等
 
     steps:
-      # NDJC:CI_PRECHECK_STEPS
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # repository_dispatch 时优先使用 payload.ref；否则回退默认
           ref: ${{ github.event.client_payload.ref || github.ref }}
 
       - name: NDJC | Show commit and changed files
+        shell: bash
         run: |
           echo "HEAD sha: $(git rev-parse HEAD)"
           echo "Triggered by: ${{ github.event_name }}"
@@ -49,7 +50,26 @@ jobs:
           echo "---- files touched in this commit ----"
           git show --name-only --pretty=oneline "$(git rev-parse HEAD)"
 
+      # 仅在 push 事件时才做“必须改动 app/”的保护（现在我们已移除 on:push，这两步会自动跳过）
+      - name: NDJC | (soft) check if this commit touched app/ (push only)
+        if: ${{ github.event_name == 'push' }}
+        shell: bash
+        run: |
+          git show --name-only --pretty=oneline "$(git rev-parse HEAD)" | grep '^app/' || true
+
+      - name: NDJC | Fail if this commit didn't touch app/ (push only)
+        if: ${{ github.event_name == 'push' }}
+        shell: bash
+        run: |
+          CHANGED_APP=$(git show --name-only --pretty=oneline "$(git rev-parse HEAD)" | grep '^app/' || true)
+          if [ -z "$CHANGED_APP" ]; then
+            echo "No app/ changes in this commit -> would be empty APK. Failing early."
+            exit 3
+          fi
+
+      # 必须存在 requests 日志（生成器会写入）
       - name: NDJC | Verify requests logs exist
+        shell: bash
         run: |
           set -e
           latest=$(ls -dt requests/* 2>/dev/null | head -n1 || true)
@@ -60,23 +80,9 @@ jobs:
           test -f "$latest/03_apply_result.json"
           echo "Found logs in: $latest"
 
-      # 仅 push 时做硬性校验；workflow_dispatch / repository_dispatch 放行
-      - name: NDJC | (soft) check if this commit touched app/ (push only)
-        if: ${{ github.event_name == 'push' }}
-        run: |
-          git show --name-only --pretty=oneline "$(git rev-parse HEAD)" | grep '^app/' || true
-
-      - name: NDJC | Fail if this commit didn't touch app/ (push only)
-        if: ${{ github.event_name == 'push' }}
-        run: |
-          CHANGED_APP=$(git show --name-only --pretty=oneline "$(git rev-parse HEAD)" | grep '^app/' || true)
-          if [ -z "$CHANGED_APP" ]; then
-            echo "No app/ changes in this commit -> would be empty APK. Failing early."
-            exit 3
-          fi
-          echo "$CHANGED_APP"
-
+      # 关键锚点替换计数 > 0
       - name: NDJC | Fail if no critical anchors replaced
+        shell: bash
         run: |
           set -e
           latest=$(ls -dt requests/* | head -n1)
@@ -88,22 +94,14 @@ jobs:
           fi
 
       - name: Sanity check
+        shell: bash
         run: |
           test -f ./gradlew || { echo "gradlew missing"; exit 1; }
           test -d app || { echo "app/ missing"; exit 1; }
           test -f app/build.gradle -o -f app/build.gradle.kts || { echo "app Gradle file missing"; exit 1; }
 
-      # ⛔ 关键守卫：禁止 Gradle 文件里出现被转义的单引号（之前失败的根因）
-      - name: Guard: fail on escaped quotes in Gradle
-        shell: bash
-        run: |
-          set -e
-          if grep -n "\\\\'" app/build.gradle app/build.gradle.kts 2>/dev/null | tee /dev/stderr; then
-            echo "Gradle file contains escaped quotes (\\') — remove backslashes around single quotes."
-            exit 1
-          fi
-
       - name: Fingerprint
+        shell: bash
         run: |
           echo "HEAD -> $(git rev-parse --short HEAD)"
           echo "Ref   -> $GITHUB_REF"
@@ -113,20 +111,20 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-        with:
-          # NDJC:CI_GRADLE_CACHE
 
       - name: Make gradlew executable
+        shell: bash
         run: |
           chmod +x ./gradlew
           ./gradlew --version
 
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
+        shell: bash
         run: |
           echo "${KS}" | base64 -d > "$HOME/release.jks"
           {
@@ -136,8 +134,6 @@ jobs:
             echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}"
           } >> "$GITHUB_ENV"
           ls -lh "$HOME/release.jks" || true
-
-      # NDJC:CI_PRE_BUILD
 
       - name: Build
         id: build
@@ -184,7 +180,8 @@ jobs:
         run: |
           set -e
           if [ -z "${APK}" ]; then
-            echo "No release APK to verify"; exit 0
+            echo "No APK path from previous step; cannot sign."
+            exit 0
           fi
           if echo "${APK}" | grep -q -- '-unsigned\.apk$'; then
             OUT="${APK%-unsigned.apk}.apk"
@@ -203,17 +200,18 @@ jobs:
 
       - name: List release outputs
         if: ${{ env.VARIANT == 'release' }}
+        shell: bash
         run: ls -lh app/build/outputs/apk/release || true
 
       - name: Verify Release signature
         if: ${{ env.VARIANT == 'release' }}
+        shell: bash
         run: |
           test -n "${APK}" || { echo "No release APK to verify"; exit 1; }
           "$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner" verify --verbose --print-certs "${APK}"
 
-      # NDJC:CI_AFTER_BUILD
-
       - name: Summarize
+        shell: bash
         run: |
           P="${APK}"
           test -n "$P" || { echo "No APK to summarize"; exit 1; }
@@ -225,7 +223,6 @@ jobs:
           echo "- Package: \`$APPID\`" >> $GITHUB_STEP_SUMMARY
           echo "- Version: \`$VN\` (code $VC)" >> $GITHUB_STEP_SUMMARY
           echo "- Ref: \`${{ github.ref }}\`  Commit: \`$(git rev-parse --short HEAD)\`" >> $GITHUB_STEP_SUMMARY
-          # NDJC:CI_SUMMARY_EXTRA
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -233,6 +230,3 @@ jobs:
           name: app-${{ env.VARIANT }}
           path: ${{ env.APK }}
           if-no-files-found: error
-
-      # NDJC:CI_PUBLISH_STEPS
-      # NDJC:CI_NOTIFY_STEPS
