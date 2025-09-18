@@ -19,7 +19,6 @@ on:
       # channel:
       #   description: "release channel"
       #   required: false
-  # 允许后端通过 repository_dispatch 精确指定要编译的提交/分支
   repository_dispatch:
     types: [generate-apk]
 
@@ -31,26 +30,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # ====== 全局环境变量（可被 NDJC 注入/覆写）======
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
       # NDJC:CI_ENV
-      # API_BASE: https://api.example.com
-      # TRACK: internal
 
     steps:
-      # NDJC:CI_PRECHECK_STEPS
-      # - name: Preflight - custom checks
-      #   run: echo "custom preflight"
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # 若是 repository_dispatch，则用后端传来的 sha/ref；否则退回默认
           ref: ${{ github.event.client_payload.ref || github.ref }}
 
-      # 打印这次要编译的提交及其改动，方便对拍
       - name: NDJC | Show commit and changed files
         run: |
           echo "HEAD sha: $(git rev-parse HEAD)"
@@ -60,17 +50,7 @@ jobs:
           echo "---- files touched in this commit ----"
           git show --name-only --pretty=oneline "$(git rev-parse HEAD)"
 
-      # 保险丝 1：这次提交必须动到 app/，否则直接失败（避免打空包）
-      - name: NDJC | Fail if this commit didn't touch app/
-        run: |
-          CHANGED_APP=$(git show --name-only --pretty=oneline "$(git rev-parse HEAD)" | grep '^app/' || true)
-          if [ -z "$CHANGED_APP" ]; then
-            echo "No app/ changes in this commit -> would be empty APK. Failing early."
-            exit 3
-          fi
-          echo "$CHANGED_APP"
-
-      # 保险丝 2：必须存在最近一轮 requests 日志（生成器应当已写回仓库）
+      # 先确认本轮生成日志存在（这是更可靠的保险丝）
       - name: NDJC | Verify requests logs exist
         run: |
           set -e
@@ -82,12 +62,33 @@ jobs:
           test -f "$latest/03_apply_result.json"
           echo "Found logs in: $latest"
 
-      # 保险丝 3：关键锚点替换数必须 > 0
+      # 仅在 push 事件时做“HEAD 是否改动 app/”检查；其它场景做成软提醒，不阻断
+      - name: NDJC | (soft) check if this commit touched app/
+        if: ${{ github.event_name != 'push' }}
+        continue-on-error: true
+        run: |
+          CHANGED_APP=$(git show --name-only --pretty=oneline "$(git rev-parse HEAD)" | grep '^app/' || true)
+          if [ -z "$CHANGED_APP" ]; then
+            echo "⚠️  HEAD has no app/ changes. This is allowed because requests logs exist & we have later guards."
+          else
+            echo "$CHANGED_APP"
+          fi
+
+      - name: NDJC | Fail if this commit didn't touch app/ (push only)
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          CHANGED_APP=$(git show --name-only --pretty=oneline "$(git rev-parse HEAD)" | grep '^app/' || true)
+          if [ -z "$CHANGED_APP" ]; then
+            echo "No app/ changes in this push -> would be empty APK. Failing early."
+            exit 3
+          fi
+          echo "$CHANGED_APP"
+
+      # 关键锚点替换数必须 > 0
       - name: NDJC | Fail if no critical anchors replaced
         run: |
           set -e
           latest=$(ls -dt requests/* | head -n1)
-          # 兼容你的结构：03_apply_result.json 里是 ApplyResult 数组；统计 replacedCount 总和
           COUNT=$(jq '[ .[] | .changes[] | select(.replacedCount>0) | .replacedCount ] | add // 0' "$latest/03_apply_result.json")
           echo "Replacements total: $COUNT"
           if [ -z "$COUNT" ] || [ "$COUNT" -eq 0 ]; then
@@ -95,7 +96,6 @@ jobs:
             exit 2
           fi
 
-      # 基础健检
       - name: Sanity check
         run: |
           test -f ./gradlew || { echo "gradlew missing"; exit 1; }
@@ -108,7 +108,6 @@ jobs:
           echo "Ref   -> $GITHUB_REF"
           echo "RunId='${{ inputs.runId || github.event.client_payload.runId }}' Template='${{ inputs.template || github.event.client_payload.template }}' AppTitle='${{ inputs.appTitle || github.event.client_payload.appTitle }}' Pkg='${{ inputs.packageName || github.event.client_payload.packageName }}'"
 
-      # ===== JDK / Gradle =====
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -117,20 +116,12 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-        # NDJC:CI_GRADLE_CACHE
-        # 想启用自定义缓存时再解开下方：
-        # with:
-        #   cache-read-only: false
-        #   gradle-home-cache-includes: |
-        #     caches
-        #     notifications
 
       - name: Make gradlew executable
         run: |
           chmod +x ./gradlew
           ./gradlew --version
 
-      # 有则解码签名；无则走 Debug
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
         run: |
@@ -143,17 +134,11 @@ jobs:
           } >> "$GITHUB_ENV"
           ls -lh "$HOME/release.jks" || true
 
-      # NDJC:CI_PRE_BUILD
-      # - name: Before build hook
-      #   run: echo "pre build hook"
-
       - name: Build
         id: build
         shell: bash
         run: |
           set -e
-          # NDJC:CI_BUILD_ARGS
-          # 可由生成器注入额外参数（例如：-Pchannel=${{ inputs.channel }}）
           if [ -z "${KS}" ]; then
             echo "No keystore → build Debug"
             ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace
@@ -165,24 +150,14 @@ jobs:
             OUTDIR=app/build/outputs/apk/release
             VARIANT=release
           fi
-
           echo "== list $OUTDIR =="
           ls -lah "$OUTDIR" || true
-
           SIGNED=$(ls -t "$OUTDIR"/*.apk 2>/dev/null | grep -Ev -- '-unsigned\.apk$' | head -n1 || true)
           UNSIGNED=$(ls -t "$OUTDIR"/*-unsigned.apk 2>/dev/null | head -n1 || true)
-
           APK=""
-          if [ -n "$SIGNED" ]; then
-            APK="$SIGNED"
-            echo "Found signed APK: $APK"
-          elif [ -n "$UNSIGNED" ]; then
-            APK="$UNSIGNED"
-            echo "Found unsigned APK: $APK"
-          else
-            echo "No APK found under $OUTDIR"
-          fi
-
+          if [ -n "$SIGNED" ]; then APK="$SIGNED"; echo "Found signed APK: $APK"
+          elif [ -n "$UNSIGNED" ]; then APK="$UNSIGNED"; echo "Found unsigned APK: $APK"
+          else echo "No APK found under $OUTDIR"; fi
           echo "APK=$APK"         >> "$GITHUB_ENV"
           echo "VARIANT=$VARIANT" >> "$GITHUB_ENV"
           echo "apk=$APK"         >> "$GITHUB_OUTPUT"
@@ -222,10 +197,6 @@ jobs:
           test -n "${APK}" || { echo "No release APK to verify"; exit 1; }
           "$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner" verify --verbose --print-certs "${APK}"
 
-      # NDJC:CI_AFTER_BUILD
-      # - name: After build hook
-      #   run: echo "after build hook"
-
       - name: Summarize
         run: |
           P="${APK}"
@@ -238,8 +209,6 @@ jobs:
           echo "- Package: \`$APPID\`" >> $GITHUB_STEP_SUMMARY
           echo "- Version: \`$VN\` (code $VC)" >> $GITHUB_STEP_SUMMARY
           echo "- Ref: \`${{ github.ref }}\`  Commit: \`$(git rev-parse --short HEAD)\`" >> $GITHUB_STEP_SUMMARY
-          # NDJC:CI_SUMMARY_EXTRA
-          # echo "- Channel: \`${{ inputs.channel || 'NA' }}\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -247,11 +216,3 @@ jobs:
           name: app-${{ env.VARIANT }}
           path: ${{ env.APK }}
           if-no-files-found: error
-
-      # NDJC:CI_PUBLISH_STEPS
-      # - name: Publish to store / CDN
-      #   run: echo "upload to store"
-
-      # NDJC:CI_NOTIFY_STEPS
-      # - name: Notify
-      #   run: echo "notify slack/feishu"
