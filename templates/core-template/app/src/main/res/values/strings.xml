@@ -2,17 +2,40 @@
 <resources>
     <!-- 应用名/主界面文案（生成器会替换具体文案） -->
     <!-- NDJC:BLOCK:STRINGS -->
-    <string name="app_name">NDJCApp</string>                 <!-- NDJC:APP_LABEL / APP_NAME（TEXT锚点会来替换值） -->
-    <string name="ndjc_home_title">Hello NDJC</string>       <!-- 页面标题 -->
-    <string name="ndjc_action_primary_text">Start</string>   <!-- 主按钮文案 -->
+    <!-- NDJC:APP_LABEL / NDJC:APP_NAME -->
+    <string name="app_name">NDJCApp</string>
+    <!-- NDJC:HOME_TITLE -->
+    <string name="ndjc_home_title">Hello NDJC</string>
+    <!-- NDJC:MAIN_BUTTON -->
+    <string name="ndjc_action_primary_text">Start</string>
 
-    <!-- 常见菜单/通用文案（可覆盖） -->
-    <string name="ndjc_menu_home">Home</string>              <!-- NDJC:BLOCK:FEATURE_FEED / FEATURE_SEARCH 等会复用 -->
+    <!-- 启动器名称（显示在桌面图标下方） -->
+    <!-- NDJC:LAUNCHER_NAME -->
+    <string name="launcher_name">NDJC</string>
+
+    <!-- 常见菜单/页面标题 -->
+    <!-- NDJC:LOGIN_TITLE   --><string name="ndjc_login_title">Login</string>
+    <!-- NDJC:PROFILE_TITLE --><string name="ndjc_profile_title">Profile</string>
+    <!-- NDJC:FEED_TITLE    --><string name="ndjc_feed_title">Feed</string>
+    <!-- NDJC:SETTINGS_PAGE_TITLE --><string name="ndjc_settings_title">Settings</string>
+    <!-- NDJC:ABOUT_PAGE_TITLE    --><string name="ndjc_about_title">About</string>
+
+    <!-- 搜索与通用文案 -->
+    <!-- NDJC:SEARCH_HINT         --><string name="ndjc_search_hint">Search…</string>
+    <string name="ndjc_menu_home">Home</string>              <!-- 可被 FEATURE_FEED / FEATURE_SEARCH 复用 -->
     <string name="ndjc_menu_settings">Settings</string>      <!-- NDJC:BLOCK:FEATURE_SETTINGS -->
     <string name="ndjc_menu_about">About</string>            <!-- NDJC:BLOCK:ABOUT_PAGE -->
     <string name="ndjc_common_ok">OK</string>
     <string name="ndjc_common_cancel">Cancel</string>
 
-    <!-- 追加文本锚点的容器位（生成器可在此区域注入更多字符串） -->
+    <!-- 法务 URL（也可在 Manifest meta-data 中使用） -->
+    <!-- NDJC:PRIVACY_POLICY_URL --><string name="ndjc_privacy_url">https://example.com/privacy</string>
+    <!-- NDJC:TERMS_URL          --><string name="ndjc_terms_url">https://example.com/terms</string>
+
+    <!-- 追加文本锚点容器（生成器在此处批量注入更多 key） -->
+    <!-- NDJC:COLORS_XML -->
+    <!-- NDJC:STRINGS_XML -->
+    <!-- NDJC:THEME_XML -->
+    <!-- NDJC:LAYOUT_ACTIVITY_MAIN -->
     <!-- NDJC:STRINGS_EXTRA -->
 </resources>
