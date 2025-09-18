@@ -16,7 +16,7 @@ android {
         versionCode 1                         // NDJC:VERSION_CODE
         versionName "1.0.0"                   // NDJC:VERSION_NAME
 
-        // ===== BuildConfig 常量（TEXT 锚点） =====
+        // ===== BuildConfig 常量（TEXT 锚点落位）=====
         // 基础网络
         // NDJC:HTTP_BASE_URL
         buildConfigField "String", "API_BASE", "\"https://api.example.com\""
@@ -31,6 +31,16 @@ android {
         // NDJC:STARTUP_INITIALIZERS
         buildConfigField "String", "STARTUP_INITIALIZERS", "\"\""
 
+        // 主题/语言/渠道
+        // NDJC:APP_THEME_MODE
+        buildConfigField "String", "APP_THEME_MODE", "\"system\""
+        // NDJC:DEFAULT_LANGUAGE
+        buildConfigField "String", "DEFAULT_LANGUAGE", "\"en\""
+        // NDJC:SUPPORTED_LANGUAGES
+        buildConfigField "String", "SUPPORTED_LANGUAGES", "\"en,zh-CN\""
+        // NDJC:BUILD_FLAVOR
+        buildConfigField "String", "BUILD_FLAVOR", "\"prod\""
+
         // 数据/名称
         // NDJC:DB_NAME
         buildConfigField "String", "DB_NAME", "\"ndjc.db\""
@@ -41,106 +51,76 @@ android {
         // NDJC:ROUTER_TABLE_PKG
         buildConfigField "String", "ROUTER_TABLE_PKG", "\"com.ndjc.app\""
 
-        // 渠道/环境
-        // NDJC:META_CHANNEL
-        buildConfigField "String", "META_CHANNEL", "\"official\""
-        // NDJC:META_ENV
-        buildConfigField "String", "META_ENV", "\"prod\""
-
-        // 广告
-        // NDJC:ADS_BANNER_UNIT_ID
-        buildConfigField "String", "ADS_BANNER_UNIT_ID", "\"\""
-        // NDJC:ADS_INTERSTITIAL_UNIT_ID
-        buildConfigField "String", "ADS_INTERSTITIAL_UNIT_ID", "\"\""
-        // NDJC:ADS_REWARDED_UNIT_ID
-        buildConfigField "String", "ADS_REWARDED_UNIT_ID", "\"\""
-
-        // 分析/崩溃/调试
-        // NDJC:ANALYTICS_DSN
-        buildConfigField "String", "ANALYTICS_DSN", "\"\""
-        // NDJC:ANALYTICS_EVENTS_MAP
-        buildConfigField "String", "ANALYTICS_EVENTS_MAP", "\"{}\""
-        // NDJC:ANALYTICS_USER_ID_KEY
-        buildConfigField "String", "ANALYTICS_USER_ID_KEY", "\"uid\""
-        // NDJC:CRASH_DSN
-        buildConfigField "String", "CRASH_DSN", "\"\""
-        // NDJC:CRASH_COLLECTION_ENABLED
-        buildConfigField "boolean", "CRASH_COLLECTION_ENABLED", "true"
-        // NDJC:DEBUG_LOGGING_ENABLED
-        buildConfigField "boolean", "DEBUG_LOGGING_ENABLED", "true"
-
-        // 鉴权/接口
-        // NDJC:API_KEY
-        buildConfigField "String", "API_KEY", "\"\""
-        // NDJC:AUTH_REFRESH_ENDPOINT
-        buildConfigField "String", "AUTH_REFRESH_ENDPOINT", "\"/auth/refresh\""
-        // NDJC:AUTH_TOKEN_HEADER
-        buildConfigField "String", "AUTH_TOKEN_HEADER", "\"Authorization\""
-        // NDJC:AUTH_SCOPES
-        buildConfigField "String", "AUTH_SCOPES", "\"profile,email\""
+        // 网络/缓存/重试
+        // NDJC:CACHE_MAX_AGE
+        buildConfigField "int", "CACHE_MAX_AGE", "300"
+        // NDJC:COIL_DISK_CACHE_MB
+        buildConfigField "int", "COIL_DISK_CACHE_MB", "256"
+        // NDJC:RETRY_MAX_RETRIES
+        buildConfigField "int", "RETRY_MAX_RETRIES", "3"
+        // NDJC:REFRESH_TOKEN_STRATEGY
+        buildConfigField "String", "REFRESH_TOKEN_STRATEGY", "\"auto\""
 
         // 远程配置/开关
-        // NDJC:REMOTE_CONFIG_URL
-        buildConfigField "String", "REMOTE_CONFIG_URL", "\"https://rc.example.com/config\""
-        // NDJC:REMOTE_CONFIG_STRATEGY
-        buildConfigField "String", "REMOTE_CONFIG_STRATEGY", "\"local-first\""
-        // NDJC:FEATURE_FLAGS_FILE
-        buildConfigField "String", "FEATURE_FLAGS_FILE", "\"flags.json\""
+        // NDJC:FEATURE_FLAG_FILE
+        buildConfigField "String", "FEATURE_FLAG_FILE", "\"flags.json\""
+
+        // 导航/路由 & 分页
+        // NDJC:NAV_ARG_ITEM_ID
+        buildConfigField "String", "NAV_ARG_ITEM_ID", "\"id\""
+        // NDJC:PAGING_PAGE_SIZE
+        buildConfigField "int", "PAGING_PAGE_SIZE", "20"
+
+        // 上手引导/变更日志
+        // NDJC:ONBOARDING_STEPS
+        buildConfigField "String", "ONBOARDING_STEPS", "\"welcome,permission,done\""
+        // NDJC:CHANGELOG_URL
+        buildConfigField "String", "CHANGELOG_URL", "\"https://example.com/changelog\""
+
+        // 推送/计费
+        // NDJC:PUSH_ENDPOINT
+        buildConfigField "String", "PUSH_ENDPOINT", "\"https://push.example.com/register\""
+        // NDJC:PUSH_SENDER_ID
+        buildConfigField "String", "PUSH_SENDER_ID", "\"\""
+        // NDJC:BILLING_IAP_SKU
+        buildConfigField "String", "BILLING_IAP_SKU", "\"sku_iap_basic\""
+        // NDJC:BILLING_SUBS_SKU
+        buildConfigField "String", "BILLING_SUBS_SKU", "\"subs_premium_month\""
 
         // 图片/重试
         // NDJC:IMAGE_BASE_URL
         buildConfigField "String", "IMAGE_BASE_URL", "\"https://img.example.com/\""
-        // NDJC:RETRY_BACKOFF_MS
-        buildConfigField "int", "RETRY_BACKOFF_MS", "2000"
-        // NDJC:RETRY_STRATEGY
-        buildConfigField "String", "RETRY_STRATEGY", "\"exponential\""
 
-        // Worker 相关
-        // NDJC:WORKER_RETRIES
-        buildConfigField "int", "WORKER_RETRIES", "3"
-        // NDJC:WORKER_RETRY_STRATEGY
-        buildConfigField "String", "WORKER_RETRY_STRATEGY", "\"linear\""
-        // NDJC:WORK_CONSTRAINTS
-        buildConfigField "String", "WORK_CONSTRAINTS", "\"network_unmetered\""
-        // NDJC:WORK_INTERVAL_MINUTES
-        buildConfigField "int", "WORK_INTERVAL_MINUTES", "15"
+        // 其他展示/法务/支持
+        // NDJC:SUPPORT_EMAIL
+        buildConfigField "String", "SUPPORT_EMAIL", "\"support@example.com\""
+        // NDJC:TERMS_VERSION
+        buildConfigField "String", "TERMS_VERSION", "\"1.0\""
 
-        // ===== Manifest 占位符（TEXT 锚点） =====
+        // ===== Manifest 占位符（TEXT 锚点落位） =====
         if (!project.hasProperty("manifestPlaceholders") || manifestPlaceholders == null) {
             manifestPlaceholders = [:]
         }
         // NDJC:FILE_PROVIDER_AUTH
         manifestPlaceholders += [ FILE_PROVIDER_AUTH: "${applicationId}.fileprovider" ]
-        // NDJC:APP_LINKS_DOMAIN
-        manifestPlaceholders += [ APP_LINKS_DOMAIN: "example.com" ]
-        // NDJC:DEEPLINK_HOST
-        manifestPlaceholders += [ DEEPLINK_HOST: "open" ]
-        // NDJC:DEEPLINK_SCHEME
-        manifestPlaceholders += [ DEEPLINK_SCHEME: "ndjc" ]
-        // NDJC:MAPS_API_KEY
-        manifestPlaceholders += [ MAPS_API_KEY: "" ]
-        // NDJC:BILLING_LICENSE_KEY
-        manifestPlaceholders += [ BILLING_LICENSE_KEY: "" ]
-        // NDJC:PLAY_INTEGRITY_TOKEN
-        manifestPlaceholders += [ PLAY_INTEGRITY_TOKEN: "" ]
-        // NDJC:REVIEW_FLOW
-        manifestPlaceholders += [ REVIEW_FLOW: "inapp" ]
-        // NDJC:APP_UPDATE_MODE
-        manifestPlaceholders += [ APP_UPDATE_MODE: "flexible" ]
-        // NDJC:AD_SDK_ID
-        manifestPlaceholders += [ AD_SDK_ID: "" ]
-        // NDJC:PRIVACY_POLICY_URL
-        manifestPlaceholders += [ PRIVACY_POLICY_URL: "https://example.com/privacy" ]
-        // NDJC:TERMS_URL
-        manifestPlaceholders += [ TERMS_URL: "https://example.com/terms" ]
-        // NDJC:SHORTCUTS_COUNT
-        manifestPlaceholders += [ SHORTCUTS_COUNT: "0" ]
+        // NDJC:APP_LINKS_DOMAIN / NDJC:DEEPLINK_HOST / NDJC:DEEPLINK_SCHEME
+        manifestPlaceholders += [ APP_LINKS_DOMAIN: "example.com",
+                                  DEEPLINK_HOST: "open",
+                                  DEEPLINK_SCHEME: "ndjc" ]
+        // NDJC:MAPS_API_KEY / NDJC:BILLING_LICENSE_KEY / NDJC:PLAY_INTEGRITY_TOKEN
+        manifestPlaceholders += [ MAPS_API_KEY: "", BILLING_LICENSE_KEY: "", PLAY_INTEGRITY_TOKEN: "" ]
+        // NDJC:REVIEW_FLOW / NDJC:APP_UPDATE_MODE / NDJC:AD_SDK_ID
+        manifestPlaceholders += [ REVIEW_FLOW: "inapp", APP_UPDATE_MODE: "flexible", AD_SDK_ID: "" ]
+        // NDJC:PRIVACY_POLICY_URL / NDJC:TERMS_URL / NDJC:SHORTCUTS_COUNT
+        manifestPlaceholders += [ PRIVACY_POLICY_URL: "https://example.com/privacy",
+                                  TERMS_URL: "https://example.com/terms",
+                                  SHORTCUTS_COUNT: "0" ]
     }
 
     signingConfigs {
         release {
-            def disabled = (System.getenv('NDJC_SIGNING_DISABLED') ?: '0') == '1'
-            def keystore = System.getenv('NDJC_KEYSTORE_PATH') ?: ''
+            val disabled = (System.getenv('NDJC_SIGNING_DISABLED') ?: '0') == '1'
+            val keystore = System.getenv('NDJC_KEYSTORE_PATH') ?: ''
             if (!disabled && keystore?.trim()) {
                 storeFile(file(keystore))
                 storePassword(System.getenv('NDJC_KEYSTORE_PASSWORD') ?: '')
@@ -160,13 +140,14 @@ android {
         }
         debug {
             minifyEnabled false
+            // NDJC:ENABLE_QA_MENU
             // NDJC:BLOCK:QA_MENU
         }
     }
 
-    // 分包/资源/ABI/签名等额外打包规则
-    // NDJC:INTEGRATION_PACKAGING
-    // NDJC:BLOCK:PACKAGING_RULES
+    // 资源/打包
+    // NDJC:RES_CONFIGS
+    // NDJC:PACKAGING_RULES
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -176,7 +157,7 @@ android {
 
     buildFeatures {
         compose true
-        // NDJC:BLOCK:BUILD_FEATURES
+        // NDJC:BUILD_FEATURES
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.3' // NDJC:COMPOSE_COMPILER_EXT
@@ -185,8 +166,6 @@ android {
 
     testOptions {
         // NDJC:TEST_OPTIONS
-        // unitTests.includeAndroidResources = true
-        // animationsDisabled = true
     }
 
     // 多渠道/风味（如需）
@@ -206,7 +185,7 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
-    // 导航（承载 NAV_GRAPH / ROUTER_TABLE / ROUTE_ARGS）
+    // 导航
     implementation 'androidx.navigation:navigation-compose:2.7.7'     // NDJC:BLOCK:NAV_GRAPH
 
     // 数据存储 & 工作任务
@@ -217,18 +196,10 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'                // NDJC:BLOCK:HTTP_CLIENT
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'   // NDJC:BLOCK:NETWORK_INTERCEPTORS
 
-    // 可选分页
-    // implementation 'androidx.paging:paging-compose:3.3.2'           // NDJC:BLOCK:PAGING
-
     // 其他三方/自定义依赖位
     // NDJC:INTEGRATION_DEPENDENCIES
     // NDJC:BLOCK:DEPENDENCIES_EXTRA
 
     // 测试依赖
     testImplementation 'junit:junit:4.13.2'
-    // androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    // androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-
-    // 提示：如需 KEEP 规则，请在 proguard-rules.pro 中补充
-    // NDJC:INTEGRATION_PROGUARD_RULES_HINT
 }
