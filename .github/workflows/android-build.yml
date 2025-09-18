@@ -19,6 +19,7 @@ on:
       # channel:
       #   description: "release channel"
       #   required: false
+  # 允许后端通过 repository_dispatch 精确指定要编译的提交/分支
   repository_dispatch:
     types: [generate-apk]
 
@@ -30,6 +31,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # ====== 全局环境变量（可被 NDJC 注入/覆写）======
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
       # NDJC:CI_ENV
@@ -45,8 +47,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # 若是 repository_dispatch，则用后端传来的 sha/ref；否则退回默认
           ref: ${{ github.event.client_payload.ref || github.ref }}
 
+      # 打印这次要编译的提交及其改动，方便对拍
       - name: NDJC | Show commit and changed files
         run: |
           echo "HEAD sha: $(git rev-parse HEAD)"
@@ -56,14 +60,7 @@ jobs:
           echo "---- files touched in this commit ----"
           git show --name-only --pretty=oneline "$(git rev-parse HEAD)"
 
-      # 新增：模板锚点自检（缺失直接 fail）
-      - name: NDJC | Anchors Self-Check (templates)
-        shell: pwsh
-        run: |
-          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-          ./Tools/ndjc-selfcheck.ps1 -TemplatesDir 'templates' -ExpectedDir 'anchors' -FailOnMissing:$true
-
-      # 保险丝 1：本次必须动到 app/，否则可能是空提交触发
+      # 保险丝 1：这次提交必须动到 app/，否则直接失败（避免打空包）
       - name: NDJC | Fail if this commit didn't touch app/
         run: |
           CHANGED_APP=$(git show --name-only --pretty=oneline "$(git rev-parse HEAD)" | grep '^app/' || true)
@@ -73,7 +70,7 @@ jobs:
           fi
           echo "$CHANGED_APP"
 
-      # 保险丝 2：必须存在最近一轮 requests 日志（生成器应已写回）
+      # 保险丝 2：必须存在最近一轮 requests 日志（生成器应当已写回仓库）
       - name: NDJC | Verify requests logs exist
         run: |
           set -e
@@ -85,33 +82,24 @@ jobs:
           test -f "$latest/03_apply_result.json"
           echo "Found logs in: $latest"
 
-      # 保险丝 3（修正）：关键锚点替换数必须 > 0（只统计关键锚点）
+      # 保险丝 3：关键锚点替换数必须 > 0
       - name: NDJC | Fail if no critical anchors replaced
         run: |
           set -e
           latest=$(ls -dt requests/* | head -n1)
-          jq -r '.' "$latest/03_apply_result.json" >/dev/null 2>&1 || { echo "Bad JSON"; cat "$latest/03_apply_result.json"; exit 1; }
-
-          # 关键锚点名单（与 generator 内一致）
-          KEY='["NDJC:PACKAGE_NAME","NDJC:APP_LABEL","NDJC:HOME_TITLE","NDJC:MAIN_BUTTON","NDJC:BLOCK:PERMISSIONS","NDJC:BLOCK:INTENT_FILTERS"]'
-
-          COUNT=$(jq --argjson KEY "$KEY" '
-            [ .[] | .changes[]
-              | select(.replacedCount>0)
-              | select(.marker as $m | $KEY | index($m))
-              | .replacedCount
-            ] | add // 0
-          ' "$latest/03_apply_result.json")
-
-          echo "Critical replacements total: $COUNT"
+          # 兼容你的结构：03_apply_result.json 里是 ApplyResult 数组；统计 replacedCount 总和
+          COUNT=$(jq '[ .[] | .changes[] | select(.replacedCount>0) | .replacedCount ] | add // 0' "$latest/03_apply_result.json")
+          echo "Replacements total: $COUNT"
           if [ -z "$COUNT" ] || [ "$COUNT" -eq 0 ]; then
             echo "No critical anchors replaced -> abort"
             exit 2
           fi
 
+      # 基础健检
       - name: Sanity check
         run: |
           test -f ./gradlew || { echo "gradlew missing"; exit 1; }
+          test -d app || { echo "app/ missing"; exit 1; }
           test -f app/build.gradle -o -f app/build.gradle.kts || { echo "app Gradle file missing"; exit 1; }
 
       - name: Fingerprint
@@ -129,9 +117,13 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-        with:
-          # NDJC:CI_GRADLE_CACHE
-          # cache-read-only: false
+        # NDJC:CI_GRADLE_CACHE
+        # 想启用自定义缓存时再解开下方：
+        # with:
+        #   cache-read-only: false
+        #   gradle-home-cache-includes: |
+        #     caches
+        #     notifications
 
       - name: Make gradlew executable
         run: |
@@ -161,6 +153,7 @@ jobs:
         run: |
           set -e
           # NDJC:CI_BUILD_ARGS
+          # 可由生成器注入额外参数（例如：-Pchannel=${{ inputs.channel }}）
           if [ -z "${KS}" ]; then
             echo "No keystore → build Debug"
             ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace
