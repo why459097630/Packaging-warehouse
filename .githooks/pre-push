@@ -1,10 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "[NDJC] pre-push: running selfcheck..."
-if command -v pwsh >/dev/null 2>&1; then PWSH=pwsh; else PWSH=powershell; fi
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+if command -v cygpath >/dev/null 2>&1; then
+  ROOT_WIN="$(cygpath -w "$REPO_ROOT")"
+else
+  ROOT_WIN="$REPO_ROOT"
+fi
 
-"$PWSH" -NoLogo -NoProfile -ExecutionPolicy Bypass -File ./Tools/ndjc-selfcheck.ps1 `
-  -TemplatesDir "templates/core-template" `
-  -ExpectedDir "anchors" `
-  -FailOnMissing:$true
+if command -v pwsh >/dev/null 2>&1; then
+  PS_EXE="pwsh"
+else
+  PS_EXE="powershell.exe"
+fi
+
+"$PS_EXE" -NoLogo -NoProfile -ExecutionPolicy Bypass \
+  -File "$ROOT_WIN/Tools/ndjc-selfcheck.ps1" \
+  -RepoRoot "$ROOT_WIN" \
+  -TemplatesDir "templates/core-template" \
+  -ExpectedDir "anchors" \
+  -FailOnMissing:\$true
