@@ -4,3 +4,4 @@ package com.ndjc.app.data
 // NDJC:BLOCK:ROOM_ENTITIES
 // NDJC:BLOCK:ROOM_DAO
 // NDJC:BLOCK:ROOM_MIGRATIONS
+// NDJC:DB_NAME  => 由 BuildConfig.DB_NAME 提供
