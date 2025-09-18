@@ -15,7 +15,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.ndjc.app.ui.AppTheme   // 注意：对应 app/ui/Theme.kt 的 package
+import com.ndjc.app.ui.AppTheme   // 对应 app/ui/Theme.kt 的 package
 
 // NDJC:MAIN_ACTIVITY_IMPORTS_EXTRA
 // （生成器可在此追加：路由/权限/三方 SDK 的 import）
@@ -71,9 +71,11 @@ private object Routes {
 
 @Composable
 private fun NavGraph(modifier: Modifier = Modifier, nav: NavController) {
+    val startRoute = Routes.Feed // NDJC:START_ROUTE（TEXT）
+
     NavHost(
         navController = nav,
-        startDestination = Routes.Feed,      // NDJC:START_ROUTE（TEXT）
+        startDestination = startRoute,
         modifier = modifier
     ) {
         composable(Routes.Login) {
@@ -91,7 +93,7 @@ private fun NavGraph(modifier: Modifier = Modifier, nav: NavController) {
             DetailScreen(id = id)
         }
 
-        // === 你关心的 3 条新增挂载（若已有独立页面可替换为调用对应 Composable） ===
+        // 可选功能页（若已有独立页面可替换为调用对应 Composable）
         composable(Routes.Search)  { /* NDJC:BLOCK:FEATURE_SEARCH       */ Text("Search") }
         composable(Routes.Profile) { /* NDJC:BLOCK:FEATURE_USER_PROFILE */ Text("Profile") }
         composable(Routes.Settings){ /* NDJC:BLOCK:SETTINGS_PAGE        */ Text("Settings") }
