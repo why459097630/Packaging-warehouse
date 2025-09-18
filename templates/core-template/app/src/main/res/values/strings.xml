@@ -4,14 +4,11 @@
     <!-- NDJC:BLOCK:STRINGS -->
     <!-- NDJC:APP_LABEL / NDJC:APP_NAME -->
     <string name="app_name">NDJCApp</string>
-    <!-- NDJC:HOME_TITLE -->
-    <string name="ndjc_home_title">Hello NDJC</string>
-    <!-- NDJC:MAIN_BUTTON -->
-    <string name="ndjc_action_primary_text">Start</string>
+    <!-- NDJC:HOME_TITLE --><string name="ndjc_home_title">Hello NDJC</string>
+    <!-- NDJC:MAIN_BUTTON --><string name="ndjc_action_primary_text">Start</string>
 
-    <!-- 启动器名称（显示在桌面图标下方） -->
-    <!-- NDJC:LAUNCHER_NAME -->
-    <string name="launcher_name">NDJC</string>
+    <!-- 启动器名称 -->
+    <!-- NDJC:LAUNCHER_NAME --><string name="launcher_name">NDJC</string>
 
     <!-- 常见页面标题 -->
     <!-- NDJC:LOGIN_TITLE   --><string name="ndjc_login_title">Login</string>
@@ -22,9 +19,10 @@
 
     <!-- 搜索与通用文案 -->
     <!-- NDJC:SEARCH_HINT --><string name="ndjc_search_hint">Search…</string>
+    <!-- NDJC:SEARCH_EMPTY_TEXT --><string name="ndjc_search_empty">No results</string>
     <!-- NDJC:BUTTON_PRIMARY_LABEL --><string name="ndjc_btn_primary">OK</string>
     <!-- NDJC:BUTTON_SECONDARY_LABEL --><string name="ndjc_btn_secondary">Cancel</string>
-    <!-- NDJC:ERROR_GENERAL_TEXT --><string name="ndjc_error_general">Something went wrong</string>
+    <!-- NDJC:ERROR_GENERIC_TEXT --><string name="ndjc_error_generic">Something went wrong</string>
     <!-- NDJC:ERROR_OFFLINE_TEXT --><string name="ndjc_error_offline">You’re offline</string>
 
     <!-- 权限理由 -->
@@ -32,9 +30,11 @@
     <!-- NDJC:PERMISSION_LOCATION_RATIONALE --><string name="ndjc_perm_location">We need location to show nearby content</string>
     <!-- NDJC:PERMISSION_NOTIFICATIONS_RATIONALE --><string name="ndjc_perm_notify">Enable notifications to get updates</string>
 
-    <!-- 法务 URL（也可在 Manifest meta-data 中使用） -->
+    <!-- 支持/法务 -->
     <!-- NDJC:PRIVACY_POLICY_URL --><string name="ndjc_privacy_url">https://example.com/privacy</string>
     <!-- NDJC:TERMS_URL          --><string name="ndjc_terms_url">https://example.com/terms</string>
+    <!-- NDJC:SUPPORT_EMAIL      --><string name="ndjc_support_email">support@example.com</string>
+    <!-- NDJC:TERMS_VERSION      --><string name="ndjc_terms_version">1.0</string>
 
     <!-- 追加文本锚点容器（生成器在此处批量注入更多 key） -->
     <!-- NDJC:COLORS_XML -->
