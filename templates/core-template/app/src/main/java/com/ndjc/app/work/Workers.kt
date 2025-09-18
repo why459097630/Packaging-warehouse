@@ -1,3 +1,4 @@
 package com.ndjc.app.work
 // NDJC:BLOCK:WORK_MANAGER
 // NDJC:BLOCK:FOREGROUND_SERVICE
+// NDJC:WORK_NAME  => 由 BuildConfig.WORK_NAME 提供
