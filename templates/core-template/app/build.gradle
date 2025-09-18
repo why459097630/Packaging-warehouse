@@ -1,8 +1,11 @@
+// templates/core-template/app/build.gradle
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     // NDJC:INTEGRATION_PLUGINS
-    // NDJC:BLOCK:PLUGINS_EXTRA
+    // NDJC:PLUGINS_EXTRA            // text 锚点
+    // NDJC:BLOCK:PLUGINS_EXTRA      // block 锚点
 }
 
 android {
@@ -115,6 +118,8 @@ android {
         manifestPlaceholders += [ PRIVACY_POLICY_URL: "https://example.com/privacy",
                                   TERMS_URL: "https://example.com/terms",
                                   SHORTCUTS_COUNT: "0" ]
+        // NDJC:META_CHANNEL / NDJC:META_ENV（如需可追加）
+        // manifestPlaceholders += [ META_CHANNEL: "official", META_ENV: "prod" ]
     }
 
     signingConfigs {
@@ -146,8 +151,9 @@ android {
     }
 
     // 资源/打包
-    // NDJC:RES_CONFIGS
-    // NDJC:PACKAGING_RULES
+    // NDJC:RES_CONFIGS                  // text 锚点
+    // NDJC:PACKAGING_RULES             // text 锚点
+    // NDJC:BLOCK:PACKAGING_RULES       // block 锚点（补齐缺失）
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -157,7 +163,8 @@ android {
 
     buildFeatures {
         compose true
-        // NDJC:BUILD_FEATURES
+        // NDJC:BUILD_FEATURES            // text 锚点
+        // NDJC:BLOCK:BUILD_FEATURES      // block 锚点（补齐缺失）
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.3' // NDJC:COMPOSE_COMPILER_EXT
@@ -197,8 +204,8 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'   // NDJC:BLOCK:NETWORK_INTERCEPTORS
 
     // 其他三方/自定义依赖位
-    // NDJC:INTEGRATION_DEPENDENCIES
-    // NDJC:BLOCK:DEPENDENCIES_EXTRA
+    // NDJC:INTEGRATION_DEPENDENCIES     // text 锚点
+    // NDJC:BLOCK:DEPENDENCIES_EXTRA     // block 锚点
 
     // 测试依赖
     testImplementation 'junit:junit:4.13.2'
