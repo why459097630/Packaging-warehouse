@@ -14,10 +14,10 @@ android {
 
     defaultConfig {
         applicationId "com.ndjc.app"         // NDJC:PACKAGE_NAME / NDJC:BLOCK:BUILD_CONFIG_FLAGS
-        minSdk 24                             // NDJC:MIN_SDK
-        targetSdk 34                          // NDJC:TARGET_SDK
-        versionCode 1                         // NDJC:VERSION_CODE
-        versionName "1.0.0"                   // NDJC:VERSION_NAME
+        minSdk 24                            // NDJC:MIN_SDK
+        targetSdk 34                         // NDJC:TARGET_SDK
+        versionCode 1                        // NDJC:VERSION_CODE
+        versionName "1.0.0"                  // NDJC:VERSION_NAME
 
         // 生成器可在此追加更多 BuildConfig 字段
         // NDJC:BUILD_CONFIG_FLAGS            // text 锚点
@@ -157,6 +157,9 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            NDJC:SIGNING_CONFIG   // ← 新增文本锚点，仅此一处改动
+
             // NDJC:BLOCK:PROGUARD_RULES
             // NDJC:PROGUARD_FILES_EXTRA      // text 锚点
         }
