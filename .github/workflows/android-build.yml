@@ -1,11 +1,10 @@
 name: Android Build
 
 on:
-  # 允许手动触发（前端/Actions 页面用）
   workflow_dispatch:
     inputs:
       runId:
-        description: "NDJC run id"
+        description: "NDJC run id (e.g. 2025-09-18T12-34-56Z-xxxx)"
         required: false
       template:
         description: "template key (core/simple/form)"
@@ -16,12 +15,15 @@ on:
       packageName:
         description: "Android applicationId"
         required: false
-  # 允许后端通过 repository_dispatch 触发
+      # 预留：可由生成器注入更多 inputs
+      # channel:
+      #   description: "release channel"
+      #   required: false
   repository_dispatch:
     types: [generate-apk]
 
 concurrency:
-  group: android-build-${{ github.ref || github.event.client_payload.ref || 'NA' }}-${{ inputs.runId || github.event.client_payload.runId || 'NA' }}
+  group: android-build-${{ github.ref }}-${{ inputs.runId || github.event.client_payload.runId || 'NA' }}
   cancel-in-progress: true
 
 jobs:
@@ -30,14 +32,17 @@ jobs:
 
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-      # NDJC:CI_ENV   # 这里可以加你的环境变量，例如 API_BASE/TRACK 等
+      # 这里可放置 CI 级别的环境变量（生成器也可覆写）
+      # API_BASE: https://api.example.com
+      # TRACK: internal
 
     steps:
+      # --- 源码 ---
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # repository_dispatch 时优先使用 payload.ref；否则回退默认
+          # 关键：repository_dispatch 时用后端传来的构建分支；否则退回默认
           ref: ${{ github.event.client_payload.ref || github.ref }}
 
       - name: NDJC | Show commit and changed files
@@ -50,49 +55,55 @@ jobs:
           echo "---- files touched in this commit ----"
           git show --name-only --pretty=oneline "$(git rev-parse HEAD)"
 
-      # 仅在 push 事件时才做“必须改动 app/”的保护（现在我们已移除 on:push，这两步会自动跳过）
-      - name: NDJC | (soft) check if this commit touched app/ (push only)
-        if: ${{ github.event_name == 'push' }}
+      # ========== 保险丝 1：runId 日志必须存在 ==========
+      - name: NDJC | Verify requests logs exist (must be for this runId)
+        id: verify_logs
         shell: bash
         run: |
-          git show --name-only --pretty=oneline "$(git rev-parse HEAD)" | grep '^app/' || true
+          set -e
+          RUNID="${{ inputs.runId || github.event.client_payload.runId }}"
+          if [ -z "$RUNID" ]; then
+            echo "No runId provided (inputs.runId / client_payload.runId) → refuse to build"
+            exit 1
+          fi
+          if [ ! -d "requests/$RUNID" ]; then
+            echo "requests/$RUNID not found → refuse to build"
+            ls -lah requests || true
+            exit 1
+          fi
+          test -f "requests/$RUNID/02_plan.json"
+          test -f "requests/$RUNID/03_apply_result.json"
+          echo "LATEST=requests/$RUNID" >> "$GITHUB_ENV"
+          echo "Verified logs under requests/$RUNID"
 
-      - name: NDJC | Fail if this commit didn't touch app/ (push only)
-        if: ${{ github.event_name == 'push' }}
+      # ========== 保险丝 2：HEAD 必须改动了 app/ ==========
+      - name: NDJC | Fail if this commit didn't touch app/
         shell: bash
         run: |
-          CHANGED_APP=$(git show --name-only --pretty=oneline "$(git rev-parse HEAD)" | grep '^app/' || true)
+          set -e
+          HEAD_SHA="$(git rev-parse HEAD)"
+          CHANGED_APP=$(git show --name-only --pretty=oneline "$HEAD_SHA" | grep '^app/' || true)
           if [ -z "$CHANGED_APP" ]; then
             echo "No app/ changes in this commit -> would be empty APK. Failing early."
             exit 3
           fi
+          echo "$CHANGED_APP"
 
-      # 必须存在 requests 日志（生成器会写入）
-      - name: NDJC | Verify requests logs exist
-        shell: bash
-        run: |
-          set -e
-          latest=$(ls -dt requests/* 2>/dev/null | head -n1 || true)
-          if [ -z "$latest" ]; then
-            echo "No requests/* found"; exit 1
-          fi
-          test -f "$latest/02_plan.json"
-          test -f "$latest/03_apply_result.json"
-          echo "Found logs in: $latest"
-
-      # 关键锚点替换计数 > 0
+      # 可选：对关键锚点成功替换做一次硬校验（读取我们刚验证过的 runId 日志）
       - name: NDJC | Fail if no critical anchors replaced
         shell: bash
         run: |
           set -e
-          latest=$(ls -dt requests/* | head -n1)
-          COUNT=$(jq '[ .[] | .changes[] | select(.replacedCount>0) | .replacedCount ] | add // 0' "$latest/03_apply_result.json")
-          echo "Replacements total: $COUNT"
+          LATEST="${LATEST:-requests/${{ inputs.runId || github.event.client_payload.runId }}}"
+          test -f "$LATEST/03_apply_result.json"
+          COUNT=$(jq '[ .[] | .changes[] | select(.replacedCount>0) | .replacedCount ] | add // 0' "$LATEST/03_apply_result.json")
+          echo "Replacements(total) = $COUNT"
           if [ -z "$COUNT" ] || [ "$COUNT" -eq 0 ]; then
             echo "No critical anchors replaced -> abort"
             exit 2
           fi
 
+      # --- 基础健检 ---
       - name: Sanity check
         shell: bash
         run: |
@@ -107,14 +118,18 @@ jobs:
           echo "Ref   -> $GITHUB_REF"
           echo "RunId='${{ inputs.runId || github.event.client_payload.runId }}' Template='${{ inputs.template || github.event.client_payload.template }}' AppTitle='${{ inputs.appTitle || github.event.client_payload.appTitle }}' Pkg='${{ inputs.packageName || github.event.client_payload.packageName }}'"
 
+      # --- JDK / Gradle ---
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          # 可根据需要开启缓存：
+          # cache-read-only: false
 
       - name: Make gradlew executable
         shell: bash
@@ -122,6 +137,7 @@ jobs:
           chmod +x ./gradlew
           ./gradlew --version
 
+      # --- 签名（可选） ---
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
         shell: bash
@@ -135,6 +151,7 @@ jobs:
           } >> "$GITHUB_ENV"
           ls -lh "$HOME/release.jks" || true
 
+      # --- 构建 ---
       - name: Build
         id: build
         shell: bash
@@ -222,7 +239,7 @@ jobs:
           echo "- Variant: **${VARIANT}**" >> $GITHUB_STEP_SUMMARY
           echo "- Package: \`$APPID\`" >> $GITHUB_STEP_SUMMARY
           echo "- Version: \`$VN\` (code $VC)" >> $GITHUB_STEP_SUMMARY
-          echo "- Ref: \`${{ github.ref }}\`  Commit: \`$(git rev-parse --short HEAD)\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Ref: \`${{ github.event.client_payload.ref || github.ref }}\`  Commit: \`$(git rev-parse --short HEAD)\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
