@@ -16,12 +16,7 @@ android {
         versionCode 1                         // NDJC:VERSION_CODE
         versionName "1.0.0"                   // NDJC:VERSION_NAME
 
-        // 语言/密钥/占位等（示例见你原注释）
-        // NDJC:RES_CONFIGS                   // e.g. resConfigs 'en','zh-CN','zh-TW'
-        // NDJC:BUILD_CONFIG                  // e.g. buildConfigField(...)
-        // NDJC:INTEGRATION_PLACEHOLDERS      // e.g. manifestPlaceholders += [...]
-
-        // ===== BuildConfig 常量（TEXT 锚点落位） =====
+        // ===== BuildConfig 常量（TEXT 锚点） =====
         // 基础网络
         // NDJC:HTTP_BASE_URL
         buildConfigField "String", "API_BASE", "\"https://api.example.com\""
@@ -52,7 +47,65 @@ android {
         // NDJC:META_ENV
         buildConfigField "String", "META_ENV", "\"prod\""
 
-        // ===== Manifest 占位符（TEXT 锚点落位） =====
+        // 广告
+        // NDJC:ADS_BANNER_UNIT_ID
+        buildConfigField "String", "ADS_BANNER_UNIT_ID", "\"\""
+        // NDJC:ADS_INTERSTITIAL_UNIT_ID
+        buildConfigField "String", "ADS_INTERSTITIAL_UNIT_ID", "\"\""
+        // NDJC:ADS_REWARDED_UNIT_ID
+        buildConfigField "String", "ADS_REWARDED_UNIT_ID", "\"\""
+
+        // 分析/崩溃/调试
+        // NDJC:ANALYTICS_DSN
+        buildConfigField "String", "ANALYTICS_DSN", "\"\""
+        // NDJC:ANALYTICS_EVENTS_MAP
+        buildConfigField "String", "ANALYTICS_EVENTS_MAP", "\"{}\""
+        // NDJC:ANALYTICS_USER_ID_KEY
+        buildConfigField "String", "ANALYTICS_USER_ID_KEY", "\"uid\""
+        // NDJC:CRASH_DSN
+        buildConfigField "String", "CRASH_DSN", "\"\""
+        // NDJC:CRASH_COLLECTION_ENABLED
+        buildConfigField "boolean", "CRASH_COLLECTION_ENABLED", "true"
+        // NDJC:DEBUG_LOGGING_ENABLED
+        buildConfigField "boolean", "DEBUG_LOGGING_ENABLED", "true"
+
+        // 鉴权/接口
+        // NDJC:API_KEY
+        buildConfigField "String", "API_KEY", "\"\""
+        // NDJC:AUTH_REFRESH_ENDPOINT
+        buildConfigField "String", "AUTH_REFRESH_ENDPOINT", "\"/auth/refresh\""
+        // NDJC:AUTH_TOKEN_HEADER
+        buildConfigField "String", "AUTH_TOKEN_HEADER", "\"Authorization\""
+        // NDJC:AUTH_SCOPES
+        buildConfigField "String", "AUTH_SCOPES", "\"profile,email\""
+
+        // 远程配置/开关
+        // NDJC:REMOTE_CONFIG_URL
+        buildConfigField "String", "REMOTE_CONFIG_URL", "\"https://rc.example.com/config\""
+        // NDJC:REMOTE_CONFIG_STRATEGY
+        buildConfigField "String", "REMOTE_CONFIG_STRATEGY", "\"local-first\""
+        // NDJC:FEATURE_FLAGS_FILE
+        buildConfigField "String", "FEATURE_FLAGS_FILE", "\"flags.json\""
+
+        // 图片/重试
+        // NDJC:IMAGE_BASE_URL
+        buildConfigField "String", "IMAGE_BASE_URL", "\"https://img.example.com/\""
+        // NDJC:RETRY_BACKOFF_MS
+        buildConfigField "int", "RETRY_BACKOFF_MS", "2000"
+        // NDJC:RETRY_STRATEGY
+        buildConfigField "String", "RETRY_STRATEGY", "\"exponential\""
+
+        // Worker 相关
+        // NDJC:WORKER_RETRIES
+        buildConfigField "int", "WORKER_RETRIES", "3"
+        // NDJC:WORKER_RETRY_STRATEGY
+        buildConfigField "String", "WORKER_RETRY_STRATEGY", "\"linear\""
+        // NDJC:WORK_CONSTRAINTS
+        buildConfigField "String", "WORK_CONSTRAINTS", "\"network_unmetered\""
+        // NDJC:WORK_INTERVAL_MINUTES
+        buildConfigField "int", "WORK_INTERVAL_MINUTES", "15"
+
+        // ===== Manifest 占位符（TEXT 锚点） =====
         if (!project.hasProperty("manifestPlaceholders") || manifestPlaceholders == null) {
             manifestPlaceholders = [:]
         }
@@ -86,7 +139,6 @@ android {
 
     signingConfigs {
         release {
-            // 你原有的环境变量签名逻辑保留
             def disabled = (System.getenv('NDJC_SIGNING_DISABLED') ?: '0') == '1'
             def keystore = System.getenv('NDJC_KEYSTORE_PATH') ?: ''
             if (!disabled && keystore?.trim()) {
@@ -108,7 +160,6 @@ android {
         }
         debug {
             minifyEnabled false
-            // 可放调试开关/QA 菜单
             // NDJC:BLOCK:QA_MENU
         }
     }
@@ -116,22 +167,19 @@ android {
     // 分包/资源/ABI/签名等额外打包规则
     // NDJC:INTEGRATION_PACKAGING
     // NDJC:BLOCK:PACKAGING_RULES
-    // packagingOptions { resources { excludes += ['META-INF/*'] } }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = '17'                    // NDJC:KOTLIN_JVM_TARGET
-    }
+    kotlinOptions { jvmTarget = '17' }        // NDJC:KOTLIN_JVM_TARGET
 
     buildFeatures {
         compose true
         // NDJC:BLOCK:BUILD_FEATURES
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.5.3'   // NDJC:COMPOSE_COMPILER_EXT
+        kotlinCompilerExtensionVersion '1.5.3' // NDJC:COMPOSE_COMPILER_EXT
         // NDJC:BLOCK:COMPOSE_THEME
     }
 
@@ -158,7 +206,7 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
-    // 导航（新增，承载 NDJC:BLOCK:NAV_GRAPH / ROUTER_TABLE / ROUTE_ARGS）
+    // 导航（承载 NAV_GRAPH / ROUTER_TABLE / ROUTE_ARGS）
     implementation 'androidx.navigation:navigation-compose:2.7.7'     // NDJC:BLOCK:NAV_GRAPH
 
     // 数据存储 & 工作任务
