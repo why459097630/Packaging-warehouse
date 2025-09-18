@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "NDJC: selfcheck",
+      "type": "shell",
+      "command": "pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File ./Tools/ndjc-selfcheck.ps1 -TemplatesDir templates/core-template -ExpectedDir anchors -FailOnMissing:$true",
+      "problemMatcher": []
+    }
+  ]
+}
