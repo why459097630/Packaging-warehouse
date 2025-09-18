@@ -10,11 +10,11 @@ class App : Application() {
         // NDJC:BLOCK:STARTUP
         // NDJC:BLOCK:STARTUP_INITIALIZERS
 
-        // 从 BuildConfig 读取的文本锚点（生成器会注入实际值）
+        // 从 BuildConfig 读入的文案集合（生成器会注入实际值）
         val startupLibs       = BuildConfig.STARTUP_LIBS        // NDJC:STARTUP_LIBS
-        val startupInitializr = BuildConfig.STARTUP_INITIALIZERS // NDJC:STARTUP_INITIALIZERS
+        val startupInitializer= BuildConfig.STARTUP_INITIALIZERS // NDJC:STARTUP_INITIALIZERS
         @Suppress("UNUSED_VARIABLE")
-        val _keepRefs = arrayOf(startupLibs, startupInitializr)  // 防被 R8 消掉
+        val _keepRefs = arrayOf(startupLibs, startupInitializer) // 防止 被 消掉
 
         // 埋点 / 崩溃 / 远程配置 / 开关 / 实验
         // NDJC:BLOCK:ANALYTICS
