@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun AppTheme(content: @Composable () -> Unit) {
-    // 主题预设（可注入不同风格/品牌主题）
+    // 主题预设（可注入不同风格/品牌主色）
     // NDJC:BLOCK:APP_THEME_PRESETS
 
     val scheme = if (isSystemInDarkTheme()) {
@@ -22,11 +22,11 @@ fun AppTheme(content: @Composable () -> Unit) {
         )
     }
 
-    // 动态色/壁纸取色等开关与适配
+    // 动态色/壁纸色等策略关与适配
     // NDJC:BLOCK:DYNAMIC_COLOR
 
-    // 主题覆写：形状、排版、间距、EdgeToEdge、系统栏等
-    // （生成器将把具体覆写内容注入到此锚点下）
+    // 主题调整：形状、排版、间距、EdgeToEdge、系统栏等
+    // （生成器可把复杂内容注入到该点之下）
     // NDJC:BLOCK:THEME_OVERRIDES
 
     MaterialTheme(
