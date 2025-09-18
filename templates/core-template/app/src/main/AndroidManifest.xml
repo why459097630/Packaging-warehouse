@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ndjc.app">
 
-    <!-- 运行/存储权限（生成器会注入） -->
+    <!-- 运行/存储/通知等权限（生成器注入） -->
+    <!-- NDJC:PERMISSIONS -->
     <!-- NDJC:BLOCK:PERMISSIONS -->
 
     <application
@@ -10,40 +11,45 @@
         android:allowBackup="true"
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher">
+        <!-- NDJC:APP_ICON -->
+        <!-- NDJC:SPLASH_ICON -->
 
-        <!-- 网络安全配置（如有网络安全 xml，可开启） -->
+        <!-- 网络安全 xml（若有 @xml/network_security_config） -->
+        <!-- NDJC:NETWORK_SECURITY_XML -->
         <!-- NDJC:BLOCK:NETWORK_SECURITY -->
 
-        <!-- FileProvider（使用清单占位符 @xml/file_paths） -->
-        <!-- NDJC:BLOCK:FILE_PROVIDER -->
-
-        <!-- 通知/启动广播/前台服务类型 -->
-        <!-- NDJC:BLOCK:NOTIFICATION_RECEIVER -->
-        <!-- NDJC:BLOCK:BOOT_RECEIVER -->
+        <!-- 前台服务类型（如 location/media 等） -->
+        <!-- NDJC:FOREGROUND_SERVICE_TYPES -->
         <!-- NDJC:BLOCK:FOREGROUND_SERVICE_TYPES -->
 
-        <!-- Shortcuts（见 res/xml/shortcuts.xml） -->
+        <!-- FileProvider / Shortcuts / Widget 占位 -->
+        <!-- NDJC:BLOCK:FILE_PROVIDER -->
         <!-- NDJC:BLOCK:SHORTCUTS -->
-
-        <!-- 小组件（见 res/xml/sample_widget_info.xml） -->
         <!-- NDJC:BLOCK:WIDGET -->
 
-        <!-- 多语言 -->
-        <!-- NDJC:LOCALE_CONFIG -->
+        <!-- 渠道/环境 meta-data（取自 manifestPlaceholders） -->
+        <!-- NDJC:META_CHANNEL --><meta-data android:name="ndjc.meta.CHANNEL" android:value="${META_CHANNEL}" />
+        <!-- NDJC:META_ENV     --><meta-data android:name="ndjc.meta.ENV"     android:value="${META_ENV}" />
+
+        <!-- Maps 自定义样式（如使用，可在此注入） -->
+        <!-- NDJC:MAPS_STYLE_JSON -->
 
         <activity
             android:name=".MainActivity"
             android:exported="true">
+            <!-- NDJC:MAIN_ACTIVITY_NAME -->
+
             <!-- 入口 -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- 额外 IntentFilter -->
+            <!-- 额外 IntentFilter / DeepLinks / App Links -->
+            <!-- NDJC:INTENT_FILTERS -->
             <!-- NDJC:BLOCK:INTENT_FILTERS -->
 
-            <!-- DeepLink & App Links -->
+            <!-- NDJC:DEEP_LINK_PATHS -->
             <!-- NDJC:BLOCK:DEEPLINK -->
             <!-- NDJC:BLOCK:APP_LINKS -->
         </activity>
