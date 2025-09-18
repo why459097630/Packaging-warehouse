@@ -5,6 +5,11 @@ NDJC 自查脚本（PowerShell 版）
 - 生成报告：anchors/scan-report.json、anchors/anchors_status.csv、
   anchors/missing_text.txt、anchors/missing_block.txt
 - 缺失则返回非零退出码（用于 CI）
+
+修复/增强：
+- 修正排除目录匹配：不会再把 “build.gradle” 误判为 build 目录而排除
+- 兼容 CRLF/LF/CR 三种换行读取 expected_* 文件
+- 精确大小写匹配（-CaseSensitive）
 #>
 
 param(
@@ -25,7 +30,7 @@ function Read-Expected([string]$path) {
     Sort-Object -Unique
 }
 
-# ---- 路径准备（全部规范化） ----
+# ---- 路径准备（规范化） ----
 $repoPath          = (Resolve-Path $RepoRoot).Path
 $expectedTextPath  = Join-Path $repoPath (Join-Path $ExpectedDir "expected_text.txt")
 $expectedBlockPath = Join-Path $repoPath (Join-Path $ExpectedDir "expected_block.txt")
@@ -40,17 +45,31 @@ $expectedText  = Read-Expected $expectedTextPath
 $expectedBlock = Read-Expected $expectedBlockPath
 
 # 需扫描的文件后缀（可按需增减）
-$exts = @(".kt", ".kts", ".java", ".xml", ".gradle", ".pro", ".properties",
-          ".txt", ".md", ".json", ".yml", ".yaml")
+$exts = @(
+  ".kt", ".kts", ".java", ".xml", ".gradle", ".pro", ".properties",
+  ".txt", ".md", ".json", ".yml", ".yaml"
+)
 
-# 排除目录（正则片段）
-$excludeDirs = @("\.git", "build", "\.gradle", "\.idea", "node_modules", "dist", "outputs")
+# 排除目录（务必写成“目录边界”正则，避免误杀文件名）
+# 说明：[\\/] 同时兼容 Windows 与 *nix 分隔符
+$excludeDirs = @(
+  "[\\/]\.git[\\/]",            # .git/
+  "[\\/]build[\\/]",            # build/
+  "[\\/]\.gradle[\\/]",         # .gradle/
+  "[\\/]\.idea[\\/]",           # .idea/
+  "[\\/]node_modules[\\/]",     # node_modules/
+  "[\\/]dist[\\/]",             # dist/
+  "[\\/]outputs[\\/]"           # outputs/
+)
 
-# ---- 收集文件（修正：正确的排除逻辑） ----
+function Test-Excluded([string]$fullPath, [string[]]$patterns) {
+  foreach ($p in $patterns) { if ($fullPath -match $p) { return $true } }
+  return $false
+}
+
+# ---- 收集文件（正确的排除逻辑） ----
 $files = Get-ChildItem -Path $scanRoot -Recurse -File | Where-Object {
-  $full = $_.FullName
-  ($exts -contains $_.Extension.ToLower()) -and
-  (-not ($excludeDirs | Where-Object { $full -match $_ }))
+  ($exts -contains $_.Extension.ToLower()) -and -not (Test-Excluded $_.FullName $excludeDirs)
 }
 
 # ---- 扫描函数 ----
@@ -77,7 +96,7 @@ function Scan-Anchors {
       anchor  = $a
       kind    = $Kind
       found   = ($matches.Count -gt 0)
-      count   = $matches.Count           # 以“命中文件个数”为计数（每文件可能多行，已汇入 lines）
+      count   = $matches.Count            # 命中文件的数量（每文件多行已汇总到 lines）
       matches = $matches
     }
   }
