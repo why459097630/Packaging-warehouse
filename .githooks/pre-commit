@@ -1,10 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "[NDJC] pre-commit: running selfcheck..."
-if command -v pwsh >/dev/null 2>&1; then PWSH=pwsh; else PWSH=powershell; fi
+# 1) 仓库根目录（Git Bash 路径）
+REPO_ROOT="$(git rev-parse --show-toplevel)"
 
-"$PWSH" -NoLogo -NoProfile -ExecutionPolicy Bypass -File ./Tools/ndjc-selfcheck.ps1 `
-  -TemplatesDir "templates/core-template" `
-  -ExpectedDir "anchors" `
-  -FailOnMissing:$true
+# 2) 转成 Windows 路径给 PowerShell 用
+if command -v cygpath >/dev/null 2>&1; then
+  ROOT_WIN="$(cygpath -w "$REPO_ROOT")"   # 例：E:\NDJC\Packaging-warehouse
+else
+  ROOT_WIN="$REPO_ROOT"
+fi
+
+# 3) 选择可用的 PowerShell 可执行文件
+if command -v pwsh >/dev/null 2>&1; then
+  PS_EXE="pwsh"
+else
+  PS_EXE="powershell.exe"
+fi
+
+# 4) 跑自检；注意 \${true} 用来给 PowerShell 传布尔而不被 bash 展开
+"$PS_EXE" -NoLogo -NoProfile -ExecutionPolicy Bypass \
+  -File "$ROOT_WIN/Tools/ndjc-selfcheck.ps1" \
+  -RepoRoot "$ROOT_WIN" \
+  -TemplatesDir "templates/core-template" \
+  -ExpectedDir "anchors" \
+  -FailOnMissing:\$true
