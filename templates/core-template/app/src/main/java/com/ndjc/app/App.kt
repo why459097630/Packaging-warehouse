@@ -10,7 +10,9 @@ class App : Application() {
         // NDJC:ANALYTICS_SDK
         // NDJC:CRASH_SDK
         // NDJC:PUSH_SDK
-
+        // NDJC:BLOCK:ANALYTICS
+        // NDJC:BLOCK:CRASH
+        
         // 框架化启动钩子
         // NDJC:BLOCK:STARTUP
         // NDJC:BLOCK:STARTUP_INITIALIZERS
