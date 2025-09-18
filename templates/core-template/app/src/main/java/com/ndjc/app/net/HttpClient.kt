@@ -8,9 +8,9 @@ import java.util.concurrent.TimeUnit
 object HttpClient {
 
     // 基础配置来自 BuildConfig（文本锚点）
-    private const val BASE_URL: String = BuildConfig.API_BASE            // NDJC:HTTP_BASE_URL
+    private const val BASE_URL: String = BuildConfig.API_BASE                 // NDJC:HTTP_BASE_URL
     private const val TIMEOUT_MS: Long = BuildConfig.HTTP_TIMEOUT_MS.toLong() // NDJC:HTTP_TIMEOUT
-    private const val LOG_LEVEL: Int   = BuildConfig.HTTP_LOG_LEVEL      // NDJC:HTTP_LOG_LEVEL
+    private const val LOG_LEVEL: Int   = BuildConfig.HTTP_LOG_LEVEL           // NDJC:HTTP_LOG_LEVEL
 
     val client: OkHttpClient by lazy {
         val logger = HttpLoggingInterceptor().apply {
