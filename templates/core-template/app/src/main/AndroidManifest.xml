@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ndjc.app">
+    <!-- NDJC:PACKAGE_NAME -->
 
     <!-- 运行时/普通权限（由生成器注入） -->
     <!-- NDJC:BLOCK:PERMISSIONS -->
@@ -8,15 +9,27 @@
     <application
         android:name=".App"
         android:allowBackup="true"
-        android:label="@string/app_name"
-        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"          <!-- NDJC:APP_LABEL / APP_NAME -->
+        android:icon="@mipmap/ic_launcher"        <!-- NDJC:APP_ICON -->
         android:theme="@style/Theme.Material3.DayNight">
 
-        <!-- 网络安全配置（若启用请提供 @xml/network_security_config） -->
+        <!-- 网络安全配置（如启用需提供 @xml/network_security_config） -->
         <!-- NDJC:BLOCK:NETWORK_SECURITY -->
+        <!-- NDJC:NETWORK_SECURITY_XML -->
 
-        <!-- FileProvider（若启用请提供 @xml/file_paths） -->
+        <!-- FileProvider（如启用需提供 @xml/file_paths） -->
         <!-- NDJC:BLOCK:FILE_PROVIDER -->
+        <!-- NDJC:FILE_PROVIDER_AUTH
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${FILE_PROVIDER_AUTH}"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        -->
 
         <!-- 通知/启动接收器、前台服务类型等 -->
         <!-- NDJC:BLOCK:NOTIFICATION_RECEIVER -->
@@ -25,24 +38,50 @@
 
         <!-- 动态 Shortcuts（见 res/xml/shortcuts.xml） -->
         <!-- NDJC:BLOCK:SHORTCUTS -->
+        <!-- NDJC:SHORTCUTS_COUNT -->
 
-        <!-- 桌面小部件（真实落位处：receiver 节点；生成器在该锚点下方追加/替换） -->
+        <!-- 桌面小部件（receiver 节点位置，生成器可在此处追加） -->
         <!-- NDJC:BLOCK:WIDGET -->
 
+        <!-- 业务/渠道/法务等 Meta（占位模板；未配置 manifestPlaceholders 前请保持注释） -->
+        <!-- NDJC:MAPS_API_KEY
+        <meta-data android:name="com.google.android.maps.v2.API_KEY" android:value="${MAPS_API_KEY}" />
+        -->
+        <!-- NDJC:META_CHANNEL
+        <meta-data android:name="ndjc.meta.CHANNEL" android:value="${META_CHANNEL}" />
+        -->
+        <!-- NDJC:META_ENV
+        <meta-data android:name="ndjc.meta.ENV" android:value="${META_ENV}" />
+        -->
+        <!-- NDJC:PRIVACY_POLICY_URL
+        <meta-data android:name="ndjc.privacy.url" android:value="${PRIVACY_POLICY_URL}" />
+        -->
+        <!-- NDJC:TERMS_URL
+        <meta-data android:name="ndjc.terms.url" android:value="${TERMS_URL}" />
+        -->
+
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name=".MainActivity"         <!-- NDJC:MAIN_ACTIVITY_NAME -->
+            android:exported="true"
+            android:label="@string/launcher_name"> <!-- NDJC:LAUNCHER_NAME -->
 
             <!-- 启动入口 -->
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- 深链 & App Links（真实落位） -->
+            <!-- 深链 & App Links（占位模板；未配置 placeholders 前请保持注释） -->
             <!-- NDJC:BLOCK:INTENT_FILTERS -->
-            <!-- NDJC:BLOCK:DEEPLINK -->
-            <!-- NDJC:BLOCK:APP_LINKS -->
+            <!-- NDJC:DEEPLINK_HOST / NDJC:DEEPLINK_SCHEME / NDJC:APP_LINKS_DOMAIN
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="${DEEPLINK_SCHEME}" android:host="${DEEPLINK_HOST}" />
+                <data android:scheme="https" android:host="${APP_LINKS_DOMAIN}" />
+            </intent-filter>
+            -->
         </activity>
     </application>
 </manifest>
