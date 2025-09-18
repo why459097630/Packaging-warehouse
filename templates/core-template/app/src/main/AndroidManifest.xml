@@ -11,10 +11,12 @@
         android:allowBackup="true"
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher">
+
+        <!-- 应用图标/启动图标占位 -->
         <!-- NDJC:APP_ICON -->
         <!-- NDJC:SPLASH_ICON -->
 
-        <!-- 网络安全 xml（若有 @xml/network_security_config） -->
+        <!-- 网络安全 xml（若启用可指向 @xml/network_security_config） -->
         <!-- NDJC:NETWORK_SECURITY_XML -->
         <!-- NDJC:BLOCK:NETWORK_SECURITY -->
 
@@ -27,9 +29,9 @@
         <!-- NDJC:BLOCK:SHORTCUTS -->
         <!-- NDJC:BLOCK:WIDGET -->
 
-        <!-- 渠道/环境 meta-data（取自 manifestPlaceholders） -->
+        <!-- 频道/环境 meta-data（依靠 manifestPlaceholders） -->
         <!-- NDJC:META_CHANNEL --><meta-data android:name="ndjc.meta.CHANNEL" android:value="${META_CHANNEL}" />
-        <!-- NDJC:META_ENV     --><meta-data android:name="ndjc.meta.ENV"     android:value="${META_ENV}" />
+        <!-- NDJC:META_ENV     --><meta-data android:name="ndjc.meta.ENV"      android:value="${META_ENV}" />
 
         <!-- Maps 自定义样式（如使用，可在此注入） -->
         <!-- NDJC:MAPS_STYLE_JSON -->
@@ -45,13 +47,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- 额外 IntentFilter / DeepLinks / App Links -->
+            <!-- 额外 IntentFilter / Deeplinks / App Links -->
             <!-- NDJC:INTENT_FILTERS -->
             <!-- NDJC:BLOCK:INTENT_FILTERS -->
 
+            <!-- 深链 -->
             <!-- NDJC:DEEP_LINK_PATHS -->
             <!-- NDJC:BLOCK:DEEPLINK -->
             <!-- NDJC:BLOCK:APP_LINKS -->
         </activity>
+
+        <!-- 开机/通知等接收器（生成器注入处） -->
+        <!-- NDJC:BLOCK:BOOT_RECEIVER -->
+        <!-- NDJC:BLOCK:NOTIFICATION_RECEIVER -->
+
     </application>
 </manifest>
