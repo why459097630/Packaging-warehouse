@@ -1,4 +1,4 @@
-// templates/core-template/app/build.gradle
+// app/build.gradle
 
 plugins {
     id 'com.android.application'
@@ -14,10 +14,10 @@ android {
 
     defaultConfig {
         applicationId "com.ndjc.app"         // NDJC:PACKAGE_NAME / NDJC:BLOCK:BUILD_CONFIG_FLAGS
-        minSdk 24                            // NDJC:MIN_SDK
-        targetSdk 34                         // NDJC:TARGET_SDK
-        versionCode 1                        // NDJC:VERSION_CODE
-        versionName "1.0.0"                  // NDJC:VERSION_NAME
+        minSdk 24                             // NDJC:MIN_SDK
+        targetSdk 34                          // NDJC:TARGET_SDK
+        versionCode 1                         // NDJC:VERSION_CODE
+        versionName "1.0.0"                   // NDJC:VERSION_NAME
 
         // 生成器可在此追加更多 BuildConfig 字段
         // NDJC:BUILD_CONFIG_FLAGS            // text 锚点
@@ -125,9 +125,9 @@ android {
         ]
         // NDJC:REVIEW_FLOW / NDJC:APP_UPDATE_MODE / NDJC:AD_SDK_ID
         manifestPlaceholders += [
-            REVIEW_FLOW   : "inapp",
+            REVIEW_FLOW    : "inapp",
             APP_UPDATE_MODE: "flexible",
-            AD_SDK_ID     : ""
+            AD_SDK_ID      : ""
         ]
         // NDJC:PRIVACY_POLICY_URL / NDJC:TERMS_URL / NDJC:SHORTCUTS_COUNT
         manifestPlaceholders += [
@@ -156,10 +156,8 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
+            // NDJC:SIGNING_CONFIG           // <<< 新增锚点：生成器可注入 signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-
-            NDJC:SIGNING_CONFIG   // ← 新增文本锚点，仅此一处改动
-
             // NDJC:BLOCK:PROGUARD_RULES
             // NDJC:PROGUARD_FILES_EXTRA      // text 锚点
         }
