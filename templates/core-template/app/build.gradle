@@ -19,6 +19,9 @@ android {
         versionCode 1                         // NDJC:VERSION_CODE
         versionName "1.0.0"                   // NDJC:VERSION_NAME
 
+        // 生成器可在此追加更多 BuildConfig 字段
+        // NDJC:BUILD_CONFIG_FLAGS            // <<< text 锚点
+
         // ===== BuildConfig 常量（TEXT 锚点落位）=====
         // 基础网络
         // NDJC:HTTP_BASE_URL
@@ -27,6 +30,8 @@ android {
         buildConfigField "int", "HTTP_TIMEOUT_MS", "15000"
         // NDJC:HTTP_LOG_LEVEL
         buildConfigField "int", "HTTP_LOG_LEVEL", "1"
+        // NDJC:RETRY_BACKOFF_MS
+        buildConfigField "int", "RETRY_BACKOFF_MS", "2000"
 
         // 启动/初始化
         // NDJC:STARTUP_LIBS
@@ -152,8 +157,8 @@ android {
 
     // 资源/打包
     // NDJC:RES_CONFIGS                  // text 锚点
-    // NDJC:PACKAGING_RULES             // text 锚点
-    // NDJC:BLOCK:PACKAGING_RULES       // block 锚点（补齐缺失）
+    // NDJC:PACKAGING_RULES              // text 锚点
+    // NDJC:BLOCK:PACKAGING_RULES        // block 锚点
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -164,7 +169,7 @@ android {
     buildFeatures {
         compose true
         // NDJC:BUILD_FEATURES            // text 锚点
-        // NDJC:BLOCK:BUILD_FEATURES      // block 锚点（补齐缺失）
+        // NDJC:BLOCK:BUILD_FEATURES      // block 锚点
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.3' // NDJC:COMPOSE_COMPILER_EXT
@@ -204,7 +209,8 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'   // NDJC:BLOCK:NETWORK_INTERCEPTORS
 
     // 其他三方/自定义依赖位
-    // NDJC:INTEGRATION_DEPENDENCIES     // text 锚点
+    // NDJC:INTEGRATION_DEPENDENCIES     // text 锚点（集成型依赖）
+    // NDJC:DEPENDENCIES_EXTRA           // <<< text 锚点（自定义依赖）
     // NDJC:BLOCK:DEPENDENCIES_EXTRA     // block 锚点
 
     // 测试依赖
