@@ -21,6 +21,7 @@ import com.ndjc.app.ui.AppTheme   // 对应 app/ui/Theme.kt 的 package
 // （生成器可在此追加：路由/权限/三方 SDK 的 import）
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // NDJC:ONCREATE_BEFORE_SUPER
         super.onCreate(savedInstanceState)
@@ -32,6 +33,7 @@ class MainActivity : ComponentActivity() {
             AppTheme {
                 // 无障碍/读屏等统一注入点
                 // NDJC:BLOCK:ACCESSIBILITY
+
                 AppScaffold()
             }
         }
@@ -41,6 +43,7 @@ class MainActivity : ComponentActivity() {
     }
 
     // NDJC:MAIN_ACTIVITY_EXTRA_FUNCS
+    // （生成器可追加更多生命周期/权限处理等）
 }
 
 @Composable
@@ -50,7 +53,7 @@ private fun AppScaffold() {
     Scaffold(
         topBar = { /* NDJC:BLOCK:NAV_TOPBAR */ },
         bottomBar = { /* NDJC:BLOCK:NAV_BOTTOM */ }
-        // drawerContent 也可放：NDJC:BLOCK:NAV_DRAWER
+        // drawerContent 等也可放：NDJC:BLOCK:NAV_DRAWER
     ) { padding ->
         NavGraph(modifier = Modifier.padding(padding), nav = nav)
     }
@@ -58,22 +61,20 @@ private fun AppScaffold() {
 
 /** 路由常量（生成器可在此扩展） */
 private object Routes {
-    const val Login    = "login"    // NDJC:ROUTE_LOGIN / NDJC:BLOCK:ROUTER_TABLE
-    const val Feed     = "feed"     // NDJC:BLOCK:ROUTER_TABLE
-    const val Detail   = "detail"   // NDJC:ROUTE_DETAIL / NDJC:BLOCK:ROUTER_TABLE
-    const val Search   = "search"   // NDJC:BLOCK:ROUTER_TABLE
-    const val Profile  = "profile"  // NDJC:BLOCK:ROUTER_TABLE
-    const val Settings = "settings" // NDJC:ROUTE_SETTINGS / NDJC:BLOCK:ROUTER_TABLE
-    const val About    = "about"    // NDJC:ROUTE_ABOUT / NDJC:BLOCK:ROUTER_TABLE
+    const val Login    = "login"     // NDJC:ROUTE_LOGIN / NDJC:BLOCK:ROUTER_TABLE
+    const val Feed     = "feed"      // NDJC:BLOCK:ROUTER_TABLE
+    const val Detail   = "detail"    // NDJC:ROUTE_DETAIL / NDJC:BLOCK:ROUTER_TABLE
+    const val Search   = "search"    // NDJC:BLOCK:ROUTER_TABLE
+    const val Profile  = "profile"   // NDJC:BLOCK:ROUTER_TABLE
+    const val Settings = "settings"  // NDJC:ROUTE_SETTINGS / NDJC:BLOCK:ROUTER_TABLE
+    const val About    = "about"     // NDJC:ROUTE_ABOUT  / NDJC:BLOCK:ROUTER_TABLE
 }
 
 @Composable
 private fun NavGraph(modifier: Modifier = Modifier, nav: NavController) {
-    val startRoute = Routes.Feed // NDJC:START_ROUTE（TEXT）
-
     NavHost(
         navController = nav,
-        startDestination = startRoute,
+        startDestination = Routes.Feed,      // NDJC:START_ROUTE（TEXT）
         modifier = modifier
     ) {
         composable(Routes.Login) {
@@ -91,11 +92,11 @@ private fun NavGraph(modifier: Modifier = Modifier, nav: NavController) {
             DetailScreen(id = id)
         }
 
-        // 可选功能页（若已有独立页面可替换为调用对应 Composable）
+        // 可选独立页（若已有独立页面可替换为调用对应 Composable）
         composable(Routes.Search)  { /* NDJC:BLOCK:FEATURE_SEARCH       */ Text("Search") }
         composable(Routes.Profile) { /* NDJC:BLOCK:FEATURE_USER_PROFILE */ Text("Profile") }
-        composable(Routes.Settings){ /* NDJC:BLOCK:SETTINGS_PAGE        */ Text("Settings") }
-        composable(Routes.About)   { Text("About") }
+        composable(Routes.Settings){ /* NDJC:BLOCK:FEATURE_SETTINGS     */ SettingsScreen() }
+        composable(Routes.About)   { /* NDJC:BLOCK:ABOUT_PAGE           */ AboutScreen() }
 
         // 生成器追加更多页面/图的锚点
         // NDJC:BLOCK:NAV_GRAPH
@@ -131,6 +132,7 @@ private fun FeedScreen(onOpen: (String) -> Unit) {
             text  = stringResource(R.string.ndjc_home_title),
             style = MaterialTheme.typography.headlineMedium
         )
+
         Spacer(Modifier.height(16.dp))
         Button(onClick = { onOpen("42") }) { Text("Open item #42") }
 
@@ -154,4 +156,24 @@ private fun DetailScreen(id: String) {
         Text("Detail: $id")
         // NDJC:BLOCK:FEATURE_DETAIL
     }
+}
+
+@Composable
+private fun SettingsScreen() {
+    // NDJC:BLOCK:FEATURE_SETTINGS
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) { Text(stringResource(R.string.ndjc_settings_title)) }
+}
+
+@Composable
+private fun AboutScreen() {
+    // NDJC:BLOCK:ABOUT_PAGE
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) { Text(stringResource(R.string.ndjc_about_title)) }
 }
