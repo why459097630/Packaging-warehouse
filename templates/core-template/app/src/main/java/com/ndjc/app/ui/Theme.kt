@@ -22,11 +22,11 @@ fun AppTheme(content: @Composable () -> Unit) {
         )
     }
 
-    // 动态色/壁纸色等策略关与适配
+    // 动态色/系统栏等统一适配
     // NDJC:BLOCK:DYNAMIC_COLOR
 
-    // 主题调整：形状、排版、间距、EdgeToEdge、系统栏等
-    // （生成器可把复杂内容注入到该点之下）
+    // 主题扩展：形状、排版、间距、EdgeToEdge、系统栏等
+    // （生成器可在本段内安全注入到调用点下方）
     // NDJC:BLOCK:THEME_OVERRIDES
 
     MaterialTheme(
@@ -36,5 +36,5 @@ fun AppTheme(content: @Composable () -> Unit) {
     )
 }
 
-// 组件预览/主题示例
+// 组件预览/生成示例
 // NDJC:BLOCK:COMPOSE_PREVIEWS
