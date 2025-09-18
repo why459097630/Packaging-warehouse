@@ -1,4 +1,4 @@
-// app/build.gradle
+// templates/core-template/app/build.gradle
 
 plugins {
     id 'com.android.application'
@@ -106,9 +106,7 @@ android {
         buildConfigField "String", "TERMS_VERSION", "\"1.0\""
 
         // ===== Manifest 占位符（TEXT 锚点落位）=====
-        if (!project.hasProperty("manifestPlaceholders") || manifestPlaceholders == null) {
-            manifestPlaceholders = [:]
-        }
+        manifestPlaceholders = (manifestPlaceholders ?: [:])
         // NDJC:FILE_PROVIDER_AUTH
         manifestPlaceholders += [ FILE_PROVIDER_AUTH: "${applicationId}.fileprovider" ]
         // NDJC:APP_LINKS_DOMAIN / NDJC:DEEPLINK_HOST / NDJC:DEEPLINK_SCHEME
@@ -156,10 +154,10 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
-            // NDJC:SIGNING_CONFIG           // <<< 新增锚点：生成器可注入 signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // NDJC:BLOCK:PROGUARD_RULES
             // NDJC:PROGUARD_FILES_EXTRA      // text 锚点
+            signingConfig signingConfigs.release // NDJC:SIGNING_CONFIG
         }
         debug {
             minifyEnabled false
