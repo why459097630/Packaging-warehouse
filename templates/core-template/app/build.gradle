@@ -14,10 +14,10 @@ android {
 
     defaultConfig {
         applicationId "com.ndjc.app"         // NDJC:PACKAGE_NAME / NDJC:BLOCK:BUILD_CONFIG_FLAGS
-        minSdk 24                             // NDJC:MIN_SDK
-        targetSdk 34                          // NDJC:TARGET_SDK
-        versionCode 1                         // NDJC:VERSION_CODE
-        versionName "1.0.0"                   // NDJC:VERSION_NAME
+        minSdk 24                            // NDJC:MIN_SDK
+        targetSdk 34                         // NDJC:TARGET_SDK
+        versionCode 1                        // NDJC:VERSION_CODE
+        versionName "1.0.0"                  // NDJC:VERSION_NAME
 
         // 生成器可在此追加更多 BuildConfig 字段
         // NDJC:BUILD_CONFIG_FLAGS            // text 锚点
@@ -133,8 +133,12 @@ android {
             TERMS_URL         : "https://example.com/terms",
             SHORTCUTS_COUNT   : "0"
         ]
-        // 如需：渠道/环境（避免占位符缺失，默认保持注释）
-        // manifestPlaceholders += [ META_CHANNEL: "official", META_ENV: "prod" ]
+
+        // ✅ 方案 A：为渠道/环境提供默认值（支持环境变量覆盖）
+        manifestPlaceholders += [
+            META_CHANNEL: System.getenv('NDJC_META_CHANNEL') ?: 'official',
+            META_ENV    : System.getenv('NDJC_META_ENV')     ?: 'prod'
+        ]
     }
 
     signingConfigs {
@@ -152,13 +156,11 @@ android {
 
     buildTypes {
         release {
-            // ✅ 方案 1：暂时关闭收缩与混淆，先稳定出包
-            minifyEnabled false
-            shrinkResources false
-
-            // 先保留，后续开回混淆时仍然使用
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-
+            // NDJC:BLOCK:PROGUARD_RULES
+            // NDJC:PROGUARD_FILES_EXTRA      // text 锚点
             signingConfig signingConfigs.release // NDJC:SIGNING_CONFIG
         }
         debug {
@@ -169,19 +171,9 @@ android {
     }
 
     // 资源/打包
-    // NDJC:RES_CONFIGS                  // text 锚点
-    // NDJC:PACKAGING_RULES              // text 锚点
-    // NDJC:BLOCK:PACKAGING_RULES        // block 锚点
-    packagingOptions {
-        resources {
-            excludes += [
-                "META-INF/AL2.0",
-                "META-INF/LGPL2.1",
-                "META-INF/LICENSE*",
-                "META-INF/NOTICE*"
-            ]
-        }
-    }
+    // NDJC:RES_CONFIGS
+    // NDJC:PACKAGING_RULES
+    // NDJC:BLOCK:PACKAGING_RULES
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -192,10 +184,9 @@ android {
     }
 
     buildFeatures {
-        buildConfig = true                  // ✅ 显式开启（更稳）
         compose true
-        // NDJC:BUILD_FEATURES             // text 锚点
-        // NDJC:BLOCK:BUILD_FEATURES       // block 锚点
+        // NDJC:BUILD_FEATURES
+        // NDJC:BLOCK:BUILD_FEATURES
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.3' // NDJC:COMPOSE_COMPILER_EXT
@@ -235,9 +226,9 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'   // NDJC:BLOCK:NETWORK_INTERCEPTORS
 
     // 第三方/自定义依赖位
-    // NDJC:INTEGRATION_DEPENDENCIES     // text 锚点
-    // NDJC:DEPENDENCIES_EXTRA           // text 锚点
-    // NDJC:BLOCK:DEPENDENCIES_EXTRA     // block 锚点
+    // NDJC:INTEGRATION_DEPENDENCIES
+    // NDJC:DEPENDENCIES_EXTRA
+    // NDJC:BLOCK:DEPENDENCIES_EXTRA
 
     // 测试
     testImplementation 'junit:junit:4.13.2'
