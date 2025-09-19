@@ -180,6 +180,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig true                    // ★ 新增：开启 BuildConfig 生成（修复 CI 报错）
         compose true
         // NDJC:BUILD_FEATURES             // text 锚点
         // NDJC:BLOCK:BUILD_FEATURES       // block 锚点
