@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ndjc.app">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- 运行/存储/通知等权限（生成器注入） -->
     <!-- NDJC:PERMISSIONS -->
