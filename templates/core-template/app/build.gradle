@@ -184,6 +184,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig true                    // ★ 新增：开启 BuildConfig，修复 CI 报错
         compose true
         // NDJC:BUILD_FEATURES
         // NDJC:BLOCK:BUILD_FEATURES
