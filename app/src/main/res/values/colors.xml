@@ -1,19 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- 轻量色 -->
+    <!-- 常用基础色（可按需调优/覆盖） -->
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
 
-    <!-- 预置主色/辅色的备选（可保留作示例） -->
-    <color name="purple_200">#BB86FC</color>
-    <color name="purple_500">#6200EE</color>
-    <color name="purple_700">#3700B3</color>
-
-    <color name="teal_200">#03DAC5</color>
-    <color name="teal_700">#018786</color>
-
-    <!-- 应用主题色（与 Material 变量对应） -->
+    <!-- 主题主色/副色（示例） -->
     <color name="primaryColor">#6200EE</color>
     <color name="primaryLightColor">#BB86FC</color>
     <color name="primaryDarkColor">#3700B3</color>
@@ -28,21 +20,22 @@
     <color name="warningColor">#FFC107</color>
     <color name="infoColor">#2196F3</color>
 
-    <!-- 背景/表面 -->
+    <!-- 文本/背景 -->
     <color name="backgroundColor">#FFFFFF</color>
     <color name="surfaceColor">#FFFFFF</color>
-
-    <!-- 文本颜色 -->
     <color name="textPrimary">#212121</color>
     <color name="textSecondary">#757575</color>
     <color name="textOnPrimary">#FFFFFF</color>
     <color name="textOnSecondary">#000000</color>
 
-    <!-- 启动图标背景（示例） -->
+    <!-- 启动画面背景（示例） -->
     <color name="ic_launcher_background">#FFFFFF</color>
 
-    <!-- ★ 供锚点注入的主题主色/对比色 -->
-    <color name="ndjc_color_primary">#6750AA</color>
+    <!-- 供生成注入的主题主/副色（保持与 Theme 绑定） -->
+    <color name="ndjc_color_primary">#6750A4</color>
     <color name="ndjc_color_on_primary">#FFFFFF</color>
     <color name="ndjc_color_secondary">#625B71</color>
+
+    <!-- 预留：额外颜色（块锚点） -->
+
 </resources>
