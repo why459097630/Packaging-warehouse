@@ -4,8 +4,8 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     // NDJC:INTEGRATION_PLUGINS
-    // NDJC:PLUGINS_EXTRA            // text 锚点
-    // NDJC:BLOCK:PLUGINS_EXTRA      // block 锚点
+    // NDJC:PLUGINS_EXTRA
+    // NDJC:BLOCK:PLUGINS_EXTRA
 }
 
 android {
@@ -19,11 +19,9 @@ android {
         versionCode 1                        // NDJC:VERSION_CODE
         versionName "1.0.0"                  // NDJC:VERSION_NAME
 
-        // 生成器可在此追加更多 BuildConfig 字段
-        // NDJC:BUILD_CONFIG_FLAGS            // text 锚点
+        // NDJC:BUILD_CONFIG_FLAGS
 
         // ===== BuildConfig 常量（TEXT 锚点落位）=====
-        // —— 网络基础
         // NDJC:HTTP_BASE_URL
         buildConfigField "String", "API_BASE", "\"https://api.example.com\""
         // NDJC:HTTP_TIMEOUT
@@ -33,13 +31,11 @@ android {
         // NDJC:RETRY_BACKOFF_MS
         buildConfigField "int", "RETRY_BACKOFF_MS", "2000"
 
-        // —— 启动编排
         // NDJC:STARTUP_LIBS
         buildConfigField "String", "STARTUP_LIBS", "\"\""
         // NDJC:STARTUP_INITIALIZERS
         buildConfigField "String", "STARTUP_INITIALIZERS", "\"\""
 
-        // —— 主题 / 语言 / 构建风味
         // NDJC:APP_THEME_MODE
         buildConfigField "String", "APP_THEME_MODE", "\"system\""
         // NDJC:DEFAULT_LANGUAGE
@@ -49,7 +45,6 @@ android {
         // NDJC:BUILD_FLAVOR
         buildConfigField "String", "BUILD_FLAVOR", "\"prod\""
 
-        // —— 数据/名称
         // NDJC:DB_NAME
         buildConfigField "String", "DB_NAME", "\"ndjc.db\""
         // NDJC:DATASTORE_NAME
@@ -59,7 +54,6 @@ android {
         // NDJC:ROUTER_TABLE_PKG
         buildConfigField "String", "ROUTER_TABLE_PKG", "\"com.ndjc.app\""
 
-        // —— 网络/缓存/重试策略
         // NDJC:CACHE_MAX_AGE
         buildConfigField "int", "CACHE_MAX_AGE", "300"
         // NDJC:COIL_DISK_CACHE_MB
@@ -69,23 +63,19 @@ android {
         // NDJC:REFRESH_TOKEN_STRATEGY
         buildConfigField "String", "REFRESH_TOKEN_STRATEGY", "\"auto\""
 
-        // —— 远程配置/功能开关
         // NDJC:FEATURE_FLAG_FILE
         buildConfigField "String", "FEATURE_FLAG_FILE", "\"flags.json\""
 
-        // —— 导航/分页
         // NDJC:NAV_ARG_ITEM_ID
         buildConfigField "String", "NAV_ARG_ITEM_ID", "\"id\""
         // NDJC:PAGING_PAGE_SIZE
         buildConfigField "int", "PAGING_PAGE_SIZE", "20"
 
-        // —— 首次体验 / 变更日志
         // NDJC:ONBOARDING_STEPS
         buildConfigField "String", "ONBOARDING_STEPS", "\"welcome,permission,done\""
         // NDJC:CHANGELOG_URL
         buildConfigField "String", "CHANGELOG_URL", "\"https://example.com/changelog\""
 
-        // —— 推送 / 计费
         // NDJC:PUSH_ENDPOINT
         buildConfigField "String", "PUSH_ENDPOINT", "\"https://push.example.com/register\""
         // NDJC:PUSH_SENDER_ID
@@ -95,11 +85,9 @@ android {
         // NDJC:BILLING_SUBS_SKU
         buildConfigField "String", "BILLING_SUBS_SKU", "\"subs_premium_month\""
 
-        // —— 图片
         // NDJC:IMAGE_BASE_URL
         buildConfigField "String", "IMAGE_BASE_URL", "\"https://img.example.com/\""
 
-        // —— 其他展示/法务/支持
         // NDJC:SUPPORT_EMAIL
         buildConfigField "String", "SUPPORT_EMAIL", "\"support@example.com\""
         // NDJC:TERMS_VERSION
@@ -134,7 +122,6 @@ android {
             SHORTCUTS_COUNT   : "0"
         ]
 
-        // ✅ 方案 A：为渠道/环境提供默认值（支持环境变量覆盖）
         manifestPlaceholders += [
             META_CHANNEL: System.getenv('NDJC_META_CHANNEL') ?: 'official',
             META_ENV    : System.getenv('NDJC_META_ENV')     ?: 'prod'
@@ -160,18 +147,35 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // NDJC:BLOCK:PROGUARD_RULES
-            // NDJC:PROGUARD_FILES_EXTRA      // text 锚点
+            // NDJC:PROGUARD_FILES_EXTRA
             signingConfig signingConfigs.release // NDJC:SIGNING_CONFIG
         }
         debug {
             minifyEnabled false
-            // NDJC:ENABLE_QA_MENU            // text 锚点
-            // NDJC:BLOCK:QA_MENU             // block 锚点
+            // NDJC:ENABLE_QA_MENU
+            // NDJC:BLOCK:QA_MENU
         }
     }
 
     // 资源/打包
     // NDJC:RES_CONFIGS
+    packagingOptions {
+        resources {
+            excludes += [
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/LICENSE*",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/AL2.0",
+                "META-INF/LGPL2.1",
+                "META-INF/versions/**"
+            ]
+        }
+        // 如遇到 jni 冲突可放开：
+        // jniLibs { useLegacyPackaging true }
+    }
     // NDJC:PACKAGING_RULES
     // NDJC:BLOCK:PACKAGING_RULES
 
@@ -184,7 +188,7 @@ android {
     }
 
     buildFeatures {
-        buildConfig true                    // ★ 新增：开启 BuildConfig，修复 CI 报错
+        buildConfig true                    // ✅ 必开：允许 buildConfigField
         compose true
         // NDJC:BUILD_FEATURES
         // NDJC:BLOCK:BUILD_FEATURES
@@ -198,7 +202,6 @@ android {
         // NDJC:TEST_OPTIONS
     }
 
-    // 多渠道/风味（如需）
     // NDJC:BLOCK:FLAVORS
 }
 
