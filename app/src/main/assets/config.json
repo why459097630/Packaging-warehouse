@@ -1,1 +1,11 @@
+{
+  "app": {
+    "name": " NDJC core ",
+    "theme": {
+      "primary": "#6750A4"
+    }
+  },
+  "flags": {
 
+  }
+}
