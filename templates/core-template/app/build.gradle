@@ -14,10 +14,10 @@ android {
 
     defaultConfig {
         applicationId "com.ndjc.app"         // NDJC:PACKAGE_NAME / NDJC:BLOCK:BUILD_CONFIG_FLAGS
-        minSdk 24                            // NDJC:MIN_SDK
-        targetSdk 34                         // NDJC:TARGET_SDK
-        versionCode 1                        // NDJC:VERSION_CODE
-        versionName "1.0.0"                  // NDJC:VERSION_NAME
+        minSdk 24                             // NDJC:MIN_SDK
+        targetSdk 34                          // NDJC:TARGET_SDK
+        versionCode 1                         // NDJC:VERSION_CODE
+        versionName "1.0.0"                   // NDJC:VERSION_NAME
 
         // 生成器可在此追加更多 BuildConfig 字段
         // NDJC:BUILD_CONFIG_FLAGS            // text 锚点
@@ -133,16 +133,8 @@ android {
             TERMS_URL         : "https://example.com/terms",
             SHORTCUTS_COUNT   : "0"
         ]
-
-        // ✅ 新增：为渠道/环境占位符提供默认值，并支持 CI/inputs 覆盖
-        //    - 优先取环境变量 NDJC_CHANNEL / NDJC_ENV
-        //    - 其次取 gradle -P 参数 channel / env
-        //    - 最后用默认 official / prod
-        manifestPlaceholders += [
-            META_CHANNEL: (System.getenv('NDJC_CHANNEL') ?: (project.findProperty('channel') ?: "official")),
-            META_ENV    : (System.getenv('NDJC_ENV')     ?: (project.findProperty('env')     ?: "prod"))
-        ]
-        // （如仍需在清单里关闭，可把对应 <meta-data> 删除）
+        // 如需：渠道/环境（避免占位符缺失，默认保持注释）
+        // manifestPlaceholders += [ META_CHANNEL: "official", META_ENV: "prod" ]
     }
 
     signingConfigs {
@@ -160,11 +152,13 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
+            // ✅ 方案 1：暂时关闭收缩与混淆，先稳定出包
+            minifyEnabled false
+            shrinkResources false
+
+            // 先保留，后续开回混淆时仍然使用
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // NDJC:BLOCK:PROGUARD_RULES
-            // NDJC:PROGUARD_FILES_EXTRA      // text 锚点
+
             signingConfig signingConfigs.release // NDJC:SIGNING_CONFIG
         }
         debug {
@@ -178,6 +172,16 @@ android {
     // NDJC:RES_CONFIGS                  // text 锚点
     // NDJC:PACKAGING_RULES              // text 锚点
     // NDJC:BLOCK:PACKAGING_RULES        // block 锚点
+    packagingOptions {
+        resources {
+            excludes += [
+                "META-INF/AL2.0",
+                "META-INF/LGPL2.1",
+                "META-INF/LICENSE*",
+                "META-INF/NOTICE*"
+            ]
+        }
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -188,8 +192,7 @@ android {
     }
 
     buildFeatures {
-        // ✅ 显式开启 BuildConfig，避免含有 buildConfigField 时报错
-        buildConfig true
+        buildConfig = true                  // ✅ 显式开启（更稳）
         compose true
         // NDJC:BUILD_FEATURES             // text 锚点
         // NDJC:BLOCK:BUILD_FEATURES       // block 锚点
