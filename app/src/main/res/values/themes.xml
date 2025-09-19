@@ -1,10 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- App 全局主题（Material3 / 无 ActionBar） -->
+    <!-- App 总主题（Material3 / 无 ActionBar） -->
     <style name="Theme.NDJC" parent="Theme.Material3.DayNight.NoActionBar">
-
-        <!-- 以 ndjc_* 颜色为准，可被锚点动态注入 -->
+        <!-- 由 ndjc_* 颜色变量驱动，可供生成器动态注入 -->
         <item name="colorPrimary">@color/ndjc_color_primary</item>
         <item name="colorOnPrimary">@color/ndjc_color_on_primary</item>
 
@@ -14,11 +13,15 @@
         <item name="colorError">@color/errorColor</item>
         <item name="colorOnError">@color/white</item>
 
-        <!-- 状态栏/导航栏可选覆盖（如需） -->
+        <!-- 状态栏/导航栏调色（按需） -->
         <!-- <item name="android:statusBarColor">?attr/colorPrimary</item> -->
         <!-- <item name="android:navigationBarColor">?attr/colorPrimary</item> -->
 
-        <!-- 额外覆写项锚点（需要时由编排器注入） -->
+        <!-- 主题覆盖项（块锚点，不要删除占位注释） -->
+
 
     </style>
+
+    <!-- 额外主题/组件样式（块锚点） -->
+
 </resources>
