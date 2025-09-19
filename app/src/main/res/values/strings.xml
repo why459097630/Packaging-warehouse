@@ -1,14 +1,47 @@
-﻿<resources>
-    <!-- App 显示名 -->
-    <string name="app_name">NDJC core</string>
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
 
-    <!-- 页面标题 & 主按钮 -->
-    <string name="ndjc_home_title">Hello core</string>
-    <string name="ndjc_action_primary_text">Start core</string>
+    <!-- NDJC core /  -->
+    <string name="app_name">NDJCApp</string>
 
-    <!-- 其它保留 -->
-    <string name="hello_world">Hello World!</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <!-- 首页 / 主按钮 -->
+    <!-- Hello core --><string name="ndjc_home_title">Hello NDJC</string>
+    <!-- Start core --><string name="ndjc_action_primary_text">Start</string>
+
+    <!-- 菜单/页面标题 -->
+    <string name="launcher_name">NDJC</string>
+    <string name="ndjc_login_title">Login</string>
+    <string name="ndjc_profile_title">Profile</string>
+    <string name="ndjc_feed_title">Feed</string>
+    <string name="ndjc_settings_title">Settings</string>
+    <string name="ndjc_about_title">About</string>
+
+    <!-- 搜索/通用 -->
+    <string name="ndjc_search_hint">Search…</string>
+    <string name="ndjc_search_empty">No results</string>
+    <string name="ndjc_btn_primary">OK</string>
+    <string name="ndjc_btn_secondary">Cancel</string>
+    <string name="ndjc_error_generic">Something went wrong</string>
+    <string name="ndjc_error_offline">You’re offline</string>
+
+    <!-- 权限理由 -->
+    <string name="ndjc_perm_camera">We need camera to scan QR code</string>
+    <string name="ndjc_perm_location">We need location to show nearby content</string>
+    <string name="ndjc_perm_notify">Enable notifications to get updates</string>
+
+    <!-- 上手引导 -->
+    <string name="ndjc_onboarding_title">Welcome</string>
+
+    <!-- 支持/法务 -->
+    <string name="ndjc_privacy_url">https://example.com/privacy</string>
+    <string name="ndjc_terms_url">https://example.com/terms</string>
+    <string name="ndjc_support_email">support@example.com</string>
+    <string name="ndjc_terms_version">1.0</string>
+
+    <!-- 扩展注入容器 -->
+
+
+
+
+
 </resources>
