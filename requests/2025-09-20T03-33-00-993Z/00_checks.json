@@ -1,0 +1,21 @@
+{
+  "repoRoot": "/var/task",
+  "tplRoot": "/tmp/ndjc-templates/2025-09-20T03-33-00-993Z/templates",
+  "tplDir": "/tmp/ndjc-templates/2025-09-20T03-33-00-993Z/templates/core-template",
+  "repoRootExists": true,
+  "tplRootExists": true,
+  "tplDirExists": true,
+  "env": {
+    "GH_OWNER": true,
+    "GH_REPO": true,
+    "GH_BRANCH": true,
+    "WORKFLOW_ID": true,
+    "GH_PAT": true,
+    "TEMPLATES_REPO": "why459097630/Packaging-warehouse@main",
+    "TEMPLATES_PATH": "templates",
+    "NDJC_OFFLINE": false,
+    "NDJC_SKIP_ACTIONS": false,
+    "GROQ_API_KEY": true,
+    "GROQ_MODEL": "llama-3.1-8b-instant"
+  }
+}
