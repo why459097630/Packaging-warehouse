@@ -1,27 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- App 总主题（Material3 / 无 ActionBar） -->
+    <!-- App 主题（Material3 / 无 ActionBar） -->
     <style name="Theme.NDJC" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- 由 ndjc_* 颜色变量驱动，可供生成器动态注入 -->
-        <item name="colorPrimary">@color/ndjc_color_primary</item>
-        <item name="colorOnPrimary">@color/ndjc_color_on_primary</item>
+        <!-- 系统栏跟随表面色，避免纯黑/纯白割裂；按需可移除 -->
+        <item name="android:statusBarColor">?attr/colorSurface</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
 
-        <item name="colorSecondary">@color/ndjc_color_secondary</item>
-        <item name="colorOnSecondary">@color/black</item>
-
-        <item name="colorError">@color/errorColor</item>
-        <item name="colorOnError">@color/white</item>
-
-        <!-- 状态栏/导航栏调色（按需） -->
-        <!-- <item name="android:statusBarColor">?attr/colorPrimary</item> -->
-        <!-- <item name="android:navigationBarColor">?attr/colorPrimary</item> -->
-
-        <!-- 主题覆盖项（块锚点，不要删除占位注释） -->
+        <!-- 这里留给生成器按需覆盖（不要删锚点） -->
         <!-- NDJC:THEME_OVERRIDES -->
-
     </style>
 
-    <!-- 额外主题/组件样式（块锚点） -->
+    <!-- 额外主题/组件样式占位（不要删锚点） -->
     <!-- NDJC:THEME_STYLES_EXTRA -->
+
 </resources>
