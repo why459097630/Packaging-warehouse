@@ -1,0 +1,115 @@
+[
+  {
+    "file": "/tmp/ndjc/app/src/main/res/values/strings.xml",
+    "replace": [
+      {
+        "marker": "NDJC:APP_LABEL",
+        "value": "NDJC core"
+      },
+      {
+        "marker": "NDJC:HOME_TITLE",
+        "value": "Hello core"
+      },
+      {
+        "marker": "NDJC:MAIN_BUTTON",
+        "value": "Start core"
+      }
+    ]
+  },
+  {
+    "file": "/tmp/ndjc/app/src/main/AndroidManifest.xml",
+    "replace": [
+      {
+        "marker": "NDJC:APP_LABEL",
+        "value": "NDJC core"
+      },
+      {
+        "marker": "NDJC:BLOCK:LOCALE_CONFIG",
+        "value": "android:localeConfig=\"@xml/locale_config\""
+      },
+      {
+        "marker": "NDJC:BLOCK:PERMISSIONS",
+        "value": ""
+      },
+      {
+        "marker": "NDJC:BLOCK:INTENT_FILTERS",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "file": "/tmp/ndjc/app/build.gradle",
+    "replace": [
+      {
+        "marker": "NDJC:PACKAGE_NAME",
+        "value": "com.ndjc.demo.core"
+      },
+      {
+        "marker": "NDJC:COMPILE_SDK",
+        "value": "34"
+      },
+      {
+        "marker": "NDJC:MIN_SDK",
+        "value": "24"
+      },
+      {
+        "marker": "NDJC:TARGET_SDK",
+        "value": "34"
+      },
+      {
+        "marker": "NDJC:VERSION_CODE",
+        "value": "1"
+      },
+      {
+        "marker": "NDJC:VERSION_NAME",
+        "value": "1.0.0"
+      },
+      {
+        "marker": "NDJC:PLUGINS_EXTRA",
+        "value": ""
+      },
+      {
+        "marker": "NDJC:DEPENDENCIES_EXTRA",
+        "value": ""
+      },
+      {
+        "marker": "NDJC:SIGNING_CONFIG",
+        "value": "signingConfig signingConfigs.release"
+      },
+      {
+        "marker": "NDJC:RES_CONFIGS",
+        "value": "resConfigs 'en', 'zh-rCN', 'zh-rTW'"
+      },
+      {
+        "marker": "NDJC:PROGUARD_FILES_EXTRA",
+        "value": ""
+      },
+      {
+        "marker": "NDJC:PACKAGING_RULES",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "file": "/tmp/ndjc/app/src/main/res/values/themes.xml",
+    "replace": [
+      {
+        "marker": "NDJC:BLOCK:THEME_OVERRIDES",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "file": "/tmp/ndjc/app/src/main/java/com/ndjc/app/MainActivity.kt",
+    "replace": [
+      {
+        "marker": "NDJC:HOME_TITLE",
+        "value": "Hello core"
+      },
+      {
+        "marker": "NDJC:MAIN_BUTTON",
+        "value": "Start core"
+      }
+    ]
+  }
+]
