@@ -10,9 +10,10 @@
         android:allowBackup="true"
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
-        android:theme="@style/Theme.NDJC"
+        android:theme="@style/Theme.NDJC">
+
+        <!-- 语言与本地化（生成器在此注入 meta-data） -->
         <!-- NDJC:BLOCK:LOCALE_CONFIG -->
-        >
 
         <!-- 应用图标/启动图标占位 -->
         <!-- NDJC:APP_ICON -->
