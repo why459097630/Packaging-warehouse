@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 权限/隐私 预留区（必要时启用） -->
+    <!-- 权限/隐私（生成器注入） -->
     <!-- NDJC:PERMISSIONS -->
     <!-- NDJC:BLOCK:PERMISSIONS -->
 
@@ -10,17 +10,17 @@
         android:allowBackup="true"
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
-        android:theme="@style/Theme.NDJCCore">
+        android:theme="@style/Theme.NDJC">
 
-        <!-- 语言/区域 设置（生成器会把此锚点替换成 android:localeConfig 或等价 meta-data） -->
+        <!-- 语言/区域 设置（生成器会在 res/xml/locale_config 或 meta-data 处写入） -->
         <!-- NDJC:LOCALE_CONFIG -->
         <!-- NDJC:BLOCK:LOCALE_CONFIG -->
 
-        <!-- 图标/启动图（生成器占位） -->
+        <!-- 应用图标（生成器注入） -->
         <!-- NDJC:APP_ICON -->
-        <!-- NDJC:SPLASH_ICON -->
+        <!-- NDJC:BLOCK:APP_ICON -->
 
-        <!-- 网络安全 xml（可选，使用 network_security_config） -->
+        <!-- 网络安全配置（可选，生成器注入 network_security_config） -->
         <!-- NDJC:NETWORK_SECURITY_XML -->
         <!-- NDJC:BLOCK:NETWORK_SECURITY -->
 
@@ -28,39 +28,46 @@
         <!-- NDJC:FOREGROUND_SERVICE_TYPES -->
         <!-- NDJC:BLOCK:FOREGROUND_SERVICE_TYPES -->
 
-        <!-- FileProvider / Shortcuts / Widget 预留 -->
+        <!-- FileProvider / Shortcuts / Widget 等 -->
         <!-- NDJC:FILE_PROVIDER -->
+        <!-- NDJC:BLOCK:FILE_PROVIDER -->  <!-- ✅ 新增缺失锚点 -->
         <!-- NDJC:BLOCK:SHORTCUTS -->
         <!-- NDJC:BLOCK:WIDGET -->
 
-        <!-- 广告/统计 meta-data（支持 manifestPlaceholders） -->
+        <!-- 渠道/环境 meta-data（示例 manifestPlaceholders） -->
         <!-- NDJC:META_CHANNEL --><meta-data android:name="ndjc.meta.CHANNEL" android:value="${META_CHANNEL}" />
         <!-- NDJC:META_ENV    --><meta-data android:name="ndjc.meta.ENV"     android:value="${META_ENV}" />
 
-        <!-- Maps 样式（可选） -->
+        <!-- Maps / 其它（可选） -->
         <!-- NDJC:MAPS_STYLE_JSON -->
+        <!-- NDJC:MAPS_API_KEY -->
 
         <activity
             android:name=".MainActivity"
             android:exported="true">
+
             <!-- NDJC:MAIN_ACTIVITY_NAME -->
+
+            <!-- 启动器 -->
             <intent-filter>
-                <!-- 入口 -->
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- 深链 IntentFilters / App Links -->
+            <!-- 路由 IntentFilters / App Links -->
             <!-- NDJC:INTENT_FILTERS -->
             <!-- NDJC:BLOCK:INTENT_FILTERS -->
 
-            <!-- DeepLink 路径 / App Links 规则 -->
-            <!-- NDJC:DEEP_LINK_PATHS -->
-            <!-- NDJC:BLOCK:APP_LINKS -->
+            <!-- Deeplink 深链（规则） -->
+            <!-- NDJC:DEEPLINK_RULES -->
+            <!-- NDJC:BLOCK:DEEPLINK -->  <!-- ✅ 新增缺失锚点 -->
         </activity>
 
-        <!-- 推送/通知 接收器（按需启用） -->
+        <!-- 开机/通知 接收器（按需启用） -->
         <!-- NDJC:BLOCK:RECEIVER -->
+        <!-- NDJC:BLOCK:BOOT_RECEIVER -->  <!-- ✅ 新增缺失锚点 -->
         <!-- NDJC:BLOCK:NOTIFICATION_RECEIVER -->
+
     </application>
+
 </manifest>
