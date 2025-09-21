@@ -1,26 +1,73 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 需要时可在此处追加权限 -->
+    <!-- 权限/隐私（生成器注入） -->
+
 
 
     <application
-        android:label="NDJC core"
+        android:name=".App"
+        android:allowBackup="true"
+        android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.NDJC">
+
+        <!-- 语言/区域 设置（生成器会在 res/xml/locale_config 或 meta-data 处写入） -->
+        <!-- android:localeConfig="@xml/locales_config" -->
+
+
+        <!-- 应用图标（生成器注入） -->
+
+
+
+        <!-- 网络安全配置（可选，生成器注入 network_security_config） -->
+
+
+
+        <!-- 前台服务 / service types（可选） -->
+
+
+
+        <!-- FileProvider / Shortcuts / Widget 等 -->
+
+          <!-- ✅ 新增缺失锚点 -->
+
+
+
+        <!-- 渠道/环境 meta-data（示例 manifestPlaceholders） -->
+        <meta-data android:name="ndjc.meta.CHANNEL" android:value="${META_CHANNEL}" />
+        <meta-data android:name="ndjc.meta.ENV"     android:value="${META_ENV}" />
+
+        <!-- Maps / 其它（可选） -->
+
+
 
         <activity
             android:name=".MainActivity"
             android:exported="true">
 
-            <!-- 启动入口 -->
+
+
+            <!-- 启动器 -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- 需要时可在此处追加更多 intent-filter -->
+            <!-- 路由 IntentFilters / App Links -->
 
+
+
+            <!-- Deeplink 深链（规则） -->
+
+              <!-- ✅ 新增缺失锚点 -->
         </activity>
+
+        <!-- 开机/通知 接收器（按需启用） -->
+
+          <!-- ✅ 新增缺失锚点 -->
+
+
     </application>
+
 </manifest>
