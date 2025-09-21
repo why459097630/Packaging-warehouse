@@ -157,26 +157,29 @@ android {
         }
     }
 
-    // 资源/打包
-    // NDJC:RES_CONFIGS
-    packagingOptions {
-        resources {
-            excludes += [
-                "META-INF/DEPENDENCIES",
-                "META-INF/LICENSE",
-                "META-INF/LICENSE.txt",
-                "META-INF/LICENSE*",
-                "META-INF/NOTICE",
-                "META-INF/NOTICE.txt",
-                "META-INF/AL2.0",
-                "META-INF/LGPL2.1",
-                "META-INF/versions/**"
-            ]
-        }
-        // 如遇到 jni 冲突可放开：
-        // jniLibs { useLegacyPackaging true }
-    }
-    // NDJC:PACKAGING_RULES
+    // === NDJC:RES_CONFIGS ===
+    // （生成器会在此注入 resConfigs 'en', 'zh-CN' 等。需要本地默认可参考：）
+    // // resConfigs 'en', 'zh-rCN', 'zh-rTW'
+
+    // === NDJC:PACKAGING_RULES ===
+    // （生成器会在此整块注入 packagingOptions{}；下面示例仅供参考，保持注释避免与注入冲突）
+    // packagingOptions {
+    //     resources {
+    //         excludes += [
+    //             "META-INF/DEPENDENCIES",
+    //             "META-INF/LICENSE",
+    //             "META-INF/LICENSE.txt",
+    //             "META-INF/LICENSE*",
+    //             "META-INF/NOTICE",
+    //             "META-INF/NOTICE.txt",
+    //             "META-INF/AL2.0",
+    //             "META-INF/LGPL2.1",
+    //             "META-INF/versions/**"
+    //         ]
+    //     }
+    //     // 如遇到 jni 冲突可放开：
+    //     // jniLibs { useLegacyPackaging true }
+    // }
     // NDJC:BLOCK:PACKAGING_RULES
 
     compileOptions {
