@@ -1,0 +1,26 @@
+{
+  "profile": {
+    "ENABLE_COMMENTS": false,
+    "SEARCH_ENABLED": true,
+    "FILTERS": [
+      "Newest",
+      "Popular"
+    ],
+    "LIST_LAYOUT": "single",
+    "THEME_COLOR": "#6750A4",
+    "PACKAGE_NAME": "com.ndjc.showcase",
+    "APP_LABEL": "Showcase",
+    "ENABLE_FAVORITE": true,
+    "PAGE_SIZE": 20,
+    "modules": [
+      "SearchBar",
+      "FilterBar",
+      "CardBasic",
+      "Paginator",
+      "RichContent"
+    ],
+    "EMPTY_TEXT": "No content yet"
+  },
+  "templateId": "showcase-basic",
+  "mode": "release"
+}
