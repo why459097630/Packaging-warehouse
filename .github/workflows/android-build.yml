@@ -16,10 +16,11 @@ on:
       packageName:
         description: "Android applicationId"
         required: false
-      branch:
+      branch:                       # ✅ 允许指定构建分支（如 ndjc-run/<runId>）
         description: "branch to build (e.g. ndjc-run/<runId>)"
         required: false
-  # 由服务端 route.ts 触发（只触发一次）
+
+  # 服务端 route.ts 触发（只触发一次）
   repository_dispatch:
     types: [generate-apk]
 
@@ -31,7 +32,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # 可选：签名 secret（没有则走 Debug 包）
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # ✅ 优先使用 workflow_dispatch 传入的分支；其次 repository_dispatch 的 ref；最后回退到当前 ref
+          # ✅ 优先 workflow_dispatch.inputs.branch；其次 repository_dispatch 的 ref；最后当前 ref
           ref: ${{ inputs.branch || github.event.client_payload.ref || github.ref }}
 
       - name: NDJC | Show commit and changed files
@@ -71,46 +71,73 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # === 新增：准备并执行 Preflight（一次把问题都暴露出来） ===
-      - name: Prepare preflight script (LF & chmod)
+      # ==========================
+      # ✅ 保证线上一定会跑的 Preflight
+      # 1) 若当前分支没有 scripts/preflight_all.sh，会从 main 抓一份
+      # 2) 预检包括锚点自检 + 资源/Manifest 预编译；日志写入 build-logs/**
+      # 3) 预检失败会直接让 Job 失败
+      # ==========================
+      - name: NDJC | Preflight (anchor & resource checks)
         shell: bash
         run: |
-          if [ -f scripts/preflight_all.sh ]; then
-            sed -i 's/\r$//' scripts/preflight_all.sh || true
-            chmod +x scripts/preflight_all.sh
-          else
-            echo "scripts/preflight_all.sh not found"; exit 1;
+          set -euo pipefail
+
+          mkdir -p build-logs anchors || true
+
+          # 拉取缺失的预检脚本
+          if [ ! -f scripts/preflight_all.sh ]; then
+            echo "[Preflight] scripts/preflight_all.sh not found in branch -> fetch from main"
+            git fetch origin main --depth=1
+            git show origin/main:scripts/preflight_all.sh > scripts/preflight_all.sh
+          fi
+          chmod +x scripts/preflight_all.sh
+
+          # 确保 PowerShell 自检脚本在当前分支存在（脚本会用到）
+          if [ ! -f Tools/ndjc-selfcheck.ps1 ]; then
+            echo "[Preflight] Tools/ndjc-selfcheck.ps1 not found in branch -> fetch from main"
+            git fetch origin main --depth=1
+            git show origin/main:Tools/ndjc-selfcheck.ps1 > Tools/ndjc-selfcheck.ps1
           fi
 
-      - name: Preflight (anchors + resources + lint)
-        shell: bash
-        run: bash scripts/preflight_all.sh
+          echo "==== NDJC Preflight start ===="
 
-      - name: Upload diagnostics (always)
+          # 先做锚点/模板自检（优先使用 pwsh，其次 powershell）
+          if command -v pwsh >/dev/null 2>&1; then
+            pwsh -NoProfile -File ./Tools/ndjc-selfcheck.ps1
+          else
+            if command -v powershell >/dev/null 2>&1; then
+              powershell -NoProfile -ExecutionPolicy Bypass -File ./Tools/ndjc-selfcheck.ps1
+            else
+              echo "::error ::Neither pwsh nor powershell found on runner."
+              exit 1
+            fi
+          fi
+
+          # 资源/Manifest 早期预编译（把潜在错误一次性暴露到日志里）
+          ./gradlew clean :app:processReleaseResources :app:lintRelease \
+            --stacktrace --info --console=plain 2>&1 | tee build-logs/full-diagnostics.log
+
+          # 从长日志中提取关键错误，便于快速定位
+          echo "---- critical summary ----"
+          (grep -nE "What went wrong|Execution failed|error:|AAPT|Duplicate class|Manifest merger|not found|FAILED" build-logs/full-diagnostics.log || true) \
+            | sed -E 's/^[^:]+:([0-9]+):/\1/' | sort -n | uniq
+          echo "-------------------------"
+
+          echo "==== NDJC Preflight done ===="
+
+      - name: NDJC | Upload preflight logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: diagnostics
+          name: preflight-logs
           path: |
             build-logs/**
-            anchors/anchors_status.csv
-            anchors/scan-report.json
-            anchors/missing_*.txt
+            anchors/**
           if-no-files-found: ignore
-      # === 以上为新增 ===
 
-      - name: Decode keystore (optional)
-        if: ${{ env.KS != '' }}
-        run: |
-          echo "${KS}" | base64 -d > "$HOME/release.jks"
-          {
-            echo "NDJC_KEYSTORE_PATH=$HOME/release.jks"
-            echo "NDJC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
-            echo "NDJC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}"
-            echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}"
-          } >> "$GITHUB_ENV"
-          ls -lh "$HOME/release.jks" || true
-
+      # ==========================
+      # 真正构建
+      # ==========================
       - name: Build
         id: build
         shell: bash
