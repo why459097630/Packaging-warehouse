@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <locale-config xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- NDJC:SUPPORTED_LANGUAGES -->
-    <!-- 生成器会把本锚点替换为若干行：
-         <locale android:name="en"/>
-         <locale android:name="zh-CN"/>
-         …… -->
+
+    <!-- 默认内置（可保留/可删除，生成器会按需覆盖） -->
+    <locale android:name="en"/>
+    <locale android:name="zh-CN"/>
+
 </locale-config>
