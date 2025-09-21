@@ -1,70 +1,152 @@
+// app/build.gradle
+
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.android'
+    //
 }
 
-/** 可选签名：环境变量控制
- *  NDJC_SIGNING_DISABLED=1           → 关闭签名
- *  NDJC_KEYSTORE_PATH/…(其余密码等)   → 开启签名所需参数
- */
-def SIGNING_DISABLED = (System.getenv('NDJC_SIGNING_DISABLED') ?: '0') == '1'
-def KEYSTORE_PATH    = System.getenv('NDJC_KEYSTORE_PATH')
-def HAS_KEYSTORE     = (KEYSTORE_PATH != null && KEYSTORE_PATH.trim())
-
 android {
-    namespace "com.ndjc.app"
-    compileSdk 34
+    namespace "com.ndjc.app"                 //
+    compileSdk 34                            // 34
 
     defaultConfig {
-        applicationId "com.ndjc.app"
-        minSdk 24
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
-        // NDJC:LOCALE_CONFIG
+        applicationId "com.ndjc.app"         // com.ndjc.demo.core /
+        minSdk 24                            // 24
+        targetSdk 34                         // 34
+        versionCode 1                        // 1
+        versionName "1.0.0"                  // 1.0.0
+
+        // ===== BuildConfig 常量（TEXT 锚点落位）=====
+        buildConfigField "String", "API_BASE", "\"https://api.example.com\""
+        buildConfigField "int", "HTTP_TIMEOUT_MS", "15000"
+        buildConfigField "int", "HTTP_LOG_LEVEL", "1"
+        buildConfigField "int", "RETRY_BACKOFF_MS", "2000"
+        buildConfigField "String", "STARTUP_LIBS", "\"\""
+        buildConfigField "String", "STARTUP_INITIALIZERS", "\"\""
+        buildConfigField "String", "APP_THEME_MODE", "\"system\""
+        buildConfigField "String", "DEFAULT_LANGUAGE", "\"en\""
+        buildConfigField "String", "SUPPORTED_LANGUAGES", "\"en,zh-CN\""
+        buildConfigField "String", "BUILD_FLAVOR", "\"prod\""
+        buildConfigField "String", "DB_NAME", "\"ndjc.db\""
+        buildConfigField "String", "DATASTORE_NAME", "\"ndjc_store\""
+        buildConfigField "String", "WORK_NAME", "\"ndjc_worker\""
+        buildConfigField "String", "ROUTER_TABLE_PKG", "\"com.ndjc.app\""
+        buildConfigField "int", "CACHE_MAX_AGE", "300"
+        buildConfigField "int", "COIL_DISK_CACHE_MB", "256"
+        buildConfigField "int", "RETRY_MAX_RETRIES", "3"
+        buildConfigField "String", "REFRESH_TOKEN_STRATEGY", "\"auto\""
+        buildConfigField "String", "FEATURE_FLAG_FILE", "\"flags.json\""
+        buildConfigField "String", "NAV_ARG_ITEM_ID", "\"id\""
+        buildConfigField "int", "PAGING_PAGE_SIZE", "20"
+        buildConfigField "String", "ONBOARDING_STEPS", "\"welcome,permission,done\""
+        buildConfigField "String", "CHANGELOG_URL", "\"https://example.com/changelog\""
+        buildConfigField "String", "PUSH_ENDPOINT", "\"https://push.example.com/register\""
+        buildConfigField "String", "PUSH_SENDER_ID", "\"\""
+        buildConfigField "String", "BILLING_IAP_SKU", "\"sku_iap_basic\""
+        buildConfigField "String", "BILLING_SUBS_SKU", "\"subs_premium_month\""
+        buildConfigField "String", "IMAGE_BASE_URL", "\"https://img.example.com/\""
+        buildConfigField "String", "SUPPORT_EMAIL", "\"support@example.com\""
+        buildConfigField "String", "TERMS_VERSION", "\"1.0\""
+
+        // ===== Manifest 占位符（TEXT 锚点落位）=====
+        manifestPlaceholders = (manifestPlaceholders ?: [:])
+        manifestPlaceholders += [ FILE_PROVIDER_AUTH: "${applicationId}.fileprovider" ]
+        manifestPlaceholders += [
+            APP_LINKS_DOMAIN: "example.com",
+            DEEPLINK_HOST  : "open",
+            DEEPLINK_SCHEME: "ndjc"
+        ]
+        manifestPlaceholders += [
+            MAPS_API_KEY        : "",
+            BILLING_LICENSE_KEY : "",
+            PLAY_INTEGRITY_TOKEN: ""
+        ]
+        manifestPlaceholders += [
+            REVIEW_FLOW    : "inapp",
+            APP_UPDATE_MODE: "flexible",
+            AD_SDK_ID      : ""
+        ]
+        manifestPlaceholders += [
+            PRIVACY_POLICY_URL: "https://example.com/privacy",
+            TERMS_URL         : "https://example.com/terms",
+            SHORTCUTS_COUNT   : "0"
+        ]
+
+        manifestPlaceholders += [
+            META_CHANNEL: System.getenv('NDJC_META_CHANNEL') ?: 'official',
+            META_ENV    : System.getenv('NDJC_META_ENV')     ?: 'prod'
+        ]
     }
 
     signingConfigs {
         release {
-            // 只有在未禁用签名且提供了 keystore 路径时才配置签名文件与口令
-            if (!SIGNING_DISABLED && HAS_KEYSTORE) {
-                storeFile file(KEYSTORE_PATH)
-                storePassword (System.getenv('NDJC_KEYSTORE_PASSWORD') ?: '')
-                keyAlias      (System.getenv('NDJC_KEY_ALIAS')          ?: '')
-                keyPassword   (System.getenv('NDJC_KEY_PASSWORD')       ?: '')
+            def disabled = (System.getenv('NDJC_SIGNING_DISABLED') ?: '0') == '1'
+            def keystore = System.getenv('NDJC_KEYSTORE_PATH') ?: ''
+            if (!disabled && keystore?.trim()) {
+                storeFile(file(keystore))
+                storePassword(System.getenv('NDJC_KEYSTORE_PASSWORD') ?: '')
+                keyAlias(System.getenv('NDJC_KEY_ALIAS') ?: '')
+                keyPassword(System.getenv('NDJC_KEY_PASSWORD') ?: '')
             }
         }
     }
 
     buildTypes {
-        // ⚠ 为排查“空包”问题，先关闭 release 的混淆与资源收缩
         release {
-            minifyEnabled false          // was: true
-            shrinkResources false        // was: true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt') /* NDJC:PROGUARD_FILES_EXTRA */
-
-            // 仅在签名可用时挂载到 release，否则不要触发解析期错误
-            if (!SIGNING_DISABLED && HAS_KEYSTORE) {
-                signingConfig signingConfigs.release
-            }
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            //
+            signingConfig signingConfigs.release // signingConfig signingConfigs.release
         }
         debug {
-            minifyEnabled false
+            minifyEnabled false
         }
     }
 
-    packagingOptions {
-        /* NDJC:PACKAGING_RULES */
-    }
+    // === resConfigs 'en', 'zh-rCN', 'zh-rTW' ===
+    // （生成器会在此注入 resConfigs 'en', 'zh-CN' 等。需要本地默认可参考：）
+    // // resConfigs 'en', 'zh-rCN', 'zh-rTW'
+
+    // ===  ===
+    // （生成器会在此整块注入 packagingOptions{}；下面示例仅供参考，保持注释避免与注入冲突）
+    // packagingOptions {
+    //     resources {
+    //         excludes += [
+    //             "META-INF/DEPENDENCIES",
+    //             "META-INF/LICENSE",
+    //             "META-INF/LICENSE.txt",
+    //             "META-INF/LICENSE*",
+    //             "META-INF/NOTICE",
+    //             "META-INF/NOTICE.txt",
+    //             "META-INF/AL2.0",
+    //             "META-INF/LGPL2.1",
+    //             "META-INF/versions/**"
+    //         ]
+    //     }
+    //     // 如遇到 jni 冲突可放开：
+    //     // jniLibs { useLegacyPackaging true }
+    // }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = '17' }
+    kotlinOptions {
+        jvmTarget = '17'                    //
+    }
 
-    buildFeatures { compose true }
-    composeOptions { kotlinCompilerExtensionVersion '1.5.3' }
+    buildFeatures {
+        buildConfig true                    // ✅ 必开：允许 buildConfigField
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.3' //
+    }
+
+    testOptions {
+    }
 }
 
 dependencies {
@@ -72,17 +154,28 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
 
-    // 协程 & DataStore
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
-    implementation "androidx.datastore:datastore-preferences:1.1.1"
-
     // Compose
     implementation platform('androidx.compose:compose-bom:2024.05.00')
     implementation 'androidx.activity:activity-compose:1.8.2'
     implementation 'androidx.compose.ui:ui'
-    implementation 'androidx.compose.ui:ui-tooling-preview'
     implementation 'androidx.compose.material3:material3'
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
+
+    // 导航
+    implementation 'androidx.navigation:navigation-compose:2.7.7'     //
+
+    // 数据存储 & 工作任务
+    implementation 'androidx.datastore:datastore-preferences:1.1.1'    //
+    implementation 'androidx.work:work-runtime-ktx:2.9.0'              //
+
+    // 网络 & 日志
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'                //
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'   //
+
+    // 第三方/自定义依赖位
+    //
+
+    // 测试
+    testImplementation 'junit:junit:4.13.2'
 }
