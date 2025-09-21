@@ -70,43 +70,32 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # ---------- 预检：告警/严格可切换 ----------
+      # ---------- Preflight：warn/strict 可切换（默认 warn） ----------
       - name: NDJC | Preflight (anchor & resource checks)
         id: preflight
         shell: bash
-        # warn 模式 => 遇错也继续；strict 模式 => 失败即阻断
         continue-on-error: ${{ (inputs.preflight_mode || 'warn') != 'strict' }}
         run: |
           set -euo pipefail
           mkdir -p anchors build-logs
-
           echo "== NDJC Preflight start =="
-          # 你的预检脚本（已在仓库里）
-          bash scripts/preflight_all.sh
+
+          # v2 预检脚本（五件套 + Schema + 快速 Gradle 任务）
+          chmod +x scripts/preflight_v2.sh
+          ./scripts/preflight_v2.sh
 
       - name: NDJC | Summarize preflight
         if: always()
         shell: bash
         run: |
-          blocks=$(wc -l < anchors/missing_block.txt 2>/dev/null || echo 0)
-          texts=$(wc -l < anchors/missing_text.txt 2>/dev/null || echo 0)
-          mode="${{ inputs.preflight_mode || 'warn' }}"
-          if [ "$blocks" -gt 0 ] || [ "$texts" -gt 0 ]; then
-            echo "::warning::Preflight(${mode}) found missing anchors — blocks=$blocks, texts=$texts. Build will continue."
-            {
-              echo "### NDJC Preflight (${mode})"
-              echo ""
-              echo "- Missing block anchors: **$blocks**"
-              echo "- Missing text anchors: **$texts**"
-              echo ""
-              echo "#### missing_block.txt"
-              test -f anchors/missing_block.txt && sed 's/^/- /' anchors/missing_block.txt || echo "- (none)"
-              echo ""
-              echo "#### missing_text.txt"
-              test -f anchors/missing_text.txt && sed 's/^/- /' anchors/missing_text.txt || echo "- (none)"
-            } >> "$GITHUB_STEP_SUMMARY"
+          echo "### NDJC Preflight (${{ inputs.preflight_mode || 'warn' }})" >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f build-logs/summary.txt ]]; then
+            echo '' >> "$GITHUB_STEP_SUMMARY"
+            echo '````' >> "$GITHUB_STEP_SUMMARY"
+            cat build-logs/summary.txt >> "$GITHUB_STEP_SUMMARY"
+            echo '````' >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "Preflight OK (no missing anchors)."
+            echo "_No summary.txt produced._" >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: NDJC | Upload preflight logs
@@ -118,7 +107,7 @@ jobs:
             anchors/**
             build-logs/**
           if-no-files-found: ignore
-      # ---------- 预检结束 ----------
+      # ---------- Preflight 结束 ----------
 
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
