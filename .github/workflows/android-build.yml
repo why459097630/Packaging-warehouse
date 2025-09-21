@@ -16,7 +16,7 @@ on:
       packageName:
         description: "Android applicationId"
         required: false
-      branch:                         # ✅ 新增：指定要构建的分支（如 ndjc-run/<runId>）
+      branch:
         description: "branch to build (e.g. ndjc-run/<runId>)"
         required: false
   # 由服务端 route.ts 触发（只触发一次）
@@ -31,7 +31,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # 可选：签名相关 secret（没有则走 debug 包）
+    # 可选：签名 secret（没有则走 Debug 包）
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
@@ -70,6 +70,34 @@ jobs:
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
+
+      # === 新增：准备并执行 Preflight（一次把问题都暴露出来） ===
+      - name: Prepare preflight script (LF & chmod)
+        shell: bash
+        run: |
+          if [ -f scripts/preflight_all.sh ]; then
+            sed -i 's/\r$//' scripts/preflight_all.sh || true
+            chmod +x scripts/preflight_all.sh
+          else
+            echo "scripts/preflight_all.sh not found"; exit 1;
+          fi
+
+      - name: Preflight (anchors + resources + lint)
+        shell: bash
+        run: bash scripts/preflight_all.sh
+
+      - name: Upload diagnostics (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostics
+          path: |
+            build-logs/**
+            anchors/anchors_status.csv
+            anchors/scan-report.json
+            anchors/missing_*.txt
+          if-no-files-found: ignore
+      # === 以上为新增 ===
 
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
