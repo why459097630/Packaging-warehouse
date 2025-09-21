@@ -6,16 +6,18 @@ SUMMARY="build-logs/summary.txt"
 : > "$SUMMARY"
 echo "[Preflight] Start" | tee -a "$SUMMARY"
 
-# 1) 五件套/Schema 自检（优先 pwsh.exe，再退回 powershell.exe）
-if command -v pwsh.exe >/dev/null 2>&1; then
-  pwsh.exe -NoProfile -ExecutionPolicy Bypass -File ./Tools/ndjc-selfcheck.v2.ps1
+# 1) 五件套/Schema 自检（优先 pwsh，其次 powershell）
+if command -v pwsh >/dev/null 2>&1; then
+  pwsh -NoProfile -NonInteractive -File ./Tools/ndjc-selfcheck.v2.ps1
+elif command -v powershell >/dev/null 2>&1; then
+  powershell -NoProfile -NonInteractive -File ./Tools/ndjc-selfcheck.v2.ps1
 else
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./Tools/ndjc-selfcheck.v2.ps1
+  echo "[Preflight] No PowerShell (pwsh/powershell) found on runner." | tee -a "$SUMMARY"
+  exit 127
 fi
 echo "[Preflight] SelfCheck OK" | tee -a "$SUMMARY"
 
 # 2) 快速 Gradle 任务（资源 + Lint）
-chmod +x ./gradlew || true
 ./gradlew clean :app:processReleaseResources :app:lintRelease -x test --stacktrace --info \
   | tee build-logs/gradle-preflight.log
 
