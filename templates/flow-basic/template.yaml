@@ -1,0 +1,11 @@
+id: flow-basic
+version: 0.1.0
+engine: native-android
+entry: app/src/main/java/com/ndjc/app/MainActivity.kt
+best_for: [wizard, forms, onboarding, apply]
+min_cli: ">=0.3.0"
+slots:
+  - id: stepHeader
+  - id: stepBody
+  - id: stepFooter
+  - id: resultPage

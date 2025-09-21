@@ -1,0 +1,13 @@
+{
+  "PACKAGE_NAME": "com.ndjc.showcase",
+  "APP_LABEL": "Showcase",
+  "LIST_LAYOUT": "single",
+  "PAGE_SIZE": 20,
+  "THEME_COLOR": "#6750A4",
+  "EMPTY_TEXT": "No content yet",
+  "SEARCH_ENABLED": true,
+  "FILTERS": ["Newest", "Popular"],
+  "ENABLE_FAVORITE": true,
+  "ENABLE_COMMENTS": false,
+  "modules": ["SearchBar", "FilterBar", "CardBasic", "Paginator", "RichContent"]
+}

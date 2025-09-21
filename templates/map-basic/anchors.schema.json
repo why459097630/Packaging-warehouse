@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Map Anchors",
+  "type": "object",
+  "required": ["PACKAGE_NAME", "APP_LABEL", "DEFAULT_LAT", "DEFAULT_LNG"],
+  "properties": {
+    "PACKAGE_NAME": {"type": "string", "pattern": "^[a-zA-Z][\\w.]+$"},
+    "APP_LABEL": {"type": "string"},
+    "DEFAULT_LAT": {"type": "number", "minimum": -90, "maximum": 90, "default": 35.0},
+    "DEFAULT_LNG": {"type": "number", "minimum": -180, "maximum": 180, "default": 135.0},
+    "ZOOM": {"type": "integer", "minimum": 1, "maximum": 20, "default": 12},
+    "POI_CATEGORIES": {"type": "array", "items": {"type": "string"}, "default": ["All"]},
+    "ROUTE_MODE": {"type": "string", "enum": ["drive","walk","bike","none"], "default": "none"}
+  }
+}

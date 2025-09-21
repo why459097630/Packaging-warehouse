@@ -1,0 +1,14 @@
+{
+  "PACKAGE_NAME": "com.ndjc.flow",
+  "APP_LABEL": "Flow",
+  "STEPS": [
+    {"title": "Basic", "fields": [{"name":"name","label":"Name","type":"text","required":true},{"name":"email","label":"Email","type":"email","required":true}]},
+    {"title": "More", "fields": [{"name":"age","label":"Age","type":"number"},{"name":"avatar","label":"Avatar","type":"file"}]}
+  ],
+  "SUBMIT_ENDPOINT": "https://example.com/api/submit",
+  "SAVE_DRAFT": true,
+  "TERMS_REQUIRED": false,
+  "SUBMIT_BUTTON_TEXT": "Submit",
+  "SUCCESS_MESSAGE": "Submitted!",
+  "modules": ["StepIndicator", "FormFields", "PrevNextBar", "ResultSummary"]
+}

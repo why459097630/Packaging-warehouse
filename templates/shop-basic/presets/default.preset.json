@@ -1,0 +1,12 @@
+{
+  "PACKAGE_NAME": "com.ndjc.shop",
+  "APP_LABEL": "Shop",
+  "CURRENCY": "USD",
+  "PAYMENT_METHODS": ["CashOnDelivery"],
+  "LOGIN_METHODS": ["password"],
+  "SKU_FIELDS": ["title","price","image"],
+  "CART_ENABLED": true,
+  "COUPON_ENABLED": false,
+  "ADDRESS_REQUIRED": true,
+  "modules": ["SearchBar","ProductCard","CartView","CheckoutForm","OrderList"]
+}

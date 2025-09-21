@@ -1,0 +1,7 @@
+{
+  "feedHeader": ["TopicTabs", "PostButton"],
+  "feedItem": ["PostCard"],
+  "composer": ["PostComposer"],
+  "comments": ["CommentList"],
+  "inbox": ["InboxView"]
+}

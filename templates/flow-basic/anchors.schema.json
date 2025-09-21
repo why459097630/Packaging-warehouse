@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Flow Anchors",
+  "type": "object",
+  "required": ["PACKAGE_NAME", "APP_LABEL", "STEPS", "SUBMIT_ENDPOINT"],
+  "properties": {
+    "PACKAGE_NAME": {"type": "string", "pattern": "^[a-zA-Z][\\w.]+$"},
+    "APP_LABEL": {"type": "string"},
+    "STEPS": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["title", "fields"],
+        "properties": {
+          "title": {"type": "string"},
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "type"],
+              "properties": {
+                "name": {"type": "string"},
+                "label": {"type": "string"},
+                "type": {"type": "string", "enum": ["text", "number", "date", "select", "file", "phone", "email"]},
+                "required": {"type": "boolean", "default": false},
+                "options": {"type": "array", "items": {"type": "string"}}
+              }
+            }
+          }
+        }
+      }
+    },
+    "SUBMIT_ENDPOINT": {"type": "string"},
+    "SAVE_DRAFT": {"type": "boolean", "default": true},
+    "TERMS_REQUIRED": {"type": "boolean", "default": false},
+    "SUBMIT_BUTTON_TEXT": {"type": "string", "default": "Submit"},
+    "SUCCESS_MESSAGE": {"type": "string", "default": "Submitted!"}
+  }
+}

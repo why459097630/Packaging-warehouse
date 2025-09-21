@@ -1,0 +1,11 @@
+id: map-basic
+version: 0.1.0
+engine: native-android
+entry: app/src/main/java/com/ndjc/app/MainActivity.kt
+best_for: [map, location, poi, route]
+min_cli: ">=0.3.0"
+slots:
+  - id: mapHeader
+  - id: mapBody
+  - id: mapFooter
+  - id: poiDetail

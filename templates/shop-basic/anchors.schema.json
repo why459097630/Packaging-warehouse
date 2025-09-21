@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Shop Anchors",
+  "type": "object",
+  "required": ["PACKAGE_NAME", "APP_LABEL", "CURRENCY", "PAYMENT_METHODS"],
+  "properties": {
+    "PACKAGE_NAME": {"type": "string", "pattern": "^[a-zA-Z][\\w.]+$"},
+    "APP_LABEL": {"type": "string"},
+    "CURRENCY": {"type": "string", "default": "USD"},
+    "PAYMENT_METHODS": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "LOGIN_METHODS": {"type": "array", "items": {"type": "string"}, "default": ["password"]},
+    "SKU_FIELDS": {"type": "array", "items": {"type": "string"}, "default": ["title","price","image"]},
+    "CART_ENABLED": {"type": "boolean", "default": true},
+    "COUPON_ENABLED": {"type": "boolean", "default": true},
+    "ADDRESS_REQUIRED": {"type": "boolean", "default": true}
+  }
+}

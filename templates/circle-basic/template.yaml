@@ -1,0 +1,12 @@
+id: circle-basic
+version: 0.1.0
+engine: native-android
+entry: app/src/main/java/com/ndjc/app/MainActivity.kt
+best_for: [ugc, community, social]
+min_cli: ">=0.3.0"
+slots:
+  - id: feedHeader
+  - id: feedItem
+  - id: composer
+  - id: comments
+  - id: inbox

@@ -1,0 +1,6 @@
+{
+  "mapHeader": ["SearchBar", "CategoryChips"],
+  "mapBody": ["MapCanvas"],
+  "mapFooter": ["LocateButton"],
+  "poiDetail": ["PoiSheet"]
+}

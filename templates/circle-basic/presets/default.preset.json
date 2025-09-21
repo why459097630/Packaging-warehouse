@@ -1,0 +1,9 @@
+{
+  "PACKAGE_NAME": "com.ndjc.circle",
+  "APP_LABEL": "Circle",
+  "POST_FIELDS": ["text","image"],
+  "MEDIA_TYPES": ["image"],
+  "MESSAGING_ENABLED": false,
+  "MODERATION": "basic",
+  "modules": ["TopicTabs","PostButton","PostCard","PostComposer","CommentList"]
+}

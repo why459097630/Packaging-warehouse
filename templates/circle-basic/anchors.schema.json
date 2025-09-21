@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Circle Anchors",
+  "type": "object",
+  "required": ["PACKAGE_NAME", "APP_LABEL", "POST_FIELDS"],
+  "properties": {
+    "PACKAGE_NAME": {"type": "string", "pattern": "^[a-zA-Z][\\w.]+$"},
+    "APP_LABEL": {"type": "string"},
+    "POST_FIELDS": {"type": "array", "items": {"type": "string"}, "default": ["text","image"]},
+    "MEDIA_TYPES": {"type": "array", "items": {"type": "string"}, "default": ["image"]},
+    "MESSAGING_ENABLED": {"type": "boolean", "default": false},
+    "MODERATION": {"type": "string", "enum": ["none","basic","strict"], "default": "basic"}
+  }
+}

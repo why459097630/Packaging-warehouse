@@ -1,0 +1,10 @@
+{
+  "PACKAGE_NAME": "com.ndjc.map",
+  "APP_LABEL": "Map",
+  "DEFAULT_LAT": 35.0,
+  "DEFAULT_LNG": 135.0,
+  "ZOOM": 12,
+  "POI_CATEGORIES": ["All"],
+  "ROUTE_MODE": "none",
+  "modules": ["SearchBar","CategoryChips","MapCanvas","LocateButton","PoiSheet"]
+}

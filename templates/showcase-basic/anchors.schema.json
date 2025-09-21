@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Showcase Anchors",
+  "type": "object",
+  "required": ["PACKAGE_NAME", "APP_LABEL", "LIST_LAYOUT", "PAGE_SIZE"],
+  "properties": {
+    "PACKAGE_NAME": {"type": "string", "pattern": "^[a-zA-Z][\\w.]+$"},
+    "APP_LABEL": {"type": "string", "minLength": 1},
+    "LIST_LAYOUT": {"type": "string", "enum": ["single", "double", "masonry"], "default": "single"},
+    "PAGE_SIZE": {"type": "integer", "minimum": 5, "maximum": 100, "default": 20},
+    "THEME_COLOR": {"type": "string", "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$", "default": "#6750A4"},
+    "EMPTY_TEXT": {"type": "string", "default": "No content yet"},
+    "SEARCH_ENABLED": {"type": "boolean", "default": true},
+    "FILTERS": {"type": "array", "items": {"type": "string"}, "default": []},
+    "ENABLE_FAVORITE": {"type": "boolean", "default": true},
+    "ENABLE_COMMENTS": {"type": "boolean", "default": false}
+  }
+}
