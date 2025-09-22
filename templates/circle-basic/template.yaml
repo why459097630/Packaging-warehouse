@@ -1,12 +1,20 @@
-id: circle-basic
-version: 0.1.0
-engine: native-android
-entry: app/src/main/java/com/ndjc/app/MainActivity.kt
-best_for: [ugc, community, social]
-min_cli: ">=0.3.0"
-slots:
-  - id: feedHeader
-  - id: feedItem
-  - id: composer
-  - id: comments
-  - id: inbox
+name: circle-basic
+paradigm: circle
+minSdk: 24          # NDJC:MIN_SDK
+targetSdk: 34       # NDJC:TARGET_SDK
+compileSdk: 34      # NDJC:COMPILE_SDK
+entryActivity: com.ndjc.app.MainActivity  # NDJC:PACKAGE_NAME
+routes:             # LIST:ROUTES
+  - home
+  - detail
+  - post
+permissions:
+  camera: false
+  notification: false
+features:
+  post: true
+  comment: true
+  like: true
+i18n:
+  enabled: true      # NDJC:I18N_ENABLED
+resConfigs: []       # NDJC:RES_CONFIGS
