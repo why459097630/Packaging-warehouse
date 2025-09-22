@@ -1,6 +1,0 @@
-{
-  "template": "core",
-  "requirement": "生成一个牛太郎餐厅用的介绍菜品的安卓APP，可以上传图片，编辑文字介绍和价格",
-  "mode": "A",
-  "allowCompanions": false
-}

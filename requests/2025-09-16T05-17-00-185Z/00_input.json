@@ -1,6 +1,0 @@
-{
-  "template": "core",
-  "requirement": "生成一个牛太郎餐厅的菜品介绍apk，要可以上传图片，可以编辑文本介绍菜品和编辑定价",
-  "mode": "A",
-  "allowCompanions": false
-}
