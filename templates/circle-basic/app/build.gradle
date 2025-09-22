@@ -2,21 +2,28 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     // HOOK:BEFORE_BUILD
+    // BLOCK:DEPENDENCY_SNIPPETS
+    // END_BLOCK
 }
 
 android {
-    namespace 'com.ndjc.app'              // NDJC:PACKAGE_NAME
-    compileSdk 34                          // NDJC:COMPILE_SDK
+    namespace 'com.ndjc.app'                         // NDJC:PACKAGE_NAME
+    compileSdk 34                                    // NDJC:COMPILE_SDK
 
     defaultConfig {
-        applicationId 'com.ndjc.app'      // NDJC:PACKAGE_NAME
-        minSdk 24                          // NDJC:MIN_SDK
-        targetSdk 34                       // NDJC:TARGET_SDK
-        versionCode 1                      // NDJC:VERSION_CODE
-        versionName '1.0.0'                // NDJC:VERSION_NAME
-        vectorDrawables { useSupportLibrary = true }
+        applicationId 'com.ndjc.app'                 // NDJC:PACKAGE_NAME
+        minSdk 24                                    // NDJC:MIN_SDK
+        targetSdk 34                                 // NDJC:TARGET_SDK
+        versionCode 1                                // NDJC:VERSION_CODE
+        versionName '1.0.0'                          // NDJC:VERSION_NAME
+
+        // 将运行ID等注入到 BuildConfig
+        buildConfigField "String", "NDJC_RUN_ID", "\"\""     // NDJC:BUILD_META_RUNID / NDJC:RUN_ID
+        buildConfigField "String", "NDJC_LOG_LEVEL", "\"info\"" // NDJC:LOG_LEVEL
+        buildConfigField "boolean", "NDJC_DEBUG_LOG", "false"   // NDJC:DEBUG_LOG_ENABLED
 
         // NDJC:RES_CONFIGS  (例：resConfigs 'en', 'zh-CN')
+        vectorDrawables { useSupportLibrary = true }
     }
 
     buildTypes {
@@ -24,6 +31,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug    // 无签名时自动降级；你可替换为 release
         }
         debug {
             minifyEnabled false
@@ -31,24 +39,23 @@ android {
         }
     }
 
-    // 允许生成器注入额外 packaging 规则
+    // ABI / App Bundle / Packaging 规则（由列表锚点控制）
+    // LIST:ABI_SPLITS        (例：splits { abi { enable true; include 'arm64-v8a','x86_64' } })
+    // NDJC:USE_APP_BUNDLE    (例：bundle { language { enableSplit = false } })
+
     packagingOptions {
         // LIST:PACKAGING_RULES
-        // 例：resources.excludes += ['META-INF/LICENSE*']
+        // 例：resources.excludes += ['META-INF/LICENSE*','META-INF/AL2.0','META-INF/LGPL2.1']
     }
 
-    buildFeatures {
-        compose true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
+    buildFeatures { compose true }
+    composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
     kotlinOptions {
         jvmTarget = "17"
         freeCompilerArgs += ["-Xjvm-default=all"]
     }
 
-    // 主题名锚点在 res/values/themes.xml
+    // 预留夜间/动效/密度/字体策略（由主题与 strings/xml 控制）
 }
 
 dependencies {
@@ -56,7 +63,7 @@ dependencies {
     implementation "androidx.activity:activity-compose:1.9.2"
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.ui:ui-tooling-preview"
-    implementation "androidx.compose.material3:material3:1.2.1"
+    implementation "androidx.compose.material3:material3:1.2.1"   // M3
     implementation "androidx.navigation:navigation-compose:2.8.0"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
     implementation "androidx.core:core-ktx:1.13.1"
