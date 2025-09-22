@@ -1,0 +1,20 @@
+# Circle 模板 · I18N 预设
+name: circle-basic.i18n
+description: 开启多语言和地区配置，适合国际版或演示 i18n
+template: circle-basic
+
+# 基础信息
+NDJC:PACKAGE_NAME: com.ndjc.circle.i18n
+NDJC:APP_LABEL: NDJC Circle
+NDJC:HOME_TITLE: Hello NDJC
+NDJC:PRIMARY_BUTTON_TEXT: Start
+NDJC:VERSION_NAME: "1.0.0"
+NDJC:VERSION_CODE: "1"
+
+# 多语言相关
+NDJC:I18N_ENABLED: true
+NDJC:RES_CONFIGS: ["en","zh","ja","es"]
+BLOCK:STRINGS_EXTRA: true
+
+# 可选：演示切换动画更明显
+NDJC:ANIM_DURATION_MS: "300"
