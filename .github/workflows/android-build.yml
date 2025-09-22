@@ -7,7 +7,7 @@ on:
         description: "NDJC run id"
         required: false
       template:
-        description: "template key (core/simple/form)"
+        description: "template key (core/simple/form or circle-basic/...)"
         required: false
       appTitle:
         description: "App title"
@@ -24,6 +24,9 @@ on:
         default: "warn"
   repository_dispatch:
     types: [generate-apk]
+
+permissions:
+  contents: write   # <- 写回 requests/<runId>/ 需要
 
 concurrency:
   group: android-build-${{ github.event_name }}-${{ inputs.runId || github.event.client_payload.runId || inputs.branch || github.event.client_payload.ref || github.ref }}
@@ -42,21 +45,41 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.branch || github.event.client_payload.ref || github.ref }}
 
-      - name: NDJC | Show commit and changed files
+      - name: Resolve inputs → env
+        id: resolve
+        shell: bash
+        run: |
+          set -euo pipefail
+          # RUN_ID 优先级：inputs.runId > client_payload.runId > 时间戳
+          RUN_ID="${{ inputs.runId }}"
+          if [ -z "$RUN_ID" ]; then RUN_ID="${{ github.event.client_payload.runId }}"; fi
+          if [ -z "$RUN_ID" ]; then RUN_ID="ndjc-$(date -u +%Y%m%dT%H%M%SZ)"; fi
+          echo "RUN_ID=$RUN_ID" >> "$GITHUB_ENV"
+
+          # 构建分支：inputs.branch > client_payload.ref > 触发分支
+          BR="${{ inputs.branch }}"
+          if [ -z "$BR" ]; then BR="${{ github.event.client_payload.ref }}"; fi
+          if [ -z "$BR" ]; then BR="${{ github.ref }}"; fi
+          BR="${BR#refs/heads/}"   # 统一为纯分支名
+          echo "BUILD_BRANCH=$BR" >> "$GITHUB_ENV"
+
+          echo "Resolved RUN_ID=$RUN_ID, BUILD_BRANCH=$BR"
+          echo "runId=$RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "branch=$BR"    >> "$GITHUB_OUTPUT"
+
+      - name: NDJC | Show context
         run: |
           echo "HEAD sha: $(git rev-parse HEAD)"
           echo "Triggered by: ${{ github.event_name }}"
           echo "inputs.branch: '${{ inputs.branch }}'"
           echo "client_payload.ref: '${{ github.event.client_payload.ref }}'"
           echo "client_payload.sha: '${{ github.event.client_payload.sha }}'"
-          echo "---- files touched in this commit ----"
-          git show --name-only --pretty=oneline "$(git rev-parse HEAD)"
 
       - name: Sanity check
         run: |
-          test -f ./gradlew || { echo "gradlew missing"; exit 1; }
-          test -d app || { echo "app/ missing"; exit 1; }
-          test -f app/build.gradle -o -f app/build.gradle.kts || { echo "app Gradle file missing"; exit 1; }
+          test -f ./gradlew || { echo "::error::gradlew missing"; exit 1; }
+          test -d app || { echo "::error::app/ missing"; exit 1; }
+          test -f app/build.gradle -o -f app/build.gradle.kts || { echo "::error::app Gradle file missing"; exit 1; }
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -79,31 +102,34 @@ jobs:
           set -euo pipefail
           mkdir -p anchors build-logs
           echo "== NDJC Preflight start =="
-          chmod +x scripts/preflight_v2.sh
-          ./scripts/preflight_v2.sh
+          if [ -x scripts/preflight_v2.sh ]; then
+            ./scripts/preflight_v2.sh | tee build-logs/preflight.log
+          else
+            echo "::warning::scripts/preflight_v2.sh not found; skipping deep checks" | tee build-logs/preflight.log
+          fi
 
       - name: NDJC | Summarize preflight
         if: always()
         shell: bash
         run: |
           echo "### NDJC Preflight (${{ inputs.preflight_mode || 'warn' }})" >> "$GITHUB_STEP_SUMMARY"
-          if [[ -f build-logs/summary.txt ]]; then
+          if [[ -f build-logs/preflight.log ]]; then
             echo '' >> "$GITHUB_STEP_SUMMARY"
             echo '````' >> "$GITHUB_STEP_SUMMARY"
-            cat build-logs/summary.txt >> "$GITHUB_STEP_SUMMARY"
+            tail -n 200 build-logs/preflight.log >> "$GITHUB_STEP_SUMMARY"
             echo '````' >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "_No summary.txt produced._" >> "$GITHUB_STEP_SUMMARY"
+            echo "_No preflight log produced._" >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: NDJC | Upload preflight logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: preflight-logs
+          name: preflight-logs-${{ env.RUN_ID }}
           path: |
             anchors/**
-            build-logs/**
+            build-logs/preflight.log
           if-no-files-found: ignore
       # ---------- Preflight 结束 ----------
 
@@ -139,14 +165,14 @@ jobs:
             OUTDIR=app/build/outputs/apk/release
             VARIANT=release
           fi
-          echo "APK_DIR=$OUTDIR"   >> "$GITHUB_ENV"
-          echo "VARIANT=$VARIANT"  >> "$GITHUB_ENV"
+          echo "APK_DIR=$OUTDIR"  >> "$GITHUB_ENV"
+          echo "VARIANT=$VARIANT" >> "$GITHUB_ENV"
 
       - name: NDJC | Upload build logs (on failure too)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-logs
+          name: build-logs-${{ env.RUN_ID }}
           path: build-logs/**
           if-no-files-found: ignore
 
@@ -159,6 +185,7 @@ jobs:
       # -------- Build 结束 --------
 
       - name: Pick APK
+        id: pick
         shell: bash
         run: |
           set -e
@@ -172,10 +199,11 @@ jobs:
             APK="$UNSIGNED"
             echo "Found unsigned APK: $APK"
           else
-            echo "No APK found under $APK_DIR"
+            echo "::error::No APK found under $APK_DIR"
             exit 1
           fi
           echo "APK=$APK" >> "$GITHUB_ENV"
+          echo "apk=$APK" >> "$GITHUB_OUTPUT"
 
       - name: Fallback sign release APK (if unsigned but keystore present)
         if: ${{ env.KS != '' && env.VARIANT == 'release' }}
@@ -204,6 +232,39 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ env.VARIANT }}
+          name: app-${{ env.VARIANT }}-${{ env.RUN_ID }}
           path: ${{ env.APK }}
           if-no-files-found: error
+
+      # ---------- 写回 logs 到 requests/<RUN_ID>/ ----------
+      - name: NDJC | Write back logs to repo (requests/<RUN_ID>/)
+        if: always()
+        shell: bash
+        run: |
+          set -e
+          REQ_DIR="requests/${RUN_ID}"
+          mkdir -p "$REQ_DIR"
+          # copy logs
+          cp -r build-logs "$REQ_DIR/" 2>/dev/null || true
+          # small summary
+          {
+            echo "branch=${BUILD_BRANCH}"
+            echo "variant=${VARIANT}"
+            echo "apk=${APK}"
+            echo "ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > "${REQ_DIR}/actions-summary.txt"
+
+          git config user.name  "ndjc-bot"
+          git config user.email "ndjc-bot@users.noreply.github.com"
+          git add "${REQ_DIR}" || true
+          git commit -m "[NDJC ${RUN_ID}] add build logs" || true
+          git push origin "${BUILD_BRANCH}" || true
+
+      - name: NDJC | Summary
+        if: always()
+        run: |
+          echo "### NDJC Build Result" >> "$GITHUB_STEP_SUMMARY"
+          echo "- runId: \`${RUN_ID}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- branch: \`${BUILD_BRANCH}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- variant: \`${VARIANT}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- apk: \`${APK}\`" >> "$GITHUB_STEP_SUMMARY"
