@@ -1,4 +1,4 @@
-name: Android Build
+name: Android Build (NDJC)
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
         description: "NDJC run id"
         required: false
       template:
-        description: "template key (core/simple/form or circle-basic/...)"
+        description: "Template key (circle/flow/map/shop/showcase)"
         required: false
       appTitle:
         description: "App title"
@@ -16,7 +16,7 @@ on:
         description: "Android applicationId"
         required: false
       branch:
-        description: "branch to build (e.g. ndjc-run/<runId>)"
+        description: "Branch to build (e.g. ndjc-run/<runId>)"
         required: false
       preflight_mode:
         description: "Preflight mode: warn (default) or strict"
@@ -26,7 +26,7 @@ on:
     types: [generate-apk]
 
 permissions:
-  contents: write   # <- 写回 requests/<runId>/ 需要
+  contents: write
 
 concurrency:
   group: android-build-${{ github.event_name }}-${{ inputs.runId || github.event.client_payload.runId || inputs.branch || github.event.client_payload.ref || github.ref }}
@@ -34,12 +34,11 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-
     steps:
-      - name: Checkout
+      - name: Checkout branch
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -50,36 +49,35 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # RUN_ID 优先级：inputs.runId > client_payload.runId > 时间戳
           RUN_ID="${{ inputs.runId }}"
           if [ -z "$RUN_ID" ]; then RUN_ID="${{ github.event.client_payload.runId }}"; fi
           if [ -z "$RUN_ID" ]; then RUN_ID="ndjc-$(date -u +%Y%m%dT%H%M%SZ)"; fi
           echo "RUN_ID=$RUN_ID" >> "$GITHUB_ENV"
 
-          # 构建分支：inputs.branch > client_payload.ref > 触发分支
           BR="${{ inputs.branch }}"
           if [ -z "$BR" ]; then BR="${{ github.event.client_payload.ref }}"; fi
           if [ -z "$BR" ]; then BR="${{ github.ref }}"; fi
-          BR="${BR#refs/heads/}"   # 统一为纯分支名
+          BR="${BR#refs/heads/}"
           echo "BUILD_BRANCH=$BR" >> "$GITHUB_ENV"
 
           echo "Resolved RUN_ID=$RUN_ID, BUILD_BRANCH=$BR"
           echo "runId=$RUN_ID" >> "$GITHUB_OUTPUT"
           echo "branch=$BR"    >> "$GITHUB_OUTPUT"
 
-      - name: NDJC | Show context
+      - name: NDJC | Show commit info
         run: |
-          echo "HEAD sha: $(git rev-parse HEAD)"
+          echo "HEAD: $(git rev-parse HEAD)"
           echo "Triggered by: ${{ github.event_name }}"
           echo "inputs.branch: '${{ inputs.branch }}'"
           echo "client_payload.ref: '${{ github.event.client_payload.ref }}'"
           echo "client_payload.sha: '${{ github.event.client_payload.sha }}'"
+          git show --name-only --oneline -1
 
       - name: Sanity check
         run: |
           test -f ./gradlew || { echo "::error::gradlew missing"; exit 1; }
           test -d app || { echo "::error::app/ missing"; exit 1; }
-          test -f app/build.gradle -o -f app/build.gradle.kts || { echo "::error::app Gradle file missing"; exit 1; }
+          test -f app/build.gradle -o -f app/build.gradle.kts || { echo "::error::Gradle file missing"; exit 1; }
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -93,7 +91,7 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # ---------- Preflight：warn/strict 可切换（默认 warn） ----------
+      # ---------- Preflight ----------
       - name: NDJC | Preflight (anchor & resource checks)
         id: preflight
         shell: bash
@@ -101,25 +99,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p anchors build-logs
-          echo "== NDJC Preflight start =="
-          if [ -x scripts/preflight_v2.sh ]; then
-            ./scripts/preflight_v2.sh | tee build-logs/preflight.log
+          if [ -x .github/scripts/ndjc-preflight.sh ]; then
+            .github/scripts/ndjc-preflight.sh app "${{ inputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
           else
-            echo "::warning::scripts/preflight_v2.sh not found; skipping deep checks" | tee build-logs/preflight.log
-          fi
-
-      - name: NDJC | Summarize preflight
-        if: always()
-        shell: bash
-        run: |
-          echo "### NDJC Preflight (${{ inputs.preflight_mode || 'warn' }})" >> "$GITHUB_STEP_SUMMARY"
-          if [[ -f build-logs/preflight.log ]]; then
-            echo '' >> "$GITHUB_STEP_SUMMARY"
-            echo '````' >> "$GITHUB_STEP_SUMMARY"
-            tail -n 200 build-logs/preflight.log >> "$GITHUB_STEP_SUMMARY"
-            echo '````' >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "_No preflight log produced._" >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::.github/scripts/ndjc-preflight.sh not found; skipping deep checks" | tee build-logs/preflight.log
           fi
 
       - name: NDJC | Upload preflight logs
@@ -131,7 +114,7 @@ jobs:
             anchors/**
             build-logs/preflight.log
           if-no-files-found: ignore
-      # ---------- Preflight 结束 ----------
+      # ---------- Preflight End ----------
 
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
@@ -145,7 +128,7 @@ jobs:
           } >> "$GITHUB_ENV"
           ls -lh "$HOME/release.jks" || true
 
-      # -------- Build（带日志采集）---------
+      # -------- Build（采集日志）---------
       - name: Build
         id: build
         shell: bash
@@ -182,7 +165,7 @@ jobs:
         run: |
           echo "---- build.log (last 200 lines) ----"
           tail -n 200 build-logs/build.log || true
-      # -------- Build 结束 --------
+      # -------- Build End --------
 
       - name: Pick APK
         id: pick
@@ -244,9 +227,7 @@ jobs:
           set -e
           REQ_DIR="requests/${RUN_ID}"
           mkdir -p "$REQ_DIR"
-          # copy logs
           cp -r build-logs "$REQ_DIR/" 2>/dev/null || true
-          # small summary
           {
             echo "branch=${BUILD_BRANCH}"
             echo "variant=${VARIANT}"
