@@ -1,7 +1,32 @@
 {
-  "feedHeader": ["TopicTabs", "PostButton"],
-  "feedItem": ["PostCard"],
-  "composer": ["PostComposer"],
-  "comments": ["CommentList"],
-  "inbox": ["InboxView"]
+  "app/build.gradle": [
+    "NDJC:PACKAGE_NAME","NDJC:COMPILE_SDK","NDJC:MIN_SDK","NDJC:TARGET_SDK","NDJC:VERSION_NAME","NDJC:VERSION_CODE",
+    "NDJC:RES_CONFIGS","LIST:PACKAGING_RULES","LIST:PROGUARD_EXTRA","BLOCK:DEPENDENCY_SNIPPETS",
+    "LIST:ABI_SPLITS","NDJC:USE_APP_BUNDLE","NDJC:BUILD_META_RUNID","NDJC:FEATURE_TOGGLE_MIN","NDJC:DEBUG_LOG_ENABLED",
+    "HOOK:BEFORE_BUILD","HOOK:AFTER_BUILD"
+  ],
+  "app/src/main/AndroidManifest.xml": [
+    "NDJC:PACKAGE_NAME","NDJC:APP_LABEL","NDJC:THEME_NAME",
+    "IF:PERMISSION.CAMERA","IF:PERMISSION.MEDIA","IF:PERMISSION.NOTIFICATION","IF:PERMISSION.LOCATION",
+    "IF:PERMISSION.CONTACTS","IF:NETWORK.CLEAR_TEXT","IF:FILE_PROVIDER","IF:INTENT.SHARE",
+    "BLOCK:SPLASH_CONTENT"
+  ],
+  "app/src/main/res/values/themes.xml": ["NDJC:THEME_NAME","BLOCK:THEME_COLORS","BLOCK:TYPOSCALE_OVERRIDES"],
+  "app/src/main/res/values/strings.xml": [
+    "NDJC:APP_LABEL","NDJC:HOME_TITLE","NDJC:PRIMARY_BUTTON_TEXT","BLOCK:STRINGS_EXTRA",
+    "NDJC:RUN_ID","NDJC:LOG_LEVEL"
+  ],
+  "app/proguard-rules.pro": ["LIST:PROGUARD_EXTRA"],
+  "app/src/main/java/com/ndjc/app/MainActivity.kt": [
+    "BLOCK:DEBUG_PANEL","BLOCK:BUILD_SUMMARY","HOOK:AFTER_INSTALL"
+  ],
+  "app/src/main/java/com/ndjc/app/navigation/NavGraph.kt": [
+    "LIST:ROUTES","BLOCK:NAV_TRANSITIONS","BLOCK:ROUTE_HOME","BLOCK:ROUTE_DETAIL","BLOCK:ROUTE_POST"
+  ],
+  "app/src/main/java/com/ndjc/app/feature/feed/FeedScreen.kt": [
+    "BLOCK:HOME_HEADER","BLOCK:HOME_BODY","BLOCK:HOME_ACTIONS","BLOCK:HEADER_AD_SLOT"
+  ],
+  "app/src/main/java/com/ndjc/app/feature/feed/ui/FeedItem.kt": ["BLOCK:FEED_ITEM_BADGES","BLOCK:SPONSORED_CARD"],
+  "companions/drawable/app_icon.png": ["RES:drawable/app_icon.png"],
+  "companions/raw/seed_data.json": ["RES:raw/seed_data.json"]
 }
