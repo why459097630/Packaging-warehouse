@@ -1,1 +1,0 @@
-skip commit (NDJC_GIT_COMMIT != 1)

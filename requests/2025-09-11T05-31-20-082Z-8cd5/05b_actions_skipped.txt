@@ -1,1 +1,0 @@
-skip actions (NDJC_SKIP_ACTIONS == 1 or input.skipActions)
