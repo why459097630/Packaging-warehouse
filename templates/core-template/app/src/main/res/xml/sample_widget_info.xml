@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- NDJC:WIDGET_ID / NDJC:WIDGET_REFRESH_INTERVAL -->
-<AppWidgetProviderInfo xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="120dp"
-    android:minHeight="60dp"
-    android:updatePeriodMillis="0"
-    android:initialLayout="@layout/activity_main" />

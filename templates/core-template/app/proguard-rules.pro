@@ -1,2 +1,0 @@
-# 自定义混淆/保留规则
-# NDJC:BLOCK:PROGUARD_RULES

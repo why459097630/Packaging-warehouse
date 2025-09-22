@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <!-- 兼容旧代码：让 AppTheme 仅作为别名指向新的 M3 主题。
-         不再在这里声明任何 colorPrimary/Secondary 等旧 M2 项。 -->
-    <style name="AppTheme" parent="@style/Theme.NDJC" />
-
-</resources>

@@ -1,1 +1,0 @@
-private const val STORE_NAME = BuildConfig.DATASTORE_NAME // NDJC:DATASTORE_NAME

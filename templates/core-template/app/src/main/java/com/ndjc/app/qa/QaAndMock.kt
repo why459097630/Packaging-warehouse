@@ -1,4 +1,0 @@
-package com.ndjc.app.qa
-// NDJC:BLOCK:TEST_SEED_DATA
-// NDJC:BLOCK:MOCK_SERVER
-// NDJC:BLOCK:TESTS
