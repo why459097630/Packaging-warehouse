@@ -19,17 +19,16 @@ fi
 echo "[Preflight] SelfCheck OK" | tee -a "$SUMMARY"
 
 # === 2) 轻量 Gradle 预检（资源 + Lint）===
-# 留存完整日志到 artifacts
-./gradlew clean :app:processReleaseResources :app:lintRelease -x test --stacktrace --info \
+# 覆盖 release + debug 资源，保证后续构建变体一致
+./gradlew clean :app:processReleaseResources :app:processDebugResources :app:lintRelease -x test --stacktrace --info \
   | tee build-logs/gradle-preflight.log
 
 # 拷贝 Lint 报告（可能不存在，忽略错误即可）
 mkdir -p build-logs/lint
 cp -f app/build/reports/lint-results-*.{html,xml,txt} build-logs/lint/ 2>/dev/null || true
 
-# === 3) 摘要关键错误（总会产出 quick-errors.txt）===
+# === 3) 关键错误摘要：总会产出 quick-errors.txt ===
 : > build-logs/quick-errors.txt
-# 重要：重定向放在 grep 之后，未命中也不算失败
 grep -nEi \
   "Android resource linking failed|AAPT| error: |Manifest merger failed|Duplicate class|not found|> Task :app:lintRelease FAILED|Lint .*(Fatal|Error)|FAILURE: Build failed" \
   build-logs/gradle-preflight.log > build-logs/quick-errors.txt || true
