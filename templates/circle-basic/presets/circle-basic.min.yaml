@@ -1,0 +1,28 @@
+# Circle 模板 · Minimal 预设
+name: circle-basic.min
+description: 最小可运行的 Circle 模板，适合空跑/测试
+template: circle-basic
+
+# 必备锚点
+NDJC:PACKAGE_NAME: com.ndjc.app
+NDJC:APP_LABEL: NDJC Circle
+NDJC:HOME_TITLE: Hello NDJC
+NDJC:PRIMARY_BUTTON_TEXT: Start
+NDJC:VERSION_NAME: "1.0.0"
+NDJC:VERSION_CODE: "1"
+NDJC:COMPILE_SDK: "34"
+NDJC:MIN_SDK: "24"
+NDJC:TARGET_SDK: "34"
+NDJC:THEME_NAME: NDJCTheme
+
+# 关闭所有可选权限和复杂功能
+NDJC:DATA_SOURCE: seed
+NDJC:SEED_ENABLED: true
+NDJC:I18N_ENABLED: false
+NDJC:ANIM_ENABLED: true
+NDJC:LAYOUT_DENSITY: comfortable
+
+# 不注入额外路由、广告、评论、发帖
+LIST:ROUTES: ["home","detail/{id}","post"]
+LIST:PROGUARD_EXTRA: []
+LIST:PACKAGING_RULES: []
