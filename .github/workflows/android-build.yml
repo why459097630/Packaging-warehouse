@@ -79,8 +79,6 @@ jobs:
           set -euo pipefail
           mkdir -p anchors build-logs
           echo "== NDJC Preflight start =="
-
-          # v2 预检脚本（五件套 + Schema + 快速 Gradle 任务）
           chmod +x scripts/preflight_v2.sh
           ./scripts/preflight_v2.sh
 
@@ -121,24 +119,44 @@ jobs:
           } >> "$GITHUB_ENV"
           ls -lh "$HOME/release.jks" || true
 
+      # -------- Build（带日志采集）---------
       - name: Build
         id: build
         shell: bash
         run: |
           set -e
+          mkdir -p build-logs
           if [ -z "${KS}" ]; then
             echo "No keystore → build Debug"
-            ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace
+            ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace --info \
+              | tee build-logs/build.log
             OUTDIR=app/build/outputs/apk/debug
             VARIANT=debug
           else
             echo "Keystore present → build Release"
-            ./gradlew :app:clean :app:assembleRelease -x lint --stacktrace
+            ./gradlew :app:clean :app:assembleRelease -x lint --stacktrace --info \
+              | tee build-logs/build.log
             OUTDIR=app/build/outputs/apk/release
             VARIANT=release
           fi
           echo "APK_DIR=$OUTDIR"   >> "$GITHUB_ENV"
           echo "VARIANT=$VARIANT"  >> "$GITHUB_ENV"
+
+      - name: NDJC | Upload build logs (on failure too)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: build-logs/**
+          if-no-files-found: ignore
+
+      - name: NDJC | Show build tail (on failure)
+        if: failure()
+        shell: bash
+        run: |
+          echo "---- build.log (last 200 lines) ----"
+          tail -n 200 build-logs/build.log || true
+      # -------- Build 结束 --------
 
       - name: Pick APK
         shell: bash
