@@ -7,26 +7,30 @@
   ],
   "app/src/main/AndroidManifest.xml": [
     "NDJC:PACKAGE_NAME","NDJC:APP_LABEL","NDJC:THEME_NAME",
-    "IF:PERMISSION.CAMERA","IF:PERMISSION.MEDIA","IF:PERMISSION.NOTIFICATION","IF:PERMISSION.LOCATION",
-    "IF:PERMISSION.CONTACTS","IF:NETWORK.CLEAR_TEXT","IF:FILE_PROVIDER","IF:INTENT.SHARE",
-    "BLOCK:SPLASH_CONTENT"
+    "IF:PERMISSION.CAMERA","IF:PERMISSION.MEDIA","IF:PERMISSION.NOTIFICATION","IF:PERMISSION.LOCATION","IF:PERMISSION.CONTACTS",
+    "IF:NETWORK.CLEAR_TEXT","IF:FILE_PROVIDER","IF:INTENT.SHARE","BLOCK:SPLASH_CONTENT"
   ],
   "app/src/main/res/values/themes.xml": ["NDJC:THEME_NAME","BLOCK:THEME_COLORS","BLOCK:TYPOSCALE_OVERRIDES"],
   "app/src/main/res/values/strings.xml": [
-    "NDJC:APP_LABEL","NDJC:HOME_TITLE","NDJC:PRIMARY_BUTTON_TEXT","BLOCK:STRINGS_EXTRA",
-    "NDJC:RUN_ID","NDJC:LOG_LEVEL"
+    "NDJC:APP_LABEL","NDJC:HOME_TITLE","NDJC:PRIMARY_BUTTON_TEXT","BLOCK:STRINGS_EXTRA","NDJC:RUN_ID","NDJC:LOG_LEVEL"
   ],
   "app/proguard-rules.pro": ["LIST:PROGUARD_EXTRA"],
-  "app/src/main/java/com/ndjc/app/MainActivity.kt": [
-    "BLOCK:DEBUG_PANEL","BLOCK:BUILD_SUMMARY","HOOK:AFTER_INSTALL"
-  ],
+  "app/src/main/java/com/ndjc/app/MainActivity.kt": ["BLOCK:DEBUG_PANEL","BLOCK:BUILD_SUMMARY","HOOK:AFTER_INSTALL"],
   "app/src/main/java/com/ndjc/app/navigation/NavGraph.kt": [
     "LIST:ROUTES","BLOCK:NAV_TRANSITIONS","BLOCK:ROUTE_HOME","BLOCK:ROUTE_DETAIL","BLOCK:ROUTE_POST"
   ],
   "app/src/main/java/com/ndjc/app/feature/feed/FeedScreen.kt": [
     "BLOCK:HOME_HEADER","BLOCK:HOME_BODY","BLOCK:HOME_ACTIONS","BLOCK:HEADER_AD_SLOT"
   ],
-  "app/src/main/java/com/ndjc/app/feature/feed/ui/FeedItem.kt": ["BLOCK:FEED_ITEM_BADGES","BLOCK:SPONSORED_CARD"],
+  "app/src/main/java/com/ndjc/app/feature/feed/ui/FeedItem.kt": [
+    "BLOCK:FEED_ITEM_BADGES","BLOCK:SPONSORED_CARD"
+  ],
+  "app/src/main/res/xml/file_paths.xml": ["IF:FILE_PROVIDER"],
+  "app/src/main/res/xml/network_security_config.xml": ["IF:NETWORK.CLEAR_TEXT"],
+  "app/src/main/res/values/plurals.xml": ["LIST:PLURAL_STRINGS"],
   "companions/drawable/app_icon.png": ["RES:drawable/app_icon.png"],
-  "companions/raw/seed_data.json": ["RES:raw/seed_data.json"]
+  "companions/raw/seed_data.json": ["RES:raw/seed_data.json"],
+  "companions/raw/theme_colors.json": ["RES:raw/theme_colors.json"],
+  "companions/font/primary.ttf": ["RES:font/primary.ttf"],
+  "companions/font/secondary.ttf": ["RES:font/secondary.ttf"]
 }
