@@ -1,3 +1,0 @@
-# 保证 CI 上是 LF 行尾
-*.sh         text eol=lf
-gradlew      text eol=lf
