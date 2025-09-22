@@ -1,0 +1,72 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    // HOOK:BEFORE_BUILD
+}
+
+android {
+    namespace 'com.ndjc.app'              // NDJC:PACKAGE_NAME
+    compileSdk 34                          // NDJC:COMPILE_SDK
+
+    defaultConfig {
+        applicationId 'com.ndjc.app'      // NDJC:PACKAGE_NAME
+        minSdk 24                          // NDJC:MIN_SDK
+        targetSdk 34                       // NDJC:TARGET_SDK
+        versionCode 1                      // NDJC:VERSION_CODE
+        versionName '1.0.0'                // NDJC:VERSION_NAME
+        vectorDrawables { useSupportLibrary = true }
+
+        // NDJC:RES_CONFIGS  (例：resConfigs 'en', 'zh-CN')
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+
+    // 允许生成器注入额外 packaging 规则
+    packagingOptions {
+        // LIST:PACKAGING_RULES
+        // 例：resources.excludes += ['META-INF/LICENSE*']
+    }
+
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+    kotlinOptions {
+        jvmTarget = "17"
+        freeCompilerArgs += ["-Xjvm-default=all"]
+    }
+
+    // 主题名锚点在 res/values/themes.xml
+}
+
+dependencies {
+    implementation platform("androidx.compose:compose-bom:2024.06.00")
+    implementation "androidx.activity:activity-compose:1.9.2"
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.ui:ui-tooling-preview"
+    implementation "androidx.compose.material3:material3:1.2.1"
+    implementation "androidx.navigation:navigation-compose:2.8.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
+    implementation "androidx.core:core-ktx:1.13.1"
+
+    // IF:PERMISSION.NOTIFICATION
+    implementation "androidx.core:core-ktx:1.13.1"
+    // ENDIF
+
+    debugImplementation "androidx.compose.ui:ui-tooling"
+    debugImplementation "androidx.compose.ui:ui-test-manifest"
+}
+
+// HOOK:AFTER_BUILD
