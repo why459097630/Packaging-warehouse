@@ -1,33 +1,22 @@
-# Circle 模板 · Social+ 预设
 name: circle-basic.social
-description: 开启完整社交功能（发帖、评论、点赞），适合社区类应用
+description: 开启完整社交（发帖/评论/点赞 + 常用权限）
 template: circle-basic
-
-# 基础信息
 NDJC:PACKAGE_NAME: com.ndjc.social
 NDJC:APP_LABEL: NDJC Social Circle
 NDJC:HOME_TITLE: Welcome!
 NDJC:PRIMARY_BUTTON_TEXT: Start Posting
 NDJC:VERSION_NAME: "1.0.0"
 NDJC:VERSION_CODE: "1"
-
-# 开启 Seed 数据和全部功能
 NDJC:DATA_SOURCE: seed
 NDJC:SEED_ENABLED: true
 NDJC:FEED_SORT: time
 NDJC:DRAFT_ENABLED: true
-
-# 权限开关
 PERMISSIONS:
   camera: true
   media: true
   notification: true
-
-# 打开可选页面和组件
 LIST:ROUTES: ["home","detail/{id}","post","profile","settings"]
 BLOCK:HEADER_AD_SLOT: true
 BLOCK:FEED_ITEM_BADGES: true
-
-# 打开日志和构建信息
 NDJC:DEBUG_LOG_ENABLED: true
 NDJC:LOG_LEVEL: debug
