@@ -1,6 +1,0 @@
-{
-  "template": "core",
-  "requirement": "生成一个介绍菜品的安卓app，要可以上传图片，添加文字介绍，添加售价",
-  "mode": "A",
-  "allowCompanions": false
-}
