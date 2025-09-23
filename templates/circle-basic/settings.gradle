@@ -1,16 +1,23 @@
 pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-    }
+  repositories {
+    gradlePluginPortal()
+    google()
+    mavenCentral()
+  }
+  // 补充：为 AGP 与 Kotlin 指定版本（匹配 Gradle 8.2.1 的稳定组合）
+  plugins {
+    id("com.android.application") version "8.2.1"
+    id("org.jetbrains.kotlin.android") version "1.9.10"
+  }
 }
+
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-    }
+  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+  repositories {
+    google()
+    mavenCentral()
+  }
 }
+
 rootProject.name = "ndjc-circle"
 include(":app")
