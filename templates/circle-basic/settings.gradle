@@ -4,10 +4,10 @@ pluginManagement {
     google()
     mavenCentral()
   }
-  // 补充：为 AGP 与 Kotlin 指定版本（匹配 Gradle 8.2.1 的稳定组合）
+  // 仅更新 Kotlin 版本，AGP 仍为 8.2.1
   plugins {
     id("com.android.application") version "8.2.1"
-    id("org.jetbrains.kotlin.android") version "1.9.10"
+    id("org.jetbrains.kotlin.android") version "1.9.22"
   }
 }
 
