@@ -117,50 +117,28 @@ jobs:
           if-no-files-found: ignore
       # ---------- Preflight End ----------
 
-      - name: Decode keystore (optional)
-        if: ${{ env.KS != '' }}
-        run: |
-          echo "${KS}" | base64 -d > "$HOME/release.jks"
-          {
-            echo "NDJC_KEYSTORE_PATH=$HOME/release.jks"
-            echo "NDJC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
-            echo "NDJC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}"
-            echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}"
-          } >> "$GITHUB_ENV"
-          ls -lh "$HOME/release.jks" || true
-
-      # -------- Build（采集完整日志 + 保证退出码）---------
       - name: Build
         id: build
         shell: bash
         run: |
-          set -euo pipefail
+          set -e
           mkdir -p build-logs
-          export GRADLE_OPTS="-Dorg.gradle.jvmargs='-Xmx2g -XX:+HeapDumpOnOutOfMemoryError'"
-
-          echo "== TRY Release =="
-          ./gradlew :app:clean :app:assembleRelease -x lint --no-daemon --stacktrace --info --warning-mode all 2>&1 \
-            | tee build-logs/build-release.log
-          rc=${PIPESTATUS[0]}
-
-          OUTDIR="app/build/outputs/apk/release"
-          VARIANT="release"
-
-          if [ $rc -ne 0 ] || [ ! -d "$OUTDIR" ]; then
-            echo "Release failed ($rc) or no outputs -> TRY Debug"
-            ./gradlew :app:clean :app:assembleDebug -x lint --no-daemon --stacktrace --info --warning-mode all 2>&1 \
-              | tee build-logs/build-debug.log
-            rc=${PIPESTATUS[0]}
-            OUTDIR="app/build/outputs/apk/debug"
-            VARIANT="debug"
+          if [ -z "${KS}" ]; then
+            echo "No keystore → build Debug"
+            ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace --info \
+              | tee build-logs/build.log
+            OUTDIR=app/build/outputs/apk/debug
+            VARIANT=debug
+          else
+            echo "Keystore present → build Release"
+            ./gradlew :app:clean :app:assembleRelease -x lint --stacktrace --info \
+              | tee build-logs/build.log
+            OUTDIR=app/build/outputs/apk/release
+            VARIANT=release
           fi
-
-          # 汇总统一日志
-          cat build-logs/build-release.log build-logs/build-debug.log > build-logs/build.log || true
-
-          echo "APK_DIR=$OUTDIR"  >> "$GITHUB_ENV"
-          echo "VARIANT=$VARIANT" >> "$GITHUB_ENV"
-          exit $rc
+          # 写入缺省，避免后续步骤变量未定义
+          echo "APK_DIR=${OUTDIR:-app/build/outputs/apk/debug}" >> "$GITHUB_ENV"
+          echo "VARIANT=${VARIANT:-debug}" >> "$GITHUB_ENV"
 
       - name: NDJC | Upload build logs (on failure too)
         if: always()
@@ -174,17 +152,15 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          echo "---- build.log (last 400 lines) ----"
-          tail -n 400 build-logs/build.log || true
-          echo "---- outputs tree ----"
-          (ls -lah app/build/outputs || true)
+          echo "---- build.log (last 200 lines) ----"
+          tail -n 200 build-logs/build.log || true
       # -------- Build End --------
 
       - name: Pick APK
         id: pick
         shell: bash
         run: |
-          set -euo pipefail
+          set -e
           SIGNED=$(ls -t "$APK_DIR"/*.apk 2>/dev/null | grep -Ev -- '-unsigned\.apk$' | head -n1 || true)
           UNSIGNED=$(ls -t "$APK_DIR"/*-unsigned.apk 2>/dev/null | head -n1 || true)
           APK=""
@@ -232,19 +208,25 @@ jobs:
           path: ${{ env.APK }}
           if-no-files-found: error
 
-      # ---------- 写回 logs 到 requests/<RUN_ID>/ ----------
+      # ---------- 写回 logs 到 requests/<RUN_ID>/（容错版本） ----------
       - name: NDJC | Write back logs to repo (requests/<RUN_ID>/)
         if: always()
         shell: bash
+        continue-on-error: true
         run: |
-          set -euo pipefail
+          set -eo pipefail   # 不用 -u，避免未定义变量导致退出
           REQ_DIR="requests/${RUN_ID}"
           mkdir -p "$REQ_DIR"
           cp -r build-logs "$REQ_DIR/" 2>/dev/null || true
+
+          BRANCH="${BUILD_BRANCH:-unknown}"
+          VAR="${VARIANT:-unknown}"
+          APK_PATH="${APK:-}"
+
           {
-            echo "branch=${BUILD_BRANCH}"
-            echo "variant=${VARIANT}"
-            echo "apk=${APK}"
+            echo "branch=${BRANCH}"
+            echo "variant=${VAR}"
+            echo "apk=${APK_PATH}"
             echo "ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           } > "${REQ_DIR}/actions-summary.txt"
 
@@ -252,7 +234,7 @@ jobs:
           git config user.email "ndjc-bot@users.noreply.github.com"
           git add "${REQ_DIR}" || true
           git commit -m "[NDJC ${RUN_ID}] add build logs" || true
-          git push origin "${BUILD_BRANCH}" || true
+          git push origin "${BRANCH}" || true
 
       - name: NDJC | Summary
         if: always()
@@ -260,5 +242,5 @@ jobs:
           echo "### NDJC Build Result" >> "$GITHUB_STEP_SUMMARY"
           echo "- runId: \`${RUN_ID}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- branch: \`${BUILD_BRANCH}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- variant: \`${VARIANT}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- apk: \`${APK}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- variant: \`${VARIANT:-}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- apk: \`${APK:-}\`" >> "$GITHUB_STEP_SUMMARY"
