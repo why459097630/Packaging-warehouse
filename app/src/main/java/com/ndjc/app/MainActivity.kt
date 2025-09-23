@@ -1,52 +1,36 @@
-﻿package com.ndjc.app
-
-// Hello core
-// Start core
+package com.ndjc.app // com.ndjc.demo.core
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import com.ndjc.app.R
-import com.ndjc.app.ui.theme.AppTheme
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+import com.ndjc.app.navigation.NavGraph
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            AppTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    HomeScreen()
-                }
-            }
-        }
+        // HOOK:AFTER_INSTALL  // 首次启动时占位（生成器可注入一次性逻辑）
+        setContent { NDJCApp() }
     }
 }
 
 @Composable
-fun HomeScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = stringResource(R.string.ndjc_home_title),
-            style = MaterialTheme.typography.headlineMedium
-        )
+fun NDJCApp() {
+    val nav = rememberNavController()
+    MaterialTheme {
 
-        Spacer(Modifier.height(16.dp))
+        // 可注入悬浮调试开关/环境信息
+        // END_BLOCK
 
-        Button(onClick = { /* TODO: your action */ }) {
-            Text(text = stringResource(R.string.ndjc_action_primary_text))
-        }
+        // 可注入 BuildConfig.NDJC_RUN_ID / 构建摘要的小条
+        // END_BLOCK
+
+        NavGraph(nav)
     }
 }
+
+@Preview @Composable
+fun PreviewApp() { NDJCApp() }
