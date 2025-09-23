@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">NDJC core</string>
+    <string name="home_title">Hello core</string>
+    <string name="primary_button">Start core</string>
+
+    <!-- Feed/Detail/Post -->
+    <string name="feed_like">Like</string>
+    <string name="feed_comment">Comment</string>
+    <string name="feed_post">Post</string>
+    <string name="empty_hint">Nothing here yet.</string>
+
+    <!-- 运行配置可注入（也可写入 BuildConfig） -->
+    <string name="ndjc_run_id"></string>
+    <string name="ndjc_log_level">info</string>
+
+    <!-- 追加多语言/复数形式由 LIST:PLURAL_STRINGS 注入 -->
+    <!-- END_BLOCK -->
+</resources>
