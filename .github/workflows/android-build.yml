@@ -37,7 +37,6 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -92,7 +91,6 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # ---------- Preflight ----------
       - name: NDJC | Preflight (anchor & resource checks)
         id: preflight
         shell: bash
@@ -115,7 +113,6 @@ jobs:
             anchors/**
             build-logs/preflight.log
           if-no-files-found: ignore
-      # ---------- Preflight End ----------
 
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
@@ -129,28 +126,27 @@ jobs:
           } >> "$GITHUB_ENV"
           ls -lh "$HOME/release.jks" || true
 
-      # -------- Build（采集日志）---------
+      # ---------- Build（stderr 一并写入日志）----------
       - name: Build
         id: build
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
           mkdir -p build-logs
           if [ -z "${KS}" ]; then
             echo "No keystore → build Debug"
-            ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace --info \
-              | tee build-logs/build.log
+            ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace --info --warning-mode all 2>&1 | tee build-logs/build.log
             OUTDIR=app/build/outputs/apk/debug
             VARIANT=debug
           else
             echo "Keystore present → build Release"
-            ./gradlew :app:clean :app:assembleRelease -x lint --stacktrace --info \
-              | tee build-logs/build.log
+            ./gradlew :app:clean :app:assembleRelease -x lint --stacktrace --info --warning-mode all 2>&1 | tee build-logs/build.log
             OUTDIR=app/build/outputs/apk/release
             VARIANT=release
           fi
           echo "APK_DIR=${OUTDIR:-app/build/outputs/apk/debug}" >> "$GITHUB_ENV"
           echo "VARIANT=${VARIANT:-debug}" >> "$GITHUB_ENV"
+      # -----------------------------------------------
 
       - name: NDJC | Upload build logs (on failure too)
         if: always()
@@ -167,39 +163,11 @@ jobs:
           echo "---- build.log (last 200 lines) ----"
           tail -n 200 build-logs/build.log || true
 
-      - name: NDJC | Extract errors to summary
-        if: failure()
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p build-logs
-          ERR1="build-logs/error-section.txt"
-          ERR2="build-logs/error-lines.txt"
-          # 优先抽取 `* What went wrong` 段
-          awk 'flag{print} /\* What went wrong/{flag=1} /\* Try:/{flag=0}' build-logs/build.log > "$ERR1" || true
-          # 备选：匹配典型错误行
-          grep -nE "^(FAILURE: Build failed|> Task|Caused by:|^\s*Error:)" build-logs/build.log > "$ERR2" || true
-          {
-            echo "### NDJC Build Error Extract"
-            echo
-            if [ -s "$ERR1" ]; then
-              echo "**What went wrong**"
-              echo
-              echo '```text'; sed -n '1,300p' "$ERR1"; echo '```'
-            fi
-            if [ -s "$ERR2" ]; then
-              echo
-              echo "**Key error lines**"
-              echo
-              echo '```text'; sed -n '1,200p' "$ERR2"; echo '```'
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
-
       - name: Pick APK
         id: pick
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
           SIGNED=$(ls -t "$APK_DIR"/*.apk 2>/dev/null | grep -Ev -- '-unsigned\.apk$' | head -n1 || true)
           UNSIGNED=$(ls -t "$APK_DIR"/*-unsigned.apk 2>/dev/null | head -n1 || true)
           APK=""
@@ -247,7 +215,6 @@ jobs:
           path: ${{ env.APK }}
           if-no-files-found: error
 
-      # ---------- 写回 logs 到 requests/<RUN_ID>/ ----------
       - name: NDJC | Write back logs to repo (requests/<RUN_ID>/)
         if: always()
         shell: bash
