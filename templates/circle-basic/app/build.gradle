@@ -20,7 +20,9 @@ android {
         buildConfigField "String",  "NDJC_RUN_ID",   "\"\""      // NDJC:BUILD_META_RUNID / NDJC:RUN_ID
         buildConfigField "String",  "NDJC_LOG_LEVEL","\"info\""  // NDJC:LOG_LEVEL
         buildConfigField "boolean", "NDJC_DEBUG_LOG","false"     // NDJC:DEBUG_LOG_ENABLED
-        vectorDrawables { useSupportLibrary = true }             // NDJC:RES_CONFIGS
+
+        // NDJC:RES_CONFIGS  (例：resConfigs 'en', 'zh-CN')
+        vectorDrawables { useSupportLibrary = true }
     }
 
     buildTypes {
@@ -48,23 +50,22 @@ android {
         buildConfig true
     }
 
-    // ✅ 与 Kotlin 1.9.10 对齐
-    composeOptions { kotlinCompilerExtensionVersion = "1.5.10" }
+    // 与 Kotlin 1.9.22 搭配的 Compose 编译器
+    composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
 
-    // ✅ 关键修复：让 Java 编译目标与 Kotlin 一致（都为 17）
+    // 关键：Java 与 Kotlin 统一到 17
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-
     kotlinOptions {
         jvmTarget = "17"
         freeCompilerArgs += ["-Xjvm-default=all"]
     }
 }
 
-// （可选但推荐，进一步锁定 JDK 17 工具链）
 kotlin {
+    // 锁定 JDK 17 工具链（避免环境漂移）
     jvmToolchain(17)
 }
 
@@ -78,7 +79,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
     implementation "androidx.core:core-ktx:1.13.1"
 
-    // 提供 XML 主题 Theme.Material3.* 所需资源
+    // 为 XML 主题 Theme.Material3.* 提供资源
     implementation "com.google.android.material:material:1.12.0"
 
     // IF:PERMISSION.NOTIFICATION
