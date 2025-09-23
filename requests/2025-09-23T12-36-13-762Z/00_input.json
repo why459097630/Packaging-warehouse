@@ -1,0 +1,10 @@
+{
+  "run_id": "ndjc-20250923T123611Z",
+  "template_key": "circle-basic",
+  "nl": "做一个名叫厨房的介绍菜品的的安卓app，可以上传菜品图片，介绍制作过程，允许评论点赞",
+  "preset_hint": "social",
+  "mode": "A",
+  "allowCompanions": false,
+  "template": "circle-basic",
+  "requirement": "做一个名叫厨房的介绍菜品的的安卓app，可以上传菜品图片，介绍制作过程，允许评论点赞"
+}
