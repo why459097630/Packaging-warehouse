@@ -1,0 +1,1214 @@
+Downloading https://services.gradle.org/distributions/gradle-8.2.1-all.zip
+..................10%..................20%...................30%..................40%...................50%..................60%..................70%...................80%..................90%...................100%
+Initialized native services in: /home/runner/.gradle/native
+Initialized jansi services in: /home/runner/.gradle/native
+
+Welcome to Gradle 8.2.1!
+
+Here are the highlights of this release:
+ - Kotlin DSL: new reference documentation, assignment syntax by default
+ - Kotlin DSL is now the default with Gradle init
+ - Improved suggestions to resolve errors in console output
+ - Reduced sync memory consumption
+
+For more details see https://docs.gradle.org/8.2.1/release-notes.html
+
+Received JVM installation metadata from '/usr/lib/jvm/temurin-17-jdk-amd64': {JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64, JAVA_VERSION=17.0.16, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=17.0.16+8, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=17.0.16+8, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+Removing 0 daemon stop events from registry
+Starting a Gradle Daemon (subsequent builds will be faster)
+Starting process 'Gradle build daemon'. Working directory: /home/runner/.gradle/daemon/8.2.1 Command: /usr/lib/jvm/temurin-17-jdk-amd64/bin/java --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED -Xmx2048m -Dfile.encoding=UTF-8 -Duser.country -Duser.language=en -Duser.variant -cp /home/runner/.gradle/wrapper/dists/gradle-8.2.1-all/d8pvvlun5bx6sdtwqhf8y9z4b/gradle-8.2.1/lib/gradle-launcher-8.2.1.jar -javaagent:/home/runner/.gradle/wrapper/dists/gradle-8.2.1-all/d8pvvlun5bx6sdtwqhf8y9z4b/gradle-8.2.1/lib/agents/gradle-instrumentation-agent-8.2.1.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 8.2.1
+Successfully started process 'Gradle build daemon'
+An attempt to start the daemon took 1.803 secs.
+The client will now receive all logging from the daemon (pid: 2019). The daemon log file: /home/runner/.gradle/daemon/8.2.1/daemon-2019.out.log
+Starting build in new daemon [memory: 2 GiB]
+Closing daemon's stdin at end of input.
+The daemon will no longer process any standard input.
+Using 4 worker leases.
+Received JVM installation metadata from '/usr/lib/jvm/temurin-17-jdk-amd64': {JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64, JAVA_VERSION=17.0.16, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=17.0.16+8, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=17.0.16+8, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+Watching the file system is configured to be enabled if available
+Now considering [/home/runner/work/Packaging-warehouse/Packaging-warehouse] as hierarchies to watch
+File system watching is active
+Compiling initialization script '/home/runner/.gradle/init.d/gradle-actions.build-result-capture.init.gradle' using SubsetScriptTransformer.
+Compiling initialization script '/home/runner/.gradle/init.d/gradle-actions.build-result-capture.init.gradle' using BuildScriptTransformer.
+Compiling initialization script '/home/runner/.gradle/init.d/gradle-actions.github-dependency-graph.init.gradle' using SubsetScriptTransformer.
+Compiling initialization script '/home/runner/.gradle/init.d/gradle-actions.github-dependency-graph.init.gradle' using BuildScriptTransformer.
+Compiling initialization script '/home/runner/.gradle/init.d/gradle-actions.inject-develocity.init.gradle' using SubsetScriptTransformer.
+Compiling initialization script '/home/runner/.gradle/init.d/gradle-actions.inject-develocity.init.gradle' using BuildScriptTransformer.
+Starting Build
+Compiling settings file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/settings.gradle' using SubsetScriptTransformer.
+Compiling settings file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/settings.gradle' using BuildScriptTransformer.
+Settings evaluated using settings file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/settings.gradle'.
+Compiling script '/home/runner/.gradle/init.d/gradle-actions.build-result-capture-service.plugin.groovy' using SubsetScriptTransformer.
+Compiling script '/home/runner/.gradle/init.d/gradle-actions.build-result-capture-service.plugin.groovy' using BuildScriptTransformer.
+Projects loaded. Root project using build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/build.gradle'.
+Included projects: [root project 'NDJCApp', project ':app']
+
+> Configure project :
+Evaluating root project 'NDJCApp' using build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/build.gradle'.
+Compiling build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/build.gradle' using SubsetScriptTransformer.
+The configuration detachedConfiguration1 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+The configuration detachedConfiguration1 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+The configuration detachedConfiguration1 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+The configuration detachedConfiguration1 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/application/com.android.application.gradle.plugin/8.2.2/com.android.application.gradle.plugin-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/application/com.android.application.gradle.plugin/8.2.2/com.android.application.gradle.plugin-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download17225835788922631910bin
+The configuration detachedConfiguration2 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+The configuration detachedConfiguration2 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+The configuration detachedConfiguration2 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+The configuration detachedConfiguration2 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/1.9.10/org.jetbrains.kotlin.android.gradle.plugin-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download12247536670882351842bin
+The configuration :classpath is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+The configuration :classpath is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+The configuration :classpath is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+The configuration :classpath is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/gradle/8.2.2/gradle-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.2.2/gradle-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download18315110259871300664bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.2.2/gradle-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download5837676797515163792bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.9.10/kotlin-gradle-plugin-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download9977492487623059217bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugins-bom/1.9.10/kotlin-gradle-plugins-bom-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download10317697435639192889bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugins-bom/1.9.10/kotlin-gradle-plugins-bom-1.9.10.module to /home/runner/.gradle/.tmp/gradle_download10615439775097872080bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.9.10/kotlin-gradle-plugin-1.9.10.module to /home/runner/.gradle/.tmp/gradle_download4519876708200733585bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/sdk-common/31.2.2/sdk-common-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/sdklib/31.2.2/sdklib-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/sdk-common/31.2.2/sdk-common-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download16331123595745751847bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/repository/31.2.2/repository-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/gradle-settings-api/8.2.2/gradle-settings-api-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/sdklib/31.2.2/sdklib-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download1023738273445131863bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/ddms/ddmlib/31.2.2/ddmlib-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/aapt2-proto/8.2.2-10154469/aapt2-proto-8.2.2-10154469.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-settings-api/8.2.2/gradle-settings-api-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download17216210303756085538bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/repository/31.2.2/repository-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download1106381324315378789bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/ddms/ddmlib/31.2.2/ddmlib-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download3668009097167421910bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2-proto/8.2.2-10154469/aapt2-proto-8.2.2-10154469.pom to /home/runner/.gradle/.tmp/gradle_download6837257578479863697bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/aaptcompiler/8.2.2/aaptcompiler-8.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/analytics-library/crash/31.2.2/crash-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-settings-api/8.2.2/gradle-settings-api-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download17577147711840144142bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/analytics-library/shared/31.2.2/shared-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2-proto/8.2.2-10154469/aapt2-proto-8.2.2-10154469.module to /home/runner/.gradle/.tmp/gradle_download5334200041288029959bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/shared/31.2.2/shared-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download4796449593909178922bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/lint/lint-model/31.2.2/lint-model-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/aaptcompiler/8.2.2/aaptcompiler-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download18296573370354996851bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/crash/31.2.2/crash-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download6617166607905316843bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/lint/lint-typedef-remover/31.2.2/lint-typedef-remover-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/androidx/databinding/databinding-compiler-common/8.2.2/databinding-compiler-common-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/aaptcompiler/8.2.2/aaptcompiler-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download8803320194568847209bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/lint/lint-typedef-remover/31.2.2/lint-typedef-remover-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download14637624744518415378bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/lint/lint-model/31.2.2/lint-model-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download11355359177348418139bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/androidx/databinding/databinding-common/8.2.2/databinding-common-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/androidx/databinding/databinding-common/8.2.2/databinding-common-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download18032283364098904940bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/builder-test-api/8.2.2/builder-test-api-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/androidx/databinding/databinding-compiler-common/8.2.2/databinding-compiler-common-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download1283351767742017312bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/layoutlib/layoutlib-api/31.2.2/layoutlib-api-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/databinding/baseLibrary/8.2.2/baseLibrary-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/layoutlib/layoutlib-api/31.2.2/layoutlib-api-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download734606512985043333bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-device-provider-ddmlib-proto/31.2.2/android-device-provider-ddmlib-proto-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/databinding/baseLibrary/8.2.2/baseLibrary-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download5228128334852750301bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-test-api/8.2.2/builder-test-api-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download11584919291664351163bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-device-provider-gradle-proto/31.2.2/android-device-provider-gradle-proto-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-host-additional-test-output-proto/31.2.2/android-test-plugin-host-additional-test-output-proto-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-test-api/8.2.2/builder-test-api-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download12137117847509557627bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-device-provider-ddmlib-proto/31.2.2/android-device-provider-ddmlib-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download9332203555036940155bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-device-provider-gradle-proto/31.2.2/android-device-provider-gradle-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download1726640754370775768bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-host-coverage-proto/31.2.2/android-test-plugin-host-coverage-proto-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-host-emulator-control-proto/31.2.2/android-test-plugin-host-emulator-control-proto-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-emulator-control-proto/31.2.2/android-test-plugin-host-emulator-control-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download8356153467898115533bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-host-logcat-proto/31.2.2/android-test-plugin-host-logcat-proto-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-additional-test-output-proto/31.2.2/android-test-plugin-host-additional-test-output-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download4263335900284171008bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-coverage-proto/31.2.2/android-test-plugin-host-coverage-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download8203017836194782227bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-host-retention-proto/31.2.2/android-test-plugin-host-retention-proto-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-host-apk-installer-proto/31.2.2/android-test-plugin-host-apk-installer-proto-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-result-listener-gradle-proto/31.2.2/android-test-plugin-result-listener-gradle-proto-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-apk-installer-proto/31.2.2/android-test-plugin-host-apk-installer-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download6992328188843832360bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-retention-proto/31.2.2/android-test-plugin-host-retention-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download11332515951871788878bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-result-listener-gradle-proto/31.2.2/android-test-plugin-result-listener-gradle-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download11141102986154885836bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-logcat-proto/31.2.2/android-test-plugin-host-logcat-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download17966517058595929000bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0/kotlin-stdlib-jdk8-1.9.0.pom to /home/runner/.gradle/.tmp/gradle_download12484098131577954882bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpmime/4.5.6/httpmime-4.5.6.pom to /home/runner/.gradle/.tmp/gradle_download18103785504513527960bin
+Downloading https://plugins.gradle.org/m2/com/android/tools/build/transform-api/2.0.0-deprecated-use-gradle-api/transform-api-2.0.0-deprecated-use-gradle-api.pom to /home/runner/.gradle/.tmp/gradle_download15020318240958054970bin
+Downloading https://plugins.gradle.org/m2/commons-io/commons-io/2.4/commons-io-2.4.pom to /home/runner/.gradle/.tmp/gradle_download1529530919046508765bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm/9.2/asm-9.2.pom to /home/runner/.gradle/.tmp/gradle_download130541711367111981bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcomponents-client/4.5.6/httpcomponents-client-4.5.6.pom to /home/runner/.gradle/.tmp/gradle_download4609827332889178529bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-parent/25/commons-parent-25.pom to /home/runner/.gradle/.tmp/gradle_download14712147365756921685bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-analysis/9.2/asm-analysis-9.2.pom to /home/runner/.gradle/.tmp/gradle_download7814713555558953521bin
+Downloading https://plugins.gradle.org/m2/org/ow2/ow2/1.5/ow2-1.5.pom to /home/runner/.gradle/.tmp/gradle_download16038796377191353299bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcomponents-parent/10/httpcomponents-parent-10.pom to /home/runner/.gradle/.tmp/gradle_download16873270885134421425bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-commons/9.2/asm-commons-9.2.pom to /home/runner/.gradle/.tmp/gradle_download6406503247125727815bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-util/9.2/asm-util-9.2.pom to /home/runner/.gradle/.tmp/gradle_download5821654941400244859bin
+Downloading https://plugins.gradle.org/m2/org/apache/apache/18/apache-18.pom to /home/runner/.gradle/.tmp/gradle_download5303987258791750493bin
+Downloading https://plugins.gradle.org/m2/org/apache/apache/9/apache-9.pom to /home/runner/.gradle/.tmp/gradle_download15144147689637556044bin
+Downloading https://plugins.gradle.org/m2/org/bouncycastle/bcpkix-jdk15on/1.67/bcpkix-jdk15on-1.67.pom to /home/runner/.gradle/.tmp/gradle_download1756178679577960341bin
+Downloading https://plugins.gradle.org/m2/org/glassfish/jaxb/jaxb-runtime/2.3.2/jaxb-runtime-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download12586560387550885664bin
+Downloading https://plugins.gradle.org/m2/com/sun/xml/bind/mvn/jaxb-runtime-parent/2.3.2/jaxb-runtime-parent-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download14143358443172486348bin
+Downloading https://plugins.gradle.org/m2/net/sf/jopt-simple/jopt-simple/4.9/jopt-simple-4.9.pom to /home/runner/.gradle/.tmp/gradle_download1266470088304459244bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/bundletool/1.15.2/bundletool-1.15.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta10/jetifier-core-1.0.0-beta10.pom]
+Downloading https://plugins.gradle.org/m2/com/sun/xml/bind/mvn/jaxb-parent/2.3.2/jaxb-parent-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download320516218195441174bin
+Downloading https://plugins.gradle.org/m2/org/sonatype/oss/oss-parent/7/oss-parent-7.pom to /home/runner/.gradle/.tmp/gradle_download11693461622280234367bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/bundletool/1.15.2/bundletool-1.15.2.pom to /home/runner/.gradle/.tmp/gradle_download6329359016152169105bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta10/jetifier-core-1.0.0-beta10.pom to /home/runner/.gradle/.tmp/gradle_download2848065933466182939bin
+Downloading https://plugins.gradle.org/m2/com/sun/xml/bind/jaxb-bom-ext/2.3.2/jaxb-bom-ext-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download15603816955873516973bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/jetifier/jetifier-processor/1.0.0-beta10/jetifier-processor-1.0.0-beta10.pom]
+Downloading https://plugins.gradle.org/m2/com/squareup/javapoet/1.10.0/javapoet-1.10.0.pom to /home/runner/.gradle/.tmp/gradle_download7275925999560431101bin
+Downloading https://plugins.gradle.org/m2/org/glassfish/jaxb/jaxb-bom/2.3.2/jaxb-bom-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download13501467034031474709bin
+Downloading https://plugins.gradle.org/m2/com/google/protobuf/protobuf-java/3.19.3/protobuf-java-3.19.3.pom to /home/runner/.gradle/.tmp/gradle_download1939147512310849820bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/jetifier/jetifier-processor/1.0.0-beta10/jetifier-processor-1.0.0-beta10.pom to /home/runner/.gradle/.tmp/gradle_download6258424200974895187bin
+Downloading https://plugins.gradle.org/m2/org/eclipse/ee4j/project/1.0.5/project-1.0.5.pom to /home/runner/.gradle/.tmp/gradle_download4772913505340164041bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta10/jetifier-core-1.0.0-beta10.module to /home/runner/.gradle/.tmp/gradle_download1869558262357650702bin
+Downloading https://plugins.gradle.org/m2/com/google/protobuf/protobuf-parent/3.19.3/protobuf-parent-3.19.3.pom to /home/runner/.gradle/.tmp/gradle_download8791611707383831071bin
+Downloading https://plugins.gradle.org/m2/com/google/protobuf/protobuf-java-util/3.19.3/protobuf-java-util-3.19.3.pom to /home/runner/.gradle/.tmp/gradle_download1355584384223945061bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/jetifier/jetifier-processor/1.0.0-beta10/jetifier-processor-1.0.0-beta10.module to /home/runner/.gradle/.tmp/gradle_download8997752727462283794bin
+Downloading https://plugins.gradle.org/m2/com/google/protobuf/protobuf-bom/3.19.3/protobuf-bom-3.19.3.pom to /home/runner/.gradle/.tmp/gradle_download8598539658856040444bin
+Downloading https://plugins.gradle.org/m2/com/google/code/gson/gson/2.8.6/gson-2.8.6.pom to /home/runner/.gradle/.tmp/gradle_download3505561080858300405bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-protobuf/1.45.1/grpc-protobuf-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download4164956649158951041bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-netty/1.45.1/grpc-netty-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download5343779271587487278bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-core/1.45.1/grpc-core-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download5479714390163667822bin
+Downloading https://plugins.gradle.org/m2/com/google/code/gson/gson-parent/2.8.6/gson-parent-2.8.6.pom to /home/runner/.gradle/.tmp/gradle_download13897262567026399082bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/google/testing/platform/core-proto/0.0.8-alpha08/core-proto-0.0.8-alpha08.pom]
+Downloading https://plugins.gradle.org/m2/com/google/crypto/tink/tink/1.7.0/tink-1.7.0.pom to /home/runner/.gradle/.tmp/gradle_download6732238505571036894bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-stub/1.45.1/grpc-stub-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download108932586820093954bin
+Downloading https://plugins.gradle.org/m2/com/google/flatbuffers/flatbuffers-java/1.12.0/flatbuffers-java-1.12.0.pom to /home/runner/.gradle/.tmp/gradle_download7317683998797041778bin
+Downloading https://dl.google.com/dl/android/maven2/com/google/testing/platform/core-proto/0.0.8-alpha08/core-proto-0.0.8-alpha08.pom to /home/runner/.gradle/.tmp/gradle_download7207751636248558538bin
+Downloading https://plugins.gradle.org/m2/org/tensorflow/tensorflow-lite-metadata/0.1.0-rc2/tensorflow-lite-metadata-0.1.0-rc2.pom to /home/runner/.gradle/.tmp/gradle_download2170821669509619001bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/builder-model/8.2.2/builder-model-8.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/builder/8.2.2/builder-8.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/gradle-api/8.2.2/gradle-api-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.2.2/builder-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download15967419900593551650bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-api/8.2.2/gradle-api-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download10510021433747844695bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-model/8.2.2/builder-model-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download12386176763592323494bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-model/8.2.2/builder-model-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download3065824338522406364bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.2.2/builder-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download15805111375556825909bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-api/8.2.2/gradle-api-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download6634943808088217919bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.9.10/kotlin-gradle-plugin-api-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download15059466228727044854bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-tooling-core/1.9.10/kotlin-tooling-core-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download7108037459104771578bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.9.10/kotlin-gradle-plugin-model-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download7423909172889458042bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.9.10/kotlin-gradle-plugin-api-1.9.10.module to /home/runner/.gradle/.tmp/gradle_download12044290075300281430bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea/1.9.10/kotlin-gradle-plugin-idea-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download17141591031566146452bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.9.10/kotlin-gradle-plugin-model-1.9.10.module to /home/runner/.gradle/.tmp/gradle_download10819000063702457586bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-util-klib/1.9.10/kotlin-util-klib-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download9298302202557940770bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea-proto/1.9.10/kotlin-gradle-plugin-idea-proto-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download7561354661697605369bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea/1.9.10/kotlin-gradle-plugin-idea-1.9.10.module to /home/runner/.gradle/.tmp/gradle_download9786387082256656097bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-klib-commonizer-api/1.9.10/kotlin-klib-commonizer-api-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download3404006485234223012bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-project-model/1.9.10/kotlin-project-model-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download3698086156444619761bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-android-extensions/1.9.10/kotlin-android-extensions-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download14772069102031750063bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.10/kotlin-compiler-embeddable-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download6088252175786864169bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-build-tools-api/1.9.10/kotlin-build-tools-api-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download17878771126325019068bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-compiler-runner/1.9.10/kotlin-compiler-runner-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download3054695585074111896bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-compiler-impl-embeddable/1.9.10/kotlin-scripting-compiler-impl-embeddable-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download16237516361255921112bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-compiler-embeddable/1.9.10/kotlin-scripting-compiler-embeddable-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download5723263704410379792bin
+Downloading https://plugins.gradle.org/m2/com/google/code/gson/gson/2.10/gson-2.10.pom to /home/runner/.gradle/.tmp/gradle_download6823926181262992599bin
+Downloading https://plugins.gradle.org/m2/com/google/code/gson/gson-parent/2.10/gson-parent-2.10.pom to /home/runner/.gradle/.tmp/gradle_download17145694752272775792bin
+Downloading https://plugins.gradle.org/m2/net/sf/kxml/kxml2/2.3.0/kxml2-2.3.0.pom to /home/runner/.gradle/.tmp/gradle_download253162710916476726bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/guava/31.1-jre/guava-31.1-jre.pom to /home/runner/.gradle/.tmp/gradle_download4567242526106141575bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/common/31.2.2/common-31.2.2.pom]
+Downloading https://plugins.gradle.org/m2/javax/inject/javax.inject/1/javax.inject-1.pom to /home/runner/.gradle/.tmp/gradle_download16973045256757441117bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/common/31.2.2/common-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download4716527889868936282bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/guava-parent/31.1-jre/guava-parent-31.1-jre.pom to /home/runner/.gradle/.tmp/gradle_download1695764045323756683bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/intellij/deps/trove4j/1.0.20200330/trove4j-1.0.20200330.pom to /home/runner/.gradle/.tmp/gradle_download12787687348794411203bin
+Downloading https://plugins.gradle.org/m2/org/bouncycastle/bcprov-jdk15on/1.67/bcprov-jdk15on-1.67.pom to /home/runner/.gradle/.tmp/gradle_download14141158024416770162bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-reflect/1.9.0/kotlin-reflect-1.9.0.pom to /home/runner/.gradle/.tmp/gradle_download5794620202485888595bin
+Downloading https://plugins.gradle.org/m2/xerces/xercesImpl/2.12.0/xercesImpl-2.12.0.pom to /home/runner/.gradle/.tmp/gradle_download13729952163157146591bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcore/4.4.16/httpcore-4.4.16.pom to /home/runner/.gradle/.tmp/gradle_download1188023092402430028bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/dvlib/31.2.2/dvlib-31.2.2.pom]
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-compress/1.21/commons-compress-1.21.pom to /home/runner/.gradle/.tmp/gradle_download2205430842705898700bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcomponents-core/4.4.16/httpcomponents-core-4.4.16.pom to /home/runner/.gradle/.tmp/gradle_download12659151605650467905bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/dvlib/31.2.2/dvlib-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download13970326769695346042bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-parent/52/commons-parent-52.pom to /home/runner/.gradle/.tmp/gradle_download16326358127715279302bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcomponents-parent/11/httpcomponents-parent-11.pom to /home/runner/.gradle/.tmp/gradle_download10840587801675334744bin
+Downloading https://plugins.gradle.org/m2/org/apache/apache/23/apache-23.pom to /home/runner/.gradle/.tmp/gradle_download15965019330247928382bin
+Downloading https://plugins.gradle.org/m2/org/apache/apache/21/apache-21.pom to /home/runner/.gradle/.tmp/gradle_download9523626424616934574bin
+Downloading https://plugins.gradle.org/m2/com/google/jimfs/jimfs/1.1/jimfs-1.1.pom to /home/runner/.gradle/.tmp/gradle_download9426272202908418093bin
+Downloading https://plugins.gradle.org/m2/com/sun/activation/javax.activation/1.2.0/javax.activation-1.2.0.pom to /home/runner/.gradle/.tmp/gradle_download7741031845588175849bin
+Downloading https://plugins.gradle.org/m2/com/google/jimfs/jimfs-parent/1.1/jimfs-parent-1.1.pom to /home/runner/.gradle/.tmp/gradle_download400557658506324251bin
+Downloading https://plugins.gradle.org/m2/com/sun/activation/all/1.2.0/all-1.2.0.pom to /home/runner/.gradle/.tmp/gradle_download16637899850469570299bin
+Downloading https://plugins.gradle.org/m2/net/java/jvnet-parent/1/jvnet-parent-1.pom to /home/runner/.gradle/.tmp/gradle_download1633883854567049587bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/annotations/13.0/annotations-13.0.pom to /home/runner/.gradle/.tmp/gradle_download13890745551901990309bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/annotations/31.2.2/annotations-31.2.2.pom]
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpclient/4.5.14/httpclient-4.5.14.pom to /home/runner/.gradle/.tmp/gradle_download15668525132940571923bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcomponents-client/4.5.14/httpcomponents-client-4.5.14.pom to /home/runner/.gradle/.tmp/gradle_download3734464101712859530bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/annotations/31.2.2/annotations-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download3337440297452640546bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/analytics-library/protos/31.2.2/protos-31.2.2.pom]
+Downloading https://plugins.gradle.org/m2/net/java/dev/jna/jna-platform/5.6.0/jna-platform-5.6.0.pom to /home/runner/.gradle/.tmp/gradle_download6238382717143911291bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/protos/31.2.2/protos-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download8389557529883630891bin
+Downloading https://plugins.gradle.org/m2/com/googlecode/juniversalchardet/juniversalchardet/1.0.3/juniversalchardet-1.0.3.pom to /home/runner/.gradle/.tmp/gradle_download4754561586378721180bin
+Downloading https://plugins.gradle.org/m2/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.pom to /home/runner/.gradle/.tmp/gradle_download8050398250993986184bin
+Downloading https://plugins.gradle.org/m2/net/java/jvnet-parent/3/jvnet-parent-3.pom to /home/runner/.gradle/.tmp/gradle_download5289953945981894052bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0/kotlin-stdlib-jdk7-1.9.0.pom to /home/runner/.gradle/.tmp/gradle_download3297905656384962969bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib/1.9.0/kotlin-stdlib-1.9.0.pom to /home/runner/.gradle/.tmp/gradle_download6884095352644473363bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-tree/9.2/asm-tree-9.2.pom to /home/runner/.gradle/.tmp/gradle_download4533533490648097859bin
+Downloading https://plugins.gradle.org/m2/org/jvnet/staxex/stax-ex/1.8.1/stax-ex-1.8.1.pom to /home/runner/.gradle/.tmp/gradle_download9630185048111879481bin
+Downloading https://plugins.gradle.org/m2/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download16402444502587768512bin
+Downloading https://plugins.gradle.org/m2/com/sun/istack/istack-commons-runtime/3.0.8/istack-commons-runtime-3.0.8.pom to /home/runner/.gradle/.tmp/gradle_download1210974766991194148bin
+Downloading https://plugins.gradle.org/m2/org/glassfish/jaxb/txw2/2.3.2/txw2-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download10096741117467462882bin
+Downloading https://plugins.gradle.org/m2/com/sun/istack/istack-commons/3.0.8/istack-commons-3.0.8.pom to /home/runner/.gradle/.tmp/gradle_download5897731195833544604bin
+Downloading https://plugins.gradle.org/m2/com/sun/xml/fastinfoset/FastInfoset/1.2.16/FastInfoset-1.2.16.pom to /home/runner/.gradle/.tmp/gradle_download7995021665871106612bin
+Downloading https://plugins.gradle.org/m2/jakarta/xml/bind/jakarta.xml.bind-api-parent/2.3.2/jakarta.xml.bind-api-parent-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download17507664746762439673bin
+Downloading https://plugins.gradle.org/m2/com/sun/xml/bind/mvn/jaxb-txw-parent/2.3.2/jaxb-txw-parent-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download693871223126722707bin
+Downloading https://plugins.gradle.org/m2/com/sun/xml/fastinfoset/fastinfoset-project/1.2.16/fastinfoset-project-1.2.16.pom to /home/runner/.gradle/.tmp/gradle_download10409081693244158625bin
+Downloading https://plugins.gradle.org/m2/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.pom to /home/runner/.gradle/.tmp/gradle_download7351643972713877469bin
+Downloading https://plugins.gradle.org/m2/com/sun/activation/all/1.2.1/all-1.2.1.pom to /home/runner/.gradle/.tmp/gradle_download2921760121977787179bin
+Downloading https://plugins.gradle.org/m2/org/eclipse/ee4j/project/1.0.2/project-1.0.2.pom to /home/runner/.gradle/.tmp/gradle_download6825335135218234934bin
+Downloading https://plugins.gradle.org/m2/com/google/dagger/dagger/2.28.3/dagger-2.28.3.pom to /home/runner/.gradle/.tmp/gradle_download13485554888408700145bin
+Downloading https://plugins.gradle.org/m2/com/google/auto/value/auto-value-annotations/1.6.2/auto-value-annotations-1.6.2.pom to /home/runner/.gradle/.tmp/gradle_download5049953715297812357bin
+Downloading https://plugins.gradle.org/m2/org/bitbucket/b_c/jose4j/0.7.0/jose4j-0.7.0.pom to /home/runner/.gradle/.tmp/gradle_download7855573381510650605bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_annotations/2.3.1/error_prone_annotations-2.3.1.pom to /home/runner/.gradle/.tmp/gradle_download17929034904262598444bin
+Downloading https://plugins.gradle.org/m2/com/google/auto/value/auto-value-parent/1.6.2/auto-value-parent-1.6.2.pom to /home/runner/.gradle/.tmp/gradle_download1610287915620441597bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_parent/2.3.1/error_prone_parent-2.3.1.pom to /home/runner/.gradle/.tmp/gradle_download13416800533412110037bin
+Downloading https://plugins.gradle.org/m2/org/slf4j/slf4j-api/1.7.30/slf4j-api-1.7.30.pom to /home/runner/.gradle/.tmp/gradle_download16206013735113894576bin
+Downloading https://plugins.gradle.org/m2/com/google/auto/auto-parent/6/auto-parent-6.pom to /home/runner/.gradle/.tmp/gradle_download12293528418853188732bin
+Downloading https://plugins.gradle.org/m2/org/slf4j/slf4j-parent/1.7.30/slf4j-parent-1.7.30.pom to /home/runner/.gradle/.tmp/gradle_download18095294063672492107bin
+Downloading https://plugins.gradle.org/m2/org/jdom/jdom2/2.0.6/jdom2-2.0.6.pom to /home/runner/.gradle/.tmp/gradle_download8429162709356828785bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_annotations/2.5.1/error_prone_annotations-2.5.1.pom to /home/runner/.gradle/.tmp/gradle_download14488964929822056496bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_parent/2.5.1/error_prone_parent-2.5.1.pom to /home/runner/.gradle/.tmp/gradle_download13334727897331771558bin
+Downloading https://plugins.gradle.org/m2/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.pom to /home/runner/.gradle/.tmp/gradle_download10384290201989510323bin
+Downloading https://plugins.gradle.org/m2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.pom to /home/runner/.gradle/.tmp/gradle_download140972662957198403bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_annotations/2.10.0/error_prone_annotations-2.10.0.pom to /home/runner/.gradle/.tmp/gradle_download9769770350899305318bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_parent/2.10.0/error_prone_parent-2.10.0.pom to /home/runner/.gradle/.tmp/gradle_download4648621778527517612bin
+Downloading https://plugins.gradle.org/m2/org/codehaus/mojo/animal-sniffer-annotations/1.19/animal-sniffer-annotations-1.19.pom to /home/runner/.gradle/.tmp/gradle_download16321118503756087610bin
+Downloading https://plugins.gradle.org/m2/com/google/android/annotations/4.1.1.4/annotations-4.1.1.4.pom to /home/runner/.gradle/.tmp/gradle_download14667026793802464024bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-api/1.45.1/grpc-api-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download8234664705323338968bin
+Downloading https://plugins.gradle.org/m2/io/perfmark/perfmark-api/0.23.0/perfmark-api-0.23.0.pom to /home/runner/.gradle/.tmp/gradle_download1621247735069428626bin
+Downloading https://plugins.gradle.org/m2/org/codehaus/mojo/animal-sniffer-parent/1.19/animal-sniffer-parent-1.19.pom to /home/runner/.gradle/.tmp/gradle_download13484694279371117668bin
+Downloading https://plugins.gradle.org/m2/io/perfmark/perfmark-api/0.23.0/perfmark-api-0.23.0.module to /home/runner/.gradle/.tmp/gradle_download17755980477988423391bin
+Downloading https://plugins.gradle.org/m2/org/codehaus/mojo/mojo-parent/50/mojo-parent-50.pom to /home/runner/.gradle/.tmp/gradle_download2611936340509838384bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec-http2/4.1.72.Final/netty-codec-http2-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download8422382884473179690bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-handler-proxy/4.1.72.Final/netty-handler-proxy-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download6169198340656788955bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-parent/4.1.72.Final/netty-parent-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download2440364713928912212bin
+Downloading https://plugins.gradle.org/m2/org/sonatype/oss/oss-parent/9/oss-parent-9.pom to /home/runner/.gradle/.tmp/gradle_download14366261948880444319bin
+Downloading https://plugins.gradle.org/m2/com/google/api/grpc/proto-google-common-protos/2.0.1/proto-google-common-protos-2.0.1.pom to /home/runner/.gradle/.tmp/gradle_download9621787452566843494bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-protobuf-lite/1.45.1/grpc-protobuf-lite-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download5848668030205730156bin
+Downloading https://plugins.gradle.org/m2/org/checkerframework/checker-qual/2.5.8/checker-qual-2.5.8.pom to /home/runner/.gradle/.tmp/gradle_download7537681544077136195bin
+Downloading https://plugins.gradle.org/m2/commons-codec/commons-codec/1.10/commons-codec-1.10.pom to /home/runner/.gradle/.tmp/gradle_download10844752712806969296bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/analytics-library/tracker/31.2.2/tracker-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/signflinger/8.2.2/signflinger-8.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/manifest-merger/31.2.2/manifest-merger-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/tracker/31.2.2/tracker-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download128711720119638582bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/manifest-merger/31.2.2/manifest-merger-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download14880810370342653912bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-parent/35/commons-parent-35.pom to /home/runner/.gradle/.tmp/gradle_download7861902004457063000bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/zipflinger/8.2.2/zipflinger-8.2.2.pom]
+Downloading https://plugins.gradle.org/m2/org/apache/apache/15/apache-15.pom to /home/runner/.gradle/.tmp/gradle_download2734500510449178870bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/signflinger/8.2.2/signflinger-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download4883125215018243100bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/apksig/8.2.2/apksig-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/zipflinger/8.2.2/zipflinger-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download14392928233968813533bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/apkzlib/8.2.2/apkzlib-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/manifest-merger/31.2.2/manifest-merger-31.2.2.module to /home/runner/.gradle/.tmp/gradle_download4125208340236581622bin
+Downloading https://plugins.gradle.org/m2/com/squareup/javawriter/2.5.0/javawriter-2.5.0.pom to /home/runner/.gradle/.tmp/gradle_download16465575670562168562bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/apkzlib/8.2.2/apkzlib-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download7106462692404550584bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/apksig/8.2.2/apksig-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download9300588408358284836bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-native-utils/1.9.10/kotlin-native-utils-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download15144651435575970702bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-annotations/1.9.10/kotlin-gradle-plugin-annotations-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download10041743589052159504bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-util-io/1.9.10/kotlin-util-io-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download13331734314824519020bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-daemon-embeddable/1.9.10/kotlin-daemon-embeddable-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download1525294508445893182bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-daemon-client/1.9.10/kotlin-daemon-client-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download13086073025556507152bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.5.0/kotlinx-coroutines-core-jvm-1.5.0.pom to /home/runner/.gradle/.tmp/gradle_download2345561430208344206bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.5.0/kotlinx-coroutines-core-jvm-1.5.0.module to /home/runner/.gradle/.tmp/gradle_download11615790375556350052bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-common/1.9.10/kotlin-scripting-common-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download4104946979890098631bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-jvm/1.9.10/kotlin-scripting-jvm-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download3824584775396716935bin
+Downloading https://plugins.gradle.org/m2/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.pom to /home/runner/.gradle/.tmp/gradle_download15442581501974844143bin
+Downloading https://plugins.gradle.org/m2/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.module to /home/runner/.gradle/.tmp/gradle_download4569197816186234775bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_annotations/2.11.0/error_prone_annotations-2.11.0.pom to /home/runner/.gradle/.tmp/gradle_download761087094920582915bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_parent/2.11.0/error_prone_parent-2.11.0.pom to /home/runner/.gradle/.tmp/gradle_download6473936279800422514bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.pom to /home/runner/.gradle/.tmp/gradle_download13978759281132759893bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.pom to /home/runner/.gradle/.tmp/gradle_download16438018796585192099bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/guava-parent/26.0-android/guava-parent-26.0-android.pom to /home/runner/.gradle/.tmp/gradle_download1119536838258279200bin
+Downloading https://plugins.gradle.org/m2/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.pom to /home/runner/.gradle/.tmp/gradle_download5571962006864328600bin
+Downloading https://plugins.gradle.org/m2/commons-codec/commons-codec/1.11/commons-codec-1.11.pom to /home/runner/.gradle/.tmp/gradle_download5477701285772148144bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-parent/42/commons-parent-42.pom to /home/runner/.gradle/.tmp/gradle_download10339532293288640847bin
+Downloading https://plugins.gradle.org/m2/commons-logging/commons-logging/1.2/commons-logging-1.2.pom to /home/runner/.gradle/.tmp/gradle_download6650475772567088094bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-parent/34/commons-parent-34.pom to /home/runner/.gradle/.tmp/gradle_download5938994008697777416bin
+Downloading https://plugins.gradle.org/m2/org/apache/apache/13/apache-13.pom to /home/runner/.gradle/.tmp/gradle_download3433541636710836349bin
+Downloading https://plugins.gradle.org/m2/net/java/dev/jna/jna/5.6.0/jna-5.6.0.pom to /home/runner/.gradle/.tmp/gradle_download17383037636762441032bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.0/kotlin-stdlib-common-1.9.0.pom to /home/runner/.gradle/.tmp/gradle_download8383288449507715453bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-context/1.45.1/grpc-context-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download12482413226440457572bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-transport/4.1.72.Final/netty-transport-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download17092291840927616299bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-buffer/4.1.72.Final/netty-buffer-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download15671152038338760466bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec/4.1.72.Final/netty-codec-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download17233790826353547364bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-common/4.1.72.Final/netty-common-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download4723095440942108732bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec-http/4.1.72.Final/netty-codec-http-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download1827848177846090938bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-handler/4.1.72.Final/netty-handler-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download3234235542222692460bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec-socks/4.1.72.Final/netty-codec-socks-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download8555232896816119248bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-resolver/4.1.72.Final/netty-resolver-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download8080852715924830651bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-tcnative-classes/2.0.46.Final/netty-tcnative-classes-2.0.46.Final.pom to /home/runner/.gradle/.tmp/gradle_download2996667438890669093bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-tcnative-parent/2.0.46.Final/netty-tcnative-parent-2.0.46.Final.pom to /home/runner/.gradle/.tmp/gradle_download2172956572139692077bin
+Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/com/android/application/com.android.application.gradle.plugin/8.2.2/com.android.application.gradle.plugin-8.2.2.jar]
+Resource missing. [HTTP HEAD: https://plugins.gradle.org/m2/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/1.9.10/org.jetbrains.kotlin.android.gradle.plugin-1.9.10.jar]
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.9.10/kotlin-gradle-plugin-model-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download1675415514685773296bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.2.2/gradle-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download18045661539176357711bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.9.10/kotlin-gradle-plugin-api-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download14716180195697212078bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.9.10/kotlin-gradle-plugin-api-1.9.10-gradle81.jar to /home/runner/.gradle/.tmp/gradle_download17336260790547950312bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-settings-api/8.2.2/gradle-settings-api-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download1618847794370497624bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/lint/lint-model/31.2.2/lint-model-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download15097914750780653422bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.9.10/kotlin-gradle-plugin-1.9.10-gradle81.jar to /home/runner/.gradle/.tmp/gradle_download1662609114188206600bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.2.2/builder-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download6944782573607776928bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/manifest-merger/31.2.2/manifest-merger-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download11092329035590928099bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/sdk-common/31.2.2/sdk-common-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download16927851966614092026bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/sdklib/31.2.2/sdklib-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download11487586203823454915bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-test-api/8.2.2/builder-test-api-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download6543205722565600564bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-api/8.2.2/gradle-api-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download3739516848070478070bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/ddms/ddmlib/31.2.2/ddmlib-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download4353858632572286069bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/repository/31.2.2/repository-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download13646488962805207302bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2-proto/8.2.2-10154469/aapt2-proto-8.2.2-10154469.jar to /home/runner/.gradle/.tmp/gradle_download2853153219268036210bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/aaptcompiler/8.2.2/aaptcompiler-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download1780044737145718987bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/bundletool/1.15.2/bundletool-1.15.2.jar to /home/runner/.gradle/.tmp/gradle_download1594348782295541726bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/crash/31.2.2/crash-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download13180885345056713234bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/tracker/31.2.2/tracker-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download16963888471446608530bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/lint/lint-typedef-remover/31.2.2/lint-typedef-remover-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download11668987697530034228bin
+Downloading https://dl.google.com/dl/android/maven2/androidx/databinding/databinding-compiler-common/8.2.2/databinding-compiler-common-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download3518483678783582149bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/shared/31.2.2/shared-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download6664493645095301401bin
+Downloading https://dl.google.com/dl/android/maven2/androidx/databinding/databinding-common/8.2.2/databinding-common-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download5091855626391272154bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/layoutlib/layoutlib-api/31.2.2/layoutlib-api-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download4029507240996950955bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-device-provider-gradle-proto/31.2.2/android-device-provider-gradle-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download9610949394383071278bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-additional-test-output-proto/31.2.2/android-test-plugin-host-additional-test-output-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download9740850115266988582bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-device-provider-ddmlib-proto/31.2.2/android-device-provider-ddmlib-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download11049720044396220040bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/databinding/baseLibrary/8.2.2/baseLibrary-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download15238226176938283479bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-coverage-proto/31.2.2/android-test-plugin-host-coverage-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download5281033851765068000bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-logcat-proto/31.2.2/android-test-plugin-host-logcat-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download1506026885871308345bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-apk-installer-proto/31.2.2/android-test-plugin-host-apk-installer-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download18198609101482926552bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-result-listener-gradle-proto/31.2.2/android-test-plugin-result-listener-gradle-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download1667073810410433471bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-retention-proto/31.2.2/android-test-plugin-host-retention-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download8655731881549144037bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-emulator-control-proto/31.2.2/android-test-plugin-host-emulator-control-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download4023217733697113963bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-model/8.2.2/builder-model-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download8256334029517464479bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/dvlib/31.2.2/dvlib-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download9512381230064215217bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/common/31.2.2/common-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download17236402981358982336bin
+Downloading https://plugins.gradle.org/m2/com/android/tools/build/transform-api/2.0.0-deprecated-use-gradle-api/transform-api-2.0.0-deprecated-use-gradle-api.jar to /home/runner/.gradle/.tmp/gradle_download15999185696715305485bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0/kotlin-stdlib-jdk8-1.9.0.jar to /home/runner/.gradle/.tmp/gradle_download1776216403588919330bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpmime/4.5.6/httpmime-4.5.6.jar to /home/runner/.gradle/.tmp/gradle_download7858489481036983547bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-commons/9.2/asm-commons-9.2.jar to /home/runner/.gradle/.tmp/gradle_download2752739931825226590bin
+Downloading https://plugins.gradle.org/m2/commons-io/commons-io/2.4/commons-io-2.4.jar to /home/runner/.gradle/.tmp/gradle_download5706041315636499804bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-util/9.2/asm-util-9.2.jar to /home/runner/.gradle/.tmp/gradle_download11360693193039104985bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-analysis/9.2/asm-analysis-9.2.jar to /home/runner/.gradle/.tmp/gradle_download7574938115268552336bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-tree/9.2/asm-tree-9.2.jar to /home/runner/.gradle/.tmp/gradle_download2369130677975982555bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/jetifier/jetifier-processor/1.0.0-beta10/jetifier-processor-1.0.0-beta10.jar to /home/runner/.gradle/.tmp/gradle_download3896674807358968327bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm/9.2/asm-9.2.jar to /home/runner/.gradle/.tmp/gradle_download770878929590136100bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/apkzlib/8.2.2/apkzlib-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download7534890125575395919bin
+Downloading https://plugins.gradle.org/m2/org/bouncycastle/bcpkix-jdk15on/1.67/bcpkix-jdk15on-1.67.jar to /home/runner/.gradle/.tmp/gradle_download5414728123088592230bin
+Downloading https://plugins.gradle.org/m2/org/glassfish/jaxb/jaxb-runtime/2.3.2/jaxb-runtime-2.3.2.jar to /home/runner/.gradle/.tmp/gradle_download3201505997437458525bin
+Downloading https://plugins.gradle.org/m2/net/sf/jopt-simple/jopt-simple/4.9/jopt-simple-4.9.jar to /home/runner/.gradle/.tmp/gradle_download12460639300800627146bin
+Downloading https://plugins.gradle.org/m2/com/squareup/javapoet/1.10.0/javapoet-1.10.0.jar to /home/runner/.gradle/.tmp/gradle_download9129757623623875105bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-protobuf/1.45.1/grpc-protobuf-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download13812785603041615981bin
+Downloading https://plugins.gradle.org/m2/com/google/protobuf/protobuf-java-util/3.19.3/protobuf-java-util-3.19.3.jar to /home/runner/.gradle/.tmp/gradle_download118544940824545051bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta10/jetifier-core-1.0.0-beta10.jar to /home/runner/.gradle/.tmp/gradle_download4158834649627998524bin
+Downloading https://plugins.gradle.org/m2/com/google/crypto/tink/tink/1.7.0/tink-1.7.0.jar to /home/runner/.gradle/.tmp/gradle_download4487198366695673512bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/protos/31.2.2/protos-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download5649446102584326109bin
+Downloading https://plugins.gradle.org/m2/com/google/api/grpc/proto-google-common-protos/2.0.1/proto-google-common-protos-2.0.1.jar to /home/runner/.gradle/.tmp/gradle_download15893361065094467800bin
+Downloading https://plugins.gradle.org/m2/com/google/protobuf/protobuf-java/3.19.3/protobuf-java-3.19.3.jar to /home/runner/.gradle/.tmp/gradle_download14518876461032396683bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-netty/1.45.1/grpc-netty-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download17011773450607999221bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-core/1.45.1/grpc-core-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download9013650907532476659bin
+Downloading https://plugins.gradle.org/m2/com/google/code/gson/gson/2.10/gson-2.10.jar to /home/runner/.gradle/.tmp/gradle_download17766171233039413827bin
+Downloading https://dl.google.com/dl/android/maven2/com/google/testing/platform/core-proto/0.0.8-alpha08/core-proto-0.0.8-alpha08.jar to /home/runner/.gradle/.tmp/gradle_download15781206098056955643bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-stub/1.45.1/grpc-stub-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download12231915395948315736bin
+Downloading https://plugins.gradle.org/m2/org/tensorflow/tensorflow-lite-metadata/0.1.0-rc2/tensorflow-lite-metadata-0.1.0-rc2.jar to /home/runner/.gradle/.tmp/gradle_download17789911361254790018bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea/1.9.10/kotlin-gradle-plugin-idea-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download3157726765463341095bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea-proto/1.9.10/kotlin-gradle-plugin-idea-proto-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download3793697222308831336bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-project-model/1.9.10/kotlin-project-model-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download3194682492319082861bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-tooling-core/1.9.10/kotlin-tooling-core-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download4755268944348999773bin
+Downloading https://plugins.gradle.org/m2/com/google/flatbuffers/flatbuffers-java/1.12.0/flatbuffers-java-1.12.0.jar to /home/runner/.gradle/.tmp/gradle_download883300541638091760bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-klib-commonizer-api/1.9.10/kotlin-klib-commonizer-api-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download6431546173902224114bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-build-tools-api/1.9.10/kotlin-build-tools-api-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download4311224305225691177bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-util-klib/1.9.10/kotlin-util-klib-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download4586837903053631805bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-native-utils/1.9.10/kotlin-native-utils-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download16199327638740189530bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-android-extensions/1.9.10/kotlin-android-extensions-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download13776770910830684118bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-compiler-runner/1.9.10/kotlin-compiler-runner-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download18247337599214776511bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.10/kotlin-compiler-embeddable-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download12778857672670695415bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-compiler-embeddable/1.9.10/kotlin-scripting-compiler-embeddable-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download1558002334181495674bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-compiler-impl-embeddable/1.9.10/kotlin-scripting-compiler-impl-embeddable-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download7201053380347938449bin
+Downloading https://plugins.gradle.org/m2/com/google/jimfs/jimfs/1.1/jimfs-1.1.jar to /home/runner/.gradle/.tmp/gradle_download10459812384876193692bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-protobuf-lite/1.45.1/grpc-protobuf-lite-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download15590963632545958591bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-api/1.45.1/grpc-api-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download4422486687366682587bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar to /home/runner/.gradle/.tmp/gradle_download13963672147028592195bin
+Downloading https://plugins.gradle.org/m2/com/google/dagger/dagger/2.28.3/dagger-2.28.3.jar to /home/runner/.gradle/.tmp/gradle_download15122124654916722293bin
+Downloading https://plugins.gradle.org/m2/javax/inject/javax.inject/1/javax.inject-1.jar to /home/runner/.gradle/.tmp/gradle_download12550373371803946341bin
+Downloading https://plugins.gradle.org/m2/org/bouncycastle/bcprov-jdk15on/1.67/bcprov-jdk15on-1.67.jar to /home/runner/.gradle/.tmp/gradle_download17128267260732585148bin
+Downloading https://plugins.gradle.org/m2/net/sf/kxml/kxml2/2.3.0/kxml2-2.3.0.jar to /home/runner/.gradle/.tmp/gradle_download10155315792461194067bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/intellij/deps/trove4j/1.0.20200330/trove4j-1.0.20200330.jar to /home/runner/.gradle/.tmp/gradle_download11753930410124946758bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-reflect/1.9.0/kotlin-reflect-1.9.0.jar to /home/runner/.gradle/.tmp/gradle_download3294531712200068971bin
+Downloading https://plugins.gradle.org/m2/xerces/xercesImpl/2.12.0/xercesImpl-2.12.0.jar to /home/runner/.gradle/.tmp/gradle_download10587077128905773633bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar to /home/runner/.gradle/.tmp/gradle_download6628950626341121618bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpclient/4.5.14/httpclient-4.5.14.jar to /home/runner/.gradle/.tmp/gradle_download8006028553322023683bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcore/4.4.16/httpcore-4.4.16.jar to /home/runner/.gradle/.tmp/gradle_download3970901143118101561bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0/kotlin-stdlib-jdk7-1.9.0.jar to /home/runner/.gradle/.tmp/gradle_download8395181067522075291bin
+Downloading https://plugins.gradle.org/m2/com/sun/activation/javax.activation/1.2.0/javax.activation-1.2.0.jar to /home/runner/.gradle/.tmp/gradle_download7881010819488686775bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib/1.9.0/kotlin-stdlib-1.9.0.jar to /home/runner/.gradle/.tmp/gradle_download10490199050564189760bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/annotations/13.0/annotations-13.0.jar to /home/runner/.gradle/.tmp/gradle_download5890123915374315167bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/signflinger/8.2.2/signflinger-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download17054992791517210316bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/zipflinger/8.2.2/zipflinger-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download2767049703027403204bin
+Downloading https://plugins.gradle.org/m2/net/java/dev/jna/jna-platform/5.6.0/jna-platform-5.6.0.jar to /home/runner/.gradle/.tmp/gradle_download13728882732618653114bin
+Downloading https://plugins.gradle.org/m2/com/googlecode/juniversalchardet/juniversalchardet/1.0.3/juniversalchardet-1.0.3.jar to /home/runner/.gradle/.tmp/gradle_download81106941320791271bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/annotations/31.2.2/annotations-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download13867370223057290406bin
+Downloading https://plugins.gradle.org/m2/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar to /home/runner/.gradle/.tmp/gradle_download7746786315526954864bin
+Downloading https://plugins.gradle.org/m2/org/jvnet/staxex/stax-ex/1.8.1/stax-ex-1.8.1.jar to /home/runner/.gradle/.tmp/gradle_download10871334484815979768bin
+Downloading https://plugins.gradle.org/m2/org/glassfish/jaxb/txw2/2.3.2/txw2-2.3.2.jar to /home/runner/.gradle/.tmp/gradle_download17797452734283531445bin
+Downloading https://plugins.gradle.org/m2/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar to /home/runner/.gradle/.tmp/gradle_download7861598081985275709bin
+Downloading https://plugins.gradle.org/m2/com/sun/istack/istack-commons-runtime/3.0.8/istack-commons-runtime-3.0.8.jar to /home/runner/.gradle/.tmp/gradle_download13822427457058609241bin
+Downloading https://plugins.gradle.org/m2/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar to /home/runner/.gradle/.tmp/gradle_download9145901113282825164bin
+Downloading https://plugins.gradle.org/m2/com/sun/xml/fastinfoset/FastInfoset/1.2.16/FastInfoset-1.2.16.jar to /home/runner/.gradle/.tmp/gradle_download3462692845540620061bin
+Downloading https://plugins.gradle.org/m2/com/google/auto/value/auto-value-annotations/1.6.2/auto-value-annotations-1.6.2.jar to /home/runner/.gradle/.tmp/gradle_download11787230636841023476bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_annotations/2.11.0/error_prone_annotations-2.11.0.jar to /home/runner/.gradle/.tmp/gradle_download6413428136736761093bin
+Downloading https://plugins.gradle.org/m2/org/bitbucket/b_c/jose4j/0.7.0/jose4j-0.7.0.jar to /home/runner/.gradle/.tmp/gradle_download9132507906279316294bin
+Downloading https://plugins.gradle.org/m2/org/slf4j/slf4j-api/1.7.30/slf4j-api-1.7.30.jar to /home/runner/.gradle/.tmp/gradle_download325851569916588476bin
+Downloading https://plugins.gradle.org/m2/org/jdom/jdom2/2.0.6/jdom2-2.0.6.jar to /home/runner/.gradle/.tmp/gradle_download17352347454579286237bin
+Downloading https://plugins.gradle.org/m2/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.jar to /home/runner/.gradle/.tmp/gradle_download11058711266949162853bin
+Downloading https://plugins.gradle.org/m2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar to /home/runner/.gradle/.tmp/gradle_download3010294508217202993bin
+Downloading https://plugins.gradle.org/m2/com/google/android/annotations/4.1.1.4/annotations-4.1.1.4.jar to /home/runner/.gradle/.tmp/gradle_download16920216888134233551bin
+Downloading https://plugins.gradle.org/m2/org/codehaus/mojo/animal-sniffer-annotations/1.19/animal-sniffer-annotations-1.19.jar to /home/runner/.gradle/.tmp/gradle_download16541350124063246848bin
+Downloading https://plugins.gradle.org/m2/io/perfmark/perfmark-api/0.23.0/perfmark-api-0.23.0.jar to /home/runner/.gradle/.tmp/gradle_download14601387891736094821bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec-http2/4.1.72.Final/netty-codec-http2-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download6471862242806605355bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-handler-proxy/4.1.72.Final/netty-handler-proxy-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download12808797746285016447bin
+Downloading https://plugins.gradle.org/m2/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.jar to /home/runner/.gradle/.tmp/gradle_download11744548097183219066bin
+Downloading https://plugins.gradle.org/m2/commons-codec/commons-codec/1.11/commons-codec-1.11.jar to /home/runner/.gradle/.tmp/gradle_download18036180747941956435bin
+Downloading https://plugins.gradle.org/m2/com/squareup/javawriter/2.5.0/javawriter-2.5.0.jar to /home/runner/.gradle/.tmp/gradle_download11575408368962212762bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-annotations/1.9.10/kotlin-gradle-plugin-annotations-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download11208455251107691761bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-util-io/1.9.10/kotlin-util-io-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download281599076862181643bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/apksig/8.2.2/apksig-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download5409702606355475026bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-daemon-embeddable/1.9.10/kotlin-daemon-embeddable-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download9315585539559807127bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.5.0/kotlinx-coroutines-core-jvm-1.5.0.jar to /home/runner/.gradle/.tmp/gradle_download10894681396502505561bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-jvm/1.9.10/kotlin-scripting-jvm-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download16797454817962496954bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-daemon-client/1.9.10/kotlin-daemon-client-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download2513332782508468059bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar to /home/runner/.gradle/.tmp/gradle_download251454401636326341bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar to /home/runner/.gradle/.tmp/gradle_download16550863785365993373bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-common/1.9.10/kotlin-scripting-common-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download10783588261892314221bin
+Downloading https://plugins.gradle.org/m2/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.jar to /home/runner/.gradle/.tmp/gradle_download3434727240467162410bin
+Downloading https://plugins.gradle.org/m2/net/java/dev/jna/jna/5.6.0/jna-5.6.0.jar to /home/runner/.gradle/.tmp/gradle_download17101336953520428098bin
+Downloading https://plugins.gradle.org/m2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar to /home/runner/.gradle/.tmp/gradle_download1112929009009720154bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.0/kotlin-stdlib-common-1.9.0.jar to /home/runner/.gradle/.tmp/gradle_download619978548515532095bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-context/1.45.1/grpc-context-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download8252297312351887196bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec-http/4.1.72.Final/netty-codec-http-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download15553732305232120921bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec/4.1.72.Final/netty-codec-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download13418252242712013582bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec-socks/4.1.72.Final/netty-codec-socks-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download1305318270803616399bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-handler/4.1.72.Final/netty-handler-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download14256354104877796053bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-transport/4.1.72.Final/netty-transport-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download4593463008621810847bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-common/4.1.72.Final/netty-common-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download9021198240096499832bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-resolver/4.1.72.Final/netty-resolver-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download7084028833902335136bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-buffer/4.1.72.Final/netty-buffer-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download17494191235590685363bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-tcnative-classes/2.0.46.Final/netty-tcnative-classes-2.0.46.Final.jar to /home/runner/.gradle/.tmp/gradle_download18384443041910917000bin
+Compiling build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/build.gradle' using BuildScriptTransformer.
+
+> Configure project :app
+Evaluating project ':app' using build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/app/build.gradle'.
+Compiling build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/app/build.gradle' using SubsetScriptTransformer.
+Using default execution profile
+Using Kotlin Gradle Plugin gradle81 variant
+Compiling build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/app/build.gradle' using BuildScriptTransformer.
+
+FAILURE: Build completed with 2 failures.
+
+1: Task failed with an exception.
+-----------
+* What went wrong:
+A problem occurred configuring project ':app'.
+> defaultConfig contains custom BuildConfig fields, but the feature is disabled.
+  To enable the feature, add the following to your module-level build.gradle:
+  `android.buildFeatures.buildConfig true`
+
+* Try:
+> Run with --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+* Exception is:
+org.gradle.api.ProjectConfigurationException: A problem occurred configuring project ':app'.
+	at org.gradle.configuration.project.LifecycleProjectEvaluator.wrapException(LifecycleProjectEvaluator.java:84)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator.addConfigurationFailure(LifecycleProjectEvaluator.java:77)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator.access$400(LifecycleProjectEvaluator.java:55)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$NotifyAfterEvaluate.run(LifecycleProjectEvaluator.java:255)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$EvaluateProject.lambda$run$0(LifecycleProjectEvaluator.java:114)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.lambda$applyToMutableState$1(DefaultProjectStateRegistry.java:395)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.lambda$fromMutableState$2(DefaultProjectStateRegistry.java:418)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withReplacedLocks(DefaultWorkerLeaseService.java:345)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.fromMutableState(DefaultProjectStateRegistry.java:418)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.applyToMutableState(DefaultProjectStateRegistry.java:394)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$EvaluateProject.run(LifecycleProjectEvaluator.java:100)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator.evaluate(LifecycleProjectEvaluator.java:72)
+	at org.gradle.api.internal.project.DefaultProject.evaluate(DefaultProject.java:782)
+	at org.gradle.api.internal.project.DefaultProject.evaluate(DefaultProject.java:156)
+	at org.gradle.api.internal.project.ProjectLifecycleController.lambda$ensureSelfConfigured$2(ProjectLifecycleController.java:84)
+	at org.gradle.internal.model.StateTransitionController.lambda$doTransition$14(StateTransitionController.java:255)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:254)
+	at org.gradle.internal.model.StateTransitionController.lambda$maybeTransitionIfNotCurrentlyTransitioning$10(StateTransitionController.java:199)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:34)
+	at org.gradle.internal.model.StateTransitionController.maybeTransitionIfNotCurrentlyTransitioning(StateTransitionController.java:195)
+	at org.gradle.api.internal.project.ProjectLifecycleController.ensureSelfConfigured(ProjectLifecycleController.java:84)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.ensureConfigured(DefaultProjectStateRegistry.java:369)
+	at org.gradle.execution.TaskPathProjectEvaluator.configure(TaskPathProjectEvaluator.java:33)
+	at org.gradle.execution.TaskPathProjectEvaluator.configureHierarchy(TaskPathProjectEvaluator.java:49)
+	at org.gradle.configuration.DefaultProjectsPreparer.prepareProjects(DefaultProjectsPreparer.java:42)
+	at org.gradle.configuration.BuildTreePreparingProjectsPreparer.prepareProjects(BuildTreePreparingProjectsPreparer.java:65)
+	at org.gradle.configuration.BuildOperationFiringProjectsPreparer$ConfigureBuild.run(BuildOperationFiringProjectsPreparer.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.configuration.BuildOperationFiringProjectsPreparer.prepareProjects(BuildOperationFiringProjectsPreparer.java:40)
+	at org.gradle.initialization.VintageBuildModelController.lambda$prepareProjects$2(VintageBuildModelController.java:84)
+	at org.gradle.internal.model.StateTransitionController.lambda$doTransition$14(StateTransitionController.java:255)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:254)
+	at org.gradle.internal.model.StateTransitionController.lambda$transitionIfNotPreviously$11(StateTransitionController.java:213)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:34)
+	at org.gradle.internal.model.StateTransitionController.transitionIfNotPreviously(StateTransitionController.java:209)
+	at org.gradle.initialization.VintageBuildModelController.prepareProjects(VintageBuildModelController.java:84)
+	at org.gradle.initialization.VintageBuildModelController.prepareToScheduleTasks(VintageBuildModelController.java:71)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$prepareToScheduleTasks$6(DefaultBuildLifecycleController.java:172)
+	at org.gradle.internal.model.StateTransitionController.lambda$doTransition$14(StateTransitionController.java:255)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:254)
+	at org.gradle.internal.model.StateTransitionController.lambda$maybeTransition$9(StateTransitionController.java:190)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:34)
+	at org.gradle.internal.model.StateTransitionController.maybeTransition(StateTransitionController.java:186)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.prepareToScheduleTasks(DefaultBuildLifecycleController.java:170)
+	at org.gradle.internal.buildtree.DefaultBuildTreeWorkPreparer.scheduleRequestedTasks(DefaultBuildTreeWorkPreparer.java:36)
+	at org.gradle.configurationcache.VintageBuildTreeWorkController$scheduleAndRunRequestedTasks$1.apply(VintageBuildTreeWorkController.kt:36)
+	at org.gradle.configurationcache.VintageBuildTreeWorkController$scheduleAndRunRequestedTasks$1.apply(VintageBuildTreeWorkController.kt:35)
+	at org.gradle.composite.internal.DefaultIncludedBuildTaskGraph.withNewWorkGraph(DefaultIncludedBuildTaskGraph.java:112)
+	at org.gradle.configurationcache.VintageBuildTreeWorkController.scheduleAndRunRequestedTasks(VintageBuildTreeWorkController.kt:35)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.lambda$scheduleAndRunTasks$1(DefaultBuildTreeLifecycleController.java:68)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.lambda$runBuild$4(DefaultBuildTreeLifecycleController.java:98)
+	at org.gradle.internal.model.StateTransitionController.lambda$transition$6(StateTransitionController.java:169)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.lambda$transition$7(StateTransitionController.java:169)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:44)
+	at org.gradle.internal.model.StateTransitionController.transition(StateTransitionController.java:169)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.runBuild(DefaultBuildTreeLifecycleController.java:95)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.scheduleAndRunTasks(DefaultBuildTreeLifecycleController.java:68)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.scheduleAndRunTasks(DefaultBuildTreeLifecycleController.java:63)
+	at org.gradle.tooling.internal.provider.ExecuteBuildActionRunner.run(ExecuteBuildActionRunner.java:31)
+	at org.gradle.launcher.exec.ChainingBuildActionRunner.run(ChainingBuildActionRunner.java:35)
+	at org.gradle.internal.buildtree.ProblemReportingBuildActionRunner.run(ProblemReportingBuildActionRunner.java:49)
+	at org.gradle.launcher.exec.BuildOutcomeReportingBuildActionRunner.run(BuildOutcomeReportingBuildActionRunner.java:65)
+	at org.gradle.tooling.internal.provider.FileSystemWatchingBuildActionRunner.run(FileSystemWatchingBuildActionRunner.java:140)
+	at org.gradle.launcher.exec.BuildCompletionNotifyingBuildActionRunner.run(BuildCompletionNotifyingBuildActionRunner.java:41)
+	at org.gradle.launcher.exec.RootBuildLifecycleBuildActionExecutor.lambda$execute$0(RootBuildLifecycleBuildActionExecutor.java:40)
+	at org.gradle.composite.internal.DefaultRootBuildState.run(DefaultRootBuildState.java:122)
+	at org.gradle.launcher.exec.RootBuildLifecycleBuildActionExecutor.execute(RootBuildLifecycleBuildActionExecutor.java:40)
+	at org.gradle.internal.buildtree.InitDeprecationLoggingActionExecutor.execute(InitDeprecationLoggingActionExecutor.java:58)
+	at org.gradle.internal.buildtree.DefaultBuildTreeContext.execute(DefaultBuildTreeContext.java:40)
+	at org.gradle.launcher.exec.BuildTreeLifecycleBuildActionExecutor.lambda$execute$0(BuildTreeLifecycleBuildActionExecutor.java:65)
+	at org.gradle.internal.buildtree.BuildTreeState.run(BuildTreeState.java:53)
+	at org.gradle.launcher.exec.BuildTreeLifecycleBuildActionExecutor.execute(BuildTreeLifecycleBuildActionExecutor.java:65)
+	at org.gradle.launcher.exec.RunAsBuildOperationBuildActionExecutor$3.call(RunAsBuildOperationBuildActionExecutor.java:61)
+	at org.gradle.launcher.exec.RunAsBuildOperationBuildActionExecutor$3.call(RunAsBuildOperationBuildActionExecutor.java:57)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:199)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
+	at org.gradle.launcher.exec.RunAsBuildOperationBuildActionExecutor.execute(RunAsBuildOperationBuildActionExecutor.java:57)
+	at org.gradle.launcher.exec.RunAsWorkerThreadBuildActionExecutor.lambda$execute$0(RunAsWorkerThreadBuildActionExecutor.java:36)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:249)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:109)
+	at org.gradle.launcher.exec.RunAsWorkerThreadBuildActionExecutor.execute(RunAsWorkerThreadBuildActionExecutor.java:36)
+	at org.gradle.tooling.internal.provider.continuous.ContinuousBuildActionExecutor.execute(ContinuousBuildActionExecutor.java:110)
+	at org.gradle.tooling.internal.provider.SubscribableBuildActionExecutor.execute(SubscribableBuildActionExecutor.java:64)
+	at org.gradle.internal.session.DefaultBuildSessionContext.execute(DefaultBuildSessionContext.java:46)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter$ActionImpl.apply(BuildSessionLifecycleBuildActionExecuter.java:100)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter$ActionImpl.apply(BuildSessionLifecycleBuildActionExecuter.java:88)
+	at org.gradle.internal.session.BuildSessionState.run(BuildSessionState.java:69)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter.execute(BuildSessionLifecycleBuildActionExecuter.java:62)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter.execute(BuildSessionLifecycleBuildActionExecuter.java:41)
+	at org.gradle.tooling.internal.provider.StartParamsValidatingActionExecuter.execute(StartParamsValidatingActionExecuter.java:64)
+	at org.gradle.tooling.internal.provider.StartParamsValidatingActionExecuter.execute(StartParamsValidatingActionExecuter.java:32)
+	at org.gradle.tooling.internal.provider.SessionFailureReportingActionExecuter.execute(SessionFailureReportingActionExecuter.java:50)
+	at org.gradle.tooling.internal.provider.SessionFailureReportingActionExecuter.execute(SessionFailureReportingActionExecuter.java:38)
+	at org.gradle.tooling.internal.provider.SetupLoggingActionExecuter.execute(SetupLoggingActionExecuter.java:47)
+	at org.gradle.tooling.internal.provider.SetupLoggingActionExecuter.execute(SetupLoggingActionExecuter.java:31)
+	at org.gradle.launcher.daemon.server.exec.ExecuteBuild.doBuild(ExecuteBuild.java:65)
+	at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:37)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.WatchForDisconnection.execute(WatchForDisconnection.java:39)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.ResetDeprecationLogger.execute(ResetDeprecationLogger.java:29)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.RequestStopIfSingleUsedDaemon.execute(RequestStopIfSingleUsedDaemon.java:35)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.ForwardClientInput$2.create(ForwardClientInput.java:78)
+	at org.gradle.launcher.daemon.server.exec.ForwardClientInput$2.create(ForwardClientInput.java:75)
+	at org.gradle.util.internal.Swapper.swap(Swapper.java:38)
+	at org.gradle.launcher.daemon.server.exec.ForwardClientInput.execute(ForwardClientInput.java:75)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.LogAndCheckHealth.execute(LogAndCheckHealth.java:64)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.LogToClient.doBuild(LogToClient.java:63)
+	at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:37)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.EstablishBuildEnvironment.doBuild(EstablishBuildEnvironment.java:84)
+	at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:37)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.StartBuildOrRespondWithBusy$1.run(StartBuildOrRespondWithBusy.java:52)
+	at org.gradle.launcher.daemon.server.DaemonStateCoordinator$1.run(DaemonStateCoordinator.java:297)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+Caused by: com.android.builder.errors.EvalIssueException: defaultConfig contains custom BuildConfig fields, but the feature is disabled.
+To enable the feature, add the following to your module-level build.gradle:
+`android.buildFeatures.buildConfig true`
+	at com.android.builder.errors.IssueReporter.reportError(IssueReporter.kt:114)
+	at com.android.builder.errors.IssueReporter.reportError$default(IssueReporter.kt:110)
+	at com.android.builder.errors.IssueReporter.reportError(IssueReporter.kt)
+	at com.android.build.gradle.internal.variant.BaseVariantFactory.validateBuildConfig(BaseVariantFactory.java:228)
+	at com.android.build.gradle.internal.variant.BaseVariantFactory.preVariantCallback(BaseVariantFactory.java:208)
+	at com.android.build.gradle.internal.variant.AbstractAppVariantFactory.preVariantCallback(AbstractAppVariantFactory.kt:74)
+	at com.android.build.gradle.internal.VariantManager.createVariants(VariantManager.kt:182)
+	at com.android.build.gradle.internal.plugins.BasePlugin.createAndroidTasks(BasePlugin.kt:723)
+	at com.android.build.gradle.internal.plugins.BasePlugin$createTasks$2$1.call(BasePlugin.kt:610)
+	at com.android.build.gradle.internal.profile.NoOpAnalyticsConfiguratorService.recordBlock(NoOpAnalyticsConfiguratorService.kt:53)
+	at com.android.build.gradle.internal.plugins.BasePlugin$createTasks$2.accept(BasePlugin.kt:605)
+	at com.android.build.gradle.internal.plugins.BasePlugin$createTasks$2.accept(BasePlugin.kt:602)
+	at com.android.build.gradle.internal.crash.CrashReporting$afterEvaluate$1.execute(crash_reporting.kt:37)
+	at com.android.build.gradle.internal.crash.CrashReporting$afterEvaluate$1.execute(crash_reporting.kt:35)
+	at org.gradle.configuration.internal.DefaultUserCodeApplicationContext$CurrentApplication$1.execute(DefaultUserCodeApplicationContext.java:123)
+	at org.gradle.configuration.internal.DefaultListenerBuildOperationDecorator$BuildOperationEmittingAction$1.run(DefaultListenerBuildOperationDecorator.java:171)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.configuration.internal.DefaultListenerBuildOperationDecorator$BuildOperationEmittingAction.execute(DefaultListenerBuildOperationDecorator.java:168)
+	at org.gradle.internal.event.BroadcastDispatch$ActionInvocationHandler.dispatch(BroadcastDispatch.java:97)
+	at org.gradle.internal.event.BroadcastDispatch$ActionInvocationHandler.dispatch(BroadcastDispatch.java:85)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:43)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:257)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:164)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:83)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:69)
+	at org.gradle.internal.event.BroadcastDispatch$CompositeDispatch.dispatch(BroadcastDispatch.java:363)
+	at org.gradle.internal.event.BroadcastDispatch$CompositeDispatch.dispatch(BroadcastDispatch.java:261)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:148)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:37)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:94)
+	at jdk.proxy1/jdk.proxy1.$Proxy57.afterEvaluate(Unknown Source)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$NotifyAfterEvaluate$1.execute(LifecycleProjectEvaluator.java:247)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$NotifyAfterEvaluate$1.execute(LifecycleProjectEvaluator.java:244)
+	at org.gradle.api.internal.project.DefaultProject.stepEvaluationListener(DefaultProject.java:1486)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$NotifyAfterEvaluate.run(LifecycleProjectEvaluator.java:253)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$EvaluateProject.lambda$run$0(LifecycleProjectEvaluator.java:114)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.lambda$applyToMutableState$1(DefaultProjectStateRegistry.java:395)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.lambda$fromMutableState$2(DefaultProjectStateRegistry.java:418)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withReplacedLocks(DefaultWorkerLeaseService.java:345)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.fromMutableState(DefaultProjectStateRegistry.java:418)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.applyToMutableState(DefaultProjectStateRegistry.java:394)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$EvaluateProject.run(LifecycleProjectEvaluator.java:100)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator.evaluate(LifecycleProjectEvaluator.java:72)
+	at org.gradle.api.internal.project.DefaultProject.evaluate(DefaultProject.java:782)
+	at org.gradle.api.internal.project.DefaultProject.evaluate(DefaultProject.java:156)
+	at org.gradle.api.internal.project.ProjectLifecycleController.lambda$ensureSelfConfigured$2(ProjectLifecycleController.java:84)
+	at org.gradle.internal.model.StateTransitionController.lambda$doTransition$14(StateTransitionController.java:255)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:254)
+	at org.gradle.internal.model.StateTransitionController.lambda$maybeTransitionIfNotCurrentlyTransitioning$10(StateTransitionController.java:199)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:34)
+	at org.gradle.internal.model.StateTransitionController.maybeTransitionIfNotCurrentlyTransitioning(StateTransitionController.java:195)
+	at org.gradle.api.internal.project.ProjectLifecycleController.ensureSelfConfigured(ProjectLifecycleController.java:84)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.ensureConfigured(DefaultProjectStateRegistry.java:369)
+	at org.gradle.execution.TaskPathProjectEvaluator.configure(TaskPathProjectEvaluator.java:33)
+	at org.gradle.execution.TaskPathProjectEvaluator.configureHierarchy(TaskPathProjectEvaluator.java:49)
+	at org.gradle.configuration.DefaultProjectsPreparer.prepareProjects(DefaultProjectsPreparer.java:42)
+	at org.gradle.configuration.BuildTreePreparingProjectsPreparer.prepareProjects(BuildTreePreparingProjectsPreparer.java:65)
+	at org.gradle.configuration.BuildOperationFiringProjectsPreparer$ConfigureBuild.run(BuildOperationFiringProjectsPreparer.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.configuration.BuildOperationFiringProjectsPreparer.prepareProjects(BuildOperationFiringProjectsPreparer.java:40)
+	at org.gradle.initialization.VintageBuildModelController.lambda$prepareProjects$2(VintageBuildModelController.java:84)
+	at org.gradle.internal.model.StateTransitionController.lambda$doTransition$14(StateTransitionController.java:255)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:254)
+	at org.gradle.internal.model.StateTransitionController.lambda$transitionIfNotPreviously$11(StateTransitionController.java:213)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:34)
+	at org.gradle.internal.model.StateTransitionController.transitionIfNotPreviously(StateTransitionController.java:209)
+	at org.gradle.initialization.VintageBuildModelController.prepareProjects(VintageBuildModelController.java:84)
+	at org.gradle.initialization.VintageBuildModelController.prepareToScheduleTasks(VintageBuildModelController.java:71)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$prepareToScheduleTasks$6(DefaultBuildLifecycleController.java:172)
+	at org.gradle.internal.model.StateTransitionController.lambda$doTransition$14(StateTransitionController.java:255)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:254)
+	at org.gradle.internal.model.StateTransitionController.lambda$maybeTransition$9(StateTransitionController.java:190)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:34)
+	at org.gradle.internal.model.StateTransitionController.maybeTransition(StateTransitionController.java:186)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.prepareToScheduleTasks(DefaultBuildLifecycleController.java:170)
+	at org.gradle.internal.buildtree.DefaultBuildTreeWorkPreparer.scheduleRequestedTasks(DefaultBuildTreeWorkPreparer.java:36)
+	at org.gradle.configurationcache.VintageBuildTreeWorkController$scheduleAndRunRequestedTasks$1.apply(VintageBuildTreeWorkController.kt:36)
+	at org.gradle.configurationcache.VintageBuildTreeWorkController$scheduleAndRunRequestedTasks$1.apply(VintageBuildTreeWorkController.kt:35)
+	at org.gradle.composite.internal.DefaultIncludedBuildTaskGraph.withNewWorkGraph(DefaultIncludedBuildTaskGraph.java:112)
+	at org.gradle.configurationcache.VintageBuildTreeWorkController.scheduleAndRunRequestedTasks(VintageBuildTreeWorkController.kt:35)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.lambda$scheduleAndRunTasks$1(DefaultBuildTreeLifecycleController.java:68)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.lambda$runBuild$4(DefaultBuildTreeLifecycleController.java:98)
+	at org.gradle.internal.model.StateTransitionController.lambda$transition$6(StateTransitionController.java:169)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.lambda$transition$7(StateTransitionController.java:169)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:44)
+	at org.gradle.internal.model.StateTransitionController.transition(StateTransitionController.java:169)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.runBuild(DefaultBuildTreeLifecycleController.java:95)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.scheduleAndRunTasks(DefaultBuildTreeLifecycleController.java:68)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.scheduleAndRunTasks(DefaultBuildTreeLifecycleController.java:63)
+	at org.gradle.tooling.internal.provider.ExecuteBuildActionRunner.run(ExecuteBuildActionRunner.java:31)
+	at org.gradle.launcher.exec.ChainingBuildActionRunner.run(ChainingBuildActionRunner.java:35)
+	at org.gradle.internal.buildtree.ProblemReportingBuildActionRunner.run(ProblemReportingBuildActionRunner.java:49)
+	at org.gradle.launcher.exec.BuildOutcomeReportingBuildActionRunner.run(BuildOutcomeReportingBuildActionRunner.java:65)
+	at org.gradle.tooling.internal.provider.FileSystemWatchingBuildActionRunner.run(FileSystemWatchingBuildActionRunner.java:140)
+	at org.gradle.launcher.exec.BuildCompletionNotifyingBuildActionRunner.run(BuildCompletionNotifyingBuildActionRunner.java:41)
+	at org.gradle.launcher.exec.RootBuildLifecycleBuildActionExecutor.lambda$execute$0(RootBuildLifecycleBuildActionExecutor.java:40)
+	at org.gradle.composite.internal.DefaultRootBuildState.run(DefaultRootBuildState.java:122)
+	at org.gradle.launcher.exec.RootBuildLifecycleBuildActionExecutor.execute(RootBuildLifecycleBuildActionExecutor.java:40)
+	at org.gradle.internal.buildtree.InitDeprecationLoggingActionExecutor.execute(InitDeprecationLoggingActionExecutor.java:58)
+	at org.gradle.internal.buildtree.DefaultBuildTreeContext.execute(DefaultBuildTreeContext.java:40)
+	at org.gradle.launcher.exec.BuildTreeLifecycleBuildActionExecutor.lambda$execute$0(BuildTreeLifecycleBuildActionExecutor.java:65)
+	at org.gradle.internal.buildtree.BuildTreeState.run(BuildTreeState.java:53)
+	at org.gradle.launcher.exec.BuildTreeLifecycleBuildActionExecutor.execute(BuildTreeLifecycleBuildActionExecutor.java:65)
+	at org.gradle.launcher.exec.RunAsBuildOperationBuildActionExecutor$3.call(RunAsBuildOperationBuildActionExecutor.java:61)
+	at org.gradle.launcher.exec.RunAsBuildOperationBuildActionExecutor$3.call(RunAsBuildOperationBuildActionExecutor.java:57)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:199)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
+	at org.gradle.launcher.exec.RunAsBuildOperationBuildActionExecutor.execute(RunAsBuildOperationBuildActionExecutor.java:57)
+	at org.gradle.launcher.exec.RunAsWorkerThreadBuildActionExecutor.lambda$execute$0(RunAsWorkerThreadBuildActionExecutor.java:36)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:249)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:109)
+	at org.gradle.launcher.exec.RunAsWorkerThreadBuildActionExecutor.execute(RunAsWorkerThreadBuildActionExecutor.java:36)
+	at org.gradle.tooling.internal.provider.continuous.ContinuousBuildActionExecutor.execute(ContinuousBuildActionExecutor.java:110)
+	at org.gradle.tooling.internal.provider.SubscribableBuildActionExecutor.execute(SubscribableBuildActionExecutor.java:64)
+	at org.gradle.internal.session.DefaultBuildSessionContext.execute(DefaultBuildSessionContext.java:46)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter$ActionImpl.apply(BuildSessionLifecycleBuildActionExecuter.java:100)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter$ActionImpl.apply(BuildSessionLifecycleBuildActionExecuter.java:88)
+	at org.gradle.internal.session.BuildSessionState.run(BuildSessionState.java:69)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter.execute(BuildSessionLifecycleBuildActionExecuter.java:62)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter.execute(BuildSessionLifecycleBuildActionExecuter.java:41)
+	at org.gradle.tooling.internal.provider.StartParamsValidatingActionExecuter.execute(StartParamsValidatingActionExecuter.java:64)
+	at org.gradle.tooling.internal.provider.StartParamsValidatingActionExecuter.execute(StartParamsValidatingActionExecuter.java:32)
+	at org.gradle.tooling.internal.provider.SessionFailureReportingActionExecuter.execute(SessionFailureReportingActionExecuter.java:50)
+	at org.gradle.tooling.internal.provider.SessionFailureReportingActionExecuter.execute(SessionFailureReportingActionExecuter.java:38)
+	at org.gradle.tooling.internal.provider.SetupLoggingActionExecuter.execute(SetupLoggingActionExecuter.java:47)
+	at org.gradle.tooling.internal.provider.SetupLoggingActionExecuter.execute(SetupLoggingActionExecuter.java:31)
+	at org.gradle.launcher.daemon.server.exec.ExecuteBuild.doBuild(ExecuteBuild.java:65)
+	at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:37)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.WatchForDisconnection.execute(WatchForDisconnection.java:39)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.ResetDeprecationLogger.execute(ResetDeprecationLogger.java:29)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.RequestStopIfSingleUsedDaemon.execute(RequestStopIfSingleUsedDaemon.java:35)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.ForwardClientInput$2.create(ForwardClientInput.java:78)
+	at org.gradle.launcher.daemon.server.exec.ForwardClientInput$2.create(ForwardClientInput.java:75)
+	at org.gradle.util.internal.Swapper.swap(Swapper.java:38)
+	at org.gradle.launcher.daemon.server.exec.ForwardClientInput.execute(ForwardClientInput.java:75)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.LogAndCheckHealth.execute(LogAndCheckHealth.java:64)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.LogToClient.doBuild(LogToClient.java:63)
+	at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:37)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.EstablishBuildEnvironment.doBuild(EstablishBuildEnvironment.java:84)
+	at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:37)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.StartBuildOrRespondWithBusy$1.run(StartBuildOrRespondWithBusy.java:52)
+	at org.gradle.launcher.daemon.server.DaemonStateCoordinator$1.run(DaemonStateCoordinator.java:297)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+
+==============================================================================
+
+2: Task failed with an exception.
+-----------
+* What went wrong:
+Failed to query the value of property 'buildFlowServiceProperty'.
+> Could not isolate value org.jetbrains.kotlin.gradle.plugin.statistics.BuildFlowService$Parameters_Decorated@5d182d03 of type BuildFlowService.Parameters
+   > A problem occurred configuring project ':app'.
+      > defaultConfig contains custom BuildConfig fields, but the feature is disabled.
+        To enable the feature, add the following to your module-level build.gradle:
+        `android.buildFeatures.buildConfig true`
+
+* Try:
+> Run with --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+* Exception is:
+org.gradle.api.internal.provider.AbstractProperty$PropertyQueryException: Failed to query the value of property 'buildFlowServiceProperty'.
+	at org.gradle.api.internal.provider.AbstractProperty.doCalculateValue(AbstractProperty.java:145)
+	at org.gradle.api.internal.provider.AbstractProperty.calculateOwnValue(AbstractProperty.java:136)
+	at org.gradle.api.internal.provider.AbstractMinimalProvider.calculateOwnPresentValue(AbstractMinimalProvider.java:73)
+	at org.gradle.api.internal.provider.AbstractMinimalProvider.get(AbstractMinimalProvider.java:93)
+	at org.jetbrains.kotlin.gradle.plugin.BuildFinishFlowAction.execute(StatisticsBuildFlowManager.kt:75)
+	at org.jetbrains.kotlin.gradle.plugin.BuildFinishFlowAction.execute(StatisticsBuildFlowManager.kt:61)
+	at org.gradle.configurationcache.flow.FlowScheduler.schedule(FlowScheduler.kt:48)
+	at org.gradle.configurationcache.flow.BuildFlowScope.schedulePendingActions(BuildFlowScope.kt:140)
+	at org.gradle.configurationcache.flow.BuildFlowScope.buildFinished(BuildFlowScope.kt:118)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.event.DefaultListenerManager$ListenerDetails.dispatch(DefaultListenerManager.java:472)
+	at org.gradle.internal.event.DefaultListenerManager$ListenerDetails.dispatch(DefaultListenerManager.java:454)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:83)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:69)
+	at org.gradle.internal.event.DefaultListenerManager$EventBroadcast$ListenerDispatch.dispatch(DefaultListenerManager.java:443)
+	at org.gradle.internal.event.DefaultListenerManager$EventBroadcast$ListenerDispatch.dispatch(DefaultListenerManager.java:431)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:43)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:257)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:164)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:83)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:69)
+	at org.gradle.internal.event.BroadcastDispatch$CompositeDispatch.dispatch(BroadcastDispatch.java:363)
+	at org.gradle.internal.event.BroadcastDispatch$CompositeDispatch.dispatch(BroadcastDispatch.java:261)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:148)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:37)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:94)
+	at jdk.proxy1/jdk.proxy1.$Proxy35.buildFinished(Unknown Source)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$finishBuild$11(DefaultBuildLifecycleController.java:293)
+	at org.gradle.internal.build.ExecutionResult.maybeFailing(ExecutionResult.java:94)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$finishBuild$12(DefaultBuildLifecycleController.java:293)
+	at org.gradle.internal.model.StateTransitionController.doTransitionWithFailures(StateTransitionController.java:241)
+	at org.gradle.internal.model.StateTransitionController.lambda$transition$13(StateTransitionController.java:232)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:44)
+	at org.gradle.internal.model.StateTransitionController.transition(StateTransitionController.java:229)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.finishBuild(DefaultBuildLifecycleController.java:283)
+	at org.gradle.internal.buildtree.DefaultBuildTreeFinishExecutor.finishBuildTree(DefaultBuildTreeFinishExecutor.java:57)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.lambda$runBuild$4(DefaultBuildTreeLifecycleController.java:103)
+	at org.gradle.internal.model.StateTransitionController.lambda$transition$6(StateTransitionController.java:169)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.lambda$transition$7(StateTransitionController.java:169)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:44)
+	at org.gradle.internal.model.StateTransitionController.transition(StateTransitionController.java:169)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.runBuild(DefaultBuildTreeLifecycleController.java:95)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.scheduleAndRunTasks(DefaultBuildTreeLifecycleController.java:68)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.scheduleAndRunTasks(DefaultBuildTreeLifecycleController.java:63)
+	at org.gradle.tooling.internal.provider.ExecuteBuildActionRunner.run(ExecuteBuildActionRunner.java:31)
+	at org.gradle.launcher.exec.ChainingBuildActionRunner.run(ChainingBuildActionRunner.java:35)
+	at org.gradle.internal.buildtree.ProblemReportingBuildActionRunner.run(ProblemReportingBuildActionRunner.java:49)
+	at org.gradle.launcher.exec.BuildOutcomeReportingBuildActionRunner.run(BuildOutcomeReportingBuildActionRunner.java:65)
+	at org.gradle.tooling.internal.provider.FileSystemWatchingBuildActionRunner.run(FileSystemWatchingBuildActionRunner.java:140)
+	at org.gradle.launcher.exec.BuildCompletionNotifyingBuildActionRunner.run(BuildCompletionNotifyingBuildActionRunner.java:41)
+	at org.gradle.launcher.exec.RootBuildLifecycleBuildActionExecutor.lambda$execute$0(RootBuildLifecycleBuildActionExecutor.java:40)
+	at org.gradle.composite.internal.DefaultRootBuildState.run(DefaultRootBuildState.java:122)
+	at org.gradle.launcher.exec.RootBuildLifecycleBuildActionExecutor.execute(RootBuildLifecycleBuildActionExecutor.java:40)
+	at org.gradle.internal.buildtree.InitDeprecationLoggingActionExecutor.execute(InitDeprecationLoggingActionExecutor.java:58)
+	at org.gradle.internal.buildtree.DefaultBuildTreeContext.execute(DefaultBuildTreeContext.java:40)
+	at org.gradle.launcher.exec.BuildTreeLifecycleBuildActionExecutor.lambda$execute$0(BuildTreeLifecycleBuildActionExecutor.java:65)
+	at org.gradle.internal.buildtree.BuildTreeState.run(BuildTreeState.java:53)
+	at org.gradle.launcher.exec.BuildTreeLifecycleBuildActionExecutor.execute(BuildTreeLifecycleBuildActionExecutor.java:65)
+	at org.gradle.launcher.exec.RunAsBuildOperationBuildActionExecutor$3.call(RunAsBuildOperationBuildActionExecutor.java:61)
+	at org.gradle.launcher.exec.RunAsBuildOperationBuildActionExecutor$3.call(RunAsBuildOperationBuildActionExecutor.java:57)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:199)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
+	at org.gradle.launcher.exec.RunAsBuildOperationBuildActionExecutor.execute(RunAsBuildOperationBuildActionExecutor.java:57)
+	at org.gradle.launcher.exec.RunAsWorkerThreadBuildActionExecutor.lambda$execute$0(RunAsWorkerThreadBuildActionExecutor.java:36)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:249)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:109)
+	at org.gradle.launcher.exec.RunAsWorkerThreadBuildActionExecutor.execute(RunAsWorkerThreadBuildActionExecutor.java:36)
+	at org.gradle.tooling.internal.provider.continuous.ContinuousBuildActionExecutor.execute(ContinuousBuildActionExecutor.java:110)
+	at org.gradle.tooling.internal.provider.SubscribableBuildActionExecutor.execute(SubscribableBuildActionExecutor.java:64)
+	at org.gradle.internal.session.DefaultBuildSessionContext.execute(DefaultBuildSessionContext.java:46)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter$ActionImpl.apply(BuildSessionLifecycleBuildActionExecuter.java:100)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter$ActionImpl.apply(BuildSessionLifecycleBuildActionExecuter.java:88)
+	at org.gradle.internal.session.BuildSessionState.run(BuildSessionState.java:69)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter.execute(BuildSessionLifecycleBuildActionExecuter.java:62)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter.execute(BuildSessionLifecycleBuildActionExecuter.java:41)
+	at org.gradle.tooling.internal.provider.StartParamsValidatingActionExecuter.execute(StartParamsValidatingActionExecuter.java:64)
+	at org.gradle.tooling.internal.provider.StartParamsValidatingActionExecuter.execute(StartParamsValidatingActionExecuter.java:32)
+	at org.gradle.tooling.internal.provider.SessionFailureReportingActionExecuter.execute(SessionFailureReportingActionExecuter.java:50)
+	at org.gradle.tooling.internal.provider.SessionFailureReportingActionExecuter.execute(SessionFailureReportingActionExecuter.java:38)
+	at org.gradle.tooling.internal.provider.SetupLoggingActionExecuter.execute(SetupLoggingActionExecuter.java:47)
+	at org.gradle.tooling.internal.provider.SetupLoggingActionExecuter.execute(SetupLoggingActionExecuter.java:31)
+	at org.gradle.launcher.daemon.server.exec.ExecuteBuild.doBuild(ExecuteBuild.java:65)
+	at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:37)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.WatchForDisconnection.execute(WatchForDisconnection.java:39)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.ResetDeprecationLogger.execute(ResetDeprecationLogger.java:29)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.RequestStopIfSingleUsedDaemon.execute(RequestStopIfSingleUsedDaemon.java:35)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.ForwardClientInput$2.create(ForwardClientInput.java:78)
+	at org.gradle.launcher.daemon.server.exec.ForwardClientInput$2.create(ForwardClientInput.java:75)
+	at org.gradle.util.internal.Swapper.swap(Swapper.java:38)
+	at org.gradle.launcher.daemon.server.exec.ForwardClientInput.execute(ForwardClientInput.java:75)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.LogAndCheckHealth.execute(LogAndCheckHealth.java:64)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.LogToClient.doBuild(LogToClient.java:63)
+	at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:37)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.EstablishBuildEnvironment.doBuild(EstablishBuildEnvironment.java:84)
+	at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:37)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.StartBuildOrRespondWithBusy$1.run(StartBuildOrRespondWithBusy.java:52)
+	at org.gradle.launcher.daemon.server.DaemonStateCoordinator$1.run(DaemonStateCoordinator.java:297)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: org.gradle.internal.snapshot.impl.IsolationException: Could not isolate value org.jetbrains.kotlin.gradle.plugin.statistics.BuildFlowService$Parameters_Decorated@5d182d03 of type BuildFlowService.Parameters
+	at org.gradle.internal.snapshot.impl.DefaultIsolatableFactory.isolate(DefaultIsolatableFactory.java:51)
+	at org.gradle.api.services.internal.RegisteredBuildServiceProvider.instantiate(RegisteredBuildServiceProvider.java:127)
+	at org.gradle.api.services.internal.RegisteredBuildServiceProvider.getInstance(RegisteredBuildServiceProvider.java:118)
+	at org.gradle.api.services.internal.RegisteredBuildServiceProvider.calculateOwnValue(RegisteredBuildServiceProvider.java:111)
+	at org.gradle.api.internal.provider.AbstractMinimalProvider.calculateValue(AbstractMinimalProvider.java:108)
+	at org.gradle.api.internal.provider.DefaultProperty.calculateValueFrom(DefaultProperty.java:128)
+	at org.gradle.api.internal.provider.DefaultProperty.calculateValueFrom(DefaultProperty.java:26)
+	at org.gradle.api.internal.provider.AbstractProperty.doCalculateValue(AbstractProperty.java:142)
+	... 121 more
+Caused by: org.gradle.api.ProjectConfigurationException: A problem occurred configuring project ':app'.
+	at org.gradle.configuration.project.LifecycleProjectEvaluator.wrapException(LifecycleProjectEvaluator.java:84)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator.addConfigurationFailure(LifecycleProjectEvaluator.java:77)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator.access$400(LifecycleProjectEvaluator.java:55)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$NotifyAfterEvaluate.run(LifecycleProjectEvaluator.java:255)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$EvaluateProject.lambda$run$0(LifecycleProjectEvaluator.java:114)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.lambda$applyToMutableState$1(DefaultProjectStateRegistry.java:395)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.lambda$fromMutableState$2(DefaultProjectStateRegistry.java:418)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withReplacedLocks(DefaultWorkerLeaseService.java:345)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.fromMutableState(DefaultProjectStateRegistry.java:418)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.applyToMutableState(DefaultProjectStateRegistry.java:394)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$EvaluateProject.run(LifecycleProjectEvaluator.java:100)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator.evaluate(LifecycleProjectEvaluator.java:72)
+	at org.gradle.api.internal.project.DefaultProject.evaluate(DefaultProject.java:782)
+	at org.gradle.api.internal.project.DefaultProject.evaluate(DefaultProject.java:156)
+	at org.gradle.api.internal.project.ProjectLifecycleController.lambda$ensureSelfConfigured$2(ProjectLifecycleController.java:84)
+	at org.gradle.internal.model.StateTransitionController.lambda$doTransition$14(StateTransitionController.java:255)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:254)
+	at org.gradle.internal.model.StateTransitionController.lambda$maybeTransitionIfNotCurrentlyTransitioning$10(StateTransitionController.java:199)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:34)
+	at org.gradle.internal.model.StateTransitionController.maybeTransitionIfNotCurrentlyTransitioning(StateTransitionController.java:195)
+	at org.gradle.api.internal.project.ProjectLifecycleController.ensureSelfConfigured(ProjectLifecycleController.java:84)
+	at org.gradle.api.internal.project.DefaultProjectStateRegistry$ProjectStateImpl.ensureConfigured(DefaultProjectStateRegistry.java:369)
+	at org.gradle.execution.TaskPathProjectEvaluator.configure(TaskPathProjectEvaluator.java:33)
+	at org.gradle.execution.TaskPathProjectEvaluator.configureHierarchy(TaskPathProjectEvaluator.java:49)
+	at org.gradle.configuration.DefaultProjectsPreparer.prepareProjects(DefaultProjectsPreparer.java:42)
+	at org.gradle.configuration.BuildTreePreparingProjectsPreparer.prepareProjects(BuildTreePreparingProjectsPreparer.java:65)
+	at org.gradle.configuration.BuildOperationFiringProjectsPreparer$ConfigureBuild.run(BuildOperationFiringProjectsPreparer.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.configuration.BuildOperationFiringProjectsPreparer.prepareProjects(BuildOperationFiringProjectsPreparer.java:40)
+	at org.gradle.initialization.VintageBuildModelController.lambda$prepareProjects$2(VintageBuildModelController.java:84)
+	at org.gradle.internal.model.StateTransitionController.lambda$doTransition$14(StateTransitionController.java:255)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:254)
+	at org.gradle.internal.model.StateTransitionController.lambda$transitionIfNotPreviously$11(StateTransitionController.java:213)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:34)
+	at org.gradle.internal.model.StateTransitionController.transitionIfNotPreviously(StateTransitionController.java:209)
+	at org.gradle.initialization.VintageBuildModelController.prepareProjects(VintageBuildModelController.java:84)
+	at org.gradle.initialization.VintageBuildModelController.prepareToScheduleTasks(VintageBuildModelController.java:71)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$prepareToScheduleTasks$6(DefaultBuildLifecycleController.java:172)
+	at org.gradle.internal.model.StateTransitionController.lambda$doTransition$14(StateTransitionController.java:255)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:254)
+	at org.gradle.internal.model.StateTransitionController.lambda$maybeTransition$9(StateTransitionController.java:190)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:34)
+	at org.gradle.internal.model.StateTransitionController.maybeTransition(StateTransitionController.java:186)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.prepareToScheduleTasks(DefaultBuildLifecycleController.java:170)
+	at org.gradle.internal.buildtree.DefaultBuildTreeWorkPreparer.scheduleRequestedTasks(DefaultBuildTreeWorkPreparer.java:36)
+	at org.gradle.configurationcache.VintageBuildTreeWorkController$scheduleAndRunRequestedTasks$1.apply(VintageBuildTreeWorkController.kt:36)
+	at org.gradle.configurationcache.VintageBuildTreeWorkController$scheduleAndRunRequestedTasks$1.apply(VintageBuildTreeWorkController.kt:35)
+	at org.gradle.composite.internal.DefaultIncludedBuildTaskGraph.withNewWorkGraph(DefaultIncludedBuildTaskGraph.java:112)
+	at org.gradle.configurationcache.VintageBuildTreeWorkController.scheduleAndRunRequestedTasks(VintageBuildTreeWorkController.kt:35)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.lambda$scheduleAndRunTasks$1(DefaultBuildTreeLifecycleController.java:68)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.lambda$runBuild$4(DefaultBuildTreeLifecycleController.java:98)
+	at org.gradle.internal.model.StateTransitionController.lambda$transition$6(StateTransitionController.java:169)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.lambda$transition$7(StateTransitionController.java:169)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:44)
+	at org.gradle.internal.model.StateTransitionController.transition(StateTransitionController.java:169)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.runBuild(DefaultBuildTreeLifecycleController.java:95)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.scheduleAndRunTasks(DefaultBuildTreeLifecycleController.java:68)
+	at org.gradle.internal.buildtree.DefaultBuildTreeLifecycleController.scheduleAndRunTasks(DefaultBuildTreeLifecycleController.java:63)
+	at org.gradle.tooling.internal.provider.ExecuteBuildActionRunner.run(ExecuteBuildActionRunner.java:31)
+	at org.gradle.launcher.exec.ChainingBuildActionRunner.run(ChainingBuildActionRunner.java:35)
+	at org.gradle.internal.buildtree.ProblemReportingBuildActionRunner.run(ProblemReportingBuildActionRunner.java:49)
+	at org.gradle.launcher.exec.BuildOutcomeReportingBuildActionRunner.run(BuildOutcomeReportingBuildActionRunner.java:65)
+	at org.gradle.tooling.internal.provider.FileSystemWatchingBuildActionRunner.run(FileSystemWatchingBuildActionRunner.java:140)
+	at org.gradle.launcher.exec.BuildCompletionNotifyingBuildActionRunner.run(BuildCompletionNotifyingBuildActionRunner.java:41)
+	at org.gradle.launcher.exec.RootBuildLifecycleBuildActionExecutor.lambda$execute$0(RootBuildLifecycleBuildActionExecutor.java:40)
+	at org.gradle.composite.internal.DefaultRootBuildState.run(DefaultRootBuildState.java:122)
+	at org.gradle.launcher.exec.RootBuildLifecycleBuildActionExecutor.execute(RootBuildLifecycleBuildActionExecutor.java:40)
+	at org.gradle.internal.buildtree.InitDeprecationLoggingActionExecutor.execute(InitDeprecationLoggingActionExecutor.java:58)
+	at org.gradle.internal.buildtree.DefaultBuildTreeContext.execute(DefaultBuildTreeContext.java:40)
+	at org.gradle.launcher.exec.BuildTreeLifecycleBuildActionExecutor.lambda$execute$0(BuildTreeLifecycleBuildActionExecutor.java:65)
+	at org.gradle.internal.buildtree.BuildTreeState.run(BuildTreeState.java:53)
+	at org.gradle.launcher.exec.BuildTreeLifecycleBuildActionExecutor.execute(BuildTreeLifecycleBuildActionExecutor.java:65)
+	at org.gradle.launcher.exec.RunAsBuildOperationBuildActionExecutor$3.call(RunAsBuildOperationBuildActionExecutor.java:61)
+	at org.gradle.launcher.exec.RunAsBuildOperationBuildActionExecutor$3.call(RunAsBuildOperationBuildActionExecutor.java:57)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:199)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
+	at org.gradle.launcher.exec.RunAsBuildOperationBuildActionExecutor.execute(RunAsBuildOperationBuildActionExecutor.java:57)
+	at org.gradle.launcher.exec.RunAsWorkerThreadBuildActionExecutor.lambda$execute$0(RunAsWorkerThreadBuildActionExecutor.java:36)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:249)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:109)
+	at org.gradle.launcher.exec.RunAsWorkerThreadBuildActionExecutor.execute(RunAsWorkerThreadBuildActionExecutor.java:36)
+	at org.gradle.tooling.internal.provider.continuous.ContinuousBuildActionExecutor.execute(ContinuousBuildActionExecutor.java:110)
+	at org.gradle.tooling.internal.provider.SubscribableBuildActionExecutor.execute(SubscribableBuildActionExecutor.java:64)
+	at org.gradle.internal.session.DefaultBuildSessionContext.execute(DefaultBuildSessionContext.java:46)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter$ActionImpl.apply(BuildSessionLifecycleBuildActionExecuter.java:100)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter$ActionImpl.apply(BuildSessionLifecycleBuildActionExecuter.java:88)
+	at org.gradle.internal.session.BuildSessionState.run(BuildSessionState.java:69)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter.execute(BuildSessionLifecycleBuildActionExecuter.java:62)
+	at org.gradle.tooling.internal.provider.BuildSessionLifecycleBuildActionExecuter.execute(BuildSessionLifecycleBuildActionExecuter.java:41)
+	at org.gradle.tooling.internal.provider.StartParamsValidatingActionExecuter.execute(StartParamsValidatingActionExecuter.java:64)
+	at org.gradle.tooling.internal.provider.StartParamsValidatingActionExecuter.execute(StartParamsValidatingActionExecuter.java:32)
+	at org.gradle.tooling.internal.provider.SessionFailureReportingActionExecuter.execute(SessionFailureReportingActionExecuter.java:50)
+	at org.gradle.tooling.internal.provider.SessionFailureReportingActionExecuter.execute(SessionFailureReportingActionExecuter.java:38)
+	at org.gradle.tooling.internal.provider.SetupLoggingActionExecuter.execute(SetupLoggingActionExecuter.java:47)
+	at org.gradle.tooling.internal.provider.SetupLoggingActionExecuter.execute(SetupLoggingActionExecuter.java:31)
+	at org.gradle.launcher.daemon.server.exec.ExecuteBuild.doBuild(ExecuteBuild.java:65)
+	at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:37)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.WatchForDisconnection.execute(WatchForDisconnection.java:39)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.ResetDeprecationLogger.execute(ResetDeprecationLogger.java:29)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.RequestStopIfSingleUsedDaemon.execute(RequestStopIfSingleUsedDaemon.java:35)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.ForwardClientInput$2.create(ForwardClientInput.java:78)
+	at org.gradle.launcher.daemon.server.exec.ForwardClientInput$2.create(ForwardClientInput.java:75)
+	at org.gradle.util.internal.Swapper.swap(Swapper.java:38)
+	at org.gradle.launcher.daemon.server.exec.ForwardClientInput.execute(ForwardClientInput.java:75)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.LogAndCheckHealth.execute(LogAndCheckHealth.java:64)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.LogToClient.doBuild(LogToClient.java:63)
+	at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:37)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.EstablishBuildEnvironment.doBuild(EstablishBuildEnvironment.java:84)
+	at org.gradle.launcher.daemon.server.exec.BuildCommandOnly.execute(BuildCommandOnly.java:37)
+	at org.gradle.launcher.daemon.server.api.DaemonCommandExecution.proceed(DaemonCommandExecution.java:104)
+	at org.gradle.launcher.daemon.server.exec.StartBuildOrRespondWithBusy$1.run(StartBuildOrRespondWithBusy.java:52)
+	at org.gradle.launcher.daemon.server.DaemonStateCoordinator$1.run(DaemonStateCoordinator.java:297)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+Caused by: com.android.builder.errors.EvalIssueException: defaultConfig contains custom BuildConfig fields, but the feature is disabled.
+To enable the feature, add the following to your module-level build.gradle:
+`android.buildFeatures.buildConfig true`
+	at com.android.builder.errors.IssueReporter.reportError(IssueReporter.kt:114)
+	at com.android.builder.errors.IssueReporter.reportError$default(IssueReporter.kt:110)
+	at com.android.builder.errors.IssueReporter.reportError(IssueReporter.kt)
+	at com.android.build.gradle.internal.variant.BaseVariantFactory.validateBuildConfig(BaseVariantFactory.java:228)
+	at com.android.build.gradle.internal.variant.BaseVariantFactory.preVariantCallback(BaseVariantFactory.java:208)
+	at com.android.build.gradle.internal.variant.AbstractAppVariantFactory.preVariantCallback(AbstractAppVariantFactory.kt:74)
+	at com.android.build.gradle.internal.VariantManager.createVariants(VariantManager.kt:182)
+	at com.android.build.gradle.internal.plugins.BasePlugin.createAndroidTasks(BasePlugin.kt:723)
+	at com.android.build.gradle.internal.plugins.BasePlugin$createTasks$2$1.call(BasePlugin.kt:610)
+	at com.android.build.gradle.internal.profile.NoOpAnalyticsConfiguratorService.recordBlock(NoOpAnalyticsConfiguratorService.kt:53)
+	at com.android.build.gradle.internal.plugins.BasePlugin$createTasks$2.accept(BasePlugin.kt:605)
+	at com.android.build.gradle.internal.plugins.BasePlugin$createTasks$2.accept(BasePlugin.kt:602)
+	at com.android.build.gradle.internal.crash.CrashReporting$afterEvaluate$1.execute(crash_reporting.kt:37)
+	at com.android.build.gradle.internal.crash.CrashReporting$afterEvaluate$1.execute(crash_reporting.kt:35)
+	at org.gradle.configuration.internal.DefaultUserCodeApplicationContext$CurrentApplication$1.execute(DefaultUserCodeApplicationContext.java:123)
+	at org.gradle.configuration.internal.DefaultListenerBuildOperationDecorator$BuildOperationEmittingAction$1.run(DefaultListenerBuildOperationDecorator.java:171)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.configuration.internal.DefaultListenerBuildOperationDecorator$BuildOperationEmittingAction.execute(DefaultListenerBuildOperationDecorator.java:168)
+	at org.gradle.internal.event.BroadcastDispatch$ActionInvocationHandler.dispatch(BroadcastDispatch.java:97)
+	at org.gradle.internal.event.BroadcastDispatch$ActionInvocationHandler.dispatch(BroadcastDispatch.java:85)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:43)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:257)
+	at org.gradle.internal.event.BroadcastDispatch$SingletonDispatch.dispatch(BroadcastDispatch.java:164)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:83)
+	at org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:69)
+	at org.gradle.internal.event.BroadcastDispatch$CompositeDispatch.dispatch(BroadcastDispatch.java:363)
+	at org.gradle.internal.event.BroadcastDispatch$CompositeDispatch.dispatch(BroadcastDispatch.java:261)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:148)
+	at org.gradle.internal.event.ListenerBroadcast.dispatch(ListenerBroadcast.java:37)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:94)
+	at jdk.proxy1/jdk.proxy1.$Proxy57.afterEvaluate(Unknown Source)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$NotifyAfterEvaluate$1.execute(LifecycleProjectEvaluator.java:247)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$NotifyAfterEvaluate$1.execute(LifecycleProjectEvaluator.java:244)
+	at org.gradle.api.internal.project.DefaultProject.stepEvaluationListener(DefaultProject.java:1486)
+	at org.gradle.configuration.project.LifecycleProjectEvaluator$NotifyAfterEvaluate.run(LifecycleProjectEvaluator.java:253)
+	... 150 more
+
+==============================================================================
+
+BUILD FAILED in 46s
