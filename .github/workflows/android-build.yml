@@ -37,6 +37,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -128,28 +129,38 @@ jobs:
           } >> "$GITHUB_ENV"
           ls -lh "$HOME/release.jks" || true
 
-      # -------- Build（采集日志）---------
+      # -------- Build（采集完整日志 + 保证退出码）---------
       - name: Build
         id: build
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
           mkdir -p build-logs
-          if [ -z "${KS}" ]; then
-            echo "No keystore → build Debug"
-            ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace --info \
-              | tee build-logs/build.log
-            OUTDIR=app/build/outputs/apk/debug
-            VARIANT=debug
-          else
-            echo "Keystore present → build Release"
-            ./gradlew :app:clean :app:assembleRelease -x lint --stacktrace --info \
-              | tee build-logs/build.log
-            OUTDIR=app/build/outputs/apk/release
-            VARIANT=release
+          export GRADLE_OPTS="-Dorg.gradle.jvmargs='-Xmx2g -XX:+HeapDumpOnOutOfMemoryError'"
+
+          echo "== TRY Release =="
+          ./gradlew :app:clean :app:assembleRelease -x lint --no-daemon --stacktrace --info --warning-mode all 2>&1 \
+            | tee build-logs/build-release.log
+          rc=${PIPESTATUS[0]}
+
+          OUTDIR="app/build/outputs/apk/release"
+          VARIANT="release"
+
+          if [ $rc -ne 0 ] || [ ! -d "$OUTDIR" ]; then
+            echo "Release failed ($rc) or no outputs -> TRY Debug"
+            ./gradlew :app:clean :app:assembleDebug -x lint --no-daemon --stacktrace --info --warning-mode all 2>&1 \
+              | tee build-logs/build-debug.log
+            rc=${PIPESTATUS[0]}
+            OUTDIR="app/build/outputs/apk/debug"
+            VARIANT="debug"
           fi
+
+          # 汇总统一日志
+          cat build-logs/build-release.log build-logs/build-debug.log > build-logs/build.log || true
+
           echo "APK_DIR=$OUTDIR"  >> "$GITHUB_ENV"
           echo "VARIANT=$VARIANT" >> "$GITHUB_ENV"
+          exit $rc
 
       - name: NDJC | Upload build logs (on failure too)
         if: always()
@@ -163,15 +174,17 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          echo "---- build.log (last 200 lines) ----"
-          tail -n 200 build-logs/build.log || true
+          echo "---- build.log (last 400 lines) ----"
+          tail -n 400 build-logs/build.log || true
+          echo "---- outputs tree ----"
+          (ls -lah app/build/outputs || true)
       # -------- Build End --------
 
       - name: Pick APK
         id: pick
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
           SIGNED=$(ls -t "$APK_DIR"/*.apk 2>/dev/null | grep -Ev -- '-unsigned\.apk$' | head -n1 || true)
           UNSIGNED=$(ls -t "$APK_DIR"/*-unsigned.apk 2>/dev/null | head -n1 || true)
           APK=""
@@ -224,7 +237,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
           REQ_DIR="requests/${RUN_ID}"
           mkdir -p "$REQ_DIR"
           cp -r build-logs "$REQ_DIR/" 2>/dev/null || true
