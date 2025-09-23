@@ -18,9 +18,9 @@ android {
         versionName '1.0.0'                          // NDJC:VERSION_NAME
 
         // 将运行ID等注入到 BuildConfig
-        buildConfigField "String", "NDJC_RUN_ID", "\"\""     // NDJC:BUILD_META_RUNID / NDJC:RUN_ID
-        buildConfigField "String", "NDJC_LOG_LEVEL", "\"info\"" // NDJC:LOG_LEVEL
-        buildConfigField "boolean", "NDJC_DEBUG_LOG", "false"   // NDJC:DEBUG_LOG_ENABLED
+        buildConfigField "String",  "NDJC_RUN_ID",   "\"\""      // NDJC:BUILD_META_RUNID / NDJC:RUN_ID
+        buildConfigField "String",  "NDJC_LOG_LEVEL","\"info\""  // NDJC:LOG_LEVEL
+        buildConfigField "boolean", "NDJC_DEBUG_LOG","false"     // NDJC:DEBUG_LOG_ENABLED
 
         // NDJC:RES_CONFIGS  (例：resConfigs 'en', 'zh-CN')
         vectorDrawables { useSupportLibrary = true }
@@ -48,8 +48,14 @@ android {
         // 例：resources.excludes += ['META-INF/LICENSE*','META-INF/AL2.0','META-INF/LGPL2.1']
     }
 
-    buildFeatures { compose true }
+    buildFeatures {
+        compose true
+        // ✅ AGP 8+ 默认关闭 BuildConfig，开启以支持 defaultConfig 中的 buildConfigField
+        buildConfig true
+    }
+
     composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
+
     kotlinOptions {
         jvmTarget = "17"
         freeCompilerArgs += ["-Xjvm-default=all"]
@@ -69,7 +75,7 @@ dependencies {
     implementation "androidx.core:core-ktx:1.13.1"
 
     // IF:PERMISSION.NOTIFICATION
-    implementation "androidx.core:core-ktx:1.13.1"
+    // （原来这里重复了一次 core-ktx，已去重）
     // ENDIF
 
     debugImplementation "androidx.compose.ui:ui-tooling"
