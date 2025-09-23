@@ -1,5 +1,7 @@
-# 供上游应用在合并 R8 时继承；目前保守默认
--keep @androidx.annotation.Keep class * { *; }
--keepclassmembers class * { @androidx.annotation.Keep *; }
+# Compose / Navigation 基础 keep
+-keep class androidx.navigation.** { *; }
+-keep class androidx.compose.** { *; }
+-dontwarn androidx.compose.**
 
-# （如你的库对外暴露反射/序列化入口，可在此补充）
+# LIST:PROGUARD_EXTRA
+# 例：-keep class com.example.lib.** { *; }
