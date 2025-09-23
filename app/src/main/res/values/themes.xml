@@ -1,24 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="NDJCTheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- 夜间策略：由  影响（Auto/On/Off，可由生成器调整AppCompatDelegate） -->
 
-    <!-- App 全局主题（Material3 / 无 ActionBar） -->
-    <style name="Theme.NDJC" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- 注入 M3 ColorScheme 或直接 item 覆写，例如：
+        <item name="colorPrimary">@android:color/holo_blue_light</item>
+        <item name="colorSecondary">@android:color/holo_green_light</item>
+        -->
+        <!-- END_BLOCK -->
 
-        <!-- 以 ndjc_* 颜色为准，可被锚点动态注入 -->
-        <item name="colorPrimary">@color/ndjc_color_primary</item>
-        <item name="colorOnPrimary">@color/ndjc_color_on_primary</item>
-
-        <item name="colorSecondary">@color/ndjc_color_secondary</item>
-        <item name="colorOnSecondary">@color/black</item>
-
-        <item name="colorError">@color/errorColor</item>
-        <item name="colorOnError">@color/white</item>
-
-        <!-- 状态栏/导航栏可选覆盖（如需） -->
-        <!-- <item name="android:statusBarColor">?attr/colorPrimary</item> -->
-        <!-- <item name="android:navigationBarColor">?attr/colorPrimary</item> -->
-
-        <!-- 额外覆写项锚点（需要时由编排器注入） -->
-
+        <!-- 可注入 fontFamily（ Display/Body 尺寸覆写 -->
+        <!-- END_BLOCK -->
     </style>
 </resources>
