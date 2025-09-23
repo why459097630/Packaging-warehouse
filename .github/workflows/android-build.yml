@@ -117,6 +117,19 @@ jobs:
           if-no-files-found: ignore
       # ---------- Preflight End ----------
 
+      - name: Decode keystore (optional)
+        if: ${{ env.KS != '' }}
+        run: |
+          echo "${KS}" | base64 -d > "$HOME/release.jks"
+          {
+            echo "NDJC_KEYSTORE_PATH=$HOME/release.jks"
+            echo "NDJC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+            echo "NDJC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}"
+            echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}"
+          } >> "$GITHUB_ENV"
+          ls -lh "$HOME/release.jks" || true
+
+      # -------- Build（采集日志）---------
       - name: Build
         id: build
         shell: bash
@@ -136,7 +149,6 @@ jobs:
             OUTDIR=app/build/outputs/apk/release
             VARIANT=release
           fi
-          # 写入缺省，避免后续步骤变量未定义
           echo "APK_DIR=${OUTDIR:-app/build/outputs/apk/debug}" >> "$GITHUB_ENV"
           echo "VARIANT=${VARIANT:-debug}" >> "$GITHUB_ENV"
 
@@ -154,7 +166,34 @@ jobs:
         run: |
           echo "---- build.log (last 200 lines) ----"
           tail -n 200 build-logs/build.log || true
-      # -------- Build End --------
+
+      - name: NDJC | Extract errors to summary
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs
+          ERR1="build-logs/error-section.txt"
+          ERR2="build-logs/error-lines.txt"
+          # 优先抽取 `* What went wrong` 段
+          awk 'flag{print} /\* What went wrong/{flag=1} /\* Try:/{flag=0}' build-logs/build.log > "$ERR1" || true
+          # 备选：匹配典型错误行
+          grep -nE "^(FAILURE: Build failed|> Task|Caused by:|^\s*Error:)" build-logs/build.log > "$ERR2" || true
+          {
+            echo "### NDJC Build Error Extract"
+            echo
+            if [ -s "$ERR1" ]; then
+              echo "**What went wrong**"
+              echo
+              echo '```text'; sed -n '1,300p' "$ERR1"; echo '```'
+            fi
+            if [ -s "$ERR2" ]; then
+              echo
+              echo "**Key error lines**"
+              echo
+              echo '```text'; sed -n '1,200p' "$ERR2"; echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Pick APK
         id: pick
@@ -208,28 +247,25 @@ jobs:
           path: ${{ env.APK }}
           if-no-files-found: error
 
-      # ---------- 写回 logs 到 requests/<RUN_ID>/（容错版本） ----------
+      # ---------- 写回 logs 到 requests/<RUN_ID>/ ----------
       - name: NDJC | Write back logs to repo (requests/<RUN_ID>/)
         if: always()
         shell: bash
         continue-on-error: true
         run: |
-          set -eo pipefail   # 不用 -u，避免未定义变量导致退出
+          set -eo pipefail
           REQ_DIR="requests/${RUN_ID}"
           mkdir -p "$REQ_DIR"
           cp -r build-logs "$REQ_DIR/" 2>/dev/null || true
-
           BRANCH="${BUILD_BRANCH:-unknown}"
           VAR="${VARIANT:-unknown}"
           APK_PATH="${APK:-}"
-
           {
             echo "branch=${BRANCH}"
             echo "variant=${VAR}"
             echo "apk=${APK_PATH}"
             echo "ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           } > "${REQ_DIR}/actions-summary.txt"
-
           git config user.name  "ndjc-bot"
           git config user.email "ndjc-bot@users.noreply.github.com"
           git add "${REQ_DIR}" || true
@@ -242,5 +278,5 @@ jobs:
           echo "### NDJC Build Result" >> "$GITHUB_STEP_SUMMARY"
           echo "- runId: \`${RUN_ID}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- branch: \`${BUILD_BRANCH}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- variant: \`${VARIANT:-}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- apk: \`${APK:-}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- variant: \`${VARIANT:-unknown}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- apk: \`${APK:-not-found}\`" >> "$GITHUB_STEP_SUMMARY"
