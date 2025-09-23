@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    package="com.ndjc.app"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- com.ndjc.demo.core -->
+
+    <!-- ===== Permissions (条件锚点) ===== -->
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- ENDIF -->
+
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- ENDIF -->
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- ENDIF -->
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- ENDIF -->
+
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- ENDIF -->
+
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- ENDIF -->
+
+    <!-- ===== Application ===== -->
+    <!-- 仅允许存在一个 <application android:label="NDJC core">。生成器若启用 IF:NETWORK.CLEAR_TEXT，
+         会在 *这个* 起始标签上追加：
+           android:usesCleartextTraffic="true"
+           android:networkSecurityConfig="@xml/network_security_config"
+         （不要把注释写进起始标签内部，以免破坏 XML） -->
+
+    <application
+        android:name=".App"
+        android:allowBackup="true"
+        android:label="@string/app_name"    <!-- NDJC core -->
+        android:icon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/NDJCTheme">
+
+        <!-- 可注入 Splash 配置或占位 Activity/Theme 片段 -->
+        <!-- END_BLOCK -->
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        <!-- ENDIF -->
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ShareProxyActivity"
+            android:exported="true" />
+        <!-- ENDIF -->
+
+    </application>
+</manifest>
