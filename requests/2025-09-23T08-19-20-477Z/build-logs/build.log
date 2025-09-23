@@ -1,0 +1,490 @@
+Downloading https://services.gradle.org/distributions/gradle-8.2.1-all.zip
+..................10%..................20%...................30%..................40%...................50%..................60%..................70%...................80%..................90%...................100%
+Initialized native services in: /home/runner/.gradle/native
+Initialized jansi services in: /home/runner/.gradle/native
+
+Welcome to Gradle 8.2.1!
+
+Here are the highlights of this release:
+ - Kotlin DSL: new reference documentation, assignment syntax by default
+ - Kotlin DSL is now the default with Gradle init
+ - Improved suggestions to resolve errors in console output
+ - Reduced sync memory consumption
+
+For more details see https://docs.gradle.org/8.2.1/release-notes.html
+
+Received JVM installation metadata from '/usr/lib/jvm/temurin-17-jdk-amd64': {JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64, JAVA_VERSION=17.0.16, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=17.0.16+8, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=17.0.16+8, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+Removing 0 daemon stop events from registry
+Starting a Gradle Daemon (subsequent builds will be faster)
+Starting process 'Gradle build daemon'. Working directory: /home/runner/.gradle/daemon/8.2.1 Command: /usr/lib/jvm/temurin-17-jdk-amd64/bin/java --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED -Xmx2048m -Dfile.encoding=UTF-8 -Duser.country -Duser.language=en -Duser.variant -cp /home/runner/.gradle/wrapper/dists/gradle-8.2.1-all/d8pvvlun5bx6sdtwqhf8y9z4b/gradle-8.2.1/lib/gradle-launcher-8.2.1.jar -javaagent:/home/runner/.gradle/wrapper/dists/gradle-8.2.1-all/d8pvvlun5bx6sdtwqhf8y9z4b/gradle-8.2.1/lib/agents/gradle-instrumentation-agent-8.2.1.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 8.2.1
+Successfully started process 'Gradle build daemon'
+An attempt to start the daemon took 1.287 secs.
+The client will now receive all logging from the daemon (pid: 1982). The daemon log file: /home/runner/.gradle/daemon/8.2.1/daemon-1982.out.log
+Starting build in new daemon [memory: 2 GiB]
+Closing daemon's stdin at end of input.
+The daemon will no longer process any standard input.
+Using 4 worker leases.
+Received JVM installation metadata from '/usr/lib/jvm/temurin-17-jdk-amd64': {JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64, JAVA_VERSION=17.0.16, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=17.0.16+8, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=17.0.16+8, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+Watching the file system is configured to be enabled if available
+Now considering [/home/runner/work/Packaging-warehouse/Packaging-warehouse] as hierarchies to watch
+File system watching is active
+Compiling initialization script '/home/runner/.gradle/init.d/gradle-actions.build-result-capture.init.gradle' using SubsetScriptTransformer.
+Compiling initialization script '/home/runner/.gradle/init.d/gradle-actions.build-result-capture.init.gradle' using BuildScriptTransformer.
+Compiling initialization script '/home/runner/.gradle/init.d/gradle-actions.github-dependency-graph.init.gradle' using SubsetScriptTransformer.
+Compiling initialization script '/home/runner/.gradle/init.d/gradle-actions.github-dependency-graph.init.gradle' using BuildScriptTransformer.
+Compiling initialization script '/home/runner/.gradle/init.d/gradle-actions.inject-develocity.init.gradle' using SubsetScriptTransformer.
+Compiling initialization script '/home/runner/.gradle/init.d/gradle-actions.inject-develocity.init.gradle' using BuildScriptTransformer.
+Starting Build
+Compiling settings file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/settings.gradle' using SubsetScriptTransformer.
+Compiling settings file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/settings.gradle' using BuildScriptTransformer.
+Settings evaluated using settings file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/settings.gradle'.
+Compiling script '/home/runner/.gradle/init.d/gradle-actions.build-result-capture-service.plugin.groovy' using SubsetScriptTransformer.
+Compiling script '/home/runner/.gradle/init.d/gradle-actions.build-result-capture-service.plugin.groovy' using BuildScriptTransformer.
+Projects loaded. Root project using build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/build.gradle'.
+Included projects: [root project 'NDJCApp', project ':app']
+
+> Configure project :
+Evaluating root project 'NDJCApp' using build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/build.gradle'.
+Compiling build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/build.gradle' using SubsetScriptTransformer.
+The configuration detachedConfiguration1 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+The configuration detachedConfiguration1 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+The configuration detachedConfiguration1 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+The configuration detachedConfiguration1 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/application/com.android.application.gradle.plugin/8.2.2/com.android.application.gradle.plugin-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/application/com.android.application.gradle.plugin/8.2.2/com.android.application.gradle.plugin-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download4831274588448782707bin
+The configuration detachedConfiguration2 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+The configuration detachedConfiguration2 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+The configuration detachedConfiguration2 is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+The configuration detachedConfiguration2 is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/1.9.10/org.jetbrains.kotlin.android.gradle.plugin-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download16504904154350516113bin
+The configuration :classpath is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+The configuration :classpath is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+The configuration :classpath is both resolvable and consumable. This is considered a legacy configuration and it will eventually only be possible to be one of these.
+The configuration :classpath is both consumable and declarable. This combination is incorrect, only one of these flags should be set.
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/gradle/8.2.2/gradle-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.2.2/gradle-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download6292062698188022930bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.2.2/gradle-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download267714229489273249bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.9.10/kotlin-gradle-plugin-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download2068896840328444128bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugins-bom/1.9.10/kotlin-gradle-plugins-bom-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download8408489886836753675bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugins-bom/1.9.10/kotlin-gradle-plugins-bom-1.9.10.module to /home/runner/.gradle/.tmp/gradle_download13108184650190666476bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.9.10/kotlin-gradle-plugin-1.9.10.module to /home/runner/.gradle/.tmp/gradle_download8008290291785395630bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/sdk-common/31.2.2/sdk-common-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/gradle-settings-api/8.2.2/gradle-settings-api-8.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/sdklib/31.2.2/sdklib-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/repository/31.2.2/repository-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/sdk-common/31.2.2/sdk-common-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download2405689000674093221bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/ddms/ddmlib/31.2.2/ddmlib-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-settings-api/8.2.2/gradle-settings-api-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download3820493552507093664bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/sdklib/31.2.2/sdklib-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download6803496875638597529bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/repository/31.2.2/repository-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download16721774444567213768bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/aapt2-proto/8.2.2-10154469/aapt2-proto-8.2.2-10154469.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/aaptcompiler/8.2.2/aaptcompiler-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/ddms/ddmlib/31.2.2/ddmlib-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download2828256538968018492bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/analytics-library/crash/31.2.2/crash-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-settings-api/8.2.2/gradle-settings-api-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download12084232466139201467bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/aaptcompiler/8.2.2/aaptcompiler-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download15329166064746881086bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2-proto/8.2.2-10154469/aapt2-proto-8.2.2-10154469.pom to /home/runner/.gradle/.tmp/gradle_download16588925231867446799bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/analytics-library/shared/31.2.2/shared-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/crash/31.2.2/crash-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download17379960604973225943bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/lint/lint-model/31.2.2/lint-model-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/shared/31.2.2/shared-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download4980893225450635963bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2-proto/8.2.2-10154469/aapt2-proto-8.2.2-10154469.module to /home/runner/.gradle/.tmp/gradle_download2060028962613133687bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/lint/lint-typedef-remover/31.2.2/lint-typedef-remover-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/aaptcompiler/8.2.2/aaptcompiler-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download15739823386702537813bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/androidx/databinding/databinding-compiler-common/8.2.2/databinding-compiler-common-8.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/androidx/databinding/databinding-common/8.2.2/databinding-common-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/lint/lint-model/31.2.2/lint-model-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download10049506832067018050bin
+Downloading https://dl.google.com/dl/android/maven2/androidx/databinding/databinding-compiler-common/8.2.2/databinding-compiler-common-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download9194437982759779418bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/databinding/baseLibrary/8.2.2/baseLibrary-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/androidx/databinding/databinding-common/8.2.2/databinding-common-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download475484561230713568bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/builder-test-api/8.2.2/builder-test-api-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/lint/lint-typedef-remover/31.2.2/lint-typedef-remover-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download4062198364867698844bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/layoutlib/layoutlib-api/31.2.2/layoutlib-api-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-device-provider-ddmlib-proto/31.2.2/android-device-provider-ddmlib-proto-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/layoutlib/layoutlib-api/31.2.2/layoutlib-api-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download16128119453184852803bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-device-provider-ddmlib-proto/31.2.2/android-device-provider-ddmlib-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download16125468954030625173bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/databinding/baseLibrary/8.2.2/baseLibrary-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download9649480387800017370bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-host-additional-test-output-proto/31.2.2/android-test-plugin-host-additional-test-output-proto-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-device-provider-gradle-proto/31.2.2/android-device-provider-gradle-proto-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-test-api/8.2.2/builder-test-api-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download3478697975888957099bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-host-coverage-proto/31.2.2/android-test-plugin-host-coverage-proto-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-additional-test-output-proto/31.2.2/android-test-plugin-host-additional-test-output-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download7485385627680101723bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-test-api/8.2.2/builder-test-api-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download8990194998401904798bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-host-emulator-control-proto/31.2.2/android-test-plugin-host-emulator-control-proto-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-coverage-proto/31.2.2/android-test-plugin-host-coverage-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download2496203199939343388bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-host-logcat-proto/31.2.2/android-test-plugin-host-logcat-proto-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-host-apk-installer-proto/31.2.2/android-test-plugin-host-apk-installer-proto-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-device-provider-gradle-proto/31.2.2/android-device-provider-gradle-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download5219949988535242610bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-host-retention-proto/31.2.2/android-test-plugin-host-retention-proto-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-apk-installer-proto/31.2.2/android-test-plugin-host-apk-installer-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download12311083039331005142bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/utp/android-test-plugin-result-listener-gradle-proto/31.2.2/android-test-plugin-result-listener-gradle-proto-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-emulator-control-proto/31.2.2/android-test-plugin-host-emulator-control-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download14286431799328760485bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0/kotlin-stdlib-jdk8-1.9.0.pom to /home/runner/.gradle/.tmp/gradle_download3461353947800080146bin
+Downloading https://plugins.gradle.org/m2/com/android/tools/build/transform-api/2.0.0-deprecated-use-gradle-api/transform-api-2.0.0-deprecated-use-gradle-api.pom to /home/runner/.gradle/.tmp/gradle_download16050726516968899578bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-retention-proto/31.2.2/android-test-plugin-host-retention-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download13049267900895568112bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-logcat-proto/31.2.2/android-test-plugin-host-logcat-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download17400944754547327211bin
+Downloading https://plugins.gradle.org/m2/commons-io/commons-io/2.4/commons-io-2.4.pom to /home/runner/.gradle/.tmp/gradle_download11374254283616224698bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpmime/4.5.6/httpmime-4.5.6.pom to /home/runner/.gradle/.tmp/gradle_download13804338960981891441bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm/9.2/asm-9.2.pom to /home/runner/.gradle/.tmp/gradle_download2413517664914855605bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcomponents-client/4.5.6/httpcomponents-client-4.5.6.pom to /home/runner/.gradle/.tmp/gradle_download11624961479252727029bin
+Downloading https://plugins.gradle.org/m2/org/ow2/ow2/1.5/ow2-1.5.pom to /home/runner/.gradle/.tmp/gradle_download13356665856342415047bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-parent/25/commons-parent-25.pom to /home/runner/.gradle/.tmp/gradle_download2785844045077547260bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcomponents-parent/10/httpcomponents-parent-10.pom to /home/runner/.gradle/.tmp/gradle_download3260385370686649762bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-analysis/9.2/asm-analysis-9.2.pom to /home/runner/.gradle/.tmp/gradle_download15535522517691404135bin
+Downloading https://plugins.gradle.org/m2/org/apache/apache/18/apache-18.pom to /home/runner/.gradle/.tmp/gradle_download8280823683051417831bin
+Downloading https://plugins.gradle.org/m2/org/apache/apache/9/apache-9.pom to /home/runner/.gradle/.tmp/gradle_download3474036333409190611bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-commons/9.2/asm-commons-9.2.pom to /home/runner/.gradle/.tmp/gradle_download3927605325363892977bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-util/9.2/asm-util-9.2.pom to /home/runner/.gradle/.tmp/gradle_download4659382125014517611bin
+Downloading https://plugins.gradle.org/m2/org/bouncycastle/bcpkix-jdk15on/1.67/bcpkix-jdk15on-1.67.pom to /home/runner/.gradle/.tmp/gradle_download13956605006117027606bin
+Downloading https://plugins.gradle.org/m2/org/glassfish/jaxb/jaxb-runtime/2.3.2/jaxb-runtime-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download15495505052515215048bin
+Downloading https://plugins.gradle.org/m2/net/sf/jopt-simple/jopt-simple/4.9/jopt-simple-4.9.pom to /home/runner/.gradle/.tmp/gradle_download1051999201460667181bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/bundletool/1.15.2/bundletool-1.15.2.pom]
+Downloading https://plugins.gradle.org/m2/com/sun/xml/bind/mvn/jaxb-runtime-parent/2.3.2/jaxb-runtime-parent-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download18179356486649160608bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-result-listener-gradle-proto/31.2.2/android-test-plugin-result-listener-gradle-proto-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download7807108197756337777bin
+Downloading https://plugins.gradle.org/m2/org/sonatype/oss/oss-parent/7/oss-parent-7.pom to /home/runner/.gradle/.tmp/gradle_download7261012502953506639bin
+Downloading https://plugins.gradle.org/m2/com/sun/xml/bind/mvn/jaxb-parent/2.3.2/jaxb-parent-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download3796344449285475828bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta10/jetifier-core-1.0.0-beta10.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/jetifier/jetifier-processor/1.0.0-beta10/jetifier-processor-1.0.0-beta10.pom]
+Downloading https://plugins.gradle.org/m2/com/sun/xml/bind/jaxb-bom-ext/2.3.2/jaxb-bom-ext-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download11418217294812199949bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/bundletool/1.15.2/bundletool-1.15.2.pom to /home/runner/.gradle/.tmp/gradle_download18409239321154987230bin
+Downloading https://plugins.gradle.org/m2/org/glassfish/jaxb/jaxb-bom/2.3.2/jaxb-bom-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download4769763197664090592bin
+Downloading https://plugins.gradle.org/m2/org/eclipse/ee4j/project/1.0.5/project-1.0.5.pom to /home/runner/.gradle/.tmp/gradle_download4526053734882265552bin
+Downloading https://plugins.gradle.org/m2/com/squareup/javapoet/1.10.0/javapoet-1.10.0.pom to /home/runner/.gradle/.tmp/gradle_download2417928759810660620bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/jetifier/jetifier-processor/1.0.0-beta10/jetifier-processor-1.0.0-beta10.pom to /home/runner/.gradle/.tmp/gradle_download8935623468658413486bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta10/jetifier-core-1.0.0-beta10.pom to /home/runner/.gradle/.tmp/gradle_download786408674896273615bin
+Downloading https://plugins.gradle.org/m2/com/google/protobuf/protobuf-java/3.19.3/protobuf-java-3.19.3.pom to /home/runner/.gradle/.tmp/gradle_download16040551521342011461bin
+Downloading https://plugins.gradle.org/m2/com/google/protobuf/protobuf-java-util/3.19.3/protobuf-java-util-3.19.3.pom to /home/runner/.gradle/.tmp/gradle_download14718761731214536932bin
+Downloading https://plugins.gradle.org/m2/com/google/protobuf/protobuf-parent/3.19.3/protobuf-parent-3.19.3.pom to /home/runner/.gradle/.tmp/gradle_download18060770639524498738bin
+Downloading https://plugins.gradle.org/m2/com/google/protobuf/protobuf-bom/3.19.3/protobuf-bom-3.19.3.pom to /home/runner/.gradle/.tmp/gradle_download17202687262065452364bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-core/1.45.1/grpc-core-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download1154712433015507307bin
+Downloading https://plugins.gradle.org/m2/com/google/code/gson/gson/2.8.6/gson-2.8.6.pom to /home/runner/.gradle/.tmp/gradle_download5395805584582664803bin
+Downloading https://plugins.gradle.org/m2/com/google/code/gson/gson-parent/2.8.6/gson-parent-2.8.6.pom to /home/runner/.gradle/.tmp/gradle_download481701751327859251bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-netty/1.45.1/grpc-netty-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download11129283324160284171bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-stub/1.45.1/grpc-stub-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download9864145067181838151bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-protobuf/1.45.1/grpc-protobuf-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download16466835969988095732bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/google/testing/platform/core-proto/0.0.8-alpha08/core-proto-0.0.8-alpha08.pom]
+Downloading https://plugins.gradle.org/m2/com/google/crypto/tink/tink/1.7.0/tink-1.7.0.pom to /home/runner/.gradle/.tmp/gradle_download9320375026077780103bin
+Downloading https://plugins.gradle.org/m2/com/google/flatbuffers/flatbuffers-java/1.12.0/flatbuffers-java-1.12.0.pom to /home/runner/.gradle/.tmp/gradle_download7952503394118484840bin
+Downloading https://plugins.gradle.org/m2/org/tensorflow/tensorflow-lite-metadata/0.1.0-rc2/tensorflow-lite-metadata-0.1.0-rc2.pom to /home/runner/.gradle/.tmp/gradle_download8216923551985927662bin
+Downloading https://dl.google.com/dl/android/maven2/com/google/testing/platform/core-proto/0.0.8-alpha08/core-proto-0.0.8-alpha08.pom to /home/runner/.gradle/.tmp/gradle_download10313388773431846916bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta10/jetifier-core-1.0.0-beta10.module to /home/runner/.gradle/.tmp/gradle_download1326499474489676217bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/jetifier/jetifier-processor/1.0.0-beta10/jetifier-processor-1.0.0-beta10.module to /home/runner/.gradle/.tmp/gradle_download1832430290793860814bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/builder/8.2.2/builder-8.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/builder-model/8.2.2/builder-model-8.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/gradle-api/8.2.2/gradle-api-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.2.2/builder-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download7502815876255289107bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-model/8.2.2/builder-model-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download6806131770791134265bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-api/8.2.2/gradle-api-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download17669157789542239634bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.2.2/builder-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download1952874764376941767bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-api/8.2.2/gradle-api-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download16215960909035204613bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-model/8.2.2/builder-model-8.2.2.module to /home/runner/.gradle/.tmp/gradle_download14962433121806170954bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.9.10/kotlin-gradle-plugin-api-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download7431434204553945247bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.9.10/kotlin-gradle-plugin-api-1.9.10.module to /home/runner/.gradle/.tmp/gradle_download18054338959924862045bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.9.10/kotlin-gradle-plugin-model-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download3775544193598942091bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea/1.9.10/kotlin-gradle-plugin-idea-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download4081309892366375727bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.9.10/kotlin-gradle-plugin-model-1.9.10.module to /home/runner/.gradle/.tmp/gradle_download14980794540671724236bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea-proto/1.9.10/kotlin-gradle-plugin-idea-proto-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download14693088893051006945bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-tooling-core/1.9.10/kotlin-tooling-core-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download17297254488776821966bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea/1.9.10/kotlin-gradle-plugin-idea-1.9.10.module to /home/runner/.gradle/.tmp/gradle_download8564509740849565541bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-util-klib/1.9.10/kotlin-util-klib-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download9791217194503886500bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-klib-commonizer-api/1.9.10/kotlin-klib-commonizer-api-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download1711151293281347551bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-project-model/1.9.10/kotlin-project-model-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download2130373218025161684bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-build-tools-api/1.9.10/kotlin-build-tools-api-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download2694915809354070794bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.10/kotlin-compiler-embeddable-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download4795486168471950489bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-android-extensions/1.9.10/kotlin-android-extensions-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download11910413988669145562bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-compiler-runner/1.9.10/kotlin-compiler-runner-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download11732072747454473259bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-compiler-embeddable/1.9.10/kotlin-scripting-compiler-embeddable-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download9865499322339010057bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-compiler-impl-embeddable/1.9.10/kotlin-scripting-compiler-impl-embeddable-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download15098229522815200039bin
+Downloading https://plugins.gradle.org/m2/com/google/code/gson/gson/2.10/gson-2.10.pom to /home/runner/.gradle/.tmp/gradle_download558132576242755853bin
+Downloading https://plugins.gradle.org/m2/com/google/code/gson/gson-parent/2.10/gson-parent-2.10.pom to /home/runner/.gradle/.tmp/gradle_download5352364757924339544bin
+Downloading https://plugins.gradle.org/m2/net/sf/kxml/kxml2/2.3.0/kxml2-2.3.0.pom to /home/runner/.gradle/.tmp/gradle_download4349667133129156556bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/guava/31.1-jre/guava-31.1-jre.pom to /home/runner/.gradle/.tmp/gradle_download5677970777811565886bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/common/31.2.2/common-31.2.2.pom]
+Downloading https://plugins.gradle.org/m2/javax/inject/javax.inject/1/javax.inject-1.pom to /home/runner/.gradle/.tmp/gradle_download12459171045278619047bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/guava-parent/31.1-jre/guava-parent-31.1-jre.pom to /home/runner/.gradle/.tmp/gradle_download18443609241684820011bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/intellij/deps/trove4j/1.0.20200330/trove4j-1.0.20200330.pom to /home/runner/.gradle/.tmp/gradle_download11245330601669970078bin
+Downloading https://plugins.gradle.org/m2/org/bouncycastle/bcprov-jdk15on/1.67/bcprov-jdk15on-1.67.pom to /home/runner/.gradle/.tmp/gradle_download6063437149279792863bin
+Downloading https://plugins.gradle.org/m2/xerces/xercesImpl/2.12.0/xercesImpl-2.12.0.pom to /home/runner/.gradle/.tmp/gradle_download12312063861710335879bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-reflect/1.9.0/kotlin-reflect-1.9.0.pom to /home/runner/.gradle/.tmp/gradle_download3776512102792229289bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/common/31.2.2/common-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download16241496355123269679bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/dvlib/31.2.2/dvlib-31.2.2.pom]
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcore/4.4.16/httpcore-4.4.16.pom to /home/runner/.gradle/.tmp/gradle_download6891689653657989242bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-compress/1.21/commons-compress-1.21.pom to /home/runner/.gradle/.tmp/gradle_download16911785908261704572bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-parent/52/commons-parent-52.pom to /home/runner/.gradle/.tmp/gradle_download760055795710426211bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcomponents-core/4.4.16/httpcomponents-core-4.4.16.pom to /home/runner/.gradle/.tmp/gradle_download12297046120923595007bin
+Downloading https://plugins.gradle.org/m2/org/apache/apache/23/apache-23.pom to /home/runner/.gradle/.tmp/gradle_download9842973322274559518bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcomponents-parent/11/httpcomponents-parent-11.pom to /home/runner/.gradle/.tmp/gradle_download15798725175213784265bin
+Downloading https://plugins.gradle.org/m2/org/apache/apache/21/apache-21.pom to /home/runner/.gradle/.tmp/gradle_download17406060600927155597bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/dvlib/31.2.2/dvlib-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download10597407368574010387bin
+Downloading https://plugins.gradle.org/m2/com/sun/activation/javax.activation/1.2.0/javax.activation-1.2.0.pom to /home/runner/.gradle/.tmp/gradle_download2734424982589650106bin
+Downloading https://plugins.gradle.org/m2/com/google/jimfs/jimfs/1.1/jimfs-1.1.pom to /home/runner/.gradle/.tmp/gradle_download16883726067472776508bin
+Downloading https://plugins.gradle.org/m2/com/google/jimfs/jimfs-parent/1.1/jimfs-parent-1.1.pom to /home/runner/.gradle/.tmp/gradle_download14645088667991749548bin
+Downloading https://plugins.gradle.org/m2/com/sun/activation/all/1.2.0/all-1.2.0.pom to /home/runner/.gradle/.tmp/gradle_download1098303976528236714bin
+Downloading https://plugins.gradle.org/m2/net/java/jvnet-parent/1/jvnet-parent-1.pom to /home/runner/.gradle/.tmp/gradle_download17693214712400200596bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/annotations/13.0/annotations-13.0.pom to /home/runner/.gradle/.tmp/gradle_download10110405626906144759bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpclient/4.5.14/httpclient-4.5.14.pom to /home/runner/.gradle/.tmp/gradle_download14807825192351124818bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/annotations/31.2.2/annotations-31.2.2.pom]
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcomponents-client/4.5.14/httpcomponents-client-4.5.14.pom to /home/runner/.gradle/.tmp/gradle_download4416305407972579028bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/annotations/31.2.2/annotations-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download4575812933460920157bin
+Downloading https://plugins.gradle.org/m2/net/java/dev/jna/jna-platform/5.6.0/jna-platform-5.6.0.pom to /home/runner/.gradle/.tmp/gradle_download3118899053353394795bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/analytics-library/protos/31.2.2/protos-31.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/protos/31.2.2/protos-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download4149160834284557246bin
+Downloading https://plugins.gradle.org/m2/com/googlecode/juniversalchardet/juniversalchardet/1.0.3/juniversalchardet-1.0.3.pom to /home/runner/.gradle/.tmp/gradle_download8597708785266163109bin
+Downloading https://plugins.gradle.org/m2/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.pom to /home/runner/.gradle/.tmp/gradle_download14671152807572217785bin
+Downloading https://plugins.gradle.org/m2/net/java/jvnet-parent/3/jvnet-parent-3.pom to /home/runner/.gradle/.tmp/gradle_download10419733431698995687bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib/1.9.0/kotlin-stdlib-1.9.0.pom to /home/runner/.gradle/.tmp/gradle_download6780626753713174799bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0/kotlin-stdlib-jdk7-1.9.0.pom to /home/runner/.gradle/.tmp/gradle_download17801073197722281085bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-tree/9.2/asm-tree-9.2.pom to /home/runner/.gradle/.tmp/gradle_download12811591880167626107bin
+Downloading https://plugins.gradle.org/m2/com/sun/istack/istack-commons-runtime/3.0.8/istack-commons-runtime-3.0.8.pom to /home/runner/.gradle/.tmp/gradle_download8343643703970137696bin
+Downloading https://plugins.gradle.org/m2/org/glassfish/jaxb/txw2/2.3.2/txw2-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download11106869913023330274bin
+Downloading https://plugins.gradle.org/m2/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download8581958855337174422bin
+Downloading https://plugins.gradle.org/m2/org/jvnet/staxex/stax-ex/1.8.1/stax-ex-1.8.1.pom to /home/runner/.gradle/.tmp/gradle_download5036220634567852232bin
+Downloading https://plugins.gradle.org/m2/com/sun/istack/istack-commons/3.0.8/istack-commons-3.0.8.pom to /home/runner/.gradle/.tmp/gradle_download14262686885438823877bin
+Downloading https://plugins.gradle.org/m2/com/sun/xml/bind/mvn/jaxb-txw-parent/2.3.2/jaxb-txw-parent-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download13692878639138428658bin
+Downloading https://plugins.gradle.org/m2/com/sun/xml/fastinfoset/FastInfoset/1.2.16/FastInfoset-1.2.16.pom to /home/runner/.gradle/.tmp/gradle_download14175795272547387623bin
+Downloading https://plugins.gradle.org/m2/jakarta/xml/bind/jakarta.xml.bind-api-parent/2.3.2/jakarta.xml.bind-api-parent-2.3.2.pom to /home/runner/.gradle/.tmp/gradle_download1766698768882223087bin
+Downloading https://plugins.gradle.org/m2/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.pom to /home/runner/.gradle/.tmp/gradle_download1203311405018225598bin
+Downloading https://plugins.gradle.org/m2/com/sun/xml/fastinfoset/fastinfoset-project/1.2.16/fastinfoset-project-1.2.16.pom to /home/runner/.gradle/.tmp/gradle_download3696012472371142409bin
+Downloading https://plugins.gradle.org/m2/com/sun/activation/all/1.2.1/all-1.2.1.pom to /home/runner/.gradle/.tmp/gradle_download1009877464979047902bin
+Downloading https://plugins.gradle.org/m2/org/eclipse/ee4j/project/1.0.2/project-1.0.2.pom to /home/runner/.gradle/.tmp/gradle_download15917859739099078442bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_annotations/2.3.1/error_prone_annotations-2.3.1.pom to /home/runner/.gradle/.tmp/gradle_download1671030629686482432bin
+Downloading https://plugins.gradle.org/m2/com/google/auto/value/auto-value-annotations/1.6.2/auto-value-annotations-1.6.2.pom to /home/runner/.gradle/.tmp/gradle_download6562327673236822049bin
+Downloading https://plugins.gradle.org/m2/com/google/dagger/dagger/2.28.3/dagger-2.28.3.pom to /home/runner/.gradle/.tmp/gradle_download3088840517633281168bin
+Downloading https://plugins.gradle.org/m2/org/bitbucket/b_c/jose4j/0.7.0/jose4j-0.7.0.pom to /home/runner/.gradle/.tmp/gradle_download17769055067076260920bin
+Downloading https://plugins.gradle.org/m2/org/slf4j/slf4j-api/1.7.30/slf4j-api-1.7.30.pom to /home/runner/.gradle/.tmp/gradle_download8481940254410948059bin
+Downloading https://plugins.gradle.org/m2/com/google/auto/value/auto-value-parent/1.6.2/auto-value-parent-1.6.2.pom to /home/runner/.gradle/.tmp/gradle_download3007091076307522012bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_parent/2.3.1/error_prone_parent-2.3.1.pom to /home/runner/.gradle/.tmp/gradle_download15475688752628619736bin
+Downloading https://plugins.gradle.org/m2/org/slf4j/slf4j-parent/1.7.30/slf4j-parent-1.7.30.pom to /home/runner/.gradle/.tmp/gradle_download7394942474394666761bin
+Downloading https://plugins.gradle.org/m2/com/google/auto/auto-parent/6/auto-parent-6.pom to /home/runner/.gradle/.tmp/gradle_download5876113912866782973bin
+Downloading https://plugins.gradle.org/m2/org/jdom/jdom2/2.0.6/jdom2-2.0.6.pom to /home/runner/.gradle/.tmp/gradle_download15868620363677297676bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_annotations/2.5.1/error_prone_annotations-2.5.1.pom to /home/runner/.gradle/.tmp/gradle_download18438780584905457887bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_parent/2.5.1/error_prone_parent-2.5.1.pom to /home/runner/.gradle/.tmp/gradle_download11712808316072089048bin
+Downloading https://plugins.gradle.org/m2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.pom to /home/runner/.gradle/.tmp/gradle_download15657345040739021837bin
+Downloading https://plugins.gradle.org/m2/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.pom to /home/runner/.gradle/.tmp/gradle_download14089310836493125275bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_annotations/2.10.0/error_prone_annotations-2.10.0.pom to /home/runner/.gradle/.tmp/gradle_download404416156881089806bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_parent/2.10.0/error_prone_parent-2.10.0.pom to /home/runner/.gradle/.tmp/gradle_download11759510801405595321bin
+Downloading https://plugins.gradle.org/m2/org/codehaus/mojo/animal-sniffer-annotations/1.19/animal-sniffer-annotations-1.19.pom to /home/runner/.gradle/.tmp/gradle_download17738784499631102104bin
+Downloading https://plugins.gradle.org/m2/com/google/android/annotations/4.1.1.4/annotations-4.1.1.4.pom to /home/runner/.gradle/.tmp/gradle_download14924037793183978348bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-api/1.45.1/grpc-api-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download10879811535687481235bin
+Downloading https://plugins.gradle.org/m2/io/perfmark/perfmark-api/0.23.0/perfmark-api-0.23.0.pom to /home/runner/.gradle/.tmp/gradle_download8976242648017498771bin
+Downloading https://plugins.gradle.org/m2/org/codehaus/mojo/animal-sniffer-parent/1.19/animal-sniffer-parent-1.19.pom to /home/runner/.gradle/.tmp/gradle_download16173670431203476568bin
+Downloading https://plugins.gradle.org/m2/io/perfmark/perfmark-api/0.23.0/perfmark-api-0.23.0.module to /home/runner/.gradle/.tmp/gradle_download13042593482544825319bin
+Downloading https://plugins.gradle.org/m2/org/codehaus/mojo/mojo-parent/50/mojo-parent-50.pom to /home/runner/.gradle/.tmp/gradle_download4020932522300678866bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec-http2/4.1.72.Final/netty-codec-http2-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download8582255546556362447bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-handler-proxy/4.1.72.Final/netty-handler-proxy-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download8045156442464226332bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-parent/4.1.72.Final/netty-parent-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download4519247057525935977bin
+Downloading https://plugins.gradle.org/m2/org/sonatype/oss/oss-parent/9/oss-parent-9.pom to /home/runner/.gradle/.tmp/gradle_download6682550380900102101bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-protobuf-lite/1.45.1/grpc-protobuf-lite-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download14935181582108254914bin
+Downloading https://plugins.gradle.org/m2/com/google/api/grpc/proto-google-common-protos/2.0.1/proto-google-common-protos-2.0.1.pom to /home/runner/.gradle/.tmp/gradle_download15392743769506706633bin
+Downloading https://plugins.gradle.org/m2/org/checkerframework/checker-qual/2.5.8/checker-qual-2.5.8.pom to /home/runner/.gradle/.tmp/gradle_download9740641977560851072bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/manifest-merger/31.2.2/manifest-merger-31.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/signflinger/8.2.2/signflinger-8.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/analytics-library/tracker/31.2.2/tracker-31.2.2.pom]
+Downloading https://plugins.gradle.org/m2/commons-codec/commons-codec/1.10/commons-codec-1.10.pom to /home/runner/.gradle/.tmp/gradle_download8480231761050453666bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-parent/35/commons-parent-35.pom to /home/runner/.gradle/.tmp/gradle_download14919952344359794952bin
+Downloading https://plugins.gradle.org/m2/org/apache/apache/15/apache-15.pom to /home/runner/.gradle/.tmp/gradle_download16044856386563126258bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/signflinger/8.2.2/signflinger-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download9268380039368341143bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/manifest-merger/31.2.2/manifest-merger-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download6710983659217241676bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/zipflinger/8.2.2/zipflinger-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/tracker/31.2.2/tracker-31.2.2.pom to /home/runner/.gradle/.tmp/gradle_download1865911828653888871bin
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/apksig/8.2.2/apksig-8.2.2.pom]
+Resource missing. [HTTP GET: https://repo.maven.apache.org/maven2/com/android/tools/build/apkzlib/8.2.2/apkzlib-8.2.2.pom]
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/apkzlib/8.2.2/apkzlib-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download4783081371295273575bin
+Downloading https://plugins.gradle.org/m2/com/squareup/javawriter/2.5.0/javawriter-2.5.0.pom to /home/runner/.gradle/.tmp/gradle_download8931025650942097469bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/apksig/8.2.2/apksig-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download2897517869348592549bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/zipflinger/8.2.2/zipflinger-8.2.2.pom to /home/runner/.gradle/.tmp/gradle_download6835956805045633399bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/manifest-merger/31.2.2/manifest-merger-31.2.2.module to /home/runner/.gradle/.tmp/gradle_download17562914595343395027bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-annotations/1.9.10/kotlin-gradle-plugin-annotations-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download4533648508311755467bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-native-utils/1.9.10/kotlin-native-utils-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download14694051882330629616bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-util-io/1.9.10/kotlin-util-io-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download3960092134801065854bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-daemon-embeddable/1.9.10/kotlin-daemon-embeddable-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download8690767313864391475bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.5.0/kotlinx-coroutines-core-jvm-1.5.0.pom to /home/runner/.gradle/.tmp/gradle_download18061746856021375411bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-daemon-client/1.9.10/kotlin-daemon-client-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download5868186156980043311bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.5.0/kotlinx-coroutines-core-jvm-1.5.0.module to /home/runner/.gradle/.tmp/gradle_download15970504381405342137bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-jvm/1.9.10/kotlin-scripting-jvm-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download5206843812904275324bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-common/1.9.10/kotlin-scripting-common-1.9.10.pom to /home/runner/.gradle/.tmp/gradle_download6381336281512757367bin
+Downloading https://plugins.gradle.org/m2/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.pom to /home/runner/.gradle/.tmp/gradle_download7633108393072770734bin
+Downloading https://plugins.gradle.org/m2/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.module to /home/runner/.gradle/.tmp/gradle_download10799792170824874374bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_annotations/2.11.0/error_prone_annotations-2.11.0.pom to /home/runner/.gradle/.tmp/gradle_download8979878444059666044bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_parent/2.11.0/error_prone_parent-2.11.0.pom to /home/runner/.gradle/.tmp/gradle_download15172316985752384417bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.pom to /home/runner/.gradle/.tmp/gradle_download5707438096918205580bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.pom to /home/runner/.gradle/.tmp/gradle_download11489483662237001807bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/guava-parent/26.0-android/guava-parent-26.0-android.pom to /home/runner/.gradle/.tmp/gradle_download478972823969926160bin
+Downloading https://plugins.gradle.org/m2/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.pom to /home/runner/.gradle/.tmp/gradle_download12534939266833992928bin
+Downloading https://plugins.gradle.org/m2/commons-codec/commons-codec/1.11/commons-codec-1.11.pom to /home/runner/.gradle/.tmp/gradle_download8293437229959500299bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-parent/42/commons-parent-42.pom to /home/runner/.gradle/.tmp/gradle_download13298784763677065831bin
+Downloading https://plugins.gradle.org/m2/commons-logging/commons-logging/1.2/commons-logging-1.2.pom to /home/runner/.gradle/.tmp/gradle_download17358426572380161383bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-parent/34/commons-parent-34.pom to /home/runner/.gradle/.tmp/gradle_download12210359573340064565bin
+Downloading https://plugins.gradle.org/m2/org/apache/apache/13/apache-13.pom to /home/runner/.gradle/.tmp/gradle_download6493633553962920409bin
+Downloading https://plugins.gradle.org/m2/net/java/dev/jna/jna/5.6.0/jna-5.6.0.pom to /home/runner/.gradle/.tmp/gradle_download9980365069622643382bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.0/kotlin-stdlib-common-1.9.0.pom to /home/runner/.gradle/.tmp/gradle_download8237167361549583813bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-context/1.45.1/grpc-context-1.45.1.pom to /home/runner/.gradle/.tmp/gradle_download3241286002725644807bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec/4.1.72.Final/netty-codec-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download17042820936166000300bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-common/4.1.72.Final/netty-common-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download15493273298776321350bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-buffer/4.1.72.Final/netty-buffer-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download16354271213728431297bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-transport/4.1.72.Final/netty-transport-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download14612374912556585999bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec-http/4.1.72.Final/netty-codec-http-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download3582196446351911725bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-handler/4.1.72.Final/netty-handler-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download15710801747782464984bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec-socks/4.1.72.Final/netty-codec-socks-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download2635231639594678183bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-resolver/4.1.72.Final/netty-resolver-4.1.72.Final.pom to /home/runner/.gradle/.tmp/gradle_download12223439625688523776bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-tcnative-classes/2.0.46.Final/netty-tcnative-classes-2.0.46.Final.pom to /home/runner/.gradle/.tmp/gradle_download15163537434211189748bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-tcnative-parent/2.0.46.Final/netty-tcnative-parent-2.0.46.Final.pom to /home/runner/.gradle/.tmp/gradle_download9715241219929629016bin
+Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/com/android/application/com.android.application.gradle.plugin/8.2.2/com.android.application.gradle.plugin-8.2.2.jar]
+Resource missing. [HTTP HEAD: https://plugins.gradle.org/m2/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/1.9.10/org.jetbrains.kotlin.android.gradle.plugin-1.9.10.jar]
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-model/1.9.10/kotlin-gradle-plugin-model-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download7372439815405029818bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.9.10/kotlin-gradle-plugin-api-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download11693098448051679253bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-api/1.9.10/kotlin-gradle-plugin-api-1.9.10-gradle81.jar to /home/runner/.gradle/.tmp/gradle_download736265401939650337bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin/1.9.10/kotlin-gradle-plugin-1.9.10-gradle81.jar to /home/runner/.gradle/.tmp/gradle_download17042237523558329842bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-settings-api/8.2.2/gradle-settings-api-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download10375023234177800643bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/lint/lint-model/31.2.2/lint-model-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download10294784587366773407bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.2.2/gradle-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download4867764865408128308bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/sdk-common/31.2.2/sdk-common-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download2766350768137113834bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/repository/31.2.2/repository-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download4794057428062195169bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.2.2/builder-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download5161855904837968930bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/manifest-merger/31.2.2/manifest-merger-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download13828129968571646027bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-test-api/8.2.2/builder-test-api-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download13622421190002328639bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/ddms/ddmlib/31.2.2/ddmlib-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download13585492923245768248bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/sdklib/31.2.2/sdklib-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download12364795450026489212bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2-proto/8.2.2-10154469/aapt2-proto-8.2.2-10154469.jar to /home/runner/.gradle/.tmp/gradle_download15505711995284530409bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle-api/8.2.2/gradle-api-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download11797031844617051037bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/tracker/31.2.2/tracker-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download4830055391999781561bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/aaptcompiler/8.2.2/aaptcompiler-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download6034590912785129825bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/bundletool/1.15.2/bundletool-1.15.2.jar to /home/runner/.gradle/.tmp/gradle_download9723759061087223570bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/lint/lint-typedef-remover/31.2.2/lint-typedef-remover-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download8001547751639292981bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/crash/31.2.2/crash-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download4637400233424815540bin
+Downloading https://dl.google.com/dl/android/maven2/androidx/databinding/databinding-compiler-common/8.2.2/databinding-compiler-common-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download14103186346048213053bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/databinding/baseLibrary/8.2.2/baseLibrary-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download6664989799865373856bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/shared/31.2.2/shared-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download4243399001128966861bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-device-provider-gradle-proto/31.2.2/android-device-provider-gradle-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download9044618934110404943bin
+Downloading https://dl.google.com/dl/android/maven2/androidx/databinding/databinding-common/8.2.2/databinding-common-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download2080734850429929950bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/layoutlib/layoutlib-api/31.2.2/layoutlib-api-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download15787844876265451502bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-coverage-proto/31.2.2/android-test-plugin-host-coverage-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download10694922865010890493bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-device-provider-ddmlib-proto/31.2.2/android-device-provider-ddmlib-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download14129025676583225411bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-emulator-control-proto/31.2.2/android-test-plugin-host-emulator-control-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download12996825935032413036bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-apk-installer-proto/31.2.2/android-test-plugin-host-apk-installer-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download2694214882187342481bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-additional-test-output-proto/31.2.2/android-test-plugin-host-additional-test-output-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download2763721499119133799bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/builder-model/8.2.2/builder-model-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download17747473826059965255bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-logcat-proto/31.2.2/android-test-plugin-host-logcat-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download10746308196900632388bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-host-retention-proto/31.2.2/android-test-plugin-host-retention-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download16489858870146315782bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0/kotlin-stdlib-jdk8-1.9.0.jar to /home/runner/.gradle/.tmp/gradle_download15710907486048612930bin
+Downloading https://plugins.gradle.org/m2/com/android/tools/build/transform-api/2.0.0-deprecated-use-gradle-api/transform-api-2.0.0-deprecated-use-gradle-api.jar to /home/runner/.gradle/.tmp/gradle_download2893692811690150791bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/common/31.2.2/common-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download1552294721105540535bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpmime/4.5.6/httpmime-4.5.6.jar to /home/runner/.gradle/.tmp/gradle_download12258349461642199776bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/utp/android-test-plugin-result-listener-gradle-proto/31.2.2/android-test-plugin-result-listener-gradle-proto-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download16442002238421255051bin
+Downloading https://plugins.gradle.org/m2/commons-io/commons-io/2.4/commons-io-2.4.jar to /home/runner/.gradle/.tmp/gradle_download1480533622340307040bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-commons/9.2/asm-commons-9.2.jar to /home/runner/.gradle/.tmp/gradle_download5124487178370541470bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-util/9.2/asm-util-9.2.jar to /home/runner/.gradle/.tmp/gradle_download1526839200902978148bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-analysis/9.2/asm-analysis-9.2.jar to /home/runner/.gradle/.tmp/gradle_download11462444485589206915bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm-tree/9.2/asm-tree-9.2.jar to /home/runner/.gradle/.tmp/gradle_download463862943401447267bin
+Downloading https://plugins.gradle.org/m2/org/ow2/asm/asm/9.2/asm-9.2.jar to /home/runner/.gradle/.tmp/gradle_download15162046247319293901bin
+Downloading https://plugins.gradle.org/m2/org/bouncycastle/bcpkix-jdk15on/1.67/bcpkix-jdk15on-1.67.jar to /home/runner/.gradle/.tmp/gradle_download16973232760337138607bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/apkzlib/8.2.2/apkzlib-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download128728604833396970bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/dvlib/31.2.2/dvlib-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download12613002586485493177bin
+Downloading https://plugins.gradle.org/m2/org/glassfish/jaxb/jaxb-runtime/2.3.2/jaxb-runtime-2.3.2.jar to /home/runner/.gradle/.tmp/gradle_download6562362030004574505bin
+Downloading https://plugins.gradle.org/m2/net/sf/jopt-simple/jopt-simple/4.9/jopt-simple-4.9.jar to /home/runner/.gradle/.tmp/gradle_download15817371318605530694bin
+Downloading https://plugins.gradle.org/m2/com/squareup/javapoet/1.10.0/javapoet-1.10.0.jar to /home/runner/.gradle/.tmp/gradle_download10909067928520358052bin
+Downloading https://plugins.gradle.org/m2/com/google/protobuf/protobuf-java-util/3.19.3/protobuf-java-util-3.19.3.jar to /home/runner/.gradle/.tmp/gradle_download17230510611417586166bin
+Downloading https://plugins.gradle.org/m2/com/google/crypto/tink/tink/1.7.0/tink-1.7.0.jar to /home/runner/.gradle/.tmp/gradle_download7443764651395040168bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-protobuf/1.45.1/grpc-protobuf-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download10756332133106165995bin
+Downloading https://plugins.gradle.org/m2/com/google/api/grpc/proto-google-common-protos/2.0.1/proto-google-common-protos-2.0.1.jar to /home/runner/.gradle/.tmp/gradle_download14733423775489484074bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta10/jetifier-core-1.0.0-beta10.jar to /home/runner/.gradle/.tmp/gradle_download9644811348527682046bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/jetifier/jetifier-processor/1.0.0-beta10/jetifier-processor-1.0.0-beta10.jar to /home/runner/.gradle/.tmp/gradle_download12637268967381099896bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-netty/1.45.1/grpc-netty-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download9088303873347181549bin
+Downloading https://plugins.gradle.org/m2/com/google/protobuf/protobuf-java/3.19.3/protobuf-java-3.19.3.jar to /home/runner/.gradle/.tmp/gradle_download5588441751433843776bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-core/1.45.1/grpc-core-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download16453353454020490460bin
+Downloading https://plugins.gradle.org/m2/com/google/code/gson/gson/2.10/gson-2.10.jar to /home/runner/.gradle/.tmp/gradle_download12637555284833665307bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-stub/1.45.1/grpc-stub-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download1026730998169148494bin
+Downloading https://plugins.gradle.org/m2/org/tensorflow/tensorflow-lite-metadata/0.1.0-rc2/tensorflow-lite-metadata-0.1.0-rc2.jar to /home/runner/.gradle/.tmp/gradle_download15934920566697242059bin
+Downloading https://plugins.gradle.org/m2/com/google/flatbuffers/flatbuffers-java/1.12.0/flatbuffers-java-1.12.0.jar to /home/runner/.gradle/.tmp/gradle_download413585889042181662bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea-proto/1.9.10/kotlin-gradle-plugin-idea-proto-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download5730255658420950784bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-idea/1.9.10/kotlin-gradle-plugin-idea-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download9405908484838799334bin
+Downloading https://dl.google.com/dl/android/maven2/com/google/testing/platform/core-proto/0.0.8-alpha08/core-proto-0.0.8-alpha08.jar to /home/runner/.gradle/.tmp/gradle_download12413643726119653640bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-tooling-core/1.9.10/kotlin-tooling-core-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download4718319387330610049bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-klib-commonizer-api/1.9.10/kotlin-klib-commonizer-api-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download14697046476391672501bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/protos/31.2.2/protos-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download10644635939964476937bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-project-model/1.9.10/kotlin-project-model-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download10406911585860407638bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-build-tools-api/1.9.10/kotlin-build-tools-api-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download14346353627994209584bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-android-extensions/1.9.10/kotlin-android-extensions-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download13642566418714348485bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-util-klib/1.9.10/kotlin-util-klib-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download17725991448158005749bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-compiler-runner/1.9.10/kotlin-compiler-runner-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download15924972222124615411bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.10/kotlin-compiler-embeddable-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download3101391802906606381bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-compiler-embeddable/1.9.10/kotlin-scripting-compiler-embeddable-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download10623580176163422862bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-compiler-impl-embeddable/1.9.10/kotlin-scripting-compiler-impl-embeddable-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download4264258709102319576bin
+Downloading https://plugins.gradle.org/m2/com/google/jimfs/jimfs/1.1/jimfs-1.1.jar to /home/runner/.gradle/.tmp/gradle_download12917348874799337214bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-protobuf-lite/1.45.1/grpc-protobuf-lite-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download13109065972171696517bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-api/1.45.1/grpc-api-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download15086795068503396722bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-native-utils/1.9.10/kotlin-native-utils-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download11379207605408387686bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar to /home/runner/.gradle/.tmp/gradle_download10055999900170767982bin
+Downloading https://plugins.gradle.org/m2/com/google/dagger/dagger/2.28.3/dagger-2.28.3.jar to /home/runner/.gradle/.tmp/gradle_download6083984048929451573bin
+Downloading https://plugins.gradle.org/m2/javax/inject/javax.inject/1/javax.inject-1.jar to /home/runner/.gradle/.tmp/gradle_download17979526614130293721bin
+Downloading https://plugins.gradle.org/m2/net/sf/kxml/kxml2/2.3.0/kxml2-2.3.0.jar to /home/runner/.gradle/.tmp/gradle_download17763147408498604421bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/intellij/deps/trove4j/1.0.20200330/trove4j-1.0.20200330.jar to /home/runner/.gradle/.tmp/gradle_download17689318978887412828bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-reflect/1.9.0/kotlin-reflect-1.9.0.jar to /home/runner/.gradle/.tmp/gradle_download11431081021116421362bin
+Downloading https://plugins.gradle.org/m2/org/bouncycastle/bcprov-jdk15on/1.67/bcprov-jdk15on-1.67.jar to /home/runner/.gradle/.tmp/gradle_download1869741436044140181bin
+Downloading https://plugins.gradle.org/m2/xerces/xercesImpl/2.12.0/xercesImpl-2.12.0.jar to /home/runner/.gradle/.tmp/gradle_download724835205386665532bin
+Downloading https://plugins.gradle.org/m2/org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar to /home/runner/.gradle/.tmp/gradle_download7270373707627789336bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpclient/4.5.14/httpclient-4.5.14.jar to /home/runner/.gradle/.tmp/gradle_download11742444450815023820bin
+Downloading https://plugins.gradle.org/m2/com/sun/activation/javax.activation/1.2.0/javax.activation-1.2.0.jar to /home/runner/.gradle/.tmp/gradle_download4542862386422102440bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0/kotlin-stdlib-jdk7-1.9.0.jar to /home/runner/.gradle/.tmp/gradle_download10171042421112901922bin
+Downloading https://plugins.gradle.org/m2/org/apache/httpcomponents/httpcore/4.4.16/httpcore-4.4.16.jar to /home/runner/.gradle/.tmp/gradle_download12912272311497985580bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib/1.9.0/kotlin-stdlib-1.9.0.jar to /home/runner/.gradle/.tmp/gradle_download17575742343955381553bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/annotations/13.0/annotations-13.0.jar to /home/runner/.gradle/.tmp/gradle_download17290846095147333878bin
+Downloading https://plugins.gradle.org/m2/net/java/dev/jna/jna-platform/5.6.0/jna-platform-5.6.0.jar to /home/runner/.gradle/.tmp/gradle_download17329251009253403313bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/zipflinger/8.2.2/zipflinger-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download15232137309000409167bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/signflinger/8.2.2/signflinger-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download15298772300326512889bin
+Downloading https://plugins.gradle.org/m2/com/googlecode/juniversalchardet/juniversalchardet/1.0.3/juniversalchardet-1.0.3.jar to /home/runner/.gradle/.tmp/gradle_download8303702678875842453bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/annotations/31.2.2/annotations-31.2.2.jar to /home/runner/.gradle/.tmp/gradle_download5022671696833807733bin
+Downloading https://plugins.gradle.org/m2/org/jvnet/staxex/stax-ex/1.8.1/stax-ex-1.8.1.jar to /home/runner/.gradle/.tmp/gradle_download17401348540114263027bin
+Downloading https://plugins.gradle.org/m2/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar to /home/runner/.gradle/.tmp/gradle_download10891990591243434008bin
+Downloading https://plugins.gradle.org/m2/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar to /home/runner/.gradle/.tmp/gradle_download5524706714981643939bin
+Downloading https://plugins.gradle.org/m2/org/glassfish/jaxb/txw2/2.3.2/txw2-2.3.2.jar to /home/runner/.gradle/.tmp/gradle_download15607198583325205461bin
+Downloading https://plugins.gradle.org/m2/com/sun/istack/istack-commons-runtime/3.0.8/istack-commons-runtime-3.0.8.jar to /home/runner/.gradle/.tmp/gradle_download1763527245763223299bin
+Downloading https://plugins.gradle.org/m2/com/sun/xml/fastinfoset/FastInfoset/1.2.16/FastInfoset-1.2.16.jar to /home/runner/.gradle/.tmp/gradle_download2488099538873092407bin
+Downloading https://plugins.gradle.org/m2/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar to /home/runner/.gradle/.tmp/gradle_download5818933156914911543bin
+Downloading https://plugins.gradle.org/m2/com/google/auto/value/auto-value-annotations/1.6.2/auto-value-annotations-1.6.2.jar to /home/runner/.gradle/.tmp/gradle_download14025432207198179192bin
+Downloading https://plugins.gradle.org/m2/com/google/errorprone/error_prone_annotations/2.11.0/error_prone_annotations-2.11.0.jar to /home/runner/.gradle/.tmp/gradle_download2471285332090556962bin
+Downloading https://plugins.gradle.org/m2/org/slf4j/slf4j-api/1.7.30/slf4j-api-1.7.30.jar to /home/runner/.gradle/.tmp/gradle_download16039777301437909197bin
+Downloading https://plugins.gradle.org/m2/org/bitbucket/b_c/jose4j/0.7.0/jose4j-0.7.0.jar to /home/runner/.gradle/.tmp/gradle_download7171909083554858616bin
+Downloading https://plugins.gradle.org/m2/org/jdom/jdom2/2.0.6/jdom2-2.0.6.jar to /home/runner/.gradle/.tmp/gradle_download10892423405298987055bin
+Downloading https://plugins.gradle.org/m2/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.jar to /home/runner/.gradle/.tmp/gradle_download274916773631141769bin
+Downloading https://plugins.gradle.org/m2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar to /home/runner/.gradle/.tmp/gradle_download13306914436331416703bin
+Downloading https://plugins.gradle.org/m2/com/google/android/annotations/4.1.1.4/annotations-4.1.1.4.jar to /home/runner/.gradle/.tmp/gradle_download1953612871241498476bin
+Downloading https://plugins.gradle.org/m2/org/codehaus/mojo/animal-sniffer-annotations/1.19/animal-sniffer-annotations-1.19.jar to /home/runner/.gradle/.tmp/gradle_download9799533699081322555bin
+Downloading https://plugins.gradle.org/m2/io/perfmark/perfmark-api/0.23.0/perfmark-api-0.23.0.jar to /home/runner/.gradle/.tmp/gradle_download15372619102452643348bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-handler-proxy/4.1.72.Final/netty-handler-proxy-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download4506544873121282719bin
+Downloading https://plugins.gradle.org/m2/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.jar to /home/runner/.gradle/.tmp/gradle_download18109141005042773997bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec-http2/4.1.72.Final/netty-codec-http2-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download238907608681894904bin
+Downloading https://plugins.gradle.org/m2/commons-codec/commons-codec/1.11/commons-codec-1.11.jar to /home/runner/.gradle/.tmp/gradle_download32125438291456456bin
+Downloading https://plugins.gradle.org/m2/com/squareup/javawriter/2.5.0/javawriter-2.5.0.jar to /home/runner/.gradle/.tmp/gradle_download1556853183117596739bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-gradle-plugin-annotations/1.9.10/kotlin-gradle-plugin-annotations-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download3103785104005487740bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-daemon-embeddable/1.9.10/kotlin-daemon-embeddable-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download5443379237753894519bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.5.0/kotlinx-coroutines-core-jvm-1.5.0.jar to /home/runner/.gradle/.tmp/gradle_download11403224230078040384bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-daemon-client/1.9.10/kotlin-daemon-client-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download5768049662828843050bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-common/1.9.10/kotlin-scripting-common-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download16322723075244870683bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-scripting-jvm/1.9.10/kotlin-scripting-jvm-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download3462311882842916233bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar to /home/runner/.gradle/.tmp/gradle_download14944017396330106571bin
+Downloading https://plugins.gradle.org/m2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar to /home/runner/.gradle/.tmp/gradle_download1049727277303784594bin
+Downloading https://plugins.gradle.org/m2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar to /home/runner/.gradle/.tmp/gradle_download9754001103480139388bin
+Downloading https://plugins.gradle.org/m2/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.jar to /home/runner/.gradle/.tmp/gradle_download12067313782590154931bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-util-io/1.9.10/kotlin-util-io-1.9.10.jar to /home/runner/.gradle/.tmp/gradle_download7875880484347265154bin
+Downloading https://plugins.gradle.org/m2/net/java/dev/jna/jna/5.6.0/jna-5.6.0.jar to /home/runner/.gradle/.tmp/gradle_download758455022553845028bin
+Downloading https://plugins.gradle.org/m2/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.0/kotlin-stdlib-common-1.9.0.jar to /home/runner/.gradle/.tmp/gradle_download6546844473744285447bin
+Downloading https://dl.google.com/dl/android/maven2/com/android/tools/build/apksig/8.2.2/apksig-8.2.2.jar to /home/runner/.gradle/.tmp/gradle_download15371060652127838347bin
+Downloading https://plugins.gradle.org/m2/io/grpc/grpc-context/1.45.1/grpc-context-1.45.1.jar to /home/runner/.gradle/.tmp/gradle_download18340159512843539344bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec-http/4.1.72.Final/netty-codec-http-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download15263890377921676958bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec-socks/4.1.72.Final/netty-codec-socks-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download2026935188771925789bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-handler/4.1.72.Final/netty-handler-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download5584677584643386768bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-codec/4.1.72.Final/netty-codec-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download4069279798469247772bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-transport/4.1.72.Final/netty-transport-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download17777009534956999317bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-buffer/4.1.72.Final/netty-buffer-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download12302667422096844727bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-resolver/4.1.72.Final/netty-resolver-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download1997109518190981277bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-common/4.1.72.Final/netty-common-4.1.72.Final.jar to /home/runner/.gradle/.tmp/gradle_download13901104762576536325bin
+Downloading https://plugins.gradle.org/m2/io/netty/netty-tcnative-classes/2.0.46.Final/netty-tcnative-classes-2.0.46.Final.jar to /home/runner/.gradle/.tmp/gradle_download11960404346619510034bin
+Compiling build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/build.gradle' using BuildScriptTransformer.
+
+> Configure project :app
+Evaluating project ':app' using build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/app/build.gradle'.
+Compiling build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/app/build.gradle' using SubsetScriptTransformer.
+Using default execution profile
+Using Kotlin Gradle Plugin gradle81 variant
+Compiling build file '/home/runner/work/Packaging-warehouse/Packaging-warehouse/app/build.gradle' using BuildScriptTransformer.
