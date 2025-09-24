@@ -18,7 +18,7 @@ object Routes {
 @Composable
 fun NavGraph(nav: NavHostController) {
     // BLOCK:NAV_TRANSITIONS
-    // 可以接入动画导航或 AnimatedNavHost
+    // 需要动画导航的话 这里换成 AnimatedNavHost
     // END_BLOCK
 
     NavHost(navController = nav, startDestination = Routes.Home) {
@@ -26,8 +26,8 @@ fun NavGraph(nav: NavHostController) {
         // BLOCK:ROUTE_HOME
         composable(Routes.Home) {
             FeedScreen(
-                onOpen = { id -> nav.navigate("detail/$id") }, // <- 形参名改为 onOpen
-                onPostClick = { nav.navigate(Routes.Post) }     // <- 补上 onPostClick
+                { id -> nav.navigate("detail/$id") },     // 第1个参数：打开详情
+                { nav.navigate(Routes.Post) }             // 第2个参数：去发帖页
             )
         }
         // END_BLOCK
@@ -35,13 +35,18 @@ fun NavGraph(nav: NavHostController) {
         // BLOCK:ROUTE_DETAIL
         composable("detail/{id}") { backStack ->
             val id = backStack.arguments?.getString("id") ?: "0"
-            PostDetailScreen(id = id, onBack = { nav.popBackStack() })
+            PostDetailScreen(
+                id = id,
+                onBack = { nav.popBackStack() }
+            )
         }
         // END_BLOCK
 
         // BLOCK:ROUTE_POST
         composable(Routes.Post) {
-            PostEditorScreen(onBack = { nav.popBackStack() })
+            PostEditorScreen(
+                onBack = { nav.popBackStack() }
+            )
         }
         // END_BLOCK
     }
