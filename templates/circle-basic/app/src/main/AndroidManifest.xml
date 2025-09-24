@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ndjc.app">
-    <!-- ↑ NDJC:PACKAGE_NAME -->
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- ↑ AGP 8+ 不再使用 manifest@package，已由 Gradle namespace 提供 -->
 
     <!-- ===== Permissions (条件锚点) ===== -->
 
@@ -14,7 +14,9 @@
     <!-- ENDIF -->
 
     <!-- IF:PERMISSION.NOTIFICATION -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission
+        android:name="android.permission.POST_NOTIFICATIONS"
+        tools:targetApi="33" />
     <!-- ENDIF -->
 
     <!-- IF:PERMISSION.LOCATION -->
@@ -35,6 +37,7 @@
         android:allowBackup="true"
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/NDJCTheme">
 
