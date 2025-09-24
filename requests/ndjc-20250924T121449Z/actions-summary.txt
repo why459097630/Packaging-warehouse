@@ -1,0 +1,4 @@
+branch=main
+variant=release
+apk=app/build/outputs/apk/release/app-release.apk
+ts=2025-09-24T12:17:15Z
