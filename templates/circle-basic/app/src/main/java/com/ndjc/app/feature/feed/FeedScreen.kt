@@ -34,7 +34,7 @@ fun FeedScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = onCreatePost,
-                text = { Text(stringResource(id = R.string.feed_post)) }
+                value = { Text(stringResource(id = R.string.feed_post)) }
             )
         }
     ) { inner ->
