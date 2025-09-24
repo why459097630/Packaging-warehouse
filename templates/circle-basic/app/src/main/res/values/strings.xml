@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">NDJC Circle</string>            <!-- NDJC:APP_LABEL -->
-    <string name="home_title">Hello NDJC</string>           <!-- NDJC:HOME_TITLE -->
-    <string name="primary_button">Start</string>            <!-- NDJC:PRIMARY_BUTTON_TEXT -->
+    <string name="app_name">NDJC Circle</string>                    <!-- NDJC:APP_LABEL -->
+    <string name="home_title">Hello NDJC</string>                   <!-- NDJC:HOME_TITLE -->
+    <string name="primary_button">Start</string>                    <!-- NDJC:PRIMARY_BUTTON_TEXT -->
 
     <!-- Feed/Detail/Post -->
     <string name="feed_like">Like</string>
@@ -9,11 +9,15 @@
     <string name="feed_post">Post</string>
     <string name="empty_hint">Nothing here yet.</string>
 
-    <!-- 运行配置可注入（也可写入 BuildConfig） -->
-    <string name="ndjc_run_id"></string>                    <!-- NDJC:RUN_ID -->
-    <string name="ndjc_log_level">info</string>             <!-- NDJC:LOG_LEVEL -->
+    <!-- ✅ 新增：与 TopBar/FeedScreen 配套 -->
+    <string name="feed_title">Feed</string>
+    <string name="comments_count">%1$d comments</string>
+
+    <!-- 运行配置常量（会回写到 BuildConfig） -->
+    <string name="ndjc_run_id"></string>                            <!-- NDJC:RUN_ID -->
+    <string name="ndjc_log_level">info</string>                     <!-- NDJC:LOG_LEVEL -->
 
     <!-- BLOCK:STRINGS_EXTRA -->
-    <!-- 追加多语言/复数形式由 LIST:PLURAL_STRINGS 注入 -->
+    <!-- 追加多语言／后续系统串（LIST:PLURAL_STRINGS 注入） -->
     <!-- END_BLOCK -->
 </resources>
