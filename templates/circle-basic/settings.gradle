@@ -4,10 +4,9 @@ pluginManagement {
     google()
     mavenCentral()
   }
-  // 仅更新 Kotlin 版本，AGP 仍为 8.2.1
   plugins {
     id("com.android.application") version "8.2.1"
-    id("org.jetbrains.kotlin.android") version "1.9.22"
+    id("org.jetbrains.kotlin.android") version "1.9.24"
   }
 }
 
