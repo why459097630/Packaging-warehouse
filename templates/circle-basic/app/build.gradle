@@ -21,7 +21,7 @@ android {
         buildConfigField "String",  "NDJC_LOG_LEVEL","\"info\""  // NDJC:LOG_LEVEL
         buildConfigField "boolean", "NDJC_DEBUG_LOG","false"     // NDJC:DEBUG_LOG_ENABLED
 
-        // NDJC:RES_CONFIGS  (例：resConfigs 'en', 'zh-CN')
+        // NDJC:RES_CONFIGS
         vectorDrawables { useSupportLibrary = true }
     }
 
@@ -50,22 +50,25 @@ android {
         buildConfig true
     }
 
-    // 与 Kotlin 1.9.22 搭配的 Compose 编译器
+    // 与 Kotlin 1.9.24 配套
     composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
 
-    // 关键：Java 与 Kotlin 统一到 17
+    // 统一到 Java 17（与 Kotlin 配置一致）
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
         jvmTarget = "17"
-        freeCompilerArgs += ["-Xjvm-default=all"]
+        freeCompilerArgs += [
+            "-Xjvm-default=all",
+            // 为使用 M3 顶栏等实验 API 开白名单（解决编译告警/错误）
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+        ]
     }
 }
 
 kotlin {
-    // 锁定 JDK 17 工具链（避免环境漂移）
     jvmToolchain(17)
 }
 
@@ -74,13 +77,12 @@ dependencies {
     implementation "androidx.activity:activity-compose:1.9.2"
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.ui:ui-tooling-preview"
-    implementation "androidx.compose.material3:material3"        // 走 BOM
+    implementation "androidx.compose.ui:ui-res"                 // <-- stringResource 所需
+    implementation "androidx.compose.material3:material3"       // 走 BOM
     implementation "androidx.navigation:navigation-compose:2.8.0"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
     implementation "androidx.core:core-ktx:1.13.1"
-
-    // 为 XML 主题 Theme.Material3.* 提供资源
-    implementation "com.google.android.material:material:1.12.0"
+    implementation "com.google.android.material:material:1.12.0" // XML 主题资源
 
     // IF:PERMISSION.NOTIFICATION
     // ENDIF
