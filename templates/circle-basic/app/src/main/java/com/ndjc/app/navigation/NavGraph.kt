@@ -18,7 +18,7 @@ object Routes {
 @Composable
 fun NavGraph(nav: NavHostController) {
     // BLOCK:NAV_TRANSITIONS
-    // 可注入导航转场或 AnimatedNavHost
+    // 可以接入动画导航或 AnimatedNavHost
     // END_BLOCK
 
     NavHost(navController = nav, startDestination = Routes.Home) {
@@ -26,9 +26,8 @@ fun NavGraph(nav: NavHostController) {
         // BLOCK:ROUTE_HOME
         composable(Routes.Home) {
             FeedScreen(
-                // ✅ 这里用 FeedScreen 实际的参数名（大多数模板用 onOpen / onCreatePost）
-                onOpen = { id -> nav.navigate("detail/$id") },
-                onCreatePost = { nav.navigate(Routes.Post) }
+                onOpen = { id -> nav.navigate("detail/$id") }, // <- 形参名改为 onOpen
+                onPostClick = { nav.navigate(Routes.Post) }     // <- 补上 onPostClick
             )
         }
         // END_BLOCK
