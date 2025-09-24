@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class) // ✅ 使用 M3 TopAppBar/Scaffold 时的实验开关
+
 package com.ndjc.app.feature.detail
 
 import androidx.compose.foundation.layout.*
@@ -10,6 +12,7 @@ import com.ndjc.app.data.SeedRepository
 @Composable
 fun PostDetailScreen(id: String, onBack: () -> Unit) {
     val post = remember(id) { SeedRepository.postById(id) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -19,8 +22,10 @@ fun PostDetailScreen(id: String, onBack: () -> Unit) {
         }
     ) { inner ->
         Column(Modifier.padding(inner).padding(16.dp)) {
-            Text(text = post?.content ?: "N/A", style = MaterialTheme.typography.bodyLarge)
-            Spacer(Modifier.height(12.dp))
+            Text(
+                text = post?.content ?: "N/A",
+                style = MaterialTheme.typography.bodyLarge
+            )
             Divider()
             Spacer(Modifier.height(12.dp))
             Text("Comments: ${post?.comments?.size ?: 0}")
