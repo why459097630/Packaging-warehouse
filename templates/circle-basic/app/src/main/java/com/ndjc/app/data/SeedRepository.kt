@@ -7,15 +7,16 @@ import com.ndjc.app.data.model.Post
 
 object SeedRepository {
     private var cached: List<Post>? = null
+
     fun posts(): List<Post> = cached ?: loadFromRawOrFallback().also { cached = it }
     fun postById(id: String): Post? = posts().find { it.id == id }
 
     private fun loadFromRawOrFallback(): List<Post> = try {
-        val resId = com.ndjc.app.R.raw.seed_data // RES:raw/seed_data.json （存在则由生成器复制，R.id 固定名 seed_data）
-        val ctx = com.ndjc.app.BuildConfig::class.java.classLoader!!
-        val input = com.ndjc.app.R::class.java.classLoader!!
-        val stream = com.ndjc.app.R::class.java.classLoader
-        val text = com.ndjc.app.AppCtx.app.resources.openRawResource(resId).readBytes().toString(Charset.forName("UTF-8"))
+        val resId = com.ndjc.app.R.raw.seed_data           // RES: raw/seed_data.json
+        val text = AppCtx.app.resources
+            .openRawResource(resId)
+            .readBytes()
+            .toString(Charset.forName("UTF-8"))
         parse(text)
     } catch (_: Throwable) { fallback() }
 
@@ -44,5 +45,13 @@ object SeedRepository {
     )
 }
 
-// 极简 Application 上下文持有（避免额外文件）
+/** Application 上下文（供读取 raw） */
 object AppCtx { lateinit var app: android.app.Application }
+
+/** 简单 Application 注入到 AppCtx（需在 Manifest 的 application 指定 android:name=".data.App"） */
+class App : android.app.Application() {
+    override fun onCreate() {
+        super.onCreate()
+        AppCtx.app = this
+    }
+}
