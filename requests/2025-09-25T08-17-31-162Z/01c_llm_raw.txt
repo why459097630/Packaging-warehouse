@@ -1,0 +1,15 @@
+{
+   "appName": "牛太郎餐厅食谱",
+   "homeTitle": "牛太郎餐厅",
+   "mainButtonText": "添加食谱",
+   "packageId": "com.xiutao.restaurant",
+   "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_WIFI_STATE",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.CAMERA"
+   ],
+   "intentHost": "www.xiutao.com",
+   "locales": ["zh-rCN","en"]
+}
