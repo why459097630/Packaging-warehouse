@@ -1,0 +1,32 @@
+{
+  "id": "chatcmpl-0b205eaa-3bb3-453d-903c-d6b4fb4fe418",
+  "object": "chat.completion",
+  "created": 1758813902,
+  "model": "llama-3.1-8b-instant",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n   \"appName\": \"牛太郎介绍菜品\",\n   \"homeTitle\": \"牛太郎介绍菜品\",\n   \"mainButtonText\": \"添加新菜品\",\n   \"packageId\": null,\n   \"permissions\": [\n      \"android.permission.INTERNET\",\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.CAMERA\",\n      \"android.permission.ACCESSIBILITY_SERVICE\"\n   ],\n   \"intentHost\": null,\n   \"locales\": [\n      \"zh\",\n      \"zh-tw\",\n      \"en\",\n      \"ja\",\n      \"ko\"\n   ]\n}"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.187418205,
+    "prompt_tokens": 173,
+    "prompt_time": 0.009513679,
+    "completion_tokens": 124,
+    "completion_time": 0.155983765,
+    "total_tokens": 297,
+    "total_time": 0.165497444
+  },
+  "usage_breakdown": null,
+  "system_fingerprint": "fp_a7a2f9abbf",
+  "x_groq": {
+    "id": "req_01k60qmn6me4ftz6ppzvccrdjq"
+  },
+  "service_tier": "on_demand"
+}
