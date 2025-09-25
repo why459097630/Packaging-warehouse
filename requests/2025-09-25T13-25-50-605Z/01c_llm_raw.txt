@@ -1,0 +1,18 @@
+{
+   "appName": "牛太郎餐厅",
+   "homeTitle": "牛太郎餐厅 - 味道如此浓郁",
+   "mainButtonText": "上传菜品",
+   "packageId": "com.xiatiao.restaurant",
+   "permissions": [
+     "android.permission.READ_EXTERNAL_STORAGE", 
+     "android.permission.WRITE_EXTERNAL_STORAGE", 
+     "android.permission.INTERNET", 
+     "android.permission.ACCESS_FINE_LOCATION"
+   ],
+   "intentHost": "xiatiao-restaurant.com",
+   "locales": [
+     "zh-cn", 
+     "en",
+     "zh-tw"
+   ]
+}
