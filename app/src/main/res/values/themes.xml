@@ -1,0 +1,14 @@
+<resources>
+    <style name="NDJCTheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- 夜间策略：由  影响（Auto/On/Off，可由生成器调整AppCompatDelegate） -->
+
+        <!-- 注入 M3 ColorScheme 或直接 item 覆写，例如：
+        <item name="colorPrimary">@android:color/holo_blue_light</item>
+        <item name="colorSecondary">@android:color/holo_green_light</item>
+        -->
+        <!-- END_BLOCK -->
+
+        <!-- 可注入 fontFamily（ Display/Body 尺寸覆写 -->
+        <!-- END_BLOCK -->
+    </style>
+</resources>
