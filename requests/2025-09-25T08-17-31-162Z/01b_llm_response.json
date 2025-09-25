@@ -1,0 +1,32 @@
+{
+  "id": "chatcmpl-f57368c2-f4ab-4136-92be-7d6e4665d1f5",
+  "object": "chat.completion",
+  "created": 1758788263,
+  "model": "llama-3.1-8b-instant",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n   \"appName\": \"牛太郎餐厅食谱\",\n   \"homeTitle\": \"牛太郎餐厅\",\n   \"mainButtonText\": \"添加食谱\",\n   \"packageId\": \"com.xiutao.restaurant\",\n   \"permissions\": [\n      \"android.permission.INTERNET\",\n      \"android.permission.ACCESS_WIFI_STATE\",\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.CAMERA\"\n   ],\n   \"intentHost\": \"www.xiutao.com\",\n   \"locales\": [\"zh-rCN\",\"en\"]\n}"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.18799986,
+    "prompt_tokens": 173,
+    "prompt_time": 0.012142982,
+    "completion_tokens": 118,
+    "completion_time": 0.177523305,
+    "total_tokens": 291,
+    "total_time": 0.189666287
+  },
+  "usage_breakdown": null,
+  "system_fingerprint": "fp_a7a2f9abbf",
+  "x_groq": {
+    "id": "req_01k5zz67aef3tahe8q1a6ny3ct"
+  },
+  "service_tier": "on_demand"
+}
