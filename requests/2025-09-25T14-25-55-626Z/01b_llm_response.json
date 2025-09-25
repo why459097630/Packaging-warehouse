@@ -1,0 +1,32 @@
+{
+  "id": "chatcmpl-3a5a1d03-ac7e-4b1f-8af8-796234feb9cd",
+  "object": "chat.completion",
+  "created": 1758810370,
+  "model": "llama-3.1-8b-instant",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n   \"appName\": \" 牛太郎餐厅 - 美食达人\",\n   \"homeTitle\": \"发现新美味\",\n   \"mainButtonText\": \"发布菜单\",\n   \"packageId\": \"com.niutao.restaurant\",\n   \"permissions\": [\n      \"android.permission.INTERNET\",\n      \"android.permission.ACCESS_FINE_LOCATION\",\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.CAMERA\"\n   ],\n   \"intentHost\": \"https://niutao-restaurant.com\",\n   \"locales\": [\"zh-Hans\", \"en\"]\n}"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.18731685,
+    "prompt_tokens": 173,
+    "prompt_time": 0.010364749,
+    "completion_tokens": 125,
+    "completion_time": 0.1985644,
+    "total_tokens": 298,
+    "total_time": 0.208929149
+  },
+  "usage_breakdown": null,
+  "system_fingerprint": "fp_50a6be1b6f",
+  "x_groq": {
+    "id": "req_01k60m8vk3ffcbgs8t1q9hs21g"
+  },
+  "service_tier": "on_demand"
+}
