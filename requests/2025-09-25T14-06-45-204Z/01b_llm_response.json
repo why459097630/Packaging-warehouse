@@ -1,0 +1,32 @@
+{
+  "id": "chatcmpl-5da7de88-94ef-477d-a0df-9538f5ecbbf8",
+  "object": "chat.completion",
+  "created": 1758809219,
+  "model": "llama-3.1-8b-instant",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n   \"appName\": \"牛太郎餐厅\",\n   \"homeTitle\": \"热门菜品\",\n   \"mainButtonText\": \"上传菜品\",\n   \"packageId\": \"com.nittou.restaurant\",\n   \"permissions\": [\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.CAMERA\",\n      \"android.permission.INTERNET\"\n   ],\n   \"intentHost\": null,\n   \"locales\": [\"zh-rCN\", \"en\"]\n}"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.188017845,
+    "prompt_tokens": 173,
+    "prompt_time": 0.011028615,
+    "completion_tokens": 102,
+    "completion_time": 0.135606893,
+    "total_tokens": 275,
+    "total_time": 0.146635508
+  },
+  "usage_breakdown": null,
+  "system_fingerprint": "fp_50a6be1b6f",
+  "x_groq": {
+    "id": "req_01k60k5rawf0rbxja9nvh9wfxy"
+  },
+  "service_tier": "on_demand"
+}
