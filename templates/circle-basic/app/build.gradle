@@ -6,6 +6,8 @@ plugins {
     // END_BLOCK
 }
 
+def kotlinAlignVersion = "1.9.24" // 与 Compose Compiler 1.5.14 配套
+
 android {
     namespace 'com.ndjc.app'                         // NDJC:PACKAGE_NAME
     compileSdk 34                                    // NDJC:COMPILE_SDK
@@ -57,6 +59,7 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
     }
     kotlinOptions {
         jvmTarget = "17"
@@ -65,6 +68,10 @@ android {
             // 为使用 M3 顶栏等实验 API 开白名单（解决编译告警/错误）
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
         ]
+        // 可选：若 CI 临时需要跳过 Kotlin/Compose 版本校验，可在构建命令追加 -PndjcSuppressComposeKotlinCheck=true
+        if (project.hasProperty("ndjcSuppressComposeKotlinCheck") && project.property("ndjcSuppressComposeKotlinCheck") == "true") {
+            freeCompilerArgs += ["-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"]
+        }
     }
 }
 
@@ -72,7 +79,19 @@ kotlin {
     jvmToolchain(17)
 }
 
+// 统一对齐 Kotlin 运行时依赖，避免三方库引入旧版 1.9.10 等
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == "org.jetbrains.kotlin") {
+            details.useVersion(kotlinAlignVersion)
+            details.because("Align Kotlin stdlib to ${kotlinAlignVersion} for Compose Compiler 1.5.14")
+        }
+    }
+}
+
 dependencies {
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
+
     implementation platform("androidx.compose:compose-bom:2024.06.00")
     implementation "androidx.activity:activity-compose:1.9.2"
     implementation "androidx.compose.ui:ui"
