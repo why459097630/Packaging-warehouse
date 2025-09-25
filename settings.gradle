@@ -1,8 +1,30 @@
+// File: settings.gradle  (root)
+
 pluginManagement {
     repositories {
-        gradlePluginPortal()
+        // 顺序建议：google 优先
         google()
         mavenCentral()
+        gradlePluginPortal()
+    }
+    // 关键：在这里钉住插件版本，全局生效
+    plugins {
+        id "com.android.application" version "8.2.1"
+        id "com.android.library"     version "8.2.1"   // 以防仓库里还有 library 模块
+        id "org.jetbrains.kotlin.android" version "1.9.24"
+        id "org.jetbrains.kotlin.jvm"     version "1.9.24"
+    }
+    // 兜底：如果子模块里没有显式写 version，就用上面这些
+    resolutionStrategy {
+        eachPlugin {
+            def id = requested.id.id
+            if ((id == "com.android.application" || id == "com.android.library") && requested.version == null) {
+                useVersion("8.2.1")
+            }
+            if ((id == "org.jetbrains.kotlin.android" || id == "org.jetbrains.kotlin.jvm") && requested.version == null) {
+                useVersion("1.9.24")
+            }
+        }
     }
 }
 
