@@ -1,0 +1,13 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:APP_LABEL": "牛太郎餐厅APP",
+    "NDJC:HOME_TITLE": "牛太郎餐厅——您的口舌之家",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品",
+    "NDJC:MAIN_BUTTON": "上传菜品",
+    "NDJC:PACKAGE_NAME": "com.niutao.canteen"
+  },
+  "conditions": {},
+  "lists": {},
+  "blocks": {}
+}
