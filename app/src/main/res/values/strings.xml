@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">牛太郎介绍菜品</string>
+    <string name="home_title">牛太郎介绍菜品</string>
+    <string name="primary_button">添加新菜品</string>
+
+    <!-- Feed/Detail/Post -->
+    <string name="feed_like">Like</string>
+    <string name="feed_comment">Comment</string>
+    <string name="feed_post">Post</string>
+    <string name="empty_hint">Nothing here yet.</string>
+
+    <!-- ✅ 新增：与 TopBar/FeedScreen 配套 -->
+    <string name="feed_title">Feed</string>
+    <string name="comments_count">%1$d comments</string>
+
+    <!-- 运行配置常量（会回写到 BuildConfig） -->
+    <string name="ndjc_run_id"></string>
+    <string name="ndjc_log_level">info</string>
+
+    <!-- 追加多语言／后续系统串（LIST:PLURAL_STRINGS 注入） -->
+    <!-- END_BLOCK -->
+</resources>
