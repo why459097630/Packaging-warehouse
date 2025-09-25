@@ -1,0 +1,13 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:APP_LABEL": "牛太郎餐厅食谱",
+    "NDJC:HOME_TITLE": "牛太郎餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "添加食谱",
+    "NDJC:MAIN_BUTTON": "添加食谱",
+    "NDJC:PACKAGE_NAME": "com.xiutao.restaurant"
+  },
+  "conditions": {},
+  "lists": {},
+  "blocks": {}
+}
