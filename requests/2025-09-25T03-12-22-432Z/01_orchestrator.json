@@ -1,0 +1,47 @@
+{
+  "template": "circle-basic",
+  "mode": "A",
+  "allowCompanions": false,
+  "appName": "NDJC core",
+  "homeTitle": "Hello core",
+  "mainButtonText": "Start core",
+  "packageId": "com.ndjc.demo.core",
+  "locales": [
+    "en",
+    "zh-rCN",
+    "zh-rTW"
+  ],
+  "resConfigs": "en,zh-rCN,zh-rTW",
+  "companions": [],
+  "_trace": {
+    "provider": "groq",
+    "url": "https://api.groq.com/openai/v1/chat/completions",
+    "model": "llama-3.1-8b-instant",
+    "request": {
+      "model": "llama-3.1-8b-instant",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a JSON API. Reply ONLY JSON with keys:\n{\n  \"appName\": string,\n  \"homeTitle\": string,\n  \"mainButtonText\": string,\n  \"packageId\": string | null,\n  \"permissions\": string[],          // Android permission names\n  \"intentHost\": string | null,      // deep link host like \"example.com\"\n  \"locales\": string[]               // e.g. [\"en\",\"zh-rCN\"]\n}"
+        },
+        {
+          "role": "user",
+          "content": "生成一个牛太郎餐厅的介绍菜品的安卓app，要可以上传照片、编辑文字介绍、设定价格、评论点赞"
+        }
+      ],
+      "temperature": 0,
+      "response_format": {
+        "type": "json_object"
+      },
+      "stream": false
+    },
+    "response": {
+      "error": {
+        "message": "Invalid API Key",
+        "type": "invalid_request_error",
+        "code": "invalid_api_key"
+      }
+    },
+    "text": ""
+  }
+}
