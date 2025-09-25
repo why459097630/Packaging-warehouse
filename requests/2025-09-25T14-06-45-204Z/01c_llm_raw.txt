@@ -1,0 +1,14 @@
+{
+   "appName": "牛太郎餐厅",
+   "homeTitle": "热门菜品",
+   "mainButtonText": "上传菜品",
+   "packageId": "com.nittou.restaurant",
+   "permissions": [
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.CAMERA",
+      "android.permission.INTERNET"
+   ],
+   "intentHost": null,
+   "locales": ["zh-rCN", "en"]
+}
