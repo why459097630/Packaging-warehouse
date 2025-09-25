@@ -1,0 +1,83 @@
+{
+  "template": "circle-basic",
+  "mode": "A",
+  "allowCompanions": false,
+  "appName": " 牛太郎餐厅 - 美食达人",
+  "homeTitle": "发现新美味",
+  "mainButtonText": "发布菜单",
+  "packageId": "com.niutao.restaurant",
+  "locales": [
+    "zh-Hans",
+    "en"
+  ],
+  "resConfigs": "zh-Hans,en",
+  "permissionsXml": "<uses-permission android:name=\"android.permission.INTERNET\"/>\n<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>\n<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>\n<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>\n<uses-permission android:name=\"android.permission.CAMERA\"/>",
+  "intentFiltersXml": "<intent-filter>\n  <action android:name=\"android.intent.action.VIEW\"/>\n  <category android:name=\"android.intent.category.DEFAULT\"/>\n  <category android:name=\"android.intent.category.BROWSABLE\"/>\n  <data android:scheme=\"https\" android:host=\"https://niutao-restaurant.com\"/>\n</intent-filter>",
+  "companions": [],
+  "_trace": {
+    "provider": "groq",
+    "url": "https://api.groq.com/openai/v1/chat/completions",
+    "model": "llama-3.1-8b-instant",
+    "request": {
+      "model": "llama-3.1-8b-instant",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a JSON API. Reply ONLY JSON with keys:\n{\n  \"appName\": string,\n  \"homeTitle\": string,\n  \"mainButtonText\": string,\n  \"packageId\": string | null,\n  \"permissions\": string[],          // Android permission names\n  \"intentHost\": string | null,      // deep link host like \"example.com\"\n  \"locales\": string[]               // e.g. [\"en\",\"zh-rCN\"]\n}"
+        },
+        {
+          "role": "user",
+          "content": "生成一个牛太郎餐厅的介绍菜品的安卓app，要可以上传照片、编辑文字介绍、设定价格、评论点赞"
+        }
+      ],
+      "temperature": 0,
+      "response_format": {
+        "type": "json_object"
+      },
+      "stream": false
+    },
+    "response": {
+      "id": "chatcmpl-3a5a1d03-ac7e-4b1f-8af8-796234feb9cd",
+      "object": "chat.completion",
+      "created": 1758810370,
+      "model": "llama-3.1-8b-instant",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\n   \"appName\": \" 牛太郎餐厅 - 美食达人\",\n   \"homeTitle\": \"发现新美味\",\n   \"mainButtonText\": \"发布菜单\",\n   \"packageId\": \"com.niutao.restaurant\",\n   \"permissions\": [\n      \"android.permission.INTERNET\",\n      \"android.permission.ACCESS_FINE_LOCATION\",\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.CAMERA\"\n   ],\n   \"intentHost\": \"https://niutao-restaurant.com\",\n   \"locales\": [\"zh-Hans\", \"en\"]\n}"
+          },
+          "logprobs": null,
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "queue_time": 0.18731685,
+        "prompt_tokens": 173,
+        "prompt_time": 0.010364749,
+        "completion_tokens": 125,
+        "completion_time": 0.1985644,
+        "total_tokens": 298,
+        "total_time": 0.208929149
+      },
+      "usage_breakdown": null,
+      "system_fingerprint": "fp_50a6be1b6f",
+      "x_groq": {
+        "id": "req_01k60m8vk3ffcbgs8t1q9hs21g"
+      },
+      "service_tier": "on_demand"
+    },
+    "text": "{\n   \"appName\": \" 牛太郎餐厅 - 美食达人\",\n   \"homeTitle\": \"发现新美味\",\n   \"mainButtonText\": \"发布菜单\",\n   \"packageId\": \"com.niutao.restaurant\",\n   \"permissions\": [\n      \"android.permission.INTERNET\",\n      \"android.permission.ACCESS_FINE_LOCATION\",\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.CAMERA\"\n   ],\n   \"intentHost\": \"https://niutao-restaurant.com\",\n   \"locales\": [\"zh-Hans\", \"en\"]\n}",
+    "finish_reason": "stop",
+    "usage": {
+      "queue_time": 0.18731685,
+      "prompt_tokens": 173,
+      "prompt_time": 0.010364749,
+      "completion_tokens": 125,
+      "completion_time": 0.1985644,
+      "total_tokens": 298,
+      "total_time": 0.208929149
+    }
+  }
+}
