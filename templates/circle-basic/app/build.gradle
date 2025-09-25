@@ -50,7 +50,7 @@ android {
         buildConfig true
     }
 
-    // ✅ 与 Kotlin 1.9.24 对齐的 Compose 编译器版本，解决 CI 版本不匹配问题
+    // 与 Kotlin 1.9.24 配套
     composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
 
     // 统一到 Java 17（与 Kotlin 配置一致）
