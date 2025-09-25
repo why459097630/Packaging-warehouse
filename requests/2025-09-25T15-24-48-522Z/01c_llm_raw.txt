@@ -1,0 +1,21 @@
+{
+   "appName": "牛太郎介绍菜品",
+   "homeTitle": "牛太郎介绍菜品",
+   "mainButtonText": "添加新菜品",
+   "packageId": null,
+   "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.CAMERA",
+      "android.permission.ACCESSIBILITY_SERVICE"
+   ],
+   "intentHost": null,
+   "locales": [
+      "zh",
+      "zh-tw",
+      "en",
+      "ja",
+      "ko"
+   ]
+}
