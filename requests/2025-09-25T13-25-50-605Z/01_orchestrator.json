@@ -1,0 +1,84 @@
+{
+  "template": "circle-basic",
+  "mode": "A",
+  "allowCompanions": false,
+  "appName": "牛太郎餐厅",
+  "homeTitle": "牛太郎餐厅 - 味道如此浓郁",
+  "mainButtonText": "上传菜品",
+  "packageId": "com.xiatiao.restaurant",
+  "locales": [
+    "zh-cn",
+    "en",
+    "zh-tw"
+  ],
+  "resConfigs": "zh-cn,en,zh-tw",
+  "permissionsXml": "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>\n<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>\n<uses-permission android:name=\"android.permission.INTERNET\"/>\n<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
+  "intentFiltersXml": "<intent-filter>\n  <action android:name=\"android.intent.action.VIEW\"/>\n  <category android:name=\"android.intent.category.DEFAULT\"/>\n  <category android:name=\"android.intent.category.BROWSABLE\"/>\n  <data android:scheme=\"https\" android:host=\"xiatiao-restaurant.com\"/>\n</intent-filter>",
+  "companions": [],
+  "_trace": {
+    "provider": "groq",
+    "url": "https://api.groq.com/openai/v1/chat/completions",
+    "model": "llama-3.1-8b-instant",
+    "request": {
+      "model": "llama-3.1-8b-instant",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a JSON API. Reply ONLY JSON with keys:\n{\n  \"appName\": string,\n  \"homeTitle\": string,\n  \"mainButtonText\": string,\n  \"packageId\": string | null,\n  \"permissions\": string[],          // Android permission names\n  \"intentHost\": string | null,      // deep link host like \"example.com\"\n  \"locales\": string[]               // e.g. [\"en\",\"zh-rCN\"]\n}"
+        },
+        {
+          "role": "user",
+          "content": "生成一个牛太郎餐厅的介绍菜品的安卓app，要可以上传照片、编辑文字介绍、设定价格、评论点赞"
+        }
+      ],
+      "temperature": 0,
+      "response_format": {
+        "type": "json_object"
+      },
+      "stream": false
+    },
+    "response": {
+      "id": "chatcmpl-248a4a1c-f854-4ed4-9e33-04f1cca3af76",
+      "object": "chat.completion",
+      "created": 1758806764,
+      "model": "llama-3.1-8b-instant",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\n   \"appName\": \"牛太郎餐厅\",\n   \"homeTitle\": \"牛太郎餐厅 - 味道如此浓郁\",\n   \"mainButtonText\": \"上传菜品\",\n   \"packageId\": \"com.xiatiao.restaurant\",\n   \"permissions\": [\n     \"android.permission.READ_EXTERNAL_STORAGE\", \n     \"android.permission.WRITE_EXTERNAL_STORAGE\", \n     \"android.permission.INTERNET\", \n     \"android.permission.ACCESS_FINE_LOCATION\"\n   ],\n   \"intentHost\": \"xiatiao-restaurant.com\",\n   \"locales\": [\n     \"zh-cn\", \n     \"en\",\n     \"zh-tw\"\n   ]\n}"
+          },
+          "logprobs": null,
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "queue_time": 0.187606753,
+        "prompt_tokens": 173,
+        "prompt_time": 0.011592986,
+        "completion_tokens": 131,
+        "completion_time": 0.281145168,
+        "total_tokens": 304,
+        "total_time": 0.292738154
+      },
+      "usage_breakdown": null,
+      "system_fingerprint": "fp_90c2e79dab",
+      "x_groq": {
+        "id": "req_01k60gttnrf78s8f0m8amchtqf"
+      },
+      "service_tier": "on_demand"
+    },
+    "text": "{\n   \"appName\": \"牛太郎餐厅\",\n   \"homeTitle\": \"牛太郎餐厅 - 味道如此浓郁\",\n   \"mainButtonText\": \"上传菜品\",\n   \"packageId\": \"com.xiatiao.restaurant\",\n   \"permissions\": [\n     \"android.permission.READ_EXTERNAL_STORAGE\", \n     \"android.permission.WRITE_EXTERNAL_STORAGE\", \n     \"android.permission.INTERNET\", \n     \"android.permission.ACCESS_FINE_LOCATION\"\n   ],\n   \"intentHost\": \"xiatiao-restaurant.com\",\n   \"locales\": [\n     \"zh-cn\", \n     \"en\",\n     \"zh-tw\"\n   ]\n}",
+    "finish_reason": "stop",
+    "usage": {
+      "queue_time": 0.187606753,
+      "prompt_tokens": 173,
+      "prompt_time": 0.011592986,
+      "completion_tokens": 131,
+      "completion_time": 0.281145168,
+      "total_tokens": 304,
+      "total_time": 0.292738154
+    }
+  }
+}
