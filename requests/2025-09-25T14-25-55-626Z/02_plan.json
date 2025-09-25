@@ -1,0 +1,13 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:APP_LABEL": " 牛太郎餐厅 - 美食达人",
+    "NDJC:HOME_TITLE": "发现新美味",
+    "NDJC:PRIMARY_BUTTON_TEXT": "发布菜单",
+    "NDJC:MAIN_BUTTON": "发布菜单",
+    "NDJC:PACKAGE_NAME": "com.niutao.restaurant"
+  },
+  "conditions": {},
+  "lists": {},
+  "blocks": {}
+}
