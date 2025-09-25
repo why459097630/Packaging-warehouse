@@ -1,0 +1,15 @@
+{
+   "appName": "牛太郎餐厅",
+   "homeTitle": "介绍牛太郎餐厅的美食!",
+   "mainButtonText": "编辑并发布菜品照片",
+   "packageId": null,
+   "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.CAMERA",
+      "android.permission.ACCESS_FINE_LOCATION"
+   ],
+   "intentHost": null,
+   "locales": ["en","zh-rCN"]
+}
