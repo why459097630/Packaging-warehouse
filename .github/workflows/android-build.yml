@@ -37,6 +37,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -50,21 +51,22 @@ jobs:
         run: |
           set -euo pipefail
           RUN_ID="${{ inputs.runId }}"
-          if [ -z "$RUN_ID" ]; then RUN_ID="${{ github.event.client_payload.runId }}"; fi
-          if [ -z "$RUN_ID" ]; then RUN_ID="ndjc-$(date -u +%Y%m%dT%H%M%SZ)"; fi
-          echo "RUN_ID=$RUN_ID" >> "$GITHUB_ENV"
+          if [ -z "${RUN_ID}" ]; then RUN_ID="${{ github.event.client_payload.runId }}"; fi
+          if [ -z "${RUN_ID}" ]; then RUN_ID="ndjc-$(date -u +%Y%m%dT%H%M%SZ)"; fi
+          echo "RUN_ID=${RUN_ID}" >> "$GITHUB_ENV"
 
           BR="${{ inputs.branch }}"
-          if [ -z "$BR" ]; then BR="${{ github.event.client_payload.ref }}"; fi
-          if [ -z "$BR" ]; then BR="${{ github.ref }}"; fi
+          if [ -z "${BR}" ]; then BR="${{ github.event.client_payload.ref }}"; fi
+          if [ -z "${BR}" ]; then BR="${{ github.ref }}"; fi
           BR="${BR#refs/heads/}"
-          echo "BUILD_BRANCH=$BR" >> "$GITHUB_ENV"
+          echo "BUILD_BRANCH=${BR}" >> "$GITHUB_ENV"
 
-          echo "Resolved RUN_ID=$RUN_ID, BUILD_BRANCH=$BR"
-          echo "runId=$RUN_ID" >> "$GITHUB_OUTPUT"
-          echo "branch=$BR"    >> "$GITHUB_OUTPUT"
+          echo "runId=${RUN_ID}" >> "$GITHUB_OUTPUT"
+          echo "branch=${BR}" >> "$GITHUB_OUTPUT"
+          echo "Resolved RUN_ID=${RUN_ID}, BUILD_BRANCH=${BR}"
 
       - name: NDJC | Show commit info
+        shell: bash
         run: |
           echo "HEAD: $(git rev-parse HEAD)"
           echo "Triggered by: ${{ github.event_name }}"
@@ -74,6 +76,7 @@ jobs:
           git show --name-only --oneline -1
 
       - name: Sanity check
+        shell: bash
         run: |
           test -f ./gradlew || { echo "::error::gradlew missing"; exit 1; }
           test -d app || { echo "::error::app/ missing"; exit 1; }
@@ -85,14 +88,14 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Setup Gradle
+      - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # ---------- Preflight ----------
-      - name: NDJC | Preflight (anchor & resource checks)
+      # ---------------- Preflight ----------------
+      - name: NDJC | Preflight (anchors & resources)
         id: preflight
         shell: bash
         continue-on-error: ${{ (inputs.preflight_mode || 'warn') != 'strict' }}
@@ -103,9 +106,8 @@ jobs:
             .github/scripts/ndjc-preflight.sh app "${{ inputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
           else
             echo "::warning::.github/scripts/ndjc-preflight.sh not found; doing minimal checks" | tee build-logs/preflight.log
-            # 最小兜底检查（存在性）
-            test -f app/src/main/AndroidManifest.xml || echo "::error::missing AndroidManifest.xml"
-            test -f app/src/main/res/values/strings.xml || echo "::warning::missing strings.xml"
+            [ -f app/src/main/AndroidManifest.xml ] || echo "::error::missing app/src/main/AndroidManifest.xml" | tee -a build-logs/preflight.log
+            [ -f app/src/main/res/values/strings.xml ] || echo "::warning::missing app/src/main/res/values/strings.xml" | tee -a build-logs/preflight.log
           fi
 
       - name: NDJC | Upload preflight logs
@@ -117,9 +119,9 @@ jobs:
             anchors/**
             build-logs/preflight.log
           if-no-files-found: ignore
-      # -------------------------------
+      # -------------------------------------------
 
-      # ---------- Environment Snapshot (pre) ----------
+      # --------------- Env snapshot (pre) ---------------
       - name: NDJC | Env snapshot (pre)
         if: always()
         shell: bash
@@ -129,7 +131,6 @@ jobs:
           {
             echo "=== JAVA ==="; java -version 2>&1 || true
             echo; echo "=== Gradle Wrapper ==="; ./gradlew -v || true
-            echo; echo "=== AGP (from buildSrc / plugin) ==="; ./gradlew -q :app:dependencies --configuration releaseRuntimeClasspath >/dev/null 2>&1 || true
             echo; echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
           } | tee build-logs/versions-lock.pre.txt
           ./gradlew :app:dependencies --configuration releaseRuntimeClasspath > build-logs/dependency-tree.pre.txt 2>/dev/null || true
@@ -143,9 +144,9 @@ jobs:
             build-logs/versions-lock.pre.txt
             build-logs/dependency-tree.pre.txt
           if-no-files-found: ignore
-      # ----------------------------------------------
+      # --------------------------------------------------
 
-      # ---------- Probes（并行地逐一执行，失败也继续） ----------
+      # ---------------- Probes (continue-on-error) ----------------
       - name: Probe | Manifest
         id: probe_manifest
         shell: bash
@@ -155,7 +156,6 @@ jobs:
           mkdir -p build-logs
           ./gradlew :app:processReleaseMainManifest --stacktrace --info --warning-mode all \
             > build-logs/manifest-probe.log 2>&1 || true
-          # 尝试收集 manifest merger 报告
           MRF=$(ls -t app/build/outputs/logs/manifest-merger-*.txt 2>/dev/null | head -n1 || true)
           if [ -n "$MRF" ]; then cp "$MRF" build-logs/manifest-merger-report.txt; else echo "manifest-merger report not found" > build-logs/manifest-merger-report.txt; fi
 
@@ -170,7 +170,6 @@ jobs:
             > build-logs/resource-probe.log 2>&1 || true
           ./gradlew :app:verifyReleaseResources --stacktrace --info --warning-mode all \
             >> build-logs/resource-probe.log 2>&1 || true
-          # 一些 AAPT2 报告不会单独文件化，保留 probe 日志即可
           echo "resource probe done" >> build-logs/resource-probe.log
 
       - name: Probe | Lint (non-blocking)
@@ -182,7 +181,6 @@ jobs:
           mkdir -p build-logs
           ./gradlew :app:lintRelease --stacktrace --info --warning-mode all \
             > build-logs/lint-probe.log 2>&1 || true
-          # 尝试收集 lint 报告
           LHTML=$(ls -t app/build/reports/lint-results-release.html 2>/dev/null | head -n1 || true)
           LXML=$(ls -t app/build/reports/lint-results-release.xml 2>/dev/null | head -n1 || true)
           [ -n "$LHTML" ] && cp "$LHTML" build-logs/lint-report.html || true
@@ -201,10 +199,11 @@ jobs:
             build-logs/lint-report.html
             build-logs/lint-report.xml
           if-no-files-found: ignore
-      # ------------------------------------------------
+      # ------------------------------------------------------------
 
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
+        shell: bash
         run: |
           echo "${KS}" | base64 -d > "$HOME/release.jks"
           {
@@ -215,7 +214,7 @@ jobs:
           } >> "$GITHUB_ENV"
           ls -lh "$HOME/release.jks" || true
 
-      # ---------- Build（stderr 一并写入日志）----------
+      # ---------------- Build (assemble) ----------------
       - name: Build
         id: build
         shell: bash
@@ -223,19 +222,18 @@ jobs:
           set -euo pipefail
           mkdir -p build-logs
           if [ -z "${KS}" ]; then
-            echo "No keystore → build Debug"
+            echo "No keystore → assembleDebug"
             ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace --info --warning-mode all 2>&1 | tee build-logs/build.log
             OUTDIR=app/build/outputs/apk/debug
             VARIANT=debug
           else
-            echo "Keystore present → build Release"
+            echo "Keystore present → assembleRelease"
             ./gradlew :app:clean :app:assembleRelease -x lint --stacktrace --info --warning-mode all 2>&1 | tee build-logs/build.log
             OUTDIR=app/build/outputs/apk/release
             VARIANT=release
           fi
           echo "APK_DIR=${OUTDIR:-app/build/outputs/apk/debug}" >> "$GITHUB_ENV"
           echo "VARIANT=${VARIANT:-debug}" >> "$GITHUB_ENV"
-      # -----------------------------------------------
 
       - name: NDJC | Upload build logs (on failure too)
         if: always()
@@ -251,8 +249,9 @@ jobs:
         run: |
           echo "---- build.log (last 200 lines) ----"
           tail -n 200 build-logs/build.log || true
+      # -------------------------------------------------
 
-      # ---------- Environment Snapshot (post) ----------
+      # --------------- Env snapshot (post) ---------------
       - name: NDJC | Env snapshot (post)
         if: always()
         shell: bash
@@ -275,8 +274,9 @@ jobs:
             build-logs/versions-lock.post.txt
             build-logs/dependency-tree.post.txt
           if-no-files-found: ignore
-      # -----------------------------------------------
+      # --------------------------------------------------
 
+      # ---------------- Pick & sign APK ----------------
       - name: Pick APK
         id: pick
         shell: bash
@@ -306,9 +306,10 @@ jobs:
           if [ -n "${APK:-}" ] && echo "${APK}" | grep -q -- '-unsigned\.apk$'; then
             OUT="${APK%-unsigned.apk}.apk"
             echo "Unsigned APK → signing: ${APK} -> ${OUT}"
-            # 若 34.0.0 不存在，则自动选最新的 apksigner
             SIG="$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner"
-            [ -x "$SIG" ] || SIG="$(ls -d $ANDROID_SDK_ROOT/build-tools/* | sort -V | tail -n1)/apksigner"
+            if [ ! -x "$SIG" ]; then
+              SIG="$(ls -d $ANDROID_SDK_ROOT/build-tools/* 2>/dev/null | sort -V | tail -n1)/apksigner"
+            fi
             "$SIG" sign \
               --ks "$NDJC_KEYSTORE_PATH" \
               --ks-pass pass:"$NDJC_KEYSTORE_PASSWORD" \
@@ -326,7 +327,9 @@ jobs:
         shell: bash
         run: |
           SIG="$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner"
-          [ -x "$SIG" ] || SIG="$(ls -d $ANDROID_SDK_ROOT/build-tools/* | sort -V | tail -n1)/apksigner"
+          if [ ! -x "$SIG" ]; then
+            SIG="$(ls -d $ANDROID_SDK_ROOT/build-tools/* 2>/dev/null | sort -V | tail -n1)/apksigner"
+          fi
           "$SIG" verify --verbose --print-certs "${APK}"
 
       - name: Upload APK
@@ -336,8 +339,9 @@ jobs:
           name: app-${{ env.VARIANT }}-${{ env.RUN_ID }}
           path: ${{ env.APK }}
           if-no-files-found: ignore
+      # --------------------------------------------------
 
-      # ---------- Error Summary & Classification ----------
+      # --------------- Error summary & classification ---------------
       - name: NDJC | Error summary & classification
         if: always()
         shell: bash
@@ -346,112 +350,88 @@ jobs:
           mkdir -p "requests/${RUN_ID}"
           SUM_JSON="requests/${RUN_ID}/summary.json"
 
-          # 读取快照
-          getver () { grep -E "$1" -m1 build-logs/versions-lock.post.txt || grep -E "$1" -m1 build-logs/versions-lock.pre.txt || true; }
+          classes=""
+          notes=""
 
-          CLASS=()
-          MSGS=()
+          add_class () {
+            if [ -z "$classes" ]; then classes="$1"; else classes="$classes,$1"; fi
+          }
+          add_note () {
+            if [ -z "$notes" ]; then notes="$1"; else notes="$notes | $1"; fi
+          }
 
-          # 规则匹配
           if [ -s anchors/missing_text.txt ] || [ -s anchors/missing_block.txt ]; then
-            CLASS+=("anchor-missing")
-            MSGS+=("Anchors missing: see anchors/missing_text.txt / anchors/missing_block.txt")
+            add_class "anchor-missing"
+            add_note "Anchors missing: see anchors/missing_text.txt / anchors/missing_block.txt"
           fi
 
-          if grep -qi "Manifest merger failed" build-logs/manifest-probe.log build-logs/manifest-merger-report.txt 2>/dev/null; then
-            CLASS+=("manifest")
-            MSGS+=("Manifest merge failed: see build-logs/manifest-merger-report.txt")
-          fi
-
-          if grep -qiE "Android resource linking failed|resource .* not found|duplicate resources|style .* not found" build-logs/resource-probe.log build-logs/build.log 2>/dev/null; then
-            CLASS+=("resource")
-            MSGS+=("Resource issues (AAPT2): see build-logs/resource-probe.log")
-          fi
-
-          if grep -qiE "^e: |This version of the Kotlin compiler is not compatible with the Compose compiler" build-logs/build.log 2>/dev/null; then
-            CLASS+=("kotlin")
-            MSGS+=("Kotlin/Compose compile error: see build-logs/build.log")
-          fi
-
-          if grep -qiE "Program type already present|Missing class" build-logs/build.log 2>/dev/null; then
-            CLASS+=("proguard")
-            MSGS+=("R8/Proguard issues: see build-logs/build.log")
-          fi
-
+          grep -qi "Manifest merger failed" build-logs/manifest-probe.log build-logs/manifest-merger-report.txt 2>/dev/null && { add_class "manifest"; add_note "Manifest merge failed (see build-logs/manifest-merger-report.txt)"; }
+          grep -qiE "Android resource linking failed|resource .* not found|duplicate resources|style .* not found" build-logs/resource-probe.log build-logs/build.log 2>/dev/null && { add_class "resource"; add_note "Resource issues (AAPT2) (see build-logs/resource-probe.log)"; }
+          grep -qiE "^e: |This version of the Kotlin compiler is not compatible with the Compose compiler" build-logs/build.log 2>/dev/null && { add_class "kotlin"; add_note "Kotlin/Compose compile error (see build-logs/build.log)"; }
+          grep -qiE "Program type already present|Missing class" build-logs/build.log 2>/dev/null && { add_class "proguard"; add_note "R8/Proguard issues (see build-logs/build.log)"; }
           if grep -qi "apksigner" build-logs/build.log 2>/dev/null && [ -z "${APK:-}" ]; then
-            CLASS+=("signing")
-            MSGS+=("Signing issues: see build-logs/build.log")
+            add_class "signing"; add_note "Signing issues (see build-logs/build.log)"
           fi
-
-          # 环境漂移：pre/post 依赖树差异
           if [ -f build-logs/dependency-tree.pre.txt ] && [ -f build-logs/dependency-tree.post.txt ]; then
             if ! diff -q build-logs/dependency-tree.pre.txt build-logs/dependency-tree.post.txt >/dev/null 2>&1; then
-              CLASS+=("env-drift")
-              MSGS+=("Environment/Dependency drift between pre & post snapshots")
+              add_class "env-drift"; add_note "Environment/Dependency drift between pre & post snapshots"
             fi
           fi
 
-          # 去重
-          uniq_join () { printf "%s\n" "$@" | awk '!x[$0]++'; }
-          CLASS_UNIQ=$(uniq_join "${CLASS[@]:-}" | paste -sd "," -)
-          # 统计缺锚点
           MT=$( [ -f anchors/missing_text.txt ] && grep -c . anchors/missing_text.txt || echo 0 )
           MB=$( [ -f anchors/missing_block.txt ] && grep -c . anchors/missing_block.txt || echo 0 )
 
-          # 生成 JSON（简化版）
-          cat > "$SUM_JSON" <<EOF
-{
-  "runId": "${RUN_ID}",
-  "branch": "${BUILD_BRANCH}",
-  "variant": "${VARIANT:-unknown}",
-  "apk": "${APK:-}",
-  "errors": {
-    "classes": "${CLASS_UNIQ}",
-    "notes": $(printf '%s\n' "${MSGS[@]:-}" | jq -R . | jq -s .)
-  },
-  "anchors": { "missing_text": ${MT}, "missing_block": ${MB} },
-  "snapshots": {
-    "pre":  "build-logs/versions-lock.pre.txt",
-    "post": "build-logs/versions-lock.post.txt"
-  },
-  "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-}
-EOF
+          {
+            echo "{"
+            echo "  \"runId\": \"${RUN_ID}\","
+            echo "  \"branch\": \"${BUILD_BRANCH}\","
+            echo "  \"variant\": \"${VARIANT:-unknown}\","
+            echo "  \"apk\": \"${APK:-}\","
+            echo "  \"errors\": {"
+            echo "    \"classes\": \"${classes:-}\","
+            echo "    \"notes\": \"${notes:-}\""
+            echo "  },"
+            echo "  \"anchors\": { \"missing_text\": ${MT}, \"missing_block\": ${MB} },"
+            echo "  \"snapshots\": {"
+            echo "    \"pre\":  \"build-logs/versions-lock.pre.txt\","
+            echo "    \"post\": \"build-logs/versions-lock.post.txt\""
+            echo "  },"
+            echo "  \"generated_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\""
+            echo "}"
+          } > "$SUM_JSON"
 
-          # 写回 actions-summary.txt
           {
             echo "branch=${BUILD_BRANCH}"
             echo "variant=${VARIANT:-unknown}"
             echo "apk=${APK:-}"
-            echo "classes=${CLASS_UNIQ}"
+            echo "classes=${classes:-}"
             echo "missing_text=${MT}"
             echo "missing_block=${MB}"
             echo "ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           } > "requests/${RUN_ID}/actions-summary.txt"
 
-          # 提交回仓库
-          git config user.name  "ndjc-bot"
+          git config user.name "ndjc-bot"
           git config user.email "ndjc-bot@users.noreply.github.com"
           git add "requests/${RUN_ID}" || true
           git commit -m "[NDJC ${RUN_ID}] add error summary & logs" || true
           git push origin "${BUILD_BRANCH}" || true
 
-          # GITHUB_STEP_SUMMARY
-          echo "### NDJC Build Result" >> "$GITHUB_STEP_SUMMARY"
-          echo "- runId: \`${RUN_ID}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- branch: \`${BUILD_BRANCH}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- variant: \`${VARIANT:-unknown}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- apk: \`${APK:-not-found}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- error classes: \`${CLASS_UNIQ:-none}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- anchors missing: text=${MT}, block=${MB}" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Reports**" >> "$GITHUB_STEP_SUMMARY"
-          echo "- \`build-logs/manifest-merger-report.txt\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- \`build-logs/resource-probe.log\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- \`build-logs/lint-report.(html|xml)\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- \`build-logs/build.log\`" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### NDJC Build Result"
+            echo "- runId: \`${RUN_ID}\`"
+            echo "- branch: \`${BUILD_BRANCH}\`"
+            echo "- variant: \`${VARIANT:-unknown}\`"
+            echo "- apk: \`${APK:-not-found}\`"
+            echo "- error classes: \`${classes:-none}\`"
+            echo "- anchors missing: text=${MT}, block=${MB}"
+            echo ""
+            echo "**Reports**"
+            echo "- \`build-logs/manifest-merger-report.txt\`"
+            echo "- \`build-logs/resource-probe.log\`"
+            echo "- \`build-logs/lint-report.(html|xml)\`"
+            echo "- \`build-logs/build.log\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      # 再次上传所有构建日志 + 汇总，确保有工件备份
       - name: NDJC | Upload ALL logs & summary
         if: always()
         uses: actions/upload-artifact@v4
