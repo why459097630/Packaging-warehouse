@@ -82,11 +82,24 @@ jobs:
           test -d app || { echo "::error::app/ missing"; exit 1; }
           test -f app/build.gradle -o -f app/build.gradle.kts || { echo "::error::Gradle file missing"; exit 1; }
 
+      # ===== 强制 JDK 17（关键） =====
       - name: Setup Java 17
+        id: jdk
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
+          check-latest: true
+
+      - name: Force JDK 17 for all next steps
+        shell: bash
+        run: |
+          echo "JAVA_HOME=${JAVA_HOME}" >> "$GITHUB_ENV"
+          echo "${JAVA_HOME}/bin" >> "$GITHUB_PATH"
+          echo "ORG_GRADLE_JAVA_HOME=${JAVA_HOME}" >> "$GITHUB_ENV"
+          echo "Using JAVA_HOME=$JAVA_HOME"
+          java -version
+      # =================================
 
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
@@ -133,7 +146,7 @@ jobs:
             echo; echo "=== Gradle Wrapper ==="; ./gradlew -v || true
             echo; echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
           } | tee build-logs/versions-lock.pre.txt
-          ./gradlew :app:dependencies --configuration releaseRuntimeClasspath > build-logs/dependency-tree.pre.txt 2>/dev/null || true
+          ./gradlew :app:dependencies --configuration releaseRuntimeClasspath --console=plain --no-daemon > build-logs/dependency-tree.pre.txt 2>&1 || true
 
       - name: NDJC | Upload env snapshot (pre)
         if: always()
@@ -154,8 +167,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build-logs
-          ./gradlew :app:processReleaseMainManifest --stacktrace --info --warning-mode all \
-            > build-logs/manifest-probe.log 2>&1 || true
+          ./gradlew :app:processReleaseMainManifest --stacktrace --info --warning-mode all > build-logs/manifest-probe.log 2>&1 || true
           MRF=$(ls -t app/build/outputs/logs/manifest-merger-*.txt 2>/dev/null | head -n1 || true)
           if [ -n "$MRF" ]; then cp "$MRF" build-logs/manifest-merger-report.txt; else echo "manifest-merger report not found" > build-logs/manifest-merger-report.txt; fi
 
@@ -166,10 +178,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build-logs
-          ./gradlew :app:mergeReleaseResources --stacktrace --info --warning-mode all \
-            > build-logs/resource-probe.log 2>&1 || true
-          ./gradlew :app:verifyReleaseResources --stacktrace --info --warning-mode all \
-            >> build-logs/resource-probe.log 2>&1 || true
+          ./gradlew :app:mergeReleaseResources --stacktrace --info --warning-mode all > build-logs/resource-probe.log 2>&1 || true
+          ./gradlew :app:verifyReleaseResources --stacktrace --info --warning-mode all >> build-logs/resource-probe.log 2>&1 || true
           echo "resource probe done" >> build-logs/resource-probe.log
 
       - name: Probe | Lint (non-blocking)
@@ -179,8 +189,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build-logs
-          ./gradlew :app:lintRelease --stacktrace --info --warning-mode all \
-            > build-logs/lint-probe.log 2>&1 || true
+          ./gradlew :app:lintRelease --stacktrace --info --warning-mode all > build-logs/lint-probe.log 2>&1 || true
           LHTML=$(ls -t app/build/reports/lint-results-release.html 2>/dev/null | head -n1 || true)
           LXML=$(ls -t app/build/reports/lint-results-release.xml 2>/dev/null | head -n1 || true)
           [ -n "$LHTML" ] && cp "$LHTML" build-logs/lint-report.html || true
@@ -221,6 +230,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build-logs
+          echo "JAVA_HOME=$JAVA_HOME"
+          java -version
+          export ORG_GRADLE_JAVA_HOME="${JAVA_HOME}"
+          echo "ORG_GRADLE_JAVA_HOME=$ORG_GRADLE_JAVA_HOME"
           if [ -z "${KS}" ]; then
             echo "No keystore → assembleDebug"
             ./gradlew :app:clean :app:assembleDebug -x lint --stacktrace --info --warning-mode all 2>&1 | tee build-logs/build.log
@@ -263,7 +276,7 @@ jobs:
             echo; echo "=== Gradle Wrapper ==="; ./gradlew -v || true
             echo; echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
           } | tee build-logs/versions-lock.post.txt
-          ./gradlew :app:dependencies --configuration releaseRuntimeClasspath > build-logs/dependency-tree.post.txt 2>/dev/null || true
+          ./gradlew :app:dependencies --configuration releaseRuntimeClasspath --console=plain --no-daemon > build-logs/dependency-tree.post.txt 2>&1 || true
 
       - name: NDJC | Upload env snapshot (post)
         if: always()
@@ -353,18 +366,12 @@ jobs:
           classes=""
           notes=""
 
-          add_class () {
-            if [ -z "$classes" ]; then classes="$1"; else classes="$classes,$1"; fi
-          }
-          add_note () {
-            if [ -z "$notes" ]; then notes="$1"; else notes="$notes | $1"; fi
-          }
+          add_class () { if [ -z "$classes" ]; then classes="$1"; else classes="$classes,$1"; fi; }
+          add_note  () { if [ -z "$notes" ];   then notes="$1";   else notes="$notes | $1";   fi; }
 
           if [ -s anchors/missing_text.txt ] || [ -s anchors/missing_block.txt ]; then
-            add_class "anchor-missing"
-            add_note "Anchors missing: see anchors/missing_text.txt / anchors/missing_block.txt"
+            add_class "anchor-missing"; add_note "Anchors missing: see anchors/missing_text.txt / anchors/missing_block.txt"
           fi
-
           grep -qi "Manifest merger failed" build-logs/manifest-probe.log build-logs/manifest-merger-report.txt 2>/dev/null && { add_class "manifest"; add_note "Manifest merge failed (see build-logs/manifest-merger-report.txt)"; }
           grep -qiE "Android resource linking failed|resource .* not found|duplicate resources|style .* not found" build-logs/resource-probe.log build-logs/build.log 2>/dev/null && { add_class "resource"; add_note "Resource issues (AAPT2) (see build-logs/resource-probe.log)"; }
           grep -qiE "^e: |This version of the Kotlin compiler is not compatible with the Compose compiler" build-logs/build.log 2>/dev/null && { add_class "kotlin"; add_note "Kotlin/Compose compile error (see build-logs/build.log)"; }
