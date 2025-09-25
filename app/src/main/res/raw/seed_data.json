@@ -1,0 +1,18 @@
+﻿[
+  {
+    "id": "1",
+    "author": "Alice",
+    "content": "Welcome to NDJC circle!",
+    "likes": 3,
+    "comments": [
+      {"author": "Bob", "content": "Nice!"}
+    ]
+  },
+  {
+    "id": "2",
+    "author": "Carol",
+    "content": "Compose + M3 ready.",
+    "likes": 5,
+    "comments": []
+  }
+]
