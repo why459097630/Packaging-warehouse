@@ -50,10 +50,12 @@ android {
         buildConfig true
     }
 
-    // 与 Kotlin 1.9.24 配套
-    composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
+    // 与 Kotlin 1.9.24 配套（Compose Compiler 1.5.14）
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
 
-    // 统一到 Java 17（与 Kotlin 配置一致）
+    // 统一到 Java 17（与 Kotlin/JVM 配置一致）
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -62,7 +64,7 @@ android {
         jvmTarget = "17"
         freeCompilerArgs += [
             "-Xjvm-default=all",
-            // 为使用 M3 顶栏等实验 API 开白名单（解决编译告警/错误）
+            // 如使用 Material3 某些实验 API，可按需开启
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
         ]
     }
@@ -73,15 +75,17 @@ kotlin {
 }
 
 dependencies {
+    // 使用 Compose BOM 管理 Compose 组件版本
     implementation platform("androidx.compose:compose-bom:2024.06.00")
+
     implementation "androidx.activity:activity-compose:1.9.2"
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.ui:ui-tooling-preview"
-    implementation "androidx.compose.material3:material3"       // 走 BOM
+    implementation "androidx.compose.material3:material3"              // 走 BOM
     implementation "androidx.navigation:navigation-compose:2.8.0"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
     implementation "androidx.core:core-ktx:1.13.1"
-    implementation "com.google.android.material:material:1.12.0" // XML 主题资源
+    implementation "com.google.android.material:material:1.12.0"        // XML 主题资源（若无可移除）
 
     // IF:PERMISSION.NOTIFICATION
     // ENDIF
