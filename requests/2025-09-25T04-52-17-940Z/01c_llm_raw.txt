@@ -1,0 +1,14 @@
+{
+   "appName": "牛太郎餐厅",
+   "homeTitle": "",
+   "mainButtonText": "添加新菜品",
+   "packageId": "com.niutao.canteen",
+   "permissions": [
+     "android.permission.INTERNET",
+     "android.permission.WRITE_EXTERNAL_STORAGE",
+     "android.permission.READ_EXTERNAL_STORAGE",
+     "android.permission.ACCESS_FINE_LOCATION"
+   ],
+   "intentHost": "niutaocanteen.com",
+   "locales": ["zh-rCN", "en"]
+}
