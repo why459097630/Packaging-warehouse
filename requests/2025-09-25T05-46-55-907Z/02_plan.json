@@ -1,0 +1,13 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "介绍牛太郎餐厅的美食!",
+    "NDJC:PRIMARY_BUTTON_TEXT": "编辑并发布菜品照片",
+    "NDJC:MAIN_BUTTON": "编辑并发布菜品照片",
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core"
+  },
+  "conditions": {},
+  "lists": {},
+  "blocks": {}
+}
