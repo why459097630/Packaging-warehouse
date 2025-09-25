@@ -1,0 +1,15 @@
+{
+   "appName": "牛太郎餐厅APP",
+   "homeTitle": "牛太郎餐厅——您的口舌之家",
+   "mainButtonText": "上传菜品",
+   "packageId": "com.niutao.canteen",
+   "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.CAMERA"
+   ],
+   "intentHost": "niutao.canteen",
+   "locales": ["zh-rCN", "en"]
+}
