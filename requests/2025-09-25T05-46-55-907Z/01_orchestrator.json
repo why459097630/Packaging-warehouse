@@ -1,0 +1,82 @@
+{
+  "template": "circle-basic",
+  "mode": "A",
+  "allowCompanions": false,
+  "appName": "牛太郎餐厅",
+  "homeTitle": "介绍牛太郎餐厅的美食!",
+  "mainButtonText": "编辑并发布菜品照片",
+  "packageId": "com.ndjc.demo.core",
+  "locales": [
+    "en",
+    "zh-rCN"
+  ],
+  "resConfigs": "en,zh-rCN",
+  "permissionsXml": "<uses-permission android:name=\"android.permission.INTERNET\"/>\n<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>\n<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>\n<uses-permission android:name=\"android.permission.CAMERA\"/>\n<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
+  "companions": [],
+  "_trace": {
+    "provider": "groq",
+    "url": "https://api.groq.com/openai/v1/chat/completions",
+    "model": "llama-3.1-8b-instant",
+    "request": {
+      "model": "llama-3.1-8b-instant",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a JSON API. Reply ONLY JSON with keys:\n{\n  \"appName\": string,\n  \"homeTitle\": string,\n  \"mainButtonText\": string,\n  \"packageId\": string | null,\n  \"permissions\": string[],          // Android permission names\n  \"intentHost\": string | null,      // deep link host like \"example.com\"\n  \"locales\": string[]               // e.g. [\"en\",\"zh-rCN\"]\n}"
+        },
+        {
+          "role": "user",
+          "content": "生成一个牛太郎餐厅的介绍菜品的安卓app，要可以上传照片、编辑文字介绍、设定价格、评论点赞"
+        }
+      ],
+      "temperature": 0,
+      "response_format": {
+        "type": "json_object"
+      },
+      "stream": false
+    },
+    "response": {
+      "id": "chatcmpl-e3318b53-f72b-40ac-bfca-74a3ca09cfcd",
+      "object": "chat.completion",
+      "created": 1758779227,
+      "model": "llama-3.1-8b-instant",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\n   \"appName\": \"牛太郎餐厅\",\n   \"homeTitle\": \"介绍牛太郎餐厅的美食!\",\n   \"mainButtonText\": \"编辑并发布菜品照片\",\n   \"packageId\": null,\n   \"permissions\": [\n      \"android.permission.INTERNET\",\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.CAMERA\",\n      \"android.permission.ACCESS_FINE_LOCATION\"\n   ],\n   \"intentHost\": null,\n   \"locales\": [\"en\",\"zh-rCN\"]\n}"
+          },
+          "logprobs": null,
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "queue_time": 0.190172329,
+        "prompt_tokens": 173,
+        "prompt_time": 0.016968384,
+        "completion_tokens": 111,
+        "completion_time": 0.190159119,
+        "total_tokens": 284,
+        "total_time": 0.207127503
+      },
+      "usage_breakdown": null,
+      "system_fingerprint": "fp_90c2e79dab",
+      "x_groq": {
+        "id": "req_01k5zpjfe8fdtsebw8vymajf9v"
+      },
+      "service_tier": "on_demand"
+    },
+    "text": "{\n   \"appName\": \"牛太郎餐厅\",\n   \"homeTitle\": \"介绍牛太郎餐厅的美食!\",\n   \"mainButtonText\": \"编辑并发布菜品照片\",\n   \"packageId\": null,\n   \"permissions\": [\n      \"android.permission.INTERNET\",\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.CAMERA\",\n      \"android.permission.ACCESS_FINE_LOCATION\"\n   ],\n   \"intentHost\": null,\n   \"locales\": [\"en\",\"zh-rCN\"]\n}",
+    "finish_reason": "stop",
+    "usage": {
+      "queue_time": 0.190172329,
+      "prompt_tokens": 173,
+      "prompt_time": 0.016968384,
+      "completion_tokens": 111,
+      "completion_time": 0.190159119,
+      "total_tokens": 284,
+      "total_time": 0.207127503
+    }
+  }
+}
