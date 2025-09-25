@@ -1,0 +1,32 @@
+{
+  "id": "chatcmpl-34f4549a-0cad-45f5-8b15-9b25add89f06",
+  "object": "chat.completion",
+  "created": 1758782530,
+  "model": "llama-3.1-8b-instant",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n   \"appName\": \"牛太郎餐厅APP\",\n   \"homeTitle\": \"牛太郎餐厅——您的口舌之家\",\n   \"mainButtonText\": \"上传菜品\",\n   \"packageId\": \"com.niutao.canteen\",\n   \"permissions\": [\n      \"android.permission.INTERNET\",\n      \"android.permission.ACCESS_FINE_LOCATION\",\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.CAMERA\"\n   ],\n   \"intentHost\": \"niutao.canteen\",\n   \"locales\": [\"zh-rCN\", \"en\"]\n}"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.187405131,
+    "prompt_tokens": 173,
+    "prompt_time": 0.022592987,
+    "completion_tokens": 126,
+    "completion_time": 0.234295708,
+    "total_tokens": 299,
+    "total_time": 0.256888695
+  },
+  "usage_breakdown": null,
+  "system_fingerprint": "fp_a7a2f9abbf",
+  "x_groq": {
+    "id": "req_01k5zsq87qetas3b7y4my3qpzx"
+  },
+  "service_tier": "on_demand"
+}
