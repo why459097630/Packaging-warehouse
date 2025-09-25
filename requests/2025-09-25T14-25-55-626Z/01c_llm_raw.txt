@@ -1,0 +1,15 @@
+{
+   "appName": " 牛太郎餐厅 - 美食达人",
+   "homeTitle": "发现新美味",
+   "mainButtonText": "发布菜单",
+   "packageId": "com.niutao.restaurant",
+   "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.CAMERA"
+   ],
+   "intentHost": "https://niutao-restaurant.com",
+   "locales": ["zh-Hans", "en"]
+}
