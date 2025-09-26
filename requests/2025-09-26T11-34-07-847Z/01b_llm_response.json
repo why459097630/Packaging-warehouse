@@ -1,0 +1,32 @@
+{
+  "id": "chatcmpl-5095dd23-1e71-4323-977e-a686cd30ea7e",
+  "object": "chat.completion",
+  "created": 1758886462,
+  "model": "llama-3.1-8b-instant",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n   \"fields\": {\n      \"appName\": \"牛太郎餐厅\",\n      \"homeTitle\": \"牛太郎餐厅\",\n      \"mainButtonText\": \"上传菜品\",\n      \"packageId\": null,\n      \"permissions\": [\n         \"android.permission.INTERNET\",\n         \"android.permission.READ_EXTERNAL_STORAGE\",\n         \"android.permission.WRITE_EXTERNAL_STORAGE\",\n         \"android.permission.CAMERA\"\n      ],\n      \"intentHost\": null,\n      \"locales\": [\"zh\", \"en\"]\n   },\n   \"companions\": [\n      {\n         \"path\": \"app/src/main/java/com/example/niutao/MenuActivity.kt\",\n         \"kind\": \"kotlin\",\n         \"content\":null}]}"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.186960929,
+    "prompt_tokens": 206,
+    "prompt_time": 0.028986752,
+    "completion_tokens": 898,
+    "completion_time": 0.982326987,
+    "total_tokens": 1104,
+    "total_time": 1.011313739
+  },
+  "usage_breakdown": null,
+  "system_fingerprint": "fp_50a6be1b6f",
+  "x_groq": {
+    "id": "req_01k62wtzx2fkqs6ky5vzysx67q"
+  },
+  "service_tier": "on_demand"
+}
