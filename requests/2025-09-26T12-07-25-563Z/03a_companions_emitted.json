@@ -1,0 +1,13 @@
+{
+  "written": 8,
+  "files": [
+    "companions/app/src/main/java/com/example/niutao/MenuActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/MenuModel.kt",
+    "companions/app/src/main/java/com/example/niutao/MenuAdapter.kt",
+    "companions/app/src/main/java/com/example/niutao/MenuActivityLayout.xml",
+    "companions/app/src/main/java/com/example/niutao/MenuItemLayout.xml",
+    "companions/app/src/main/res/values/strings.xml",
+    "companions/app/src/main/res/layout/activity_menu.xml",
+    "companions/app/src/main/res/layout/menu_item.xml"
+  ]
+}
