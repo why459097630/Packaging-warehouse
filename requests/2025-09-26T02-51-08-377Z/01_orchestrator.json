@@ -1,0 +1,83 @@
+{
+  "template": "circle-basic",
+  "mode": "A",
+  "allowCompanions": false,
+  "appName": "牛太郎餐厅",
+  "homeTitle": "欢迎光临牛太郎餐厅",
+  "mainButtonText": "添加新餐品",
+  "packageId": "com.niutao.canteen",
+  "locales": [
+    "zh-rCN",
+    "en"
+  ],
+  "resConfigs": "zh-rCN,en",
+  "permissionsXml": "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>\n<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>\n<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>\n<uses-permission android:name=\"android.permission.INTERNET\"/>",
+  "intentFiltersXml": "<intent-filter>\n  <action android:name=\"android.intent.action.VIEW\"/>\n  <category android:name=\"android.intent.category.DEFAULT\"/>\n  <category android:name=\"android.intent.category.BROWSABLE\"/>\n  <data android:scheme=\"https\" android:host=\"niutaocanteen.com\"/>\n</intent-filter>",
+  "companions": [],
+  "_trace": {
+    "provider": "groq",
+    "url": "https://api.groq.com/openai/v1/chat/completions",
+    "model": "llama-3.1-8b-instant",
+    "request": {
+      "model": "llama-3.1-8b-instant",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a JSON API. Reply ONLY JSON with keys:\n{\n  \"appName\": string,\n  \"homeTitle\": string,\n  \"mainButtonText\": string,\n  \"packageId\": string | null,\n  \"permissions\": string[],          // Android permission names\n  \"intentHost\": string | null,      // deep link host like \"example.com\"\n  \"locales\": string[]               // e.g. [\"en\",\"zh-rCN\"]\n}"
+        },
+        {
+          "role": "user",
+          "content": "生成一个牛太郎餐厅的介绍菜品的安卓app，要可以上传照片、编辑文字介绍、设定价格、评论点赞"
+        }
+      ],
+      "temperature": 0,
+      "response_format": {
+        "type": "json_object"
+      },
+      "stream": false
+    },
+    "response": {
+      "id": "chatcmpl-9a20b016-46b2-49ea-a4e5-4d4febcca16f",
+      "object": "chat.completion",
+      "created": 1758855080,
+      "model": "llama-3.1-8b-instant",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\n   \"appName\": \"牛太郎餐厅\",\n   \"homeTitle\": \"欢迎光临牛太郎餐厅\",\n   \"mainButtonText\": \"添加新餐品\",\n   \"packageId\": \"com.niutao.canteen\",\n   \"permissions\": [\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.ACCESS_FINE_LOCATION\",\n      \"android.permission.INTERNET\"\n   ],\n   \"intentHost\": \"niutaocanteen.com\",\n   \"locales\": [\n      \"zh-rCN\",\n      \"en\"\n   ]\n}"
+          },
+          "logprobs": null,
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "queue_time": 0.187175488,
+        "prompt_tokens": 173,
+        "prompt_time": 0.009514006,
+        "completion_tokens": 122,
+        "completion_time": 0.15402959,
+        "total_tokens": 295,
+        "total_time": 0.163543596
+      },
+      "usage_breakdown": null,
+      "system_fingerprint": "fp_3ddc9808b3",
+      "x_groq": {
+        "id": "req_01k61yxajaeyhs4byes5ydb4ky"
+      },
+      "service_tier": "on_demand"
+    },
+    "text": "{\n   \"appName\": \"牛太郎餐厅\",\n   \"homeTitle\": \"欢迎光临牛太郎餐厅\",\n   \"mainButtonText\": \"添加新餐品\",\n   \"packageId\": \"com.niutao.canteen\",\n   \"permissions\": [\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.ACCESS_FINE_LOCATION\",\n      \"android.permission.INTERNET\"\n   ],\n   \"intentHost\": \"niutaocanteen.com\",\n   \"locales\": [\n      \"zh-rCN\",\n      \"en\"\n   ]\n}",
+    "finish_reason": "stop",
+    "usage": {
+      "queue_time": 0.187175488,
+      "prompt_tokens": 173,
+      "prompt_time": 0.009514006,
+      "completion_tokens": 122,
+      "completion_time": 0.15402959,
+      "total_tokens": 295,
+      "total_time": 0.163543596
+    }
+  }
+}
