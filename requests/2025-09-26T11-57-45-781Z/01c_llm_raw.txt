@@ -1,0 +1,87 @@
+{
+   "fields": {
+      "appName": "牛太郎餐厅",
+      "homeTitle": "牛太郎餐厅 - 美味的介绍",
+      "mainButtonText": "上传菜品",
+      "packageId": null,
+      "permissions": [
+         "android.permission.INTERNET",
+         "android.permission.READ_EXTERNAL_STORAGE",
+         "android.permission.WRITE_EXTERNAL_STORAGE",
+         "android.permission.CAMERA"
+      ],
+      "intentHost": null,
+      "locales": [
+         "zh",
+         "en"
+      ]
+   },
+   "companions": [
+      {
+         "path": "app/src/main/java/com/example/ntrestaurant/model/Menu.java",
+         "kind": "kotlin",
+         "content": "data class Menu(val id: Int, val name: String, val price: Double, val description: String, val image: String)\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/example/ntrestaurant/repository/MenuRepository.java",
+         "kind": "kotlin",
+         "content": "interface MenuRepository {\n    suspend fun getMenu(): List<Menu>\n    suspend fun uploadMenu(menu: Menu)\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/example/ntrestaurant/ui/MainActivity.kt",
+         "kind": "kotlin",
+         "content": "class MainActivity : AppCompatActivity() {\n    private lateinit var menuRepository: MenuRepository\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        menuRepository = MenuRepositoryImpl()\n        uploadMenu()\n    }\n\n    private fun uploadMenu() {\n        val menu = Menu(1, \"牛太郎餐厅\", 10.99, \"美味的介绍\", \"image.jpg\")\n        menuRepository.uploadMenu(menu)\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/example/ntrestaurant/ui/UploadMenuActivity.kt",
+         "kind": "kotlin",
+         "content": "class UploadMenuActivity : AppCompatActivity() {\n    private lateinit var menuRepository: MenuRepository\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_upload_menu)\n\n        menuRepository = MenuRepositoryImpl()\n        uploadMenu()\n    }\n\n    private fun uploadMenu() {\n        val menu = Menu(1, \"牛太郎餐厅\", 10.99, \"美味的介绍\", \"image.jpg\")\n        menuRepository.uploadMenu(menu)\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/example/ntrestaurant/ui/MenuDetailActivity.kt",
+         "kind": "kotlin",
+         "content": "class MenuDetailActivity : AppCompatActivity() {\n    private lateinit var menuRepository: MenuRepository\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_menu_detail)\n\n        menuRepository = MenuRepositoryImpl()\n        getMenu()\n    }\n\n    private fun getMenu() {\n        val menu = menuRepository.getMenu()\n        val menuId = intent.getStringExtra(\"menuId\")\n        val menuDetail = menu.find { it.id == menuId }\n        if (menuDetail != null) {\n            val description = menuDetail.description\n            val price = menuDetail.price\n            val image = menuDetail.image\n            // 展示菜品详细信息\n        }\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/example/ntrestaurant/repository/MenuRepositoryImpl.kt",
+         "kind": "kotlin",
+         "content": "class MenuRepositoryImpl : MenuRepository {\n    override suspend fun getMenu(): List<Menu> {\n        // 从网络或数据库获取菜品列表\n        return listOf(Menu(1, \"牛太郎餐厅\", 10.99, \"美味的介绍\", \"image.jpg\"))\n    }\n\n    override suspend fun uploadMenu(menu: Menu) {\n        // 上传菜品到网络或数据库\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/layout/activity_main.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".MainActivity\">\n    <Button\n        android:id=\"@+id/upload_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传菜品\"/>\n</LinearLayout>\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/layout/activity_upload_menu.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".UploadMenuActivity\">\n    <EditText\n        android:id=\"@+id/menu_name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\"/>\n    <EditText\n        android:id=\"@+id/menu_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品价格\"/>\n    <EditText\n        android:id=\"@+id/menu_description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品描述\"/>\n    <Button\n        android:id=\"@+id/upload_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传菜品\"/>\n</LinearLayout>\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/layout/activity_menu_detail.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".MenuDetailActivity\">\n    <TextView\n        android:id=\"@+id/menu_name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"牛太郎餐厅\"/>\n    <TextView\n        android:id=\"@+id/menu_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"10.99\"/>\n    <TextView\n        android:id=\"@+id/menu_description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"美味的介绍\"/>\n    <ImageView\n        android:id=\"@+id/menu_image\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:src=\"@drawable/image\"/>\n</LinearLayout>\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/values/strings.xml",
+         "kind": "xml",
+         "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"menu_name\">牛太郎餐厅</string>\n    <string name=\"menu_price\">10.99</string>\n    <string name=\"menu_description\">美味的介绍</string>\n</resources>\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/drawable/image.jpg",
+         "kind": "jpg",
+         "content": "image data",
+         "overwrite": true
+      }
+   ]
+}
