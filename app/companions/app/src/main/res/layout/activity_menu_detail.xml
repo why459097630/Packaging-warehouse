@@ -1,0 +1,26 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MenuDetailActivity">
+    <TextView
+        android:id="@+id/menu_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="牛太郎餐厅"/>
+    <TextView
+        android:id="@+id/menu_price"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="10.99"/>
+    <TextView
+        android:id="@+id/menu_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="美味的介绍"/>
+    <ImageView
+        android:id="@+id/menu_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/image"/>
+</LinearLayout>
