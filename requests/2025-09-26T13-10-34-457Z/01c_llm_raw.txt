@@ -1,0 +1,129 @@
+{
+   "fields": {
+      "appName": "牛太郎餐厅",
+      "homeTitle": "牛太郎餐厅 - 美味的介绍菜品",
+      "mainButtonText": "上传菜品",
+      "packageId": null,
+      "permissions": [
+         "android.permission.INTERNET",
+         "android.permission.ACCESS_FINE_LOCATION",
+         "android.permission.CAMERA",
+         "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "intentHost": null,
+      "locales": [
+         "zh-Hans",
+         "en"
+      ]
+   },
+   "companions": [
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/MainActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.TextView\nimport androidx.appcompat.app.AppCompatActivity\n\nclass MainActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val intent = Intent(this, UploadActivity::class.java)\n            startActivity(intent)\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/UploadActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.TextView\nimport androidx.appcompat.app.AppCompatActivity\nimport androidx.core.content.FileProvider\nimport java.io.File\nimport java.io.IOException\nimport java.text.SimpleDateFormat\nimport java.util.Date\nimport kotlin.random.Random\n\nclass UploadActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_upload)\n\n        imageView = findViewById(R.id.image_view)\n        editText = findViewById(R.id.edit_text)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val photo = takePhoto()\n            imageView.setImageBitmap(photo)\n        }\n    }\n\n    private fun takePhoto(): Bitmap {\n        val photo = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)\n        val canvas = Canvas(photo)\n        canvas.drawColor(Color.WHITE)\n        val paint = Paint()\n        paint.color = Color.BLACK\n        paint.style = Paint.Style.STROKE\n        paint.strokeWidth = 5f\n        canvas.drawCircle(50f, 50f, 40f, paint)\n        return photo\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/MenuActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.TextView\nimport androidx.appcompat.app.AppCompatActivity\nimport androidx.core.content.ContextCompat\nimport java.util.ArrayList\n\nclass MenuActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_menu)\n\n        imageView = findViewById(R.id.image_view)\n        editText = findViewById(R.id.edit_text)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val menu = Menu(editText.text.toString(), imageView.drawable)\n            val intent = Intent(this, CommentActivity::class.java)\n            intent.putExtra(\"menu\", menu)\n            startActivity(intent)\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/CommentActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.TextView\nimport androidx.appcompat.app.AppCompatActivity\nimport androidx.core.content.ContextCompat\nimport java.util.ArrayList\n\nclass CommentActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment)\n\n        imageView = findViewById(R.id.image_view)\n        editText = findViewById(R.id.edit_text)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val comment = Comment(editText.text.toString(), imageView.drawable)\n            val intent = Intent(this, LikeActivity::class.java)\n            intent.putExtra(\"comment\", comment)\n            startActivity(intent)\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/LikeActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.TextView\nimport androidx.appcompat.app.AppCompatActivity\nimport androidx.core.content.ContextCompat\nimport java.util.ArrayList\n\nclass LikeActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_like)\n\n        imageView = findViewById(R.id.image_view)\n        editText = findViewById(R.id.edit_text)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val like = Like(editText.text.toString(), imageView.drawable)\n            val intent = Intent(this, MainActivity::class.java)\n            intent.putExtra(\"like\", like)\n            startActivity(intent)\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/Menu.kt",
+         "kind": "kotlin",
+         "content": "data class Menu(val name: String, val image: Int)\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/Comment.kt",
+         "kind": "kotlin",
+         "content": "data class Comment(val text: String, val image: Int)\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/Like.kt",
+         "kind": "kotlin",
+         "content": "data class Like(val text: String, val image: Int)\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/Database.kt",
+         "kind": "kotlin",
+         "content": "import android.content.Context\nimport android.database.sqlite.SQLiteDatabase\nimport android.database.sqlite.SQLiteOpenHelper\n\nclass Database(context: Context) : SQLiteOpenHelper(context, \"menu.db\", null, 1) {\n    override fun onCreate(db: SQLiteDatabase) {\n        db.execSQL(\"CREATE TABLE menu (id INTEGER PRIMARY KEY, name TEXT, image BLOB)\")\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/DatabaseHelper.kt",
+         "kind": "kotlin",
+         "content": "import android.content.Context\nimport android.database.sqlite.SQLiteDatabase\nimport android.database.sqlite.SQLiteOpenHelper\n\nclass DatabaseHelper(context: Context) : SQLiteOpenHelper(context, \"comment.db\", null, 1) {\n    override fun onCreate(db: SQLiteDatabase) {\n        db.execSQL(\"CREATE TABLE comment (id INTEGER PRIMARY KEY, text TEXT, image BLOB)\")\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/DatabaseHelper2.kt",
+         "kind": "kotlin",
+         "content": "import android.content.Context\nimport android.database.sqlite.SQLiteDatabase\nimport android.database.sqlite.SQLiteOpenHelper\n\nclass DatabaseHelper2(context: Context) : SQLiteOpenHelper(context, \"like.db\", null, 1) {\n    override fun onCreate(db: SQLiteDatabase) {\n        db.execSQL(\"CREATE TABLE like (id INTEGER PRIMARY KEY, text TEXT, image BLOB)\")\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/DatabaseManager.kt",
+         "kind": "kotlin",
+         "content": "import android.content.Context\nimport android.database.sqlite.SQLiteDatabase\n\nclass DatabaseManager(context: Context) {\n    private val database: Database = Database(context)\n    private val commentDatabase: DatabaseHelper = DatabaseHelper(context)\n    private val likeDatabase: DatabaseHelper2 = DatabaseHelper2(context)\n\n    fun insertMenu(name: String, image: Int) {\n        database.writableDatabase.execSQL(\"INSERT INTO menu (name, image) VALUES (?, ?)\", arrayOf(name, image))\n    }\n\n    fun insertComment(text: String, image: Int) {\n        commentDatabase.writableDatabase.execSQL(\"INSERT INTO comment (text, image) VALUES (?, ?)\", arrayOf(text, image))\n    }\n\n    fun insertLike(text: String, image: Int) {\n        likeDatabase.writableDatabase.execSQL(\"INSERT INTO like (text, image) VALUES (?, ?)\", arrayOf(text, image))\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/MainActivity.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传菜品\"\n        app:layout_constraintBottom_toBottomOf=\"parent\"\n        app:layout_constraintLeft_toLeftOf=\"parent\"\n        app:layout_constraintRight_toRightOf=\"parent\"\n        app:layout_constraintTop_toTopOf=\"parent\"/>\n\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/UploadActivity.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <ImageView\n        android:id=\"@+id/image_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n\n    <EditText\n        android:id=\"@+id/edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"\n        app:layout_constraintBottom_toBottomOf=\"parent\"\n        app:layout_constraintLeft_toLeftOf=\"parent\"\n        app:layout_constraintRight_toRightOf=\"parent\"\n        app:layout_constraintTop_toTopOf=\"parent\"/>\n\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/MenuActivity.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <ImageView\n        android:id=\"@+id/image_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n\n    <EditText\n        android:id=\"@+id/edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传菜品\"\n        app:layout_constraintBottom_toBottomOf=\"parent\"\n        app:layout_constraintLeft_toLeftOf=\"parent\"\n        app:layout_constraintRight_toRightOf=\"parent\"\n        app:layout_constraintTop_toTopOf=\"parent\"/>\n\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/CommentActivity.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <ImageView\n        android:id=\"@+id/image_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n\n    <EditText\n        android:id=\"@+id/edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论\"\n        app:layout_constraintBottom_toBottomOf=\"parent\"\n        app:layout_constraintLeft_toLeftOf=\"parent\"\n        app:layout_constraintRight_toRightOf=\"parent\"\n        app:layout_constraintTop_toTopOf=\"parent\"/>\n\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/LikeActivity.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <ImageView\n        android:id=\"@+id/image_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n\n    <EditText\n        android:id=\"@+id/edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\"\n        app:layout_constraintBottom_toBottomOf=\"parent\"\n        app:layout_constraintLeft_toLeftOf=\"parent\"\n        app:layout_constraintRight_toRightOf=\"parent\"\n        app:layout_constraintTop_toTopOf=\"parent\"/>\n\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/strings.xml",
+         "kind": "xml",
+         "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"home_title\">牛太郎餐厅 - 美味的介绍菜品</string>\n    <string name=\"main_button_text\">上传菜品</string>\n    <string name=\"upload_button_text\">上传照片</string>\n    <string name=\"comment_button_text\">评论</string>\n    <string name=\"like_button_text\">点赞</string>\n</resources>\n",
+         "overwrite": false
+      }
+   ]
+}
