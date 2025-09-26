@@ -5,53 +5,80 @@ import java.nio.charset.Charset
 import com.ndjc.app.data.model.Comment
 import com.ndjc.app.data.model.Post
 
+/**
+ * 运行时优先读取 res/raw/seed_posts.json；
+ * 若不存在则回退到 res/raw/seed_data.json；
+ * 都不存在/解析失败则使用 fallback 内置示例。
+ */
 object SeedRepository {
     private var cached: List<Post>? = null
 
     fun posts(): List<Post> = cached ?: loadFromRawOrFallback().also { cached = it }
+
     fun postById(id: String): Post? = posts().find { it.id == id }
 
     private fun loadFromRawOrFallback(): List<Post> = try {
-        val resId = com.ndjc.app.R.raw.seed_data           // RES: raw/seed_data.json
-        val text = AppCtx.app.resources
-            .openRawResource(resId)
+        val app = AcpCtx.app ?: return fallback()
+        val res = app.resources
+        val pkg = app.packageName
+
+        // 先找 seed_posts（新标准），找不到再回退 seed_data（兼容旧命名）
+        val idPosts = res.getIdentifier("seed_posts", "raw", pkg)
+        val idData  = res.getIdentifier("seed_data",  "raw", pkg)
+        val rawId   = when {
+            idPosts != 0 -> idPosts
+            idData  != 0 -> idData
+            else         -> 0
+        }
+
+        if (rawId == 0) return fallback()
+
+        val json = res.openRawResource(rawId)
             .readBytes()
             .toString(Charset.forName("UTF-8"))
-        parse(text)
-    } catch (_: Throwable) { fallback() }
+
+        parse(json)
+    } catch (_: Throwable) {
+        fallback()
+    }
 
     private fun parse(json: String): List<Post> {
         val arr = JSONArray(json)
-        return (0 until arr.length()).map { i ->
-            val o = arr.getJSONObject(i)
-            val id = o.optString("id", i.toString())
-            val author = o.optString("author", "User")
-            val content = o.optString("content", "")
-            val likes = o.optInt("likes", 0)
+        val list = mutableListOf<Post>()
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+
+            val id       = o.optString("id", (i + 1).toString())
+            val author   = o.optString("author", "User")
+            val content  = o.optString("content", "")
+            val likes    = o.optInt("likes", 0)
+
             val comments = buildList {
                 val ca = o.optJSONArray("comments") ?: JSONArray()
                 for (j in 0 until ca.length()) {
-                    val c = ca.getJSONObject(j)
-                    add(Comment(c.optString("author","User"), c.optString("content","")))
+                    val c = ca.optJSONObject(j) ?: continue
+                    add(Comment(c.optString("author", "User"), c.optString("content", "")))
                 }
             }
-            Post(id, author, content, likes, comments)
+
+            list += Post(id, author, content, likes, comments)
         }
+        return list
     }
 
     private fun fallback(): List<Post> = listOf(
-        Post("1", "Alice", "Welcome to NDJC circle!", 3, listOf(Comment("Bob","Nice!"))),
-        Post("2", "Carol", "Compose + M3 ready.", 5)
+        Post("1", "Alice", "Welcome to NDJC circle!", 3, listOf(Comment("Bob", "Nice!"))),
+        Post("2", "Carol", "Compose + M3 ready.", 5, emptyList())
     )
 }
 
-/** Application 上下文（供读取 raw） */
-object AppCtx { lateinit var app: android.app.Application }
+/** Application 上下文（保持你现有写法） */
+object AcpCtx { @Volatile internal var app: android.app.Application? = null }
 
-/** 简单 Application 注入到 AppCtx（需在 Manifest 的 application 指定 android:name=".data.App"） */
+/** 在 Application 注入（Manifest 里把 application 声明成 android:name=".data.App"） */
 class App : android.app.Application() {
     override fun onCreate() {
         super.onCreate()
-        AppCtx.app = this
+        AcpCtx.app = this
     }
 }
