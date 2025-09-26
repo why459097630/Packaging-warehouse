@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">牛太郎餐厅</string>
+    <string name="menu_name">菜品名称</string>
+    <string name="menu_price">菜品价格</string>
+    <string name="menu_description">菜品描述</string>
+    <string name="upload_button">上传照片</string>
+</resources>
