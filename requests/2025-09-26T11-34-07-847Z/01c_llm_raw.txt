@@ -1,0 +1,20 @@
+{
+   "fields": {
+      "appName": "牛太郎餐厅",
+      "homeTitle": "牛太郎餐厅",
+      "mainButtonText": "上传菜品",
+      "packageId": null,
+      "permissions": [
+         "android.permission.INTERNET",
+         "android.permission.READ_EXTERNAL_STORAGE",
+         "android.permission.WRITE_EXTERNAL_STORAGE",
+         "android.permission.CAMERA"
+      ],
+      "intentHost": null,
+      "locales": ["zh", "en"]
+   },
+   "companions": [
+      {
+         "path": "app/src/main/java/com/example/niutao/MenuActivity.kt",
+         "kind": "kotlin",
+         "content":null}]}
