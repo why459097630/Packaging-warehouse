@@ -1,0 +1,10 @@
+{
+  "run_id": "ndjc-20250926T034323Z",
+  "template_key": "circle-basic",
+  "nl": "生成一个牛太郎餐厅的介绍菜品的安卓app，要可以上传照片、编辑文字介绍、设定价格、评论点赞",
+  "preset_hint": "social",
+  "mode": "B",
+  "allowCompanions": true,
+  "template": "circle-basic",
+  "requirement": "生成一个牛太郎餐厅的介绍菜品的安卓app，要可以上传照片、编辑文字介绍、设定价格、评论点赞"
+}
