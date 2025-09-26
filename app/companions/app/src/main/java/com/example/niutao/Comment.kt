@@ -1,0 +1,1 @@
+data class Comment(val content: String, val likes: Int)
