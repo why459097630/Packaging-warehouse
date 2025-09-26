@@ -1,0 +1,13 @@
+{
+  "written": 8,
+  "files": [
+    "companions/app/src/main/java/com/example/niutao/MainActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/Menu.kt",
+    "companions/app/src/main/java/com/example/niutao/MenuActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/CommentActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/Comment.kt",
+    "companions/app/src/main/res/layout/activity_main.xml",
+    "companions/app/src/main/res/layout/activity_menu.xml",
+    "companions/app/src/main/res/layout/activity_comment.xml"
+  ]
+}
