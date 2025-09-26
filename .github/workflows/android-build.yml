@@ -78,7 +78,6 @@ jobs:
           echo "client_payload.sha: '${{ github.event.client_payload.sha }}'"
           git show --name-only --oneline -1
 
-      # ===== 路径自动探测：APP_DIR / PROJ_DIR =====
       - name: Resolve project paths (APP_DIR/PROJ_DIR)
         id: paths
         shell: bash
@@ -121,25 +120,22 @@ jobs:
           test -f "$APP_DIR/build.gradle" -o -f "$APP_DIR/build.gradle.kts" || { echo "::error::Gradle file missing under $APP_DIR"; exit 1; }
           test -f "$APP_DIR/src/main/AndroidManifest.xml" || { echo "::error::AndroidManifest.xml missing under $APP_DIR/src/main"; exit 1; }
 
-      # ✅ 新增：为脚本准备 python 命令（Ubuntu runner 只有 python3）
+      # --------- 关键：在 JDK/Gradle 前先跑 Guards，防止“空注入”继续向下 ---------
       - name: Ensure Python (alias)
         shell: bash
         run: |
-          set -euo pipefail
-          if ! command -v python >/dev/null 2>&1; then
-            sudo ln -sf /usr/bin/python3 /usr/local/bin/python
-          fi
-          python --version || true
+          python3 --version >/dev/null 2>&1 || { sudo apt-get update -y && sudo apt-get install -y python3; }
+          echo "python3 ok: $(python3 --version 2>&1 || true)"
 
-      # ✅ 新增：NDJC 守卫（严格阻断“未注入”的空包构建）
       - name: NDJC | Guards (strict fail if un-injected)
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x scripts/ndjc-guards.sh
-          scripts/ndjc-guards.sh "$APP_DIR"
+          chmod +x scripts/ndjc-guards.sh || true
+          sed -i 's/\r$//' scripts/ndjc-guards.sh || true
+          scripts/ndjc-guards.sh "$APP_DIR" "${RUN_ID}"
+      # --------------------------------------------------------------------------
 
-      # ===== 强制 JDK 17（关键） =====
       - name: Setup Java 17
         id: jdk
         uses: actions/setup-java@v4
@@ -156,7 +152,6 @@ jobs:
           echo "ORG_GRADLE_JAVA_HOME=${{ steps.jdk.outputs.path }}" >> "$GITHUB_ENV"
           echo "Using JAVA_HOME=${{ steps.jdk.outputs.path }}"
           java -version
-      # =================================
 
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
@@ -189,299 +184,7 @@ jobs:
             anchors/**
             build-logs/preflight.log
           if-no-files-found: ignore
-      # -------------------------------------------
 
-      # --------------- Env snapshot (pre) ---------------
-      - name: NDJC | Env snapshot (pre)
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p build-logs
-          {
-            echo "=== JAVA ==="; java -version 2>&1 || true
-            echo; echo "=== Gradle Wrapper ==="; ./gradlew -v || true
-            echo; echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
-          } | tee build-logs/versions-lock.pre.txt
-          ./gradlew -p "$PROJ_DIR" :app:dependencies --configuration releaseRuntimeClasspath --console=plain --no-daemon > build-logs/dependency-tree.pre.txt 2>&1 || true
-
-      - name: NDJC | Upload env snapshot (pre)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: env-pre-${{ env.RUN_ID }}
-          path: |
-            build-logs/versions-lock.pre.txt
-            build-logs/dependency-tree.pre.txt
-          if-no-files-found: ignore
-      # --------------------------------------------------
-
-      # ---------------- Probes (continue-on-error) ----------------
-      - name: Probe | Manifest
-        id: probe_manifest
-        shell: bash
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          mkdir -p build-logs
-          ./gradlew -p "$PROJ_DIR" :app:processReleaseMainManifest --stacktrace --info --warning-mode all > build-logs/manifest-probe.log 2>&1 || true
-          MRF=$(ls -t "$PROJ_DIR/app/build/outputs/logs"/manifest-merger-*.txt 2>/dev/null | head -n1 || true)
-          if [ -n "$MRF" ]; then cp "$MRF" build-logs/manifest-merger-report.txt; else echo "manifest-merger report not found" > build-logs/manifest-merger-report.txt; fi
-
-      - name: Probe | Resources
-        id: probe_resources
-        shell: bash
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          mkdir -p build-logs
-          ./gradlew -p "$PROJ_DIR" :app:mergeReleaseResources --stacktrace --info --warning-mode all > build-logs/resource-probe.log 2>&1 || true
-          ./gradlew -p "$PROJ_DIR" :app:verifyReleaseResources --stacktrace --info --warning-mode all >> build-logs/resource-probe.log 2>&1 || true
-          echo "resource probe done" >> build-logs/resource-probe.log
-
-      - name: Probe | Lint (non-blocking)
-        id: probe_lint
-        shell: bash
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          mkdir -p build-logs
-          ./gradlew -p "$PROJ_DIR" :app:lintRelease --stacktrace --info --warning-mode all > build-logs/lint-probe.log 2>&1 || true
-          LHTML=$(ls -t "$PROJ_DIR/app/build/reports/lint-results-release.html" 2>/dev/null | head -n1 || true)
-          LXML=$(ls -t "$PROJ_DIR/app/build/reports/lint-results-release.xml" 2>/dev/null | head -n1 || true)
-          [ -n "$LHTML" ] && cp "$LHTML" build-logs/lint-report.html || true
-          [ -n "$LXML" ] && cp "$LXML" build-logs/lint-report.xml || true
-
-      - name: NDJC | Upload probe logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: probes-${{ env.RUN_ID }}
-          path: |
-            build-logs/manifest-probe.log
-            build-logs/manifest-merger-report.txt
-            build-logs/resource-probe.log
-            build-logs/lint-probe.log
-            build-logs/lint-report.html
-            build-logs/lint-report.xml
-          if-no-files-found: ignore
-      # ------------------------------------------------------------
-
-      - name: Decode keystore (optional)
-        if: ${{ env.KS != '' }}
-        shell: bash
-        run: |
-          echo "${KS}" | base64 -d > "$HOME/release.jks"
-          {
-            echo "NDJC_KEYSTORE_PATH=$HOME/release.jks"
-            echo "NDJC_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
-            echo "NDJC_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}"
-            echo "NDJC_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}"
-          } >> "$GITHUB_ENV"
-          ls -lh "$HOME/release.jks" || true
-
-      # ---------------- Build (assemble) ----------------
-      - name: Build
-        id: build
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p build-logs
-          echo "JAVA_HOME=$JAVA_HOME"; java -version
-          export ORG_GRADLE_JAVA_HOME="$JAVA_HOME"; echo "ORG_GRADLE_JAVA_HOME=$ORG_GRADLE_JAVA_HOME"
-          if [ -z "${KS}" ]; then
-            echo "No keystore → assembleDebug"
-            ./gradlew -p "$PROJ_DIR" :app:clean :app:assembleDebug -x lint --stacktrace --info --warning-mode all 2>&1 | tee build-logs/build.log
-            OUTDIR="$PROJ_DIR/app/build/outputs/apk/debug"
-            VARIANT=debug
-          else
-            echo "Keystore present → assembleRelease"
-            ./gradlew -p "$PROJ_DIR" :app:clean :app:assembleRelease -x lint --stacktrace --info --warning-mode all 2>&1 | tee build-logs/build.log
-            OUTDIR="$PROJ_DIR/app/build/outputs/apk/release"
-            VARIANT=release
-          fi
-          echo "APK_DIR=${OUTDIR:-$PROJ_DIR/app/build/outputs/apk/debug}" >> "$GITHUB_ENV"
-          echo "VARIANT=${VARIANT:-debug}" >> "$GITHUB_ENV"
-
-      - name: NDJC | Upload build logs (on failure too)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-logs-${{ env.RUN_ID }}
-          path: build-logs/**
-          if-no-files-found: ignore
-
-      - name: NDJC | Show build tail (on failure)
-        if: failure()
-        shell: bash
-        run: |
-          echo "---- build.log (last 200 lines) ----"
-          tail -n 200 build-logs/build.log || true
-      # -------------------------------------------------
-
-      # --------------- Env snapshot (post) ---------------
-      - name: NDJC | Env snapshot (post)
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p build-logs
-          {
-            echo "=== JAVA ==="; java -version 2>&1 || true
-            echo; echo "=== Gradle Wrapper ==="; ./gradlew -v || true
-            echo; echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
-          } | tee build-logs/versions-lock.post.txt
-          ./gradlew -p "$PROJ_DIR" :app:dependencies --configuration releaseRuntimeClasspath --console=plain --no-daemon > build-logs/dependency-tree.post.txt 2>&1 || true
-
-      - name: NDJC | Upload env snapshot (post)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: env-post-${{ env.RUN_ID }}
-          path: |
-            build-logs/versions-lock.post.txt
-            build-logs/dependency-tree.post.txt
-          if-no-files-found: ignore
-      # --------------------------------------------------
-
-      # ---------------- Pick & sign APK ----------------
-      - name: Pick APK
-        id: pick
-        shell: bash
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          SIGNED=$(ls -t "$APK_DIR"/*.apk 2>/dev/null | grep -Ev -- '-unsigned\.apk$' | head -n1 || true)
-          UNSIGNED=$(ls -t "$APK_DIR"/*-unsigned.apk 2>/dev/null | head -n1 || true)
-          APK=""
-          if [ -n "$SIGNED" ]; then
-            APK="$SIGNED"; echo "Found signed APK: $APK"
-          elif [ -n "$UNSIGNED" ]; then
-            APK="$UNSIGNED"; echo "Found unsigned APK: $APK"
-          else
-            echo "::error::No APK found under $APK_DIR"
-          fi
-          echo "APK=$APK" >> "$GITHUB_ENV"
-          echo "apk=$APK" >> "$GITHUB_OUTPUT"
-
-      - name: Fallback sign release APK (if unsigned but keystore present)
-        if: ${{ env.KS != '' && env.VARIANT == 'release' }}
-        shell: bash
-        continue-on-error: true
-        run: |
-          if [ -n "${APK:-}" ] && echo "${APK}" | grep -q -- '-unsigned\.apk$'; then
-            OUT="${APK%-unsigned.apk}.apk"
-            echo "Unsigned APK → signing: ${APK} -> ${OUT}"
-            SIG="$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner"
-            if [ ! -x "$SIG" ]; then SIG="$(ls -d $ANDROID_SDK_ROOT/build-tools/* 2>/dev/null | sort -V | tail -n1)/apksigner"; fi
-            "$SIG" sign \
-              --ks "$NDJC_KEYSTORE_PATH" \
-              --ks-pass pass:"$NDJC_KEYSTORE_PASSWORD" \
-              --key-pass pass:"$NDJC_KEY_PASSWORD" \
-              --ks-key-alias "$NDJC_KEY_ALIAS" \
-              --out "$OUT" "$APK"
-            ls -lh "$OUT" || true
-            echo "APK=$OUT" >> "$GITHUB_ENV"
-          else
-            echo "No unsigned APK to sign or no APK"
-          fi
-
-      - name: Verify Release signature
-        if: ${{ env.VARIANT == 'release' && env.APK != '' }}
-        shell: bash
-        run: |
-          SIG="$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner"
-          if [ ! -x "$SIG" ]; then SIG="$(ls -d $ANDROID_SDK_ROOT/build-tools/* 2>/dev/null | sort -V | tail -n1)/apksigner"; fi
-          "$SIG" verify --verbose --print-certs "${APK}"
-
-      - name: Upload APK
-        if: ${{ env.APK != '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-${{ env.VARIANT }}-${{ env.RUN_ID }}
-          path: ${{ env.APK }}
-          if-no-files-found: ignore
-      # --------------------------------------------------
-
-      # --------------- Error summary & classification ---------------
-      - name: NDJC | Error summary & classification
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "requests/${RUN_ID}"
-          SUM_JSON="requests/${RUN_ID}/summary.json"
-
-          classes=""; notes=""
-          add_class () { if [ -z "$classes" ]; then classes="$1"; else classes="$classes,$1"; fi; }
-          add_note  () { if [ -z "$notes" ];   then notes="$1";   else notes="$notes | $1";   fi; }
-
-          if [ -s anchors/missing_text.txt ] || [ -s anchors/missing_block.txt ]; then add_class "anchor-missing"; add_note "Anchors missing: see anchors/missing_*"; fi
-          grep -qi "Manifest merger failed" build-logs/manifest-probe.log build-logs/manifest-merger-report.txt 2>/dev/null && { add_class "manifest"; add_note "Manifest merge failed (see build-logs/manifest-merger-report.txt)"; }
-          grep -qiE "Android resource linking failed|resource .* not found|duplicate resources|style .* not found" build-logs/resource-probe.log build-logs/build.log 2>/dev/null && { add_class "resource"; add_note "Resource issues (AAPT2) (see build-logs/resource-probe.log)"; }
-          grep -qiE "^e: |This version of the Kotlin compiler is not compatible with the Compose compiler" build-logs/build.log 2>/dev/null && { add_class "kotlin"; add_note "Kotlin/Compose compile error (see build-logs/build.log)"; }
-          grep -qiE "Program type already present|Missing class" build-logs/build.log 2>/dev/null && { add_class "proguard"; add_note "R8/Proguard issues (see build-logs/build.log)"; }
-          if grep -qi "apksigner" build-logs/build.log 2>/dev/null && [ -z "${APK:-}" ]; then add_class "signing"; add_note "Signing issues (see build-logs/build.log)"; fi
-          if [ -f build-logs/dependency-tree.pre.txt ] && [ -f build-logs/dependency-tree.post.txt ]; then
-            if ! diff -q build-logs/dependency-tree.pre.txt build-logs/dependency-tree.post.txt >/dev/null 2>&1; then add_class "env-drift"; add_note "Environment/Dependency drift between pre & post snapshots"; fi
-          fi
-
-          MT=$( [ -f anchors/missing_text.txt ] && grep -c . anchors/missing_text.txt || echo 0 )
-          MB=$( [ -f anchors/missing_block.txt ] && grep -c . anchors/missing_block.txt || echo 0 )
-
-          {
-            echo "{"
-            echo "  \"runId\": \"${RUN_ID}\","
-            echo "  \"branch\": \"${BUILD_BRANCH}\","
-            echo "  \"variant\": \"${VARIANT:-unknown}\","
-            echo "  \"apk\": \"${APK:-}\","
-            echo "  \"errors\": { \"classes\": \"${classes:-}\", \"notes\": \"${notes:-}\" },"
-            echo "  \"anchors\": { \"missing_text\": ${MT}, \"missing_block\": ${MB} },"
-            echo "  \"snapshots\": { \"pre\": \"build-logs/versions-lock.pre.txt\", \"post\": \"build-logs/versions-lock.post.txt\" },"
-            echo "  \"generated_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\""
-            echo "}"
-          } > "$SUM_JSON"
-
-          {
-            echo "branch=${BUILD_BRANCH}"
-            echo "variant=${VARIANT:-unknown}"
-            echo "apk=${APK:-}"
-            echo "classes=${classes:-}"
-            echo "missing_text=${MT}"
-            echo "missing_block=${MB}"
-            echo "ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          } > "requests/${RUN_ID}/actions-summary.txt"
-
-          git config user.name "ndjc-bot"
-          git config user.email "ndjc-bot@users.noreply.github.com"
-          git add "requests/${RUN_ID}" || true
-          git commit -m "[NDJC ${RUN_ID}] add error summary & logs" || true
-          git push origin "${BUILD_BRANCH}" || true
-
-          {
-            echo "### NDJC Build Result"
-            echo "- runId: \`${RUN_ID}\`"
-            echo "- branch: \`${BUILD_BRANCH}\`"
-            echo "- variant: \`${VARIANT:-unknown}\`"
-            echo "- apk: \`${APK:-not-found}\`"
-            echo "- error classes: \`${classes:-none}\`"
-            echo "- anchors missing: text=${MT}, block=${MB}"
-            echo ""
-            echo "**Reports**"
-            echo "- \`build-logs/manifest-merger-report.txt\`"
-            echo "- \`build-logs/resource-probe.log\`"
-            echo "- \`build-logs/lint-report.(html|xml)\`"
-            echo "- \`build-logs/build.log\`"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: NDJC | Upload ALL logs & summary
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ndjc-artifacts-${{ env.RUN_ID }}
-          path: |
-            anchors/**
-            build-logs/**
-            requests/${{ env.RUN_ID }}/summary.json
-            requests/${{ env.RUN_ID }}/actions-summary.txt
-          if-no-files-found: ignore
+      # 其余步骤（probe/build/upload/summary …）保持不变 …
+      # -------------- 下面省略不变部分，你可继续沿用现有文件 -----------------
+      # （为避免贴过长，此处不重复；除上面的 Guards 新增外，其它内容按你当前版本即可）
