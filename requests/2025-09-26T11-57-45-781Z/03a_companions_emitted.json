@@ -1,0 +1,15 @@
+{
+  "written": 10,
+  "files": [
+    "companions/app/src/main/java/com/example/ntrestaurant/model/Menu.java",
+    "companions/app/src/main/java/com/example/ntrestaurant/repository/MenuRepository.java",
+    "companions/app/src/main/java/com/example/ntrestaurant/ui/MainActivity.kt",
+    "companions/app/src/main/java/com/example/ntrestaurant/ui/UploadMenuActivity.kt",
+    "companions/app/src/main/java/com/example/ntrestaurant/ui/MenuDetailActivity.kt",
+    "companions/app/src/main/java/com/example/ntrestaurant/repository/MenuRepositoryImpl.kt",
+    "companions/app/src/main/res/layout/activity_main.xml",
+    "companions/app/src/main/res/layout/activity_upload_menu.xml",
+    "companions/app/src/main/res/layout/activity_menu_detail.xml",
+    "companions/app/src/main/res/values/strings.xml"
+  ]
+}
