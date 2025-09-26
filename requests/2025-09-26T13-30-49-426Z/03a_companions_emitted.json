@@ -1,0 +1,11 @@
+{
+  "written": 6,
+  "files": [
+    "companions/app/src/main/java/com/example/ntrestaurant/MainActivity.kt",
+    "companions/app/src/main/java/com/example/ntrestaurant/UploadImageActivity.kt",
+    "companions/app/src/main/java/com/example/ntrestaurant/CommentActivity.kt",
+    "companions/app/src/main/res/layout/activity_main.xml",
+    "companions/app/src/main/res/layout/activity_upload_image.xml",
+    "companions/app/src/main/res/layout/activity_comment.xml"
+  ]
+}
