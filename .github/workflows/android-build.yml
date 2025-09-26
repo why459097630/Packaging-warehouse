@@ -121,6 +121,24 @@ jobs:
           test -f "$APP_DIR/build.gradle" -o -f "$APP_DIR/build.gradle.kts" || { echo "::error::Gradle file missing under $APP_DIR"; exit 1; }
           test -f "$APP_DIR/src/main/AndroidManifest.xml" || { echo "::error::AndroidManifest.xml missing under $APP_DIR/src/main"; exit 1; }
 
+      # ✅ 新增：为脚本准备 python 命令（Ubuntu runner 只有 python3）
+      - name: Ensure Python (alias)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v python >/dev/null 2>&1; then
+            sudo ln -sf /usr/bin/python3 /usr/local/bin/python
+          fi
+          python --version || true
+
+      # ✅ 新增：NDJC 守卫（严格阻断“未注入”的空包构建）
+      - name: NDJC | Guards (strict fail if un-injected)
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x scripts/ndjc-guards.sh
+          scripts/ndjc-guards.sh "$APP_DIR"
+
       # ===== 强制 JDK 17（关键） =====
       - name: Setup Java 17
         id: jdk
