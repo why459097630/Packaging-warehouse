@@ -1,0 +1,7 @@
+branch=ndjc-run/2025-09-26T15-06-18-380Z
+variant=unknown
+apk=
+classes=env-drift
+missing_text=0
+missing_block=0
+ts=2025-09-26T15:08:58Z
