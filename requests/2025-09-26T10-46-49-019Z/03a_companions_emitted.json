@@ -1,0 +1,11 @@
+{
+  "written": 6,
+  "files": [
+    "companions/app/src/main/java/com/example/niutao/MainActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/UploadActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/Menu.kt",
+    "companions/app/src/main/res/layout/activity_main.xml",
+    "companions/app/src/main/res/layout/activity_upload.xml",
+    "companions/app/src/main/res/values/strings.xml"
+  ]
+}
