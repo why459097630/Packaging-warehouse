@@ -1,0 +1,55 @@
+{
+   "appName": "牛太郎餐厅",
+   "homeTitle": "牛太郎餐厅",
+   "mainButtonText": "上传菜品",
+   "packageId": null,
+   "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.CAMERA",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+   ],
+   "intentHost": null,
+   "locales": [
+      "zh-CN"
+   ],
+   "companions": [
+      {
+         "path": "app/src/main/java/com/example/niutao/MainActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\n\nclass MainActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        val button = findViewById<Button>(R.id.button)\n        val editText = findViewById<EditText>(R.id.editText)\n        val imageView = findViewById<ImageView>(R.id.imageView)\n        val priceEditText = findViewById<EditText>(R.id.priceEditText)\n        val commentButton = findViewById<Button>(R.id.commentButton)\n        val likeButton = findViewById<Button>(R.id.likeButton)\n\n        button.setOnClickListener {\n            val intent = Intent(this, UploadActivity::class.java)\n            startActivity(intent)\n        }\n\n        commentButton.setOnClickListener {\n            val comment = editText.text.toString()\n            val price = priceEditText.text.toString().toDouble()\n            val likeCount = likeButton.tag as Int\n            likeCount++\n            likeButton.tag = likeCount\n            Toast.makeText(this, \"评论成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/UploadActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport androidx.core.content.FileProvider\n\nclass UploadActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_upload)\n\n        val button = findViewById<Button>(R.id.button)\n        val imageView = findViewById<ImageView>(R.id.imageView)\n\n        button.setOnClickListener {\n            val intent = Intent()\n            intent.type = \"image/*\"\n            intent.action = Intent.ACTION_PICK\n            startActivityForResult(intent, 1)\n        }\n\n        imageView.setOnClickListener {\n            val file = File(\"/sdcard/image.jpg\")\n            val uri = FileProvider.getUriForFile(this, \"com.example.niutao.fileprovider\", file)\n            val intent = Intent(Intent.ACTION_VIEW)\n            intent.setDataAndType(uri, \"image/jpeg\")\n            startActivity(intent)\n        }\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == RESULT_OK) {\n            val uri = data?.data\n            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)\n            val file = File(\"/sdcard/image.jpg\")\n            val fos = FileOutputStream(file)\n            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)\n            fos.close()\n            Toast.makeText(this, \"图片上传成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/Menu.kt",
+         "kind": "kotlin",
+         "content": "data class Menu(val name: String, val price: Double, val image: String, val comment: String, val likeCount: Int)\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/layout/activity_main.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传菜品\" />\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"评论\" />\n    <EditText\n        android:id=\"@+id/priceEditText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"价格\" />\n    <ImageView\n        android:id=\"@+id/imageView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/commentButton\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论\" />\n    <Button\n        android:id=\"@+id/likeButton\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\" />\n</LinearLayout>\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/layout/activity_upload.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传图片\" />\n    <ImageView\n        android:id=\"@+id/imageView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/values/strings.xml",
+         "kind": "xml",
+         "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n</resources>\n",
+         "overwrite": true
+      }
+   ]
+}
