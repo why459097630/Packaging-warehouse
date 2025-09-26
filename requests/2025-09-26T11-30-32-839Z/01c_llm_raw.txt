@@ -1,0 +1,63 @@
+{
+   "fields":{
+      "appName":"牛太郎餐厅",
+      "homeTitle":"牛太郎餐厅 - 美味的介绍",
+      "mainButtonText":"添加菜品",
+      "packageId":"com.niutao.restaurant",
+      "permissions":[
+         "android.permission.INTERNET",
+         "android.permission.CAMERA",
+         "android.permission.WRITE_EXTERNAL_STORAGE",
+         "android.permission.READ_EXTERNAL_STORAGE"
+      ],
+      "intentHost":"https://niutao.com",
+      "locales":[
+         "zh-CN",
+         "en-US"
+      ]
+   },
+   "companions":[
+      {
+         "path":"app/src/main/java/com/niutao/restaurant/model/Menu.java",
+         "kind":"kotlin",
+         "content":"// Menu.java\n\npublic class Menu {\n    private String name;\n    private String description;\n    private double price;\n    private String image;\n\n    public Menu(String name, String description, double price, String image) {\n        this.name = name;\n        this.description = description;\n        this.price = price;\n        this.image = image;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public void setName(String name) {\n        this.name = name;\n    }\n\n    public String getDescription() {\n        return description;\n    }\n\n    public void setDescription(String description) {\n        this.description = description;\n    }\n\n    public double getPrice() {\n        return price;\n    }\n\n    public void setPrice(double price) {\n        this.price = price;\n    }\n\n    public String getImage() {\n        return image;\n    }\n\n    public void setImage(String image) {\n        this.image = image;\n    }\n}\n",
+         "overwrite":false
+      },
+      {
+         "path":"app/src/main/java/com/niutao/restaurant/fragment/MenuFragment.java",
+         "kind":"kotlin",
+         "content":"// MenuFragment.java\n\nimport android.os.Bundle\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\n\nimport androidx.fragment.app.Fragment\nimport androidx.fragment.app.FragmentActivity\n\nclass MenuFragment : Fragment() {\n    private lateinit var nameEditText: EditText\n    private lateinit var descriptionEditText: EditText\n    private lateinit var priceEditText: EditText\n    private lateinit var imageImageView: ImageView\n    private lateinit var addButton: Button\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        val view = inflater.inflate(R.layout.menu_fragment, container, false)\n        nameEditText = view.findViewById(R.id.name_edit_text)\n        descriptionEditText = view.findViewById(R.id.description_edit_text)\n        priceEditText = view.findViewById(R.id.price_edit_text)\n        imageImageView = view.findViewById(R.id.image_image_view)\n        addButton = view.findViewById(R.id.add_button)\n\n        addButton.setOnClickListener {\n            val name = nameEditText.text.toString()\n            val description = descriptionEditText.text.toString()\n            val price = priceEditText.text.toString().toDouble()\n            val image = imageImageView.drawable.toString()\n\n            val menu = Menu(name, description, price, image)\n            // 上传菜品数据\n            Toast.makeText(activity, \"菜品添加成功\", Toast.LENGTH_SHORT).show()\n        }\n\n        return view\n    }\n}\n",
+         "overwrite":false
+      },
+      {
+         "path":"app/src/main/java/com/niutao/restaurant/fragment/CommentFragment.java",
+         "kind":"kotlin",
+         "content":"// CommentFragment.java\n\nimport android.os.Bundle\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\n\nimport androidx.fragment.app.Fragment\nimport androidx.fragment.app.FragmentActivity\n\nclass CommentFragment : Fragment() {\n    private lateinit var contentEditText: EditText\n    private lateinit var addButton: Button\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        val view = inflater.inflate(R.layout.comment_fragment, container, false)\n        contentEditText = view.findViewById(R.id.content_edit_text)\n        addButton = view.findViewById(R.id.add_button)\n\n        addButton.setOnClickListener {\n            val content = contentEditText.text.toString()\n\n            // 上传评论数据\n            Toast.makeText(activity, \"评论添加成功\", Toast.LENGTH_SHORT).show()\n        }\n\n        return view\n    }\n}\n",
+         "overwrite":false
+      },
+      {
+         "path":"app/src/main/java/com/niutao/restaurant/fragment/DetailFragment.java",
+         "kind":"kotlin",
+         "content":"// DetailFragment.java\n\nimport android.os.Bundle\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.Toast\n\nimport androidx.fragment.app.Fragment\nimport androidx.fragment.app.FragmentActivity\n\nclass DetailFragment : Fragment() {\n    private lateinit var imageImageView: ImageView\n    private lateinit var likeButton: Button\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        val view = inflater.inflate(R.layout.detail_fragment, container, false)\n        imageImageView = view.findViewById(R.id.image_image_view)\n        likeButton = view.findViewById(R.id.like_button)\n\n        likeButton.setOnClickListener {\n            // 点赞逻辑\n            Toast.makeText(activity, \"点赞成功\", Toast.LENGTH_SHORT).show()\n        }\n\n        return view\n    }\n}\n",
+         "overwrite":false
+      },
+      {
+         "path":"app/src/main/res/layout/menu_fragment.xml",
+         "kind":"xml",
+         "content":"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <EditText\n        android:id=\"@+id/name_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\" />\n\n    <EditText\n        android:id=\"@+id/description_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品描述\" />\n\n    <EditText\n        android:id=\"@+id/price_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品价格\" />\n\n    <ImageView\n        android:id=\"@+id/image_image_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n\n    <Button\n        android:id=\"@+id/add_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"添加菜品\" />\n\n</LinearLayout>\n",
+         "overwrite":false
+      },
+      {
+         "path":"app/src/main/res/layout/comment_fragment.xml",
+         "kind":"xml",
+         "content":"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <EditText\n        android:id=\"@+id/content_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"评论内容\" />\n\n    <Button\n        android:id=\"@+id/add_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"添加评论\" />\n\n</LinearLayout>\n",
+         "overwrite":false
+      },
+      {
+         "path":"app/src/main/res/layout/detail_fragment.xml",
+         "kind":"xml",
+         "content":"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <ImageView\n        android:id=\"@+id/image_image_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n\n    <Button\n        android:id=\"@+id/like_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\" />\n\n</LinearLayout>\n",
+         "overwrite":false
+      }
+   ]
+}
