@@ -1,0 +1,32 @@
+{
+  "id": "chatcmpl-9a20b016-46b2-49ea-a4e5-4d4febcca16f",
+  "object": "chat.completion",
+  "created": 1758855080,
+  "model": "llama-3.1-8b-instant",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n   \"appName\": \"牛太郎餐厅\",\n   \"homeTitle\": \"欢迎光临牛太郎餐厅\",\n   \"mainButtonText\": \"添加新餐品\",\n   \"packageId\": \"com.niutao.canteen\",\n   \"permissions\": [\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.ACCESS_FINE_LOCATION\",\n      \"android.permission.INTERNET\"\n   ],\n   \"intentHost\": \"niutaocanteen.com\",\n   \"locales\": [\n      \"zh-rCN\",\n      \"en\"\n   ]\n}"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.187175488,
+    "prompt_tokens": 173,
+    "prompt_time": 0.009514006,
+    "completion_tokens": 122,
+    "completion_time": 0.15402959,
+    "total_tokens": 295,
+    "total_time": 0.163543596
+  },
+  "usage_breakdown": null,
+  "system_fingerprint": "fp_3ddc9808b3",
+  "x_groq": {
+    "id": "req_01k61yxajaeyhs4byes5ydb4ky"
+  },
+  "service_tier": "on_demand"
+}
