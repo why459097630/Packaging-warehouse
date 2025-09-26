@@ -1,0 +1,17 @@
+{
+  "written": 12,
+  "files": [
+    "companions/app/src/main/java/com/example/niutao/MainActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/UploadImageActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/EditDescriptionActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/SetPriceActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/CommentActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/LikeActivity.kt",
+    "companions/app/src/main/res/layout/activity_main.xml",
+    "companions/app/src/main/res/layout/activity_upload_image.xml",
+    "companions/app/src/main/res/layout/activity_edit_description.xml",
+    "companions/app/src/main/res/layout/activity_set_price.xml",
+    "companions/app/src/main/res/layout/activity_comment.xml",
+    "companions/app/src/main/res/layout/activity_like.xml"
+  ]
+}
