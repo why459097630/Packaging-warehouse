@@ -1,0 +1,11 @@
+{
+  "written": 6,
+  "files": [
+    "companions/app/src/main/java/com/niutao/restaurant/model/Menu.java",
+    "companions/app/src/main/java/com/niutao/restaurant/repository/MenuRepository.java",
+    "companions/app/src/main/res/layout/activity_menu.xml",
+    "companions/app/src/main/res/layout/activity_menu_detail.xml",
+    "companions/app/src/main/java/com/niutao/restaurant/activity/MenuActivity.java",
+    "companions/app/src/main/java/com/niutao/restaurant/activity/MenuDetailActivity.java"
+  ]
+}
