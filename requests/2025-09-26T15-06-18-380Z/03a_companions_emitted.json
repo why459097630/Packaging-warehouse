@@ -1,0 +1,13 @@
+{
+  "written": 8,
+  "files": [
+    "companions/app/src/main/java/com/niutao/canteen/model/Menu.java",
+    "companions/app/src/main/java/com/niutao/canteen/fragment/UploadFragment.kt",
+    "companions/app/src/main/java/com/niutao/canteen/fragment/EditFragment.kt",
+    "companions/app/src/main/java/com/niutao/canteen/fragment/CommentFragment.kt",
+    "companions/app/src/main/java/com/niutao/canteen/service/MenuService.kt",
+    "companions/app/src/main/res/layout/fragment_upload.xml",
+    "companions/app/src/main/res/layout/fragment_edit.xml",
+    "companions/app/src/main/res/layout/fragment_comment.xml"
+  ]
+}
