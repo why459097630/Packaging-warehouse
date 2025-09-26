@@ -1,0 +1,93 @@
+{
+   "fields": {
+      "appName": "牛太郎餐厅",
+      "homeTitle": "牛太郎餐厅",
+      "mainButtonText": "上传菜品",
+      "packageId": null,
+      "permissions": [
+         "android.permission.INTERNET",
+         "android.permission.ACCESS_FINE_LOCATION",
+         "android.permission.CAMERA",
+         "android.permission.WRITE_EXTERNAL_STORAGE",
+         "android.permission.READ_EXTERNAL_STORAGE"
+      ],
+      "intentHost": null,
+      "locales": [
+         "zh-Hans"
+      ]
+   },
+   "companions": [
+      {
+         "path": "app/src/main/java/com/example/niutao/MainActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.bumptech.glide.Glide\nimport com.google.android.material.snackbar.Snackbar\n\nclass MainActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        imageView = findViewById(R.id.imageView)\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            uploadImage()\n        }\n    }\n\n    private fun uploadImage() {\n        // 上传图片逻辑\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/UploadImageActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.bumptech.glide.Glide\nimport com.google.android.material.snackbar.Snackbar\n\nclass UploadImageActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_upload_image)\n\n        imageView = findViewById(R.id.imageView)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            uploadImage()\n        }\n    }\n\n    private fun uploadImage() {\n        // 上传图片逻辑\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/EditDescriptionActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.google.android.material.snackbar.Snackbar\n\nclass EditDescriptionActivity : AppCompatActivity() {\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_edit_description)\n\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            editDescription()\n        }\n    }\n\n    private fun editDescription() {\n        // 编辑文字介绍逻辑\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/SetPriceActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.google.android.material.snackbar.Snackbar\n\nclass SetPriceActivity : AppCompatActivity() {\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_set_price)\n\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            setPrice()\n        }\n    }\n\n    private fun setPrice() {\n        // 设定价格逻辑\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/CommentActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.google.android.material.snackbar.Snackbar\n\nclass CommentActivity : AppCompatActivity() {\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment)\n\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            comment()\n        }\n    }\n\n    private fun comment() {\n        // 评论逻辑\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/LikeActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.google.android.material.snackbar.Snackbar\n\nclass LikeActivity : AppCompatActivity() {\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_like)\n\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            like()\n        }\n    }\n\n    private fun like() {\n        // 点赞逻辑\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_main.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <ImageView\n        android:id=\"@+id/imageView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_upload_image.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <ImageView\n        android:id=\"@+id/imageView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_edit_description.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_set_price.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_comment.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_like.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>\n",
+         "overwrite": false
+      }
+   ]
+}
