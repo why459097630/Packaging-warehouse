@@ -1,0 +1,13 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "欢迎光临牛太郎餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "添加新餐品",
+    "NDJC:MAIN_BUTTON": "添加新餐品",
+    "NDJC:PACKAGE_NAME": "com.niutao.canteen"
+  },
+  "conditions": {},
+  "lists": {},
+  "blocks": {}
+}
