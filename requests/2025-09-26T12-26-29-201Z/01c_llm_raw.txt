@@ -1,0 +1,57 @@
+{
+   "fields":{
+      "appName":"牛太郎餐厅",
+      "homeTitle":"牛太郎餐厅 - 美味的餐点等你来",
+      "mainButtonText":"上传菜品",
+      "packageId":"com.niutao.restaurant",
+      "permissions":[
+         "android.permission.INTERNET",
+         "android.permission.ACCESS_FINE_LOCATION",
+         "android.permission.CAMERA",
+         "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "intentHost":"https://niutao.com",
+      "locales":[
+         "zh-CN",
+         "en-US"
+      ]
+   },
+   "companions":[
+      {
+         "path":"app/src/main/java/com/niutao/restaurant/model/Menu.java",
+         "kind":"kotlin",
+         "content":"// Menu.kt\ndata class Menu(val id: Int, val name: String, val price: Double, val description: String, val image: String)\n",
+         "overwrite":true
+      },
+      {
+         "path":"app/src/main/java/com/niutao/restaurant/repository/MenuRepository.java",
+         "kind":"kotlin",
+         "content":"// MenuRepository.kt\ninterface MenuRepository {\n    suspend fun getMenu(): List<Menu>\n    suspend fun saveMenu(menu: Menu)\n}\n",
+         "overwrite":true
+      },
+      {
+         "path":"app/src/main/res/layout/activity_menu.xml",
+         "kind":"xml",
+         "content":"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <EditText\n        android:id=\"@+id/name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\"/>\n    <EditText\n        android:id=\"@+id/description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品介绍\"/>\n    <EditText\n        android:id=\"@+id/price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品价格\"/>\n    <ImageView\n        android:id=\"@+id/image\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/upload\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n    <Button\n        android:id=\"@+id/save\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"保存\"/>\n</LinearLayout>\n",
+         "overwrite":true
+      },
+      {
+         "path":"app/src/main/res/layout/activity_menu_detail.xml",
+         "kind":"xml",
+         "content":"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <TextView\n        android:id=\"@+id/name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"菜品名称\"/>\n    <TextView\n        android:id=\"@+id/description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"菜品介绍\"/>\n    <TextView\n        android:id=\"@+id/price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"菜品价格\"/>\n    <ImageView\n        android:id=\"@+id/image\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/like\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\"/>\n    <Button\n        android:id=\"@+id/comment\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论\"/>\n</LinearLayout>\n",
+         "overwrite":true
+      },
+      {
+         "path":"app/src/main/java/com/niutao/restaurant/activity/MenuActivity.java",
+         "kind":"kotlin",
+         "content":"// MenuActivity.kt\nclass MenuActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_menu)\n        val name = findViewById<EditText>(R.id.name)\n        val description = findViewById<EditText>(R.id.description)\n        val price = findViewById<EditText>(R.id.price)\n        val image = findViewById<ImageView>(R.id.image)\n        val upload = findViewById<Button>(R.id.upload)\n        val save = findViewById<Button>(R.id.save)\n\n        upload.setOnClickListener {\n            // 上传照片逻辑\n        }\n\n        save.setOnClickListener {\n            // 保存菜品逻辑\n        }\n    }\n}\n",
+         "overwrite":true
+      },
+      {
+         "path":"app/src/main/java/com/niutao/restaurant/activity/MenuDetailActivity.java",
+         "kind":"kotlin",
+         "content":"// MenuDetailActivity.kt\nclass MenuDetailActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_menu_detail)\n        val name = findViewById<TextView>(R.id.name)\n        val description = findViewById<TextView>(R.id.description)\n        val price = findViewById<TextView>(R.id.price)\n        val image = findViewById<ImageView>(R.id.image)\n        val like = findViewById<Button>(R.id.like)\n        val comment = findViewById<Button>(R.id.comment)\n\n        like.setOnClickListener {\n            // 点赞逻辑\n        }\n\n        comment.setOnClickListener {\n            // 评论逻辑\n        }\n    }\n}\n",
+         "overwrite":true
+      }
+   ]
+}
