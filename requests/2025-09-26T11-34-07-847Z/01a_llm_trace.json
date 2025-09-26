@@ -1,0 +1,66 @@
+{
+  "provider": "groq",
+  "url": "https://api.groq.com/openai/v1/chat/completions",
+  "model": "llama-3.1-8b-instant",
+  "request": {
+    "model": "llama-3.1-8b-instant",
+    "messages": [
+      {
+        "role": "system",
+        "content": "你是移动端生成助手。以严格 JSON 返回（不可包含代码块标记）：\n{\n  \"fields\": {\n    \"appName\": string,\n    \"homeTitle\": string,\n    \"mainButtonText\": string,\n    \"packageId\": string | null,\n    \"permissions\": string[],\n    \"intentHost\": string | null,\n    \"locales\": string[]\n  },\n  \"companions\": [\n    { \"path\": \"app/src/main/java/...\", \"kind\":\"kotlin|xml|json|md|txt\", \"content\": \"...\", \"overwrite\": false }\n  ]\n}"
+      },
+      {
+        "role": "user",
+        "content": "生成一个牛太郎餐厅的介绍菜品的安卓app，要可以上传照片、编辑文字介绍、设定价格、评论点赞"
+      }
+    ],
+    "temperature": 0.3,
+    "response_format": {
+      "type": "json_object"
+    },
+    "stream": false
+  },
+  "response": {
+    "id": "chatcmpl-5095dd23-1e71-4323-977e-a686cd30ea7e",
+    "object": "chat.completion",
+    "created": 1758886462,
+    "model": "llama-3.1-8b-instant",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n   \"fields\": {\n      \"appName\": \"牛太郎餐厅\",\n      \"homeTitle\": \"牛太郎餐厅\",\n      \"mainButtonText\": \"上传菜品\",\n      \"packageId\": null,\n      \"permissions\": [\n         \"android.permission.INTERNET\",\n         \"android.permission.READ_EXTERNAL_STORAGE\",\n         \"android.permission.WRITE_EXTERNAL_STORAGE\",\n         \"android.permission.CAMERA\"\n      ],\n      \"intentHost\": null,\n      \"locales\": [\"zh\", \"en\"]\n   },\n   \"companions\": [\n      {\n         \"path\": \"app/src/main/java/com/example/niutao/MenuActivity.kt\",\n         \"kind\": \"kotlin\",\n         \"content\":null}]}"
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "queue_time": 0.186960929,
+      "prompt_tokens": 206,
+      "prompt_time": 0.028986752,
+      "completion_tokens": 898,
+      "completion_time": 0.982326987,
+      "total_tokens": 1104,
+      "total_time": 1.011313739
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_50a6be1b6f",
+    "x_groq": {
+      "id": "req_01k62wtzx2fkqs6ky5vzysx67q"
+    },
+    "service_tier": "on_demand"
+  },
+  "text": "{\n   \"fields\": {\n      \"appName\": \"牛太郎餐厅\",\n      \"homeTitle\": \"牛太郎餐厅\",\n      \"mainButtonText\": \"上传菜品\",\n      \"packageId\": null,\n      \"permissions\": [\n         \"android.permission.INTERNET\",\n         \"android.permission.READ_EXTERNAL_STORAGE\",\n         \"android.permission.WRITE_EXTERNAL_STORAGE\",\n         \"android.permission.CAMERA\"\n      ],\n      \"intentHost\": null,\n      \"locales\": [\"zh\", \"en\"]\n   },\n   \"companions\": [\n      {\n         \"path\": \"app/src/main/java/com/example/niutao/MenuActivity.kt\",\n         \"kind\": \"kotlin\",\n         \"content\":null}]}",
+  "finish_reason": "stop",
+  "usage": {
+    "queue_time": 0.186960929,
+    "prompt_tokens": 206,
+    "prompt_time": 0.028986752,
+    "completion_tokens": 898,
+    "completion_time": 0.982326987,
+    "total_tokens": 1104,
+    "total_time": 1.011313739
+  }
+}
