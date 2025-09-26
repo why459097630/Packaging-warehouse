@@ -1,0 +1,12 @@
+{
+  "written": 7,
+  "files": [
+    "companions/app/src/main/java/com/niutao/restaurant/model/Menu.java",
+    "companions/app/src/main/java/com/niutao/restaurant/fragment/MenuFragment.java",
+    "companions/app/src/main/java/com/niutao/restaurant/fragment/CommentFragment.java",
+    "companions/app/src/main/java/com/niutao/restaurant/fragment/DetailFragment.java",
+    "companions/app/src/main/res/layout/menu_fragment.xml",
+    "companions/app/src/main/res/layout/comment_fragment.xml",
+    "companions/app/src/main/res/layout/detail_fragment.xml"
+  ]
+}
