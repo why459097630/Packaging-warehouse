@@ -1,0 +1,23 @@
+{
+  "written": 18,
+  "files": [
+    "companions/app/src/main/java/com/example/ntcanteen/MainActivity.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/UploadActivity.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/MenuActivity.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/CommentActivity.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/LikeActivity.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/Menu.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/Comment.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/Like.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/Database.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/DatabaseHelper.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/DatabaseHelper2.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/DatabaseManager.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/MainActivity.xml",
+    "companions/app/src/main/java/com/example/ntcanteen/UploadActivity.xml",
+    "companions/app/src/main/java/com/example/ntcanteen/MenuActivity.xml",
+    "companions/app/src/main/java/com/example/ntcanteen/CommentActivity.xml",
+    "companions/app/src/main/java/com/example/ntcanteen/LikeActivity.xml",
+    "companions/app/src/main/java/com/example/ntcanteen/strings.xml"
+  ]
+}
