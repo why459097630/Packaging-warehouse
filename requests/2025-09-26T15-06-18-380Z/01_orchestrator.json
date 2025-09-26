@@ -1,0 +1,124 @@
+{
+  "template": "circle-basic",
+  "mode": "B",
+  "allowCompanions": true,
+  "appName": "牛太郎餐厅",
+  "homeTitle": "热门菜品",
+  "mainButtonText": "上传菜品",
+  "packageId": "com.niutao.canteen",
+  "locales": [
+    "zh",
+    "en"
+  ],
+  "resConfigs": "zh,en",
+  "permissionsXml": "<uses-permission android:name=\"android.permission.INTERNET\"/>\n<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>\n<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>\n<uses-permission android:name=\"android.permission.CAMERA\"/>",
+  "intentFiltersXml": "<intent-filter>\n  <action android:name=\"android.intent.action.VIEW\"/>\n  <category android:name=\"android.intent.category.DEFAULT\"/>\n  <category android:name=\"android.intent.category.BROWSABLE\"/>\n  <data android:scheme=\"https\" android:host=\"https://niutao.canteen.com\"/>\n</intent-filter>",
+  "companions": [
+    {
+      "path": "app/src/main/java/com/niutao/canteen/model/Menu.java",
+      "kind": "kotlin",
+      "content": "data class Menu(val id: Int, val name: String, val price: Double, val description: String, val image: String)"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/canteen/fragment/UploadFragment.kt",
+      "kind": "kotlin",
+      "content": "class UploadFragment : Fragment() {\n    private lateinit var binding: FragmentUploadBinding\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        binding = FragmentUploadBinding.inflate(inflater, container, false)\n        return binding.root\n    }\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\n        super.onViewCreated(view, savedInstanceState)\n        binding.uploadButton.setOnClickListener {\n            // 上传照片逻辑\n        }\n    }\n}"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/canteen/fragment/EditFragment.kt",
+      "kind": "kotlin",
+      "content": "class EditFragment : Fragment() {\n    private lateinit var binding: FragmentEditBinding\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        binding = FragmentEditBinding.inflate(inflater, container, false)\n        return binding.root\n    }\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\n        super.onViewCreated(view, savedInstanceState)\n        binding.saveButton.setOnClickListener {\n            // 保存文字介绍逻辑\n        }\n    }\n}"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/canteen/fragment/CommentFragment.kt",
+      "kind": "kotlin",
+      "content": "class CommentFragment : Fragment() {\n    private lateinit var binding: FragmentCommentBinding\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        binding = FragmentCommentBinding.inflate(inflater, container, false)\n        return binding.root\n    }\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\n        super.onViewCreated(view, savedInstanceState)\n        binding.likeButton.setOnClickListener {\n            // 点赞逻辑\n        }\n    }\n}"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/canteen/service/MenuService.kt",
+      "kind": "kotlin",
+      "content": "class MenuService {\n    fun uploadMenu(menu: Menu) {\n        // 上传菜品逻辑\n    }\n    fun editMenu(menu: Menu) {\n        // 编辑文字介绍逻辑\n    }\n    fun getComments(menu: Menu) {\n        // 获取评论逻辑\n    }\n}"
+    },
+    {
+      "path": "app/src/main/res/layout/fragment_upload.xml",
+      "kind": "xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\"/>\n    <EditText\n        android:id=\"@+id/description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品介绍\"/>\n    <Button\n        android:id=\"@+id/uploadButton\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n</LinearLayout>"
+    },
+    {
+      "path": "app/src/main/res/layout/fragment_edit.xml",
+      "kind": "xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\"/>\n    <EditText\n        android:id=\"@+id/description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品介绍\"/>\n    <Button\n        android:id=\"@+id/saveButton\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"保存\"/>\n</LinearLayout>"
+    },
+    {
+      "path": "app/src/main/res/layout/fragment_comment.xml",
+      "kind": "xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/comment\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"评论\"/>\n    <Button\n        android:id=\"@+id/likeButton\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\"/>\n</LinearLayout>"
+    }
+  ],
+  "_trace": {
+    "provider": "groq",
+    "url": "https://api.groq.com/openai/v1/chat/completions",
+    "model": "llama-3.1-8b-instant",
+    "request": {
+      "model": "llama-3.1-8b-instant",
+      "messages": [
+        {
+          "role": "system",
+          "content": "你是移动端生成助手。以严格 JSON 返回（不可包含代码块标记）：\n{\n  \"fields\": {\n    \"appName\": string,\n    \"homeTitle\": string,\n    \"mainButtonText\": string,\n    \"packageId\": string | null,\n    \"permissions\": string[],\n    \"intentHost\": string | null,\n    \"locales\": string[]\n  },\n  \"companions\": [\n    { \"path\": \"app/src/main/java/...\", \"kind\":\"kotlin|xml|json|md|txt\", \"content\": \"...\", \"overwrite\": false }\n  ]\n}"
+        },
+        {
+          "role": "user",
+          "content": "生成一个牛太郎餐厅的介绍菜品的安卓app，要可以上传照片、编辑文字介绍、设定价格、评论点赞"
+        }
+      ],
+      "temperature": 0.3,
+      "response_format": {
+        "type": "json_object"
+      },
+      "stream": false
+    },
+    "response": {
+      "id": "chatcmpl-7675ff39-6ec9-438c-a451-9da27f20b7c2",
+      "object": "chat.completion",
+      "created": 1758899194,
+      "model": "llama-3.1-8b-instant",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "{\n   \"fields\": {\n      \"appName\": \"牛太郎餐厅\",\n      \"homeTitle\": \"热门菜品\",\n      \"mainButtonText\": \"上传菜品\",\n      \"packageId\": \"com.niutao.canteen\",\n      \"permissions\": [\n         \"android.permission.INTERNET\",\n         \"android.permission.READ_EXTERNAL_STORAGE\",\n         \"android.permission.WRITE_EXTERNAL_STORAGE\",\n         \"android.permission.CAMERA\"\n      ],\n      \"intentHost\": \"https://niutao.canteen.com\",\n      \"locales\": [\"zh\", \"en\"]\n   },\n   \"companions\": [\n      {\n         \"path\": \"app/src/main/java/com/niutao/canteen/model/Menu.java\",\n         \"kind\": \"kotlin\",\n         \"content\": \"data class Menu(val id: Int, val name: String, val price: Double, val description: String, val image: String)\"\n      },\n      {\n         \"path\": \"app/src/main/java/com/niutao/canteen/fragment/UploadFragment.kt\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class UploadFragment : Fragment() {\\n    private lateinit var binding: FragmentUploadBinding\\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\\n        binding = FragmentUploadBinding.inflate(inflater, container, false)\\n        return binding.root\\n    }\\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\\n        super.onViewCreated(view, savedInstanceState)\\n        binding.uploadButton.setOnClickListener {\\n            // 上传照片逻辑\\n        }\\n    }\\n}\"\n      },\n      {\n         \"path\": \"app/src/main/java/com/niutao/canteen/fragment/EditFragment.kt\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class EditFragment : Fragment() {\\n    private lateinit var binding: FragmentEditBinding\\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\\n        binding = FragmentEditBinding.inflate(inflater, container, false)\\n        return binding.root\\n    }\\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\\n        super.onViewCreated(view, savedInstanceState)\\n        binding.saveButton.setOnClickListener {\\n            // 保存文字介绍逻辑\\n        }\\n    }\\n}\"\n      },\n      {\n         \"path\": \"app/src/main/java/com/niutao/canteen/fragment/CommentFragment.kt\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class CommentFragment : Fragment() {\\n    private lateinit var binding: FragmentCommentBinding\\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\\n        binding = FragmentCommentBinding.inflate(inflater, container, false)\\n        return binding.root\\n    }\\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\\n        super.onViewCreated(view, savedInstanceState)\\n        binding.likeButton.setOnClickListener {\\n            // 点赞逻辑\\n        }\\n    }\\n}\"\n      },\n      {\n         \"path\": \"app/src/main/java/com/niutao/canteen/service/MenuService.kt\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class MenuService {\\n    fun uploadMenu(menu: Menu) {\\n        // 上传菜品逻辑\\n    }\\n    fun editMenu(menu: Menu) {\\n        // 编辑文字介绍逻辑\\n    }\\n    fun getComments(menu: Menu) {\\n        // 获取评论逻辑\\n    }\\n}\"\n      },\n      {\n         \"path\": \"app/src/main/res/layout/fragment_upload.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"\\n    android:layout_width=\\\"match_parent\\\"\\n    android:layout_height=\\\"match_parent\\\">\\n    <EditText\\n        android:id=\\\"@+id/name\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:hint=\\\"菜品名称\\\"/>\\n    <EditText\\n        android:id=\\\"@+id/description\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:hint=\\\"菜品介绍\\\"/>\\n    <Button\\n        android:id=\\\"@+id/uploadButton\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:text=\\\"上传照片\\\"/>\\n</LinearLayout>\"\n      },\n      {\n         \"path\": \"app/src/main/res/layout/fragment_edit.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"\\n    android:layout_width=\\\"match_parent\\\"\\n    android:layout_height=\\\"match_parent\\\">\\n    <EditText\\n        android:id=\\\"@+id/name\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:hint=\\\"菜品名称\\\"/>\\n    <EditText\\n        android:id=\\\"@+id/description\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:hint=\\\"菜品介绍\\\"/>\\n    <Button\\n        android:id=\\\"@+id/saveButton\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:text=\\\"保存\\\"/>\\n</LinearLayout>\"\n      },\n      {\n         \"path\": \"app/src/main/res/layout/fragment_comment.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"\\n    android:layout_width=\\\"match_parent\\\"\\n    android:layout_height=\\\"match_parent\\\">\\n    <EditText\\n        android:id=\\\"@+id/comment\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:hint=\\\"评论\\\"/>\\n    <Button\\n        android:id=\\\"@+id/likeButton\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:text=\\\"点赞\\\"/>\\n</LinearLayout>\"\n      }\n   ]\n}"
+          },
+          "logprobs": null,
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "queue_time": 0.190534392,
+        "prompt_tokens": 206,
+        "prompt_time": 0.034031103,
+        "completion_tokens": 1314,
+        "completion_time": 1.502045088,
+        "total_tokens": 1520,
+        "total_time": 1.536076191
+      },
+      "usage_breakdown": null,
+      "system_fingerprint": "fp_3ddc9808b3",
+      "x_groq": {
+        "id": "req_01k638zhake069p19tkqsy6y9x"
+      },
+      "service_tier": "on_demand"
+    },
+    "text": "{\n   \"fields\": {\n      \"appName\": \"牛太郎餐厅\",\n      \"homeTitle\": \"热门菜品\",\n      \"mainButtonText\": \"上传菜品\",\n      \"packageId\": \"com.niutao.canteen\",\n      \"permissions\": [\n         \"android.permission.INTERNET\",\n         \"android.permission.READ_EXTERNAL_STORAGE\",\n         \"android.permission.WRITE_EXTERNAL_STORAGE\",\n         \"android.permission.CAMERA\"\n      ],\n      \"intentHost\": \"https://niutao.canteen.com\",\n      \"locales\": [\"zh\", \"en\"]\n   },\n   \"companions\": [\n      {\n         \"path\": \"app/src/main/java/com/niutao/canteen/model/Menu.java\",\n         \"kind\": \"kotlin\",\n         \"content\": \"data class Menu(val id: Int, val name: String, val price: Double, val description: String, val image: String)\"\n      },\n      {\n         \"path\": \"app/src/main/java/com/niutao/canteen/fragment/UploadFragment.kt\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class UploadFragment : Fragment() {\\n    private lateinit var binding: FragmentUploadBinding\\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\\n        binding = FragmentUploadBinding.inflate(inflater, container, false)\\n        return binding.root\\n    }\\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\\n        super.onViewCreated(view, savedInstanceState)\\n        binding.uploadButton.setOnClickListener {\\n            // 上传照片逻辑\\n        }\\n    }\\n}\"\n      },\n      {\n         \"path\": \"app/src/main/java/com/niutao/canteen/fragment/EditFragment.kt\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class EditFragment : Fragment() {\\n    private lateinit var binding: FragmentEditBinding\\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\\n        binding = FragmentEditBinding.inflate(inflater, container, false)\\n        return binding.root\\n    }\\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\\n        super.onViewCreated(view, savedInstanceState)\\n        binding.saveButton.setOnClickListener {\\n            // 保存文字介绍逻辑\\n        }\\n    }\\n}\"\n      },\n      {\n         \"path\": \"app/src/main/java/com/niutao/canteen/fragment/CommentFragment.kt\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class CommentFragment : Fragment() {\\n    private lateinit var binding: FragmentCommentBinding\\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\\n        binding = FragmentCommentBinding.inflate(inflater, container, false)\\n        return binding.root\\n    }\\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\\n        super.onViewCreated(view, savedInstanceState)\\n        binding.likeButton.setOnClickListener {\\n            // 点赞逻辑\\n        }\\n    }\\n}\"\n      },\n      {\n         \"path\": \"app/src/main/java/com/niutao/canteen/service/MenuService.kt\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class MenuService {\\n    fun uploadMenu(menu: Menu) {\\n        // 上传菜品逻辑\\n    }\\n    fun editMenu(menu: Menu) {\\n        // 编辑文字介绍逻辑\\n    }\\n    fun getComments(menu: Menu) {\\n        // 获取评论逻辑\\n    }\\n}\"\n      },\n      {\n         \"path\": \"app/src/main/res/layout/fragment_upload.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"\\n    android:layout_width=\\\"match_parent\\\"\\n    android:layout_height=\\\"match_parent\\\">\\n    <EditText\\n        android:id=\\\"@+id/name\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:hint=\\\"菜品名称\\\"/>\\n    <EditText\\n        android:id=\\\"@+id/description\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:hint=\\\"菜品介绍\\\"/>\\n    <Button\\n        android:id=\\\"@+id/uploadButton\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:text=\\\"上传照片\\\"/>\\n</LinearLayout>\"\n      },\n      {\n         \"path\": \"app/src/main/res/layout/fragment_edit.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"\\n    android:layout_width=\\\"match_parent\\\"\\n    android:layout_height=\\\"match_parent\\\">\\n    <EditText\\n        android:id=\\\"@+id/name\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:hint=\\\"菜品名称\\\"/>\\n    <EditText\\n        android:id=\\\"@+id/description\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:hint=\\\"菜品介绍\\\"/>\\n    <Button\\n        android:id=\\\"@+id/saveButton\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:text=\\\"保存\\\"/>\\n</LinearLayout>\"\n      },\n      {\n         \"path\": \"app/src/main/res/layout/fragment_comment.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"\\n    android:layout_width=\\\"match_parent\\\"\\n    android:layout_height=\\\"match_parent\\\">\\n    <EditText\\n        android:id=\\\"@+id/comment\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:hint=\\\"评论\\\"/>\\n    <Button\\n        android:id=\\\"@+id/likeButton\\\"\\n        android:layout_width=\\\"match_parent\\\"\\n        android:layout_height=\\\"wrap_content\\\"\\n        android:text=\\\"点赞\\\"/>\\n</LinearLayout>\"\n      }\n   ]\n}",
+    "finish_reason": "stop",
+    "usage": {
+      "queue_time": 0.190534392,
+      "prompt_tokens": 206,
+      "prompt_time": 0.034031103,
+      "completion_tokens": 1314,
+      "completion_time": 1.502045088,
+      "total_tokens": 1520,
+      "total_time": 1.536076191
+    }
+  }
+}
