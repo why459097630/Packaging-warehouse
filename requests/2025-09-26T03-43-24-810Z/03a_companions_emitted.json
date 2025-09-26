@@ -1,0 +1,17 @@
+{
+  "written": 12,
+  "files": [
+    "companions/app/src/main/java/com/example/niutao/MainActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/Menu.kt",
+    "companions/app/src/main/java/com/example/niutao/MenuActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/Comment.kt",
+    "companions/app/src/main/java/com/example/niutao/CommentActivity.kt",
+    "companions/app/src/main/java/com/example/niutao/Database.kt",
+    "companions/app/src/main/java/com/example/niutao/Dao.kt",
+    "companions/app/src/main/java/com/example/niutao/DaoImpl.kt",
+    "companions/app/src/main/java/com/example/niutao/ViewModel.kt",
+    "companions/app/src/main/java/com/example/niutao/MainActivity.xml",
+    "companions/app/src/main/java/com/example/niutao/MenuActivity.xml",
+    "companions/app/src/main/java/com/example/niutao/CommentActivity.xml"
+  ]
+}
