@@ -1,11 +1,11 @@
-﻿[
+[
   {
     "id": "1",
     "author": "Alice",
     "content": "Welcome to NDJC circle!",
     "likes": 3,
     "comments": [
-      {"author": "Bob", "content": "Nice!"}
+      { "author": "Bob", "content": "Nice!" }
     ]
   },
   {
