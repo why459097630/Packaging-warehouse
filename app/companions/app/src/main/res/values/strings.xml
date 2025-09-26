@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">牛太郎餐厅</string>
+    <string name="menu_name">牛太郎餐厅</string>
+    <string name="menu_price">10.99</string>
+    <string name="menu_description">美味的介绍</string>
+</resources>
