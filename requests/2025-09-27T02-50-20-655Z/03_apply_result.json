@@ -1,0 +1,69 @@
+[
+  {
+    "file": "/tmp/ndjc/app/src/main/AndroidManifest.xml",
+    "changes": [
+      {
+        "file": "",
+        "marker": "NDJC:PACKAGE_NAME",
+        "found": true,
+        "replacedCount": 1
+      }
+    ]
+  },
+  {
+    "file": "/tmp/ndjc/app/src/main/res/values/strings.xml",
+    "changes": [
+      {
+        "file": "/tmp/ndjc/app/src/main/res/values/strings.xml",
+        "marker": "NDJC:APP_LABEL",
+        "found": true,
+        "replacedCount": 1
+      },
+      {
+        "file": "/tmp/ndjc/app/src/main/res/values/strings.xml",
+        "marker": "NDJC:HOME_TITLE",
+        "found": true,
+        "replacedCount": 1
+      },
+      {
+        "file": "/tmp/ndjc/app/src/main/res/values/strings.xml",
+        "marker": "NDJC:PRIMARY_BUTTON_TEXT",
+        "found": true,
+        "replacedCount": 1
+      }
+    ]
+  },
+  {
+    "file": "/tmp/ndjc/app/build.gradle",
+    "changes": [
+      {
+        "file": "/tmp/ndjc/app/build.gradle",
+        "marker": "NDJC:PACKAGE_NAME",
+        "found": true,
+        "replacedCount": 1
+      }
+    ]
+  },
+  {
+    "file": "/tmp/ndjc/app/src/main/java/com/ndjc/app/App.kt",
+    "changes": [
+      {
+        "file": "",
+        "marker": "NDJC:PACKAGE_NAME",
+        "found": true,
+        "replacedCount": 1
+      }
+    ]
+  },
+  {
+    "file": "/tmp/ndjc/app/src/main/java/com/ndjc/app/MainActivity.kt",
+    "changes": [
+      {
+        "file": "",
+        "marker": "NDJC:PACKAGE_NAME",
+        "found": true,
+        "replacedCount": 1
+      }
+    ]
+  }
+]
