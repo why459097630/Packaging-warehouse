@@ -1,0 +1,90 @@
+{
+   "fields": {
+      "appName": "牛太郎餐厅",
+      "homeTitle": "牛太郎餐厅 - 美味的介绍菜品",
+      "mainButtonText": "上传菜品",
+      "packageId": null,
+      "permissions": [
+         "android.permission.INTERNET",
+         "android.permission.ACCESS_FINE_LOCATION",
+         "android.permission.WRITE_EXTERNAL_STORAGE",
+         "android.permission.READ_EXTERNAL_STORAGE"
+      ],
+      "intentHost": null,
+      "locales": ["zh", "en"]
+   },
+   "companions": [
+      {
+         "path": "app/src/main/java/com/example/niutao/canteen/MainActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.TextView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\n\nclass MainActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            Toast.makeText(this, \"上传菜品\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/canteen/UploadActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.TextView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.google.firebase.storage.FirebaseStorage\nimport com.google.firebase.storage.StorageReference\n\nclass UploadActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_upload)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val storage = FirebaseStorage.getInstance()\n            val storageReference = storage.reference\n            val file = File(\"image.jpg\")\n            val uploadTask = storageReference.child(\"images/image.jpg\").putFile(file)\n            uploadTask.addOnCompleteListener { task ->\n                if (task.isSuccessful) {\n                    Toast.makeText(this, \"上传成功\", Toast.LENGTH_SHORT).show()\n                } else {\n                    Toast.makeText(this, \"上传失败\", Toast.LENGTH_SHORT).show()\n                }\n            }\n        }\n    }\n}",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/canteen/EditActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.TextView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\n\nclass EditActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_edit)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val text = findViewById<EditText>(R.id.text)\n            Toast.makeText(this, \"编辑成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/canteen/PriceActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.TextView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\n\nclass PriceActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_price)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val text = findViewById<EditText>(R.id.text)\n            Toast.makeText(this, \"价格设置成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/canteen/CommentActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.TextView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\n\nclass CommentActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val text = findViewById<EditText>(R.id.text)\n            Toast.makeText(this, \"评论成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/canteen/LikeActivity.kt",
+         "kind": "kotlin",
+         "content": "import android.os.Bundle\nimport android.widget.Button\nimport android.widget.TextView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\n\nclass LikeActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_like)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            Toast.makeText(this, \"点赞成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_main.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传菜品\"/>\n</LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_upload.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传\"/>\n</LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_edit.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"编辑\"/>\n</LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_price.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"设置价格\"/>\n</LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_comment.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论\"/>\n</LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_like.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\"/>\n</LinearLayout>",
+         "overwrite": false
+      }
+   ]
+}
