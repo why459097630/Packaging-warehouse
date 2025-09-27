@@ -1,0 +1,25 @@
+{
+  "written": 20,
+  "files": [
+    "companions/app/src/main/java/com/niutao/restaurant/model/Menu.java",
+    "companions/app/src/main/java/com/niutao/restaurant/repository/MenuRepository.java",
+    "companions/app/src/main/java/com/niutao/restaurant/ui/MenuActivity.java",
+    "companions/app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.java",
+    "companions/app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+    "companions/app/src/main/java/com/niutao/restaurant/ui/fragment/MenuItemFragment.java",
+    "companions/app/src/main/java/com/niutao/restaurant/ui/fragment/MenuCommentFragment.java",
+    "companions/app/src/main/java/com/niutao/restaurant/ui/fragment/MenuLikeFragment.java",
+    "companions/app/src/main/java/com/niutao/restaurant/ui/fragment/MenuUploadFragment.java",
+    "companions/app/src/main/res/layout/activity_menu.xml",
+    "companions/app/src/main/res/layout/fragment_menu.xml",
+    "companions/app/src/main/res/layout/fragment_menu_item.xml",
+    "companions/app/src/main/res/layout/fragment_menu_comment.xml",
+    "companions/app/src/main/res/layout/fragment_menu_like.xml",
+    "companions/app/src/main/res/layout/fragment_menu_upload.xml",
+    "companions/app/src/main/res/values/strings.xml",
+    "companions/app/src/main/res/values/colors.xml",
+    "companions/app/src/main/res/drawable/ic_menu.xml",
+    "companions/app/src/main/res/drawable/ic_like.xml",
+    "companions/app/src/main/res/drawable/ic_upload.xml"
+  ]
+}
