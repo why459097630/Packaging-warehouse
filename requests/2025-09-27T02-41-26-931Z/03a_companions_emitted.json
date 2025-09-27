@@ -1,0 +1,12 @@
+{
+  "written": 7,
+  "files": [
+    "companions/app/src/main/java/com/example/nittaro/menu/MenuActivity.kt",
+    "companions/app/src/main/java/com/example/nittaro/menu/MenuFragment.kt",
+    "companions/app/src/main/java/com/example/nittaro/menu/MenuAdapter.kt",
+    "companions/app/src/main/java/com/example/nittaro/menu/Menu.java",
+    "companions/app/src/main/java/com/example/nittaro/menu/MenuRepository.kt",
+    "companions/app/src/main/java/com/example/nittaro/menu/MenuViewModel.kt",
+    "companions/app/src/main/java/com/example/nittaro/menu/MainActivity.kt"
+  ]
+}
