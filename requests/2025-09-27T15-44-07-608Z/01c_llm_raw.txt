@@ -1,0 +1,82 @@
+{
+   "fields": {
+      "appName": "牛太郎餐厅",
+      "homeTitle": "牛太郎餐厅 - 美味的介绍菜品",
+      "mainButtonText": "上传菜品",
+      "packageId": null,
+      "permissions": [
+         "android.permission.INTERNET",
+         "android.permission.ACCESS_FINE_LOCATION",
+         "android.permission.READ_EXTERNAL_STORAGE",
+         "android.permission.WRITE_EXTERNAL_STORAGE",
+         "android.permission.CAMERA"
+      ],
+      "intentHost": null,
+      "locales": [
+         "zh",
+         "en"
+      ]
+   },
+   "companions": [
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/model/MenuItem.java",
+         "kind": "kotlin",
+         "content": "data class MenuItem(val name: String, val description: String, val price: Double, val image: String)",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/repository/MenuItemRepository.java",
+         "kind": "kotlin",
+         "content": "interface MenuItemRepository { fun uploadMenuItem(menuItem: MenuItem) }",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/ui/MainActivity.kt",
+         "kind": "kotlin",
+         "content": "class MainActivity : AppCompatActivity() { override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState) setContentView(R.layout.activity_main) } }",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/ui/UploadActivity.kt",
+         "kind": "kotlin",
+         "content": "class UploadActivity : AppCompatActivity() { override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState) setContentView(R.layout.activity_upload) } }",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_main.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\"> <Button android:id=\"@+id/upload_button\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"Upload\" /> </LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_upload.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\"> <EditText android:id=\"@+id/name\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:hint=\"Name\" /> <EditText android:id=\"@+id/description\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:hint=\"Description\" /> <EditText android:id=\"@+id/price\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:hint=\"Price\" /> <Button android:id=\"@+id/upload_button\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"Upload\" /> </LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/values/strings.xml",
+         "kind": "xml",
+         "content": "<resources><string name=\"app_name\">牛太郎餐厅</string><string name=\"upload_button\">Upload</string></resources>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/drawable/ic_upload.png",
+         "kind": "png",
+         "content": "",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/menu/menu_main.xml",
+         "kind": "xml",
+         "content": "<menu xmlns:android=\"http://schemas.android.com/apk/res/android\"><item android:id=\"@+id/action_settings\" android:title=\"Settings\" android:orderInCategory=\"100\" /></menu>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/item_menu.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\"> <ImageView android:id=\"@+id/image\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:src=\"@drawable/ic_menu\" /> <TextView android:id=\"@+id/name\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"Name\" /> <TextView android:id=\"@+id/description\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"Description\" /> <TextView android:id=\"@+id/price\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"Price\" /> <Button android:id=\"@+id/like_button\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"Like\" /> </LinearLayout>",
+         "overwrite": false
+      }
+   ]
+}
