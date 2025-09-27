@@ -1,0 +1,63 @@
+{
+   "fields": {
+      "appName": "牛太郎餐厅",
+      "homeTitle": "牛太郎餐厅",
+      "mainButtonText": "添加菜品",
+      "packageId": null,
+      "permissions": [
+         "android.permission.INTERNET",
+         "android.permission.READ_EXTERNAL_STORAGE",
+         "android.permission.WRITE_EXTERNAL_STORAGE",
+         "android.permission.CAMERA"
+      ],
+      "intentHost": null,
+      "locales": [
+         "zh",
+         "en"
+      ]
+   },
+   "companions": [
+      {
+         "path": "app/src/main/java/com/example/niutao/canteen/MainActivity.kt",
+         "kind": "kotlin",
+         "content": "// MainActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.canteen.R\nimport com.example.niutao.canteen.model.Menu\nimport com.example.niutao.canteen.util.FileUtil\nimport com.example.niutao.canteen.util.PhotoUtil\n\nclass MainActivity : AppCompatActivity() {\n    private lateinit var menuEditText: EditText\n    private lateinit var priceEditText: EditText\n    private lateinit var photoImageView: ImageView\n    private lateinit var addButton: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        menuEditText = findViewById(R.id.menu_edit_text)\n        priceEditText = findViewById(R.id.price_edit_text)\n        photoImageView = findViewById(R.id.photo_image_view)\n        addButton = findViewById(R.id.add_button)\n\n        addButton.setOnClickListener {\n            val menu = Menu(menuEditText.text.toString(), priceEditText.text.toString(), PhotoUtil.getPhotoPath(this))\n            // 上传菜品到服务器\n            Toast.makeText(this, \"菜品添加成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/canteen/model/Menu.kt",
+         "kind": "kotlin",
+         "content": "// Menu.kt\ndata class Menu(val name: String, val price: String, val photoPath: String)\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/canteen/util/FileUtil.kt",
+         "kind": "kotlin",
+         "content": "// FileUtil.kt\nobject FileUtil {\n    fun getPhotoPath(context: Context): String {\n        // 获取照片路径\n        return \"\" \n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/canteen/util/PhotoUtil.kt",
+         "kind": "kotlin",
+         "content": "// PhotoUtil.kt\nobject PhotoUtil {\n    fun getPhotoPath(context: Context): String {\n        // 获取照片路径\n        return \"\" \n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_main.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/menu_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\" />\n    <EditText\n        android:id=\"@+id/price_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"价格\" />\n    <ImageView\n        android:id=\"@+id/photo_image_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/add_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"添加\" />\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/values/strings.xml",
+         "kind": "xml",
+         "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n</resources>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/item_menu.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"wrap_content\">\n    <TextView\n        android:id=\"@+id/name_text_view\"\n        android:layout_width=\"0dp\"\n        android:layout_height=\"wrap_content\"\n        android:layout_weight=\"1\"\n        android:text=\"菜品名称\" />\n    <TextView\n        android:id=\"@+id/price_text_view\"\n        android:layout_width=\"0dp\"\n        android:layout_height=\"wrap_content\"\n        android:layout_weight=\"1\"\n        android:text=\"价格\" />\n    <ImageView\n        android:id=\"@+id/photo_image_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/like_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\" />\n    <Button\n        android:id=\"@+id/comment_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论\" />\n</LinearLayout>\n",
+         "overwrite": false
+      }
+   ]
+}
