@@ -1,0 +1,14 @@
+{
+  "written": 9,
+  "files": [
+    "companions/app/src/main/java/com/example/ntcanteen/model/MenuItem.java",
+    "companions/app/src/main/java/com/example/ntcanteen/repository/MenuItemRepository.java",
+    "companions/app/src/main/java/com/example/ntcanteen/ui/MainActivity.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/ui/UploadActivity.kt",
+    "companions/app/src/main/res/layout/activity_main.xml",
+    "companions/app/src/main/res/layout/activity_upload.xml",
+    "companions/app/src/main/res/values/strings.xml",
+    "companions/app/src/main/res/menu/menu_main.xml",
+    "companions/app/src/main/res/layout/item_menu.xml"
+  ]
+}
