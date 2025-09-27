@@ -1,0 +1,1 @@
+interface MenuItemRepository { fun uploadMenuItem(menuItem: MenuItem) }
