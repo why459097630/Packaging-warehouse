@@ -23,7 +23,18 @@ android {
         buildConfigField "String",  "NDJC_LOG_LEVEL","\"info\""  // NDJC:LOG_LEVEL
         buildConfigField "boolean", "NDJC_DEBUG_LOG","false"     // NDJC:DEBUG_LOG_ENABLED
 
-        // NDJC:RES_CONFIGS
+        // --- NDJC:RES_CONFIGS 动态启用（保持锚点，可被 generator 替换为 "en,zh-rCN" 这类串） ---
+        def ndjcResConfigs = "NDJC:RES_CONFIGS"
+        if (ndjcResConfigs && ndjcResConfigs != "NDJC:RES_CONFIGS") {
+            // 允许逗号或空白分隔；自动trim；空项过滤
+            def parts = ndjcResConfigs.split(/[,\s]+/).collect { it.trim() }.findAll { it }
+            if (!parts.isEmpty()) {
+                // 等价于：resConfigs "en","zh-rCN",...
+                resConfigs(*parts)
+            }
+        }
+        // -----------------------------------------------------------------------------
+
         vectorDrawables { useSupportLibrary = true }
     }
 
@@ -31,7 +42,8 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // 允许在尾部追加 NDJC:PROGUARD_EXTRA（例如 , 'proguard-ndjc.pro'）
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' NDJC:PROGUARD_EXTRA
             signingConfig signingConfigs.debug
         }
         debug {
