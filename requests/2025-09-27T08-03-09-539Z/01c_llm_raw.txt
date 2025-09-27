@@ -1,0 +1,14 @@
+{
+   "appName": "牛太郎餐厅",
+   "homeTitle": "牛太郎餐厅",
+   "mainButtonText": "上传介绍菜品",
+   "packageId": "com.xiatiao.canting",
+   "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.ACCESS_FINE_LOCATION"
+   ],
+   "intentHost": "https://www.xiatiao.com/canting",
+   "locales": ["zh-rCN","en"]
+}
