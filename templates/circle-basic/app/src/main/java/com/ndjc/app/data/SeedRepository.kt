@@ -1,7 +1,6 @@
 package com.ndjc.app.data
 
 import org.json.JSONArray
-import java.nio.charset.Charset
 import com.ndjc.app.data.model.Comment
 import com.ndjc.app.data.model.Post
 
@@ -17,29 +16,30 @@ object SeedRepository {
 
     fun postById(id: String): Post? = posts().find { it.id == id }
 
-    private fun loadFromRawOrFallback(): List<Post> = try {
-        val app = AcpCtx.app ?: return fallback()
-        val res = app.resources
-        val pkg = app.packageName
+    // ✅ 改为“块函数体”，允许在 try 中使用 return
+    private fun loadFromRawOrFallback(): List<Post> {
+        return try {
+            val app = AcpCtx.app ?: return fallback()
+            val res = app.resources
+            val pkg = app.packageName
 
-        // 先找 seed_posts（新标准），找不到再回退 seed_data（兼容旧命名）
-        val idPosts = res.getIdentifier("seed_posts", "raw", pkg)
-        val idData  = res.getIdentifier("seed_data",  "raw", pkg)
-        val rawId   = when {
-            idPosts != 0 -> idPosts
-            idData  != 0 -> idData
-            else         -> 0
+            // 先找 seed_posts（新标准），找不到再回退 seed_data（兼容旧命名）
+            val idPosts = res.getIdentifier("seed_posts", "raw", pkg)
+            val idData  = res.getIdentifier("seed_data",  "raw", pkg)
+            val rawId   = when {
+                idPosts != 0 -> idPosts
+                idData  != 0 -> idData
+                else         -> 0
+            }
+
+            if (rawId == 0) return fallback()
+
+            val json = res.openRawResource(rawId).use { it.readBytes().toString(Charsets.UTF_8) }
+
+            parse(json)
+        } catch (_: Throwable) {
+            fallback()
         }
-
-        if (rawId == 0) return fallback()
-
-        val json = res.openRawResource(rawId)
-            .readBytes()
-            .toString(Charset.forName("UTF-8"))
-
-        parse(json)
-    } catch (_: Throwable) {
-        fallback()
     }
 
     private fun parse(json: String): List<Post> {
