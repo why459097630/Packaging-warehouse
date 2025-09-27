@@ -1,0 +1,62 @@
+{
+   "fields": {
+      "appName": "牛太郎餐厅",
+      "homeTitle": "牛太郎餐厅 - 美味的介绍",
+      "mainButtonText": "上传菜品",
+      "packageId": null,
+      "permissions": [
+         "android.permission.INTERNET",
+         "android.permission.ACCESS_FINE_LOCATION",
+         "android.permission.READ_EXTERNAL_STORAGE",
+         "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "intentHost": null,
+      "locales": [
+         "zh-CN"
+      ]
+   },
+   "companions": [
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/MainActivity.kt",
+         "kind": "kotlin",
+         "content": "//MainActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.TextView\nimport androidx.appcompat.app.AppCompatActivity\n\nclass MainActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n    private lateinit var textView: TextView\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        imageView = findViewById(R.id.imageView)\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n        textView = findViewById(R.id.textView)\n\n        button.setOnClickListener {\n            // 上传照片\n            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n            startActivityForResult(intent, 1)\n        }\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == Activity.RESULT_OK && data != null) {\n            val uri = data.data\n            // 上传照片逻辑\n            imageView.setImageURI(uri)\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/UploadPhotoActivity.kt",
+         "kind": "kotlin",
+         "content": "//UploadPhotoActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.ImageView\nimport androidx.appcompat.app.AppCompatActivity\n\nclass UploadPhotoActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_upload_photo)\n\n        imageView = findViewById(R.id.imageView)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            // 上传照片逻辑\n            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n            startActivityForResult(intent, 1)\n        }\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == Activity.RESULT_OK && data != null) {\n            val uri = data.data\n            // 上传照片逻辑\n            imageView.setImageURI(uri)\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/EditInfoActivity.kt",
+         "kind": "kotlin",
+         "content": "//EditInfoActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.TextView\nimport androidx.appcompat.app.AppCompatActivity\n\nclass EditInfoActivity : AppCompatActivity() {\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n    private lateinit var textView: TextView\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_edit_info)\n\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n        textView = findViewById(R.id.textView)\n\n        button.setOnClickListener {\n            // 编辑文字介绍逻辑\n            val text = editText.text.toString()\n            textView.text = text\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/SetPriceActivity.kt",
+         "kind": "kotlin",
+         "content": "//SetPriceActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport androidx.appcompat.app.AppCompatActivity\n\nclass SetPriceActivity : AppCompatActivity() {\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_set_price)\n\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            // 设定价格逻辑\n            val price = editText.text.toString().toDouble()\n            // 保存价格\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/CommentActivity.kt",
+         "kind": "kotlin",
+         "content": "//CommentActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport androidx.appcompat.app.AppCompatActivity\n\nclass CommentActivity : AppCompatActivity() {\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment)\n\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            // 评论逻辑\n            val comment = editText.text.toString()\n            // 保存评论\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/LikeActivity.kt",
+         "kind": "kotlin",
+         "content": "//LikeActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport androidx.appcompat.app.AppCompatActivity\n\nclass LikeActivity : AppCompatActivity() {\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_like)\n\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            // 点赞逻辑\n            // 保存点赞状态\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/ntcanteen/DatabaseHelper.kt",
+         "kind": "kotlin",
+         "content": "//DatabaseHelper.kt\nimport android.content.ContentValues\nimport android.database.Cursor\nimport android.database.sqlite.SQLiteDatabase\nimport android.database.sqlite.SQLiteOpenHelper\n\nclass DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, \"ntcanteen.db\", null, 1) {\n    override fun onCreate(db: SQLiteDatabase) {\n        db.execSQL(\"CREATE TABLE IF NOT EXISTS menu (id INTEGER PRIMARY KEY, name TEXT, price REAL, comment TEXT)\")\n    }\n\n    fun saveMenu(name: String, price: Double, comment: String) {\n        val db = writableDatabase\n        val contentValues = ContentValues()\n        contentValues.put(\"name\", name)\n        contentValues.put(\"price\", price)\n        contentValues.put(\"comment\", comment)\n        db.insert(\"menu\", null, contentValues)\n        db.close()\n    }\n\n    fun getMenu(): List<Menu> {\n        val db = readableDatabase\n        val cursor = db.rawQuery(\"SELECT * FROM menu\", null)\n        val menus = mutableListOf<Menu>()\n        while (cursor.moveToNext()) {\n            val id = cursor.getInt(0)\n            val name = cursor.getString(1)\n            val price = cursor.getDouble(2)\n            val comment = cursor.getString(3)\n            menus.add(Menu(id, name, price, comment))\n        }\n        cursor.close()\n        db.close()\n        return menus\n    }\n}\n",
+         "overwrite": false
+      }
+   ]
+}
