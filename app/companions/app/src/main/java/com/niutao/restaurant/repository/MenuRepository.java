@@ -1,0 +1,1 @@
+interface MenuRepository { fun getMenu(): List<Menu> }
