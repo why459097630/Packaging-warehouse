@@ -1,0 +1,32 @@
+{
+  "id": "chatcmpl-6f93f0f1-080c-4534-9d40-3991d6dd0bc2",
+  "object": "chat.completion",
+  "created": 1758960199,
+  "model": "llama-3.1-8b-instant",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n   \"appName\": \"牛太郎餐厅\",\n   \"homeTitle\": \"牛太郎餐厅\",\n   \"mainButtonText\": \"上传介绍菜品\",\n   \"packageId\": \"com.xiatiao.canting\",\n   \"permissions\": [\n      \"android.permission.INTERNET\",\n      \"android.permission.WRITE_EXTERNAL_STORAGE\",\n      \"android.permission.READ_EXTERNAL_STORAGE\",\n      \"android.permission.ACCESS_FINE_LOCATION\"\n   ],\n   \"intentHost\": \"https://www.xiatiao.com/canting\",\n   \"locales\": [\"zh-rCN\",\"en\"]\n}"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.18721537,
+    "prompt_tokens": 173,
+    "prompt_time": 0.009581229,
+    "completion_tokens": 115,
+    "completion_time": 0.147824168,
+    "total_tokens": 288,
+    "total_time": 0.157405397
+  },
+  "usage_breakdown": null,
+  "system_fingerprint": "fp_90c2e79dab",
+  "x_groq": {
+    "id": "req_01k653596aewmaa68t1py1c6va"
+  },
+  "service_tier": "on_demand"
+}
