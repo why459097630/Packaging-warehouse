@@ -1,0 +1,138 @@
+{
+   "fields": {
+      "appName": "牛太郎餐厅",
+      "homeTitle": "牛太郎餐厅 - 美味的介绍菜品",
+      "mainButtonText": "添加菜品",
+      "packageId": "com.niutao.restaurant",
+      "permissions": [
+         "android.permission.INTERNET",
+         "android.permission.READ_EXTERNAL_STORAGE",
+         "android.permission.WRITE_EXTERNAL_STORAGE",
+         "android.permission.CAMERA"
+      ],
+      "intentHost": "https://www.niutao.com",
+      "locales": ["zh", "en"]
+   },
+   "companions": [
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/model/Menu.java",
+         "kind": "kotlin",
+         "content": "data class Menu(val id: Int, val name: String, val price: Double, val description: String, val image: String)",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/repository/MenuRepository.java",
+         "kind": "kotlin",
+         "content": "interface MenuRepository { fun getMenu(): List<Menu> }",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/MenuActivity.java",
+         "kind": "kotlin",
+         "content": "class MenuActivity : AppCompatActivity() { override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState) setContentView(R.layout.activity_menu) } }",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.java",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuItemFragment.java",
+         "kind": "kotlin",
+         "content": "class MenuItemFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu_item, container, false) } }",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuCommentFragment.java",
+         "kind": "kotlin",
+         "content": "class MenuCommentFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu_comment, container, false) } }",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuLikeFragment.java",
+         "kind": "kotlin",
+         "content": "class MenuLikeFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu_like, container, false) } }",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuUploadFragment.java",
+         "kind": "kotlin",
+         "content": "class MenuUploadFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu_upload, container, false) } }",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/activity_menu.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\">\n    <include layout=\"@layout/toolbar\" />\n    <FrameLayout\n        android:id=\"@+id/container\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\" />\n</LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/fragment_menu.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\">\n    <include layout=\"@layout/toolbar\" />\n    <ListView\n        android:id=\"@+id/list\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\" />\n</LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/fragment_menu_item.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\">\n    <ImageView\n        android:id=\"@+id/image\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <TextView\n        android:id=\"@+id/name\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <TextView\n        android:id=\"@+id/price\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/edit\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/fragment_menu_comment.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/comment\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/submit\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/fragment_menu_like.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\">\n    <Button\n        android:id=\"@+id/like\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <TextView\n        android:id=\"@+id/count\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/layout/fragment_menu_upload.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\">\n    <ImageView\n        android:id=\"@+id/image\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/upload\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/values/strings.xml",
+         "kind": "xml",
+         "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"home_title\">牛太郎餐厅 - 美味的介绍菜品</string>\n    <string name=\"main_button_text\">添加菜品</string>\n</resources>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/values/colors.xml",
+         "kind": "xml",
+         "content": "<resources>\n    <color name=\"primary_color\">#FF0000</color>\n    <color name=\"secondary_color\">#00FF00</color>\n</resources>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/drawable/ic_menu.xml",
+         "kind": "xml",
+         "content": "<vector xmlns:android=\"http://schemas.android.com/apk/res/android\" android:width=\"24dp\" android:height=\"24dp\" android:viewportWidth=\"24\" android:viewportHeight=\"24\">\n    <path\n        android:pathData=\"M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10-4.48 10-10S17.52,2 12,2zm0 18c-4.41,0-8-3.59-8-8s3.59-8 8-8 8,3.59 8,8-3.59,8-8,8z\"/>\n</vector>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/drawable/ic_like.xml",
+         "kind": "xml",
+         "content": "<vector xmlns:android=\"http://schemas.android.com/apk/res/android\" android:width=\"24dp\" android:height=\"24dp\" android:viewportWidth=\"24\" android:viewportHeight=\"24\">\n    <path\n        android:pathData=\"M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10-4.48 10-10S17.52,2 12,2zm0 18c-4.41,0-8-3.59-8-8s3.59-8 8-8 8,3.59 8,8-3.59,8-8,8z\"/>\n</vector>",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/res/drawable/ic_upload.xml",
+         "kind": "xml",
+         "content": "<vector xmlns:android=\"http://schemas.android.com/apk/res/android\" android:width=\"24dp\" android:height=\"24dp\" android:viewportWidth=\"24\" android:viewportHeight=\"24\">\n    <path\n        android:pathData=\"M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10-4.48 10-10S17.52,2 12,2zm0 18c-4.41,0-8-3.59-8-8s3.59-8 8-8 8,3.59 8,8-3.59,8-8,8z\"/>\n</vector>",
+         "overwrite": false
+      }
+   ]
+}
