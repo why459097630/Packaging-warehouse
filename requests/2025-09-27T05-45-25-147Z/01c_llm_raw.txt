@@ -1,0 +1,571 @@
+{
+   "fields": {
+      "appName": "牛太郎餐厅",
+      "homeTitle": "牛太郎餐厅 - 美味的介绍菜品",
+      "mainButtonText": "上传菜品",
+      "packageId": "com.niutao.restaurant",
+      "permissions": [
+         "android.permission.INTERNET",
+         "android.permission.ACCESS_FINE_LOCATION",
+         "android.permission.CAMERA",
+         "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "intentHost": "https://niutao.com",
+      "locales": [
+         "zh-CN",
+         "en-US"
+      ]
+   },
+   "companions": [
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/model/Menu.java",
+         "kind": "kotlin",
+         "content": "data class Menu(val id: Int, val name: String, val description: String, val price: Double, val image: String)",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/repository/MenuRepository.java",
+         "kind": "kotlin",
+         "content": "interface MenuRepository { fun getMenu(): List<Menu> }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/MenuActivity.java",
+         "kind": "kotlin",
+         "content": "class MenuActivity : AppCompatActivity() { override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState) setContentView(R.layout.activity_menu) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.java",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.kt",
+         "kind": "kotlin",
+         "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+         "overwrite": true
+      }]}
