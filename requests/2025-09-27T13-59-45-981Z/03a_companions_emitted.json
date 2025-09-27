@@ -1,0 +1,13 @@
+{
+  "written": 8,
+  "files": [
+    "companions/app/src/main/java/com/example/ntrestaurant/MainActivity.kt",
+    "companions/app/src/main/java/com/example/ntrestaurant/UploadActivity.kt",
+    "companions/app/src/main/java/com/example/ntrestaurant/EditActivity.kt",
+    "companions/app/src/main/java/com/example/ntrestaurant/ReviewActivity.kt",
+    "companions/app/src/main/res/layout/activity_main.xml",
+    "companions/app/src/main/res/layout/activity_upload.xml",
+    "companions/app/src/main/res/layout/activity_edit.xml",
+    "companions/app/src/main/res/layout/activity_review.xml"
+  ]
+}
