@@ -1,0 +1,32 @@
+{
+  "id": "chatcmpl-128e6c9c-529c-401b-8491-946688f04f0f",
+  "object": "chat.completion",
+  "created": 1758987858,
+  "model": "llama-3.1-8b-instant",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n   \"fields\": {\n      \"appName\": \"牛太郎餐厅\",\n      \"homeTitle\": \"牛太郎餐厅 - 美味的介绍菜品\",\n      \"mainButtonText\": \"上传菜品\",\n      \"packageId\": null,\n      \"permissions\": [\n         \"android.permission.INTERNET\",\n         \"android.permission.ACCESS_FINE_LOCATION\",\n         \"android.permission.READ_EXTERNAL_STORAGE\",\n         \"android.permission.WRITE_EXTERNAL_STORAGE\",\n         \"android.permission.CAMERA\"\n      ],\n      \"intentHost\": null,\n      \"locales\": [\n         \"zh\",\n         \"en\"\n      ]\n   },\n   \"companions\": [\n      {\n         \"path\": \"app/src/main/java/com/example/ntcanteen/model/MenuItem.java\",\n         \"kind\": \"kotlin\",\n         \"content\": \"data class MenuItem(val name: String, val description: String, val price: Double, val image: String)\",\n         \"overwrite\": false\n      },\n      {\n         \"path\": \"app/src/main/java/com/example/ntcanteen/repository/MenuItemRepository.java\",\n         \"kind\": \"kotlin\",\n         \"content\": \"interface MenuItemRepository { fun uploadMenuItem(menuItem: MenuItem) }\",\n         \"overwrite\": false\n      },\n      {\n         \"path\": \"app/src/main/java/com/example/ntcanteen/ui/MainActivity.kt\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class MainActivity : AppCompatActivity() { override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState) setContentView(R.layout.activity_main) } }\",\n         \"overwrite\": false\n      },\n      {\n         \"path\": \"app/src/main/java/com/example/ntcanteen/ui/UploadActivity.kt\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class UploadActivity : AppCompatActivity() { override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState) setContentView(R.layout.activity_upload) } }\",\n         \"overwrite\": false\n      },\n      {\n         \"path\": \"app/src/main/res/layout/activity_main.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\" android:layout_width=\\\"match_parent\\\" android:layout_height=\\\"match_parent\\\"> <Button android:id=\\\"@+id/upload_button\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\" android:text=\\\"Upload\\\" /> </LinearLayout>\",\n         \"overwrite\": false\n      },\n      {\n         \"path\": \"app/src/main/res/layout/activity_upload.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\" android:layout_width=\\\"match_parent\\\" android:layout_height=\\\"match_parent\\\"> <EditText android:id=\\\"@+id/name\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\" android:hint=\\\"Name\\\" /> <EditText android:id=\\\"@+id/description\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\" android:hint=\\\"Description\\\" /> <EditText android:id=\\\"@+id/price\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\" android:hint=\\\"Price\\\" /> <Button android:id=\\\"@+id/upload_button\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\" android:text=\\\"Upload\\\" /> </LinearLayout>\",\n         \"overwrite\": false\n      },\n      {\n         \"path\": \"app/src/main/res/values/strings.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<resources><string name=\\\"app_name\\\">牛太郎餐厅</string><string name=\\\"upload_button\\\">Upload</string></resources>\",\n         \"overwrite\": false\n      },\n      {\n         \"path\": \"app/src/main/res/drawable/ic_upload.png\",\n         \"kind\": \"png\",\n         \"content\": \"\",\n         \"overwrite\": false\n      },\n      {\n         \"path\": \"app/src/main/res/menu/menu_main.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<menu xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"><item android:id=\\\"@+id/action_settings\\\" android:title=\\\"Settings\\\" android:orderInCategory=\\\"100\\\" /></menu>\",\n         \"overwrite\": false\n      },\n      {\n         \"path\": \"app/src/main/res/layout/item_menu.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\" android:layout_width=\\\"match_parent\\\" android:layout_height=\\\"match_parent\\\"> <ImageView android:id=\\\"@+id/image\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\" android:src=\\\"@drawable/ic_menu\\\" /> <TextView android:id=\\\"@+id/name\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\" android:text=\\\"Name\\\" /> <TextView android:id=\\\"@+id/description\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\" android:text=\\\"Description\\\" /> <TextView android:id=\\\"@+id/price\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\" android:text=\\\"Price\\\" /> <Button android:id=\\\"@+id/like_button\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\" android:text=\\\"Like\\\" /> </LinearLayout>\",\n         \"overwrite\": false\n      }\n   ]\n}"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.20018697,
+    "prompt_tokens": 206,
+    "prompt_time": 0.020249306,
+    "completion_tokens": 1125,
+    "completion_time": 1.785128212,
+    "total_tokens": 1331,
+    "total_time": 1.805377518
+  },
+  "usage_breakdown": null,
+  "system_fingerprint": "fp_a7a2f9abbf",
+  "x_groq": {
+    "id": "req_01k65xhatrehp9m4gzfc1bbkzf"
+  },
+  "service_tier": "on_demand"
+}
