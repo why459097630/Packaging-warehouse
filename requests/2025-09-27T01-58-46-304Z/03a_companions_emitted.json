@@ -1,0 +1,12 @@
+{
+  "written": 7,
+  "files": [
+    "companions/app/src/main/java/com/example/ntcanteen/MainActivity.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/UploadPhotoActivity.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/EditInfoActivity.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/SetPriceActivity.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/CommentActivity.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/LikeActivity.kt",
+    "companions/app/src/main/java/com/example/ntcanteen/DatabaseHelper.kt"
+  ]
+}
