@@ -1,0 +1,65 @@
+{
+   "appName": "兰博基尼历史车型",
+   "homeTitle": "兰博基尼历史车型",
+   "mainButtonText": "查看历史车型",
+   "packageId": "com.lamborghini.history",
+   "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_NETWORK_STATE"
+   ],
+   "intentHost": "https://www.lamborghini.com",
+   "locales": [
+      "en",
+      "zh"
+   ],
+   "companions": [
+      {
+         "path": "app/src/main/java/com/lamborghini/history/model/Car.java",
+         "kind": "kotlin",
+         "content": "data class Car(val id: Int, val name: String, val year: Int)",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/lamborghini/history/repository/CarRepository.java",
+         "kind": "kotlin",
+         "content": "class CarRepository private constructor() { fun getCarList(): List<Car> { ... } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/lamborghini/history/ui/CarListActivity.java",
+         "kind": "kotlin",
+         "content": "class CarListActivity : AppCompatActivity() { override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState) setContentView(R.layout.activity_car_list) } }",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/layout/activity_car_list.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\">\n    <ListView android:id=\"@+id/car_list\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\"/>\n</LinearLayout>",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/layout/item_car.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"wrap_content\">\n    <ImageView android:id=\"@+id/car_image\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\"/>\n    <TextView android:id=\"@+id/car_name\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\"/>\n</LinearLayout>",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/values/strings.xml",
+         "kind": "xml",
+         "content": "<resources>\n    <string name=\"app_name\">兰博基尼历史车型</string>\n    <string name=\"car_list_title\">历史车型</string>\n</resources>",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/drawable/ic_like.png",
+         "kind": "png",
+         "content": "",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/drawable/ic_comment.png",
+         "kind": "png",
+         "content": "",
+         "overwrite": true
+      }
+   ]
+}
