@@ -1,0 +1,66 @@
+{
+  "provider": "groq",
+  "url": "https://api.groq.com/openai/v1/chat/completions",
+  "model": "llama-3.1-8b-instant",
+  "request": {
+    "model": "llama-3.1-8b-instant",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a JSON API. Reply ONLY JSON with keys:\n{\n  \"appName\": string,\n  \"homeTitle\": string,\n  \"mainButtonText\": string,\n  \"packageId\": string | null,\n  \"permissions\": string[],\n  \"intentHost\": string | null,\n  \"locales\": string[]\n}"
+      },
+      {
+        "role": "user",
+        "content": "1"
+      }
+    ],
+    "temperature": 0,
+    "response_format": {
+      "type": "json_object"
+    },
+    "stream": false
+  },
+  "response": {
+    "id": "chatcmpl-549cf9d4-e3dc-480e-8842-c23adc90d799",
+    "object": "chat.completion",
+    "created": 1759111190,
+    "model": "llama-3.1-8b-instant",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n   \"appName\": \"Test App\",\n   \"homeTitle\": \"Welcome to Test App\",\n   \"mainButtonText\": \"Get Started\",\n   \"packageId\": \"com.example.testapp\",\n   \"permissions\": [\"android.permission.INTERNET\",\"android.permission.ACCESS_FINE_LOCATION\"],\n   \"intentHost\": \"https://example.com\",\n   \"locales\": [\"en-US\", \"fr-FR\", \"es-ES\"]\n}"
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "queue_time": 0.370810392,
+      "prompt_tokens": 116,
+      "prompt_time": 0.006558108,
+      "completion_tokens": 87,
+      "completion_time": 0.085149227,
+      "total_tokens": 203,
+      "total_time": 0.091707335
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_90c2e79dab",
+    "x_groq": {
+      "id": "req_01k69k55e3e11sf4c85hf5fgvs"
+    },
+    "service_tier": "on_demand"
+  },
+  "text": "{\n   \"appName\": \"Test App\",\n   \"homeTitle\": \"Welcome to Test App\",\n   \"mainButtonText\": \"Get Started\",\n   \"packageId\": \"com.example.testapp\",\n   \"permissions\": [\"android.permission.INTERNET\",\"android.permission.ACCESS_FINE_LOCATION\"],\n   \"intentHost\": \"https://example.com\",\n   \"locales\": [\"en-US\", \"fr-FR\", \"es-ES\"]\n}",
+  "finish_reason": "stop",
+  "usage": {
+    "queue_time": 0.370810392,
+    "prompt_tokens": 116,
+    "prompt_time": 0.006558108,
+    "completion_tokens": 87,
+    "completion_time": 0.085149227,
+    "total_tokens": 203,
+    "total_time": 0.091707335
+  }
+}
