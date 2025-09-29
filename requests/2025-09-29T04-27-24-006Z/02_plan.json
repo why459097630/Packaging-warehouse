@@ -1,0 +1,13 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:APP_LABEL": "NDJC core",
+    "NDJC:HOME_TITLE": "Hello core",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start core",
+    "NDJC:MAIN_BUTTON": "Start core",
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core"
+  },
+  "conditions": {},
+  "lists": {},
+  "blocks": {}
+}
