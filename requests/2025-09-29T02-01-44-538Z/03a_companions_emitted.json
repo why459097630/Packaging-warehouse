@@ -1,0 +1,11 @@
+{
+  "written": 6,
+  "files": [
+    "companions/app/src/main/java/com/lamborghini/history/model/Car.java",
+    "companions/app/src/main/java/com/lamborghini/history/repository/CarRepository.java",
+    "companions/app/src/main/java/com/lamborghini/history/ui/CarListActivity.java",
+    "companions/app/src/main/res/layout/activity_car_list.xml",
+    "companions/app/src/main/res/layout/item_car.xml",
+    "companions/app/src/main/res/values/strings.xml"
+  ]
+}
