@@ -1,0 +1,20 @@
+{
+  "written": 15,
+  "files": [
+    "companions/app/src/main/java/com/lamborghini/history/model/Car.java",
+    "companions/app/src/main/java/com/lamborghini/history/repository/CarRepository.java",
+    "companions/app/src/main/java/com/lamborghini/history/ui/CarListFragment.java",
+    "companions/app/src/main/java/com/lamborghini/history/ui/CarAdapter.java",
+    "companions/app/src/main/java/com/lamborghini/history/ui/CommentFragment.java",
+    "companions/app/src/main/java/com/lamborghini/history/ui/CommentAdapter.java",
+    "companions/app/src/main/java/com/lamborghini/history/ui/LikeButton.java",
+    "companions/app/src/main/java/com/lamborghini/history/repository/CommentRepository.java",
+    "companions/app/src/main/java/com/lamborghini/history/database/CarDao.java",
+    "companions/app/src/main/java/com/lamborghini/history/database/CommentDao.java",
+    "companions/app/src/main/res/layout/fragment_car_list.xml",
+    "companions/app/src/main/res/layout/item_car.xml",
+    "companions/app/src/main/res/layout/fragment_comment.xml",
+    "companions/app/src/main/res/layout/item_comment.xml",
+    "companions/app/src/main/res/values/strings.xml"
+  ]
+}
