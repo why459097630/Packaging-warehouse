@@ -1,0 +1,107 @@
+{
+   "appName": "兰博基尼历史车型",
+   "homeTitle": "兰博基尼历史车型",
+   "mainButtonText": "查看更多",
+   "packageId": "com.lamborghini.history",
+   "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_NETWORK_STATE"
+   ],
+   "intentHost": "https://www.lamborghini.com",
+   "locales": [
+      "en",
+      "zh"
+   ],
+   "companions": [
+      {
+         "path": "app/src/main/java/com/lamborghini/history/model/Car.java",
+         "kind": "kotlin",
+         "content": "data class Car(val id: Int, val name: String, val year: Int)\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/lamborghini/history/repository/CarRepository.java",
+         "kind": "kotlin",
+         "content": "class CarRepository(private val carDao: CarDao) {\n    fun getCarList(): List<Car> {\n        return carDao.getCarList()\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/lamborghini/history/ui/CarListFragment.java",
+         "kind": "kotlin",
+         "content": "class CarListFragment : Fragment() {\n    private lateinit var carAdapter: CarAdapter\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        val view = inflater.inflate(R.layout.fragment_car_list, container, false)\n        carAdapter = CarAdapter(carRepository.getCarList())\n        view.findViewById<RecyclerView>(R.id.car_list).adapter = carAdapter\n        return view\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/lamborghini/history/ui/CarAdapter.java",
+         "kind": "kotlin",
+         "content": "class CarAdapter(private val carList: List<Car>) : RecyclerView.Adapter<CarAdapter.ViewHolder>() {\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {\n        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_car, parent, false))\n    }\n    override fun onBindViewHolder(holder: ViewHolder, position: Int) {\n        val car = carList[position]\n        holder.nameTextView.text = car.name\n        holder.yearTextView.text = car.year.toString()\n    }\n    override fun getItemCount(): Int {\n        return carList.size\n    }\n    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {\n        val nameTextView: TextView = itemView.findViewById(R.id.name)\n        val yearTextView: TextView = itemView.findViewById(R.id.year)\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/lamborghini/history/ui/CommentFragment.java",
+         "kind": "kotlin",
+         "content": "class CommentFragment : Fragment() {\n    private lateinit var commentAdapter: CommentAdapter\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        val view = inflater.inflate(R.layout.fragment_comment, container, false)\n        commentAdapter = CommentAdapter(commentRepository.getCommentList())\n        view.findViewById<RecyclerView>(R.id.comment_list).adapter = commentAdapter\n        return view\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/lamborghini/history/ui/CommentAdapter.java",
+         "kind": "kotlin",
+         "content": "class CommentAdapter(private val commentList: List<Comment>) : RecyclerView.Adapter<CommentAdapter.ViewHolder>() {\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {\n        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_comment, parent, false))\n    }\n    override fun onBindViewHolder(holder: ViewHolder, position: Int) {\n        val comment = commentList[position]\n        holder.nameTextView.text = comment.name\n        holder.contentTextView.text = comment.content\n    }\n    override fun getItemCount(): Int {\n        return commentList.size\n    }\n    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {\n        val nameTextView: TextView = itemView.findViewById(R.id.name)\n        val contentTextView: TextView = itemView.findViewById(R.id.content)\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/lamborghini/history/ui/LikeButton.java",
+         "kind": "kotlin",
+         "content": "class LikeButton : Button() {\n    private var isLiked = false\n    fun like() {\n        isLiked = true\n        text = \"Unlike\"\n    }\n    fun unlike() {\n        isLiked = false\n        text = \"Like\"\n    }\n    fun isLiked(): Boolean {\n        return isLiked\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/lamborghini/history/repository/CommentRepository.java",
+         "kind": "kotlin",
+         "content": "class CommentRepository(private val commentDao: CommentDao) {\n    fun getCommentList(): List<Comment> {\n        return commentDao.getCommentList()\n    }\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/lamborghini/history/database/CarDao.java",
+         "kind": "kotlin",
+         "content": "interface CarDao {\n    fun getCarList(): List<Car>\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/java/com/lamborghini/history/database/CommentDao.java",
+         "kind": "kotlin",
+         "content": "interface CommentDao {\n    fun getCommentList(): List<Comment>\n}\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/layout/fragment_car_list.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <androidx.recyclerview.widget.RecyclerView\n        android:id=\"@+id/car_list\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\"/>\n</LinearLayout>\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/layout/item_car.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"wrap_content\">\n    <TextView\n        android:id=\"@+id/name\"\n        android:layout_width=\"0dp\"\n        android:layout_height=\"wrap_content\"\n        android:layout_weight=\"1\"/>\n    <TextView\n        android:id=\"@+id/year\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n</LinearLayout>\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/layout/fragment_comment.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <androidx.recyclerview.widget.RecyclerView\n        android:id=\"@+id/comment_list\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\"/>\n</LinearLayout>\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/layout/item_comment.xml",
+         "kind": "xml",
+         "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"wrap_content\">\n    <TextView\n        android:id=\"@+id/name\"\n        android:layout_width=\"0dp\"\n        android:layout_height=\"wrap_content\"\n        android:layout_weight=\"1\"/>\n    <TextView\n        android:id=\"@+id/content\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n</LinearLayout>\n",
+         "overwrite": true
+      },
+      {
+         "path": "app/src/main/res/values/strings.xml",
+         "kind": "xml",
+         "content": "<resources>\n    <string name=\"app_name\">兰博基尼历史车型</string>\n    <string name=\"home_title\">兰博基尼历史车型</string>\n    <string name=\"main_button_text\">查看更多</string>\n</resources>\n",
+         "overwrite": true
+      }
+   ]
+}
