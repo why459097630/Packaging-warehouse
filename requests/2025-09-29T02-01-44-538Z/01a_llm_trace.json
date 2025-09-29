@@ -1,0 +1,66 @@
+{
+  "provider": "groq",
+  "url": "https://api.groq.com/openai/v1/chat/completions",
+  "model": "llama-3.1-8b-instant",
+  "request": {
+    "model": "llama-3.1-8b-instant",
+    "messages": [
+      {
+        "role": "system",
+        "content": "你是移动端生成助手。以严格 JSON 返回（不可包含代码块标记）：\n{\n  \"fields\": {\n    \"appName\": string,\n    \"homeTitle\": string,\n    \"mainButtonText\": string,\n    \"packageId\": string | null,\n    \"permissions\": string[],\n    \"intentHost\": string | null,\n    \"locales\": string[]\n  },\n  \"companions\": [\n    { \"path\": \"app/src/main/java/...\", \"kind\":\"kotlin|xml|json|md|txt\", \"content\": \"...\", \"overwrite\": false }\n  ]\n}"
+      },
+      {
+        "role": "user",
+        "content": "生成一个介绍兰博基尼历史上所有车型的app、要可以评论、可以点赞"
+      }
+    ],
+    "temperature": 0.3,
+    "response_format": {
+      "type": "json_object"
+    },
+    "stream": false
+  },
+  "response": {
+    "id": "chatcmpl-7f587c2a-3fe9-4973-b6b0-3c0b1b7e8f87",
+    "object": "chat.completion",
+    "created": 1759111315,
+    "model": "llama-3.1-8b-instant",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n   \"appName\": \"兰博基尼历史车型\",\n   \"homeTitle\": \"兰博基尼历史车型\",\n   \"mainButtonText\": \"查看历史车型\",\n   \"packageId\": \"com.lamborghini.history\",\n   \"permissions\": [\n      \"android.permission.INTERNET\",\n      \"android.permission.ACCESS_NETWORK_STATE\"\n   ],\n   \"intentHost\": \"https://www.lamborghini.com\",\n   \"locales\": [\n      \"en\",\n      \"zh\"\n   ],\n   \"companions\": [\n      {\n         \"path\": \"app/src/main/java/com/lamborghini/history/model/Car.java\",\n         \"kind\": \"kotlin\",\n         \"content\": \"data class Car(val id: Int, val name: String, val year: Int)\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/java/com/lamborghini/history/repository/CarRepository.java\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class CarRepository private constructor() { fun getCarList(): List<Car> { ... } }\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/java/com/lamborghini/history/ui/CarListActivity.java\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class CarListActivity : AppCompatActivity() { override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState) setContentView(R.layout.activity_car_list) } }\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/res/layout/activity_car_list.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\" android:layout_width=\\\"match_parent\\\" android:layout_height=\\\"match_parent\\\">\\n    <ListView android:id=\\\"@+id/car_list\\\" android:layout_width=\\\"match_parent\\\" android:layout_height=\\\"match_parent\\\"/>\\n</LinearLayout>\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/res/layout/item_car.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\" android:layout_width=\\\"match_parent\\\" android:layout_height=\\\"wrap_content\\\">\\n    <ImageView android:id=\\\"@+id/car_image\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\"/>\\n    <TextView android:id=\\\"@+id/car_name\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\"/>\\n</LinearLayout>\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/res/values/strings.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<resources>\\n    <string name=\\\"app_name\\\">兰博基尼历史车型</string>\\n    <string name=\\\"car_list_title\\\">历史车型</string>\\n</resources>\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/res/drawable/ic_like.png\",\n         \"kind\": \"png\",\n         \"content\": \"\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/res/drawable/ic_comment.png\",\n         \"kind\": \"png\",\n         \"content\": \"\",\n         \"overwrite\": true\n      }\n   ]\n}"
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "queue_time": 0.187851996,
+      "prompt_tokens": 198,
+      "prompt_time": 0.010959613,
+      "completion_tokens": 695,
+      "completion_time": 1.025265526,
+      "total_tokens": 893,
+      "total_time": 1.036225139
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_a7a2f9abbf",
+    "x_groq": {
+      "id": "req_01k69k8z1xedc9mzdaatxq9dew"
+    },
+    "service_tier": "on_demand"
+  },
+  "text": "{\n   \"appName\": \"兰博基尼历史车型\",\n   \"homeTitle\": \"兰博基尼历史车型\",\n   \"mainButtonText\": \"查看历史车型\",\n   \"packageId\": \"com.lamborghini.history\",\n   \"permissions\": [\n      \"android.permission.INTERNET\",\n      \"android.permission.ACCESS_NETWORK_STATE\"\n   ],\n   \"intentHost\": \"https://www.lamborghini.com\",\n   \"locales\": [\n      \"en\",\n      \"zh\"\n   ],\n   \"companions\": [\n      {\n         \"path\": \"app/src/main/java/com/lamborghini/history/model/Car.java\",\n         \"kind\": \"kotlin\",\n         \"content\": \"data class Car(val id: Int, val name: String, val year: Int)\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/java/com/lamborghini/history/repository/CarRepository.java\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class CarRepository private constructor() { fun getCarList(): List<Car> { ... } }\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/java/com/lamborghini/history/ui/CarListActivity.java\",\n         \"kind\": \"kotlin\",\n         \"content\": \"class CarListActivity : AppCompatActivity() { override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState) setContentView(R.layout.activity_car_list) } }\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/res/layout/activity_car_list.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\" android:layout_width=\\\"match_parent\\\" android:layout_height=\\\"match_parent\\\">\\n    <ListView android:id=\\\"@+id/car_list\\\" android:layout_width=\\\"match_parent\\\" android:layout_height=\\\"match_parent\\\"/>\\n</LinearLayout>\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/res/layout/item_car.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<LinearLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\" android:layout_width=\\\"match_parent\\\" android:layout_height=\\\"wrap_content\\\">\\n    <ImageView android:id=\\\"@+id/car_image\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\"/>\\n    <TextView android:id=\\\"@+id/car_name\\\" android:layout_width=\\\"wrap_content\\\" android:layout_height=\\\"wrap_content\\\"/>\\n</LinearLayout>\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/res/values/strings.xml\",\n         \"kind\": \"xml\",\n         \"content\": \"<resources>\\n    <string name=\\\"app_name\\\">兰博基尼历史车型</string>\\n    <string name=\\\"car_list_title\\\">历史车型</string>\\n</resources>\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/res/drawable/ic_like.png\",\n         \"kind\": \"png\",\n         \"content\": \"\",\n         \"overwrite\": true\n      },\n      {\n         \"path\": \"app/src/main/res/drawable/ic_comment.png\",\n         \"kind\": \"png\",\n         \"content\": \"\",\n         \"overwrite\": true\n      }\n   ]\n}",
+  "finish_reason": "stop",
+  "usage": {
+    "queue_time": 0.187851996,
+    "prompt_tokens": 198,
+    "prompt_time": 0.010959613,
+    "completion_tokens": 695,
+    "completion_time": 1.025265526,
+    "total_tokens": 893,
+    "total_time": 1.036225139
+  }
+}
