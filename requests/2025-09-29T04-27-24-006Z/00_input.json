@@ -1,0 +1,10 @@
+{
+  "run_id": "ndjc-20250929T042723Z",
+  "template_key": "circle-basic",
+  "nl": "生成一个介绍兰博基尼历史上所有车型的app、要可以评论、可以点赞",
+  "preset_hint": "social",
+  "mode": "B",
+  "allowCompanions": true,
+  "template": "circle-basic",
+  "requirement": "生成一个介绍兰博基尼历史上所有车型的app、要可以评论、可以点赞"
+}
