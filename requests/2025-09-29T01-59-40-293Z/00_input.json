@@ -1,0 +1,10 @@
+{
+  "run_id": "ndjc-20250929T015939Z",
+  "template_key": "circle-basic",
+  "nl": "1",
+  "preset_hint": "minimal",
+  "mode": "A",
+  "allowCompanions": false,
+  "template": "circle-basic",
+  "requirement": "1"
+}
