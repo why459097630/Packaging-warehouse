@@ -1,0 +1,16 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:APP_LABEL": "Test App",
+    "NDJC:HOME_TITLE": "Welcome to Test App",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Get Started",
+    "NDJC:MAIN_BUTTON": "Get Started",
+    "NDJC:PACKAGE_NAME": "com.example.testapp"
+  },
+  "conditions": {},
+  "lists": {},
+  "blocks": {
+    "NDJC:BLOCK:PERMISSIONS": "<uses-permission android:name=\"android.permission.INTERNET\"/>\n<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
+    "NDJC:BLOCK:INTENT_FILTERS": "<intent-filter>\n  <action android:name=\"android.intent.action.VIEW\"/>\n  <category android:name=\"android.intent.category.DEFAULT\"/>\n  <category android:name=\"android.intent.category.BROWSABLE\"/>\n  <data android:scheme=\"https\" android:host=\"https://example.com\"/>\n</intent-filter>"
+  }
+}
