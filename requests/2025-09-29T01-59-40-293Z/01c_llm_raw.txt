@@ -1,0 +1,9 @@
+{
+   "appName": "Test App",
+   "homeTitle": "Welcome to Test App",
+   "mainButtonText": "Get Started",
+   "packageId": "com.example.testapp",
+   "permissions": ["android.permission.INTERNET","android.permission.ACCESS_FINE_LOCATION"],
+   "intentHost": "https://example.com",
+   "locales": ["en-US", "fr-FR", "es-ES"]
+}
