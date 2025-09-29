@@ -1,0 +1,1 @@
+class CarRepository private constructor() { fun getCarList(): List<Car> { ... } }
