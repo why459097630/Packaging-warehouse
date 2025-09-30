@@ -42,7 +42,6 @@ jobs:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
     steps:
-      # 先取到仓库内容，后面会用解析出的分支再覆盖 checkout
       - name: Checkout branch (bootstrap)
         uses: actions/checkout@v4
         with:
@@ -69,7 +68,6 @@ jobs:
           echo "branch=${BR}"      >> "$GITHUB_OUTPUT"
           echo "Resolved RUN_ID=${RUN_ID}, BUILD_BRANCH=${BR}"
 
-      # ✅ 没有解析到运行分支时直接终止，避免落到默认分支
       - name: Guard | require run branch
         if: ${{ steps.resolve.outputs.branch == '' }}
         shell: bash
@@ -77,7 +75,6 @@ jobs:
           echo "::error::inputs.branch/client_payload.ref empty. Must provide a run branch like 'ndjc-run/<runId>'."
           exit 1
 
-      # ✅ 二次检出：强制切到解析出的运行分支（ndjc-run/<runId>）
       - name: Checkout run branch (resolved)
         uses: actions/checkout@v4
         with:
@@ -94,7 +91,6 @@ jobs:
           echo "client_payload.sha: '${{ github.event.client_payload.sha }}'"
           git show --name-only --oneline -1
 
-      # ===== 路径自动探测：APP_DIR / PROJ_DIR =====
       - name: Resolve project paths (APP_DIR/PROJ_DIR)
         id: paths
         shell: bash
@@ -137,7 +133,6 @@ jobs:
           test -f "$APP_DIR/build.gradle" -o -f "$APP_DIR/build.gradle.kts" || { echo "::error::Gradle file missing under $APP_DIR"; exit 1; }
           test -f "$APP_DIR/src/main/AndroidManifest.xml" || { echo "::error::AndroidManifest.xml missing under $APP_DIR/src/main"; exit 1; }
 
-      # ✅ 为脚本准备 python 命令（Ubuntu runner 只有 python3）
       - name: Ensure Python (alias)
         shell: bash
         run: |
@@ -147,40 +142,14 @@ jobs:
           fi
           python --version || true
 
-      # ✅ NDJC 守卫（严格阻断“未注入”的空包构建）
       - name: NDJC | Guards (strict fail if un-injected)
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x scripts/ndjc-guards.sh
+          chmod +x scripts/ndjc-guards.sh || true
           scripts/ndjc-guards.sh "$APP_DIR"
 
-      # ===== 强制 JDK 17（关键） =====
-      - name: Setup Java 17
-        id: jdk
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-          check-latest: true
-
-      - name: Force JDK 17 for all next steps
-        shell: bash
-        run: |
-          echo "JAVA_HOME=${{ steps.jdk.outputs.path }}" >> "$GITHUB_ENV"
-          echo "${{ steps.jdk.outputs.path }}/bin" >> "$GITHUB_PATH"
-          echo "ORG_GRADLE_JAVA_HOME=${{ steps.jdk.outputs.path }}" >> "$GITHUB_ENV"
-          echo "Using JAVA_HOME=${{ steps.jdk.outputs.path }}"
-          java -version
-      # =================================
-
-      - name: Setup Gradle cache
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      # ---------------- Preflight ----------------
+      # -------------- 这里改为 scripts/ndjc-preflight.sh ----------------
       - name: NDJC | Preflight (anchors & resources)
         id: preflight
         shell: bash
@@ -188,10 +157,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p anchors build-logs
-          if [ -x .github/scripts/ndjc-preflight.sh ]; then
+          if [ -x scripts/ndjc-preflight.sh ]; then
+            scripts/ndjc-preflight.sh "$APP_DIR" "${{ inputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
+          elif [ -x .github/scripts/ndjc-preflight.sh ]; then
             .github/scripts/ndjc-preflight.sh "$APP_DIR" "${{ inputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
           else
-            echo "::warning::.github/scripts/ndjc-preflight.sh not found; doing minimal checks" | tee build-logs/preflight.log
+            echo "::warning::scripts/ndjc-preflight.sh not found; doing minimal checks" | tee build-logs/preflight.log
             [ -f "$APP_DIR/src/main/AndroidManifest.xml" ] || echo "::error::missing $APP_DIR/src/main/AndroidManifest.xml" | tee -a build-logs/preflight.log
             [ -f "$APP_DIR/src/main/res/values/strings.xml" ] || echo "::warning::missing $APP_DIR/src/main/res/values/strings.xml" | tee -a build-logs/preflight.log
           fi
@@ -205,9 +176,8 @@ jobs:
             anchors/**
             build-logs/preflight.log
           if-no-files-found: ignore
-      # -------------------------------------------
+      # ------------------------------------------------------------------
 
-      # --------------- Env snapshot (pre) ---------------
       - name: NDJC | Env snapshot (pre)
         if: always()
         shell: bash
@@ -230,9 +200,7 @@ jobs:
             build-logs/versions-lock.pre.txt
             build-logs/dependency-tree.pre.txt
           if-no-files-found: ignore
-      # --------------------------------------------------
 
-      # ---------------- Probes (continue-on-error) ----------------
       - name: Probe | Manifest
         id: probe_manifest
         shell: bash
@@ -281,7 +249,6 @@ jobs:
             build-logs/lint-report.html
             build-logs/lint-report.xml
           if-no-files-found: ignore
-      # ------------------------------------------------------------
 
       - name: Decode keystore (optional)
         if: ${{ env.KS != '' }}
@@ -296,7 +263,29 @@ jobs:
           } >> "$GITHUB_ENV"
           ls -lh "$HOME/release.jks" || true
 
-      # ---------------- Build (assemble) ----------------
+      - name: Setup Java 17
+        id: jdk
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          check-latest: true
+
+      - name: Force JDK 17 for all next steps
+        shell: bash
+        run: |
+          echo "JAVA_HOME=${{ steps.jdk.outputs.path }}" >> "$GITHUB_ENV"
+          echo "${{ steps.jdk.outputs.path }}/bin" >> "$GITHUB_PATH"
+          echo "ORG_GRADLE_JAVA_HOME=${{ steps.jdk.outputs.path }}" >> "$GITHUB_ENV"
+          echo "Using JAVA_HOME=${{ steps.jdk.outputs.path }}"
+          java -version
+
+      - name: Setup Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Build
         id: build
         shell: bash
@@ -333,9 +322,7 @@ jobs:
         run: |
           echo "---- build.log (last 200 lines) ----"
           tail -n 200 build-logs/build.log || true
-      # -------------------------------------------------
 
-      # --------------- Env snapshot (post) ---------------
       - name: NDJC | Env snapshot (post)
         if: always()
         shell: bash
@@ -358,9 +345,7 @@ jobs:
             build-logs/versions-lock.post.txt
             build-logs/dependency-tree.post.txt
           if-no-files-found: ignore
-      # --------------------------------------------------
 
-      # ---------------- Pick & sign APK ----------------
       - name: Pick APK
         id: pick
         shell: bash
@@ -417,9 +402,7 @@ jobs:
           name: app-${{ env.VARIANT }}-${{ env.RUN_ID }}
           path: ${{ env.APK }}
           if-no-files-found: ignore
-      # --------------------------------------------------
 
-      # --------------- Error summary & classification ---------------
       - name: NDJC | Error summary & classification
         if: always()
         shell: bash
