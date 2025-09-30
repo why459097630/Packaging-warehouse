@@ -1,0 +1,75 @@
+{
+   "fields": {
+      "appName": "牛太郎餐厅",
+      "homeTitle": "牛太郎餐厅 - 美味的介绍菜品",
+      "mainButtonText": "上传菜品",
+      "packageId": null,
+      "permissions": [
+         "android.permission.INTERNET",
+         "android.permission.READ_EXTERNAL_STORAGE",
+         "android.permission.WRITE_EXTERNAL_STORAGE",
+         "android.permission.CAMERA"
+      ],
+      "intentHost": null,
+      "locales": [
+         "zh_CN",
+         "en_US"
+      ]
+   },
+   "companions": [
+      {
+         "path": "app/src/main/java/com/example/niutao/MainActivity.kt",
+         "kind": "kotlin",
+         "content": "// MainActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport java.io.File\nimport java.io.IOException\nimport java.util.UUID\nimport kotlin.random.Random\n\nclass MainActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        imageView = findViewById(R.id.imageView)\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val photo = takePhoto()\n            imageView.setImageBitmap(photo)\n        }\n    }\n\n    private fun takePhoto(): Bitmap {\n        // 上传照片逻辑\n        return BitmapFactory.decodeStream(FileInputStream(File(\"/sdcard/photo.jpg\")))\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/Menu.kt",
+         "kind": "kotlin",
+         "content": "// Menu.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport java.io.File\nimport java.io.IOException\nimport java.util.UUID\nimport kotlin.random.Random\n\ndata class Menu(\n    val name: String,\n    val description: String,\n    val price: Double\n)\n\nclass MenuActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_menu)\n\n        imageView = findViewById(R.id.imageView)\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val menu = Menu(editText.text.toString(), \"\", 0.0)\n            Toast.makeText(this, \"菜品上传成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/Comment.kt",
+         "kind": "kotlin",
+         "content": "// Comment.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport java.io.File\nimport java.io.IOException\nimport java.util.UUID\nimport kotlin.random.Random\n\ndata class Comment(\n    val content: String,\n    val likes: Int\n)\n\nclass CommentActivity : AppCompatActivity() {\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment)\n\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val comment = Comment(editText.text.toString(), 0)\n            Toast.makeText(this, \"评论上传成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/Database.kt",
+         "kind": "kotlin",
+         "content": "// Database.kt\nimport android.content.Context\nimport android.database.sqlite.SQLiteDatabase\nimport android.database.sqlite.SQLiteOpenHelper\nimport com.example.niutao.Menu\nimport com.example.niutao.Comment\n\nclass DatabaseHelper(context: Context) : SQLiteOpenHelper(context, \"menu.db\", null, 1) {\n    override fun onCreate(db: SQLiteDatabase) {\n        db.execSQL(\"CREATE TABLE menu (id INTEGER PRIMARY KEY, name TEXT, description TEXT, price REAL)\")\n        db.execSQL(\"CREATE TABLE comment (id INTEGER PRIMARY KEY, content TEXT, likes INTEGER)\")\n    }\n\n    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {\n        // 升级数据库逻辑\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/Network.kt",
+         "kind": "kotlin",
+         "content": "// Network.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport java.io.File\nimport java.io.IOException\nimport java.util.UUID\nimport kotlin.random.Random\n\nclass NetworkActivity : AppCompatActivity() {\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_network)\n\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val response = sendRequest(editText.text.toString())\n            Toast.makeText(this, \"请求成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n\n    private fun sendRequest(url: String): String {\n        // 发送网络请求逻辑\n        return \"\" // 返回请求结果\n    }\n}\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/ActivityMain.xml",
+         "kind": "xml",
+         "content": "// ActivityMain.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <ImageView\n        android:id=\"@+id/imageView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/ActivityMenu.xml",
+         "kind": "xml",
+         "content": "// ActivityMenu.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <ImageView\n        android:id=\"@+id/imageView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/ActivityComment.xml",
+         "kind": "xml",
+         "content": "// ActivityComment.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n\n</LinearLayout>\n",
+         "overwrite": false
+      },
+      {
+         "path": "app/src/main/java/com/example/niutao/ActivityNetwork.xml",
+         "kind": "xml",
+         "content": "// ActivityNetwork.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n\n</LinearLayout>\n",
+         "overwrite": false
+      }
+   ]
+}
