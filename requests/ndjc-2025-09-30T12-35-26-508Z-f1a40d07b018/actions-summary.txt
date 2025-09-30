@@ -1,0 +1,7 @@
+branch=main
+variant=unknown
+apk=
+classes=env-drift
+missing_text=0
+missing_block=0
+ts=2025-09-30T12:36:06Z
