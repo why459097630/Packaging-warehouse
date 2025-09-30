@@ -1,0 +1,16 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "牛太郎餐厅 - 美味的介绍菜品",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品",
+    "NDJC:MAIN_BUTTON": "上传菜品",
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core"
+  },
+  "conditions": {},
+  "lists": {},
+  "blocks": {
+    "NDJC:BLOCK:PERMISSIONS": "<uses-permission android:name=\"android.permission.INTERNET\"/>\n<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>\n<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>\n<uses-permission android:name=\"android.permission.CAMERA\"/>"
+  },
+  "hooks": {}
+}
