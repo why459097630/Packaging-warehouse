@@ -25,6 +25,22 @@ on:
         description: "Preflight mode: warn (default) or strict"
         required: false
         default: "warn"
+      # 🔽 新增：便于手动重放的时候也能传入计划/编排结果
+      planB64:
+        description: "Base64 of 02_plan.json (Contract v1 plan)"
+        required: false
+      orchestratorB64:
+        description: "Base64 of orchestrator output when no plan"
+        required: false
+      mode:
+        description: "Run mode (A|B)"
+        required: false
+      contract:
+        description: "Contract kind (v1|legacy)"
+        required: false
+      clientNote:
+        description: "Note from API (for debugging)"
+        required: false
   repository_dispatch:
     types: [generate-apk]
 
@@ -91,6 +107,85 @@ jobs:
           echo "client_payload.sha: '${{ github.event.client_payload.sha }}'"
           git show --name-only --oneline -1
 
+      # ──────────────────────────────────────────────────────────────
+      # Materialize inputs BEFORE guards: write requests/<runId>/*
+      # ──────────────────────────────────────────────────────────────
+      - name: NDJC | Materialize inputs (plan/orchestrator)
+        id: materialize
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "requests/${RUN_ID}"
+
+          PLAN_B64='${{ inputs.planB64 || github.event.client_payload.planB64 || '' }}'
+          ORCH_B64='${{ inputs.orchestratorB64 || github.event.client_payload.orchestratorB64 || '' }}'
+          TEMPLATE='${{ inputs.template || github.event.client_payload.template || '' }}'
+          MODE='${{ inputs.mode || github.event.client_payload.mode || 'A' }}'
+          APP_TITLE='${{ inputs.appTitle || github.event.client_payload.appTitle || '' }}'
+          PKG='${{ inputs.packageName || github.event.client_payload.packageName || '' }}'
+
+          wrote_plan=0
+          if [ -n "${PLAN_B64}" ]; then
+            echo "Decoding planB64 → requests/${RUN_ID}/02_plan.json"
+            echo "${PLAN_B64}" | base64 -d > "requests/${RUN_ID}/02_plan.json"
+            wrote_plan=1
+          fi
+
+          if [ ${wrote_plan} -eq 0 ] && [ -n "${ORCH_B64}" ]; then
+            echo "Decoding orchestratorB64 → requests/${RUN_ID}/01_orchestrator.json"
+            echo "${ORCH_B64}" | base64 -d > "requests/${RUN_ID}/01_orchestrator.json"
+            echo "Synthesize a minimal 02_plan.json from orchestrator (fallback)"
+            node - <<'NODE'
+            const fs = require('fs');
+            const runId = process.env.RUN_ID;
+            const pOrch = `requests/${runId}/01_orchestrator.json`;
+            let o = {};
+            try { o = JSON.parse(fs.readFileSync(pOrch, 'utf8')); } catch {}
+            const meta = {
+              template: o.template || process.env.TEMPLATE || 'circle-basic',
+              appName: o.appName || process.env.APP_TITLE || 'NDJC App',
+              packageId: o.packageId || process.env.PKG || 'com.ndjc.demo.app',
+              mode: (o.mode || process.env.MODE || 'A').toUpperCase() === 'B' ? 'B' : 'A',
+            };
+            const plan = {
+              meta: { runId, ...meta },
+              text: {
+                'NDJC:APP_LABEL': meta.appName,
+                'NDJC:HOME_TITLE': o.homeTitle || meta.appName,
+                'NDJC:PRIMARY_BUTTON_TEXT': o.mainButtonText || 'Start',
+                'NDJC:PACKAGE_NAME': meta.packageId,
+              },
+              block: {},
+              lists: {},
+              if: {},
+              resources: {},
+              hooks: {},
+              gradle: { applicationId: meta.packageId }
+            };
+            fs.writeFileSync(`requests/${runId}/02_plan.json`, JSON.stringify(plan, null, 2));
+            NODE
+            wrote_plan=1
+          fi
+
+          if [ ${wrote_plan} -eq 0 ]; then
+            echo "::warning::No planB64/orchestratorB64 provided; creating an empty placeholder plan"
+            cat > "requests/${RUN_ID}/02_plan.json" <<PL
+            {"meta":{"runId":"${RUN_ID}","template":"${TEMPLATE:-circle-basic}","appName":"${APP_TITLE:-NDJC App}","packageId":"${PKG:-com.ndjc.demo.app}","mode":"${MODE:-A}"},"text":{},"block":{},"lists":{},"if":{},"resources":{},"hooks":{},"gradle":{"applicationId":"${PKG:-com.ndjc.demo.app}"}}
+PL
+          fi
+
+          # Some guards expect 03_apply_result.json to exist — create a minimal stub if missing
+          if [ ! -f "requests/${RUN_ID}/03_apply_result.json" ]; then
+            echo '{"ok":true,"note":"placeholder (no apply in CI)","injected":false}' > "requests/${RUN_ID}/03_apply_result.json"
+          fi
+
+          # Commit materialized files so they appear in the branch
+          git config user.name "ndjc-bot"
+          git config user.email "ndjc-bot@users.noreply.github.com"
+          git add "requests/${RUN_ID}" || true
+          git commit -m "[NDJC ${RUN_ID}] materialize inputs" || true
+          git push origin "${BUILD_BRANCH}" || true
+
       - name: Resolve project paths (APP_DIR/PROJ_DIR)
         id: paths
         shell: bash
@@ -149,7 +244,7 @@ jobs:
           chmod +x scripts/ndjc-guards.sh || true
           scripts/ndjc-guards.sh "$APP_DIR"
 
-      # -------------- 这里改为 scripts/ndjc-preflight.sh ----------------
+      # -------------- 改为 scripts/ndjc-preflight.sh ----------------
       - name: NDJC | Preflight (anchors & resources)
         id: preflight
         shell: bash
@@ -176,7 +271,6 @@ jobs:
             anchors/**
             build-logs/preflight.log
           if-no-files-found: ignore
-      # ------------------------------------------------------------------
 
       - name: NDJC | Env snapshot (pre)
         if: always()
@@ -430,10 +524,10 @@ jobs:
 
           {
             echo "{"
-            echo "  \"runId\": \"${RUN_ID}\","
-            echo "  \"branch\": \"${BUILD_BRANCH}\","
-            echo "  \"variant\": \"${VARIANT:-unknown}\","
-            echo "  \"apk\": \"${APK:-}\","
+            echo "  \"runId\": \"${RUN_ID}\"," 
+            echo "  \"branch\": \"${BUILD_BRANCH}\"," 
+            echo "  \"variant\": \"${VARIANT:-unknown}\"," 
+            echo "  \"apk\": \"${APK:-}\"," 
             echo "  \"errors\": { \"classes\": \"${classes:-}\", \"notes\": \"${notes:-}\" },"
             echo "  \"anchors\": { \"missing_text\": ${MT}, \"missing_block\": ${MB} },"
             echo "  \"snapshots\": { \"pre\": \"build-logs/versions-lock.pre.txt\", \"post\": \"build-logs/versions-lock.post.txt\" },"
