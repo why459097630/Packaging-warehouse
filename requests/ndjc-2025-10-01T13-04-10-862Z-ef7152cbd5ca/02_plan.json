@@ -1,0 +1,80 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "欢迎光临牛太郎餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "zh-CN"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.CAMERA",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/example/niutao/MenuActivity.kt",
+      "content": "// MenuActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\n\nclass MenuActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_menu)\n\n        // 上传照片按钮\n        val uploadButton = findViewById<Button>(R.id.upload_button)\n        uploadButton.setOnClickListener {\n            // 上传照片逻辑\n        }\n\n        // 编辑文字介绍按钮\n        val editButton = findViewById<Button>(R.id.edit_button)\n        editButton.setOnClickListener {\n            // 编辑文字介绍逻辑\n        }\n\n        // 设定价格按钮\n        val priceButton = findViewById<Button>(R.id.price_button)\n        priceButton.setOnClickListener {\n            // 设定价格逻辑\n        }\n\n        // 评论点赞按钮\n        val commentButton = findViewById<Button>(R.id.comment_button)\n        commentButton.setOnClickListener {\n            // 评论点赞逻辑\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/MenuModel.kt",
+      "content": "// MenuModel.kt\nimport android.os.Parcel\nimport android.os.Parcelable\n\ndata class MenuModel(var name: String, var description: String, var price: Double, var image: String, var likes: Int) : Parcelable {\n    constructor(parcel: Parcel) : this(\n        parcel.readString() ?: \"\",\n        parcel.readString() ?: \"\",\n        parcel.readDouble(),\n        parcel.readString() ?: \"\",\n        parcel.readInt()\n    ) {\n    }\n\n    override fun writeToParcel(parcel: Parcel, flags: Int) {\n        parcel.writeString(name)\n        parcel.writeString(description)\n        parcel.writeDouble(price)\n        parcel.writeString(image)\n        parcel.writeInt(likes)\n    }\n\n    override fun describeContents(): Int {\n        return 0\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/MenuActivity.xml",
+      "content": "// activity_menu.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <!-- 上传照片按钮 -->\n    <Button\n        android:id=\"@+id/upload_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n\n    <!-- 编辑文字介绍按钮 -->\n    <Button\n        android:id=\"@+id/edit_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"编辑文字介绍\"/>\n\n    <!-- 设定价格按钮 -->\n    <Button\n        android:id=\"@+id/price_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"设定价格\"/>\n\n    <!-- 评论点赞按钮 -->\n    <Button\n        android:id=\"@+id/comment_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论点赞\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/MenuDatabase.kt",
+      "content": "// MenuDatabase.kt\nimport android.content.Context\nimport androidx.room.Database\nimport androidx.room.Room\nimport androidx.room.RoomDatabase\n\n@Database(entities = [MenuModel::class], version = 1)\nabstract class MenuDatabase : RoomDatabase() {\n    abstract fun menuDao(): MenuDao\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/MenuDao.kt",
+      "content": "// MenuDao.kt\nimport androidx.room.Dao\nimport androidx.room.Insert\nimport androidx.room.Query\n\n@Dao\ninterface MenuDao {\n    @Insert\n    suspend fun insertMenu(menu: MenuModel)\n\n    @Query(\"SELECT * FROM menu\")\n    suspend fun getMenu(): List<MenuModel>\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_menu.xml",
+      "content": "// activity_menu.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <!-- 上传照片按钮 -->\n    <Button\n        android:id=\"@+id/upload_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n\n    <!-- 编辑文字介绍按钮 -->\n    <Button\n        android:id=\"@+id/edit_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"编辑文字介绍\"/>\n\n    <!-- 设定价格按钮 -->\n    <Button\n        android:id=\"@+id/price_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"设定价格\"/>\n\n    <!-- 评论点赞按钮 -->\n    <Button\n        android:id=\"@+id/comment_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论点赞\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "// strings.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"home_title\">欢迎光临牛太郎餐厅</string>\n    <string name=\"main_button_text\">上传菜品</string>\n</resources>\n",
+      "encoding": "utf8"
+    }
+  ]
+}
