@@ -25,31 +25,14 @@ on:
         description: "Preflight mode: warn (default) or strict"
         required: false
         default: "warn"
-      # 便于手动重放：可直接塞计划/编排结果
-      planB64:
-        description: "Base64 of 02_plan.json (Contract v1 plan)"
-        required: false
-      orchestratorB64:
-        description: "Base64 of orchestrator output when no plan"
-        required: false
-      mode:
-        description: "Run mode (A|B)"
-        required: false
-      contract:
-        description: "Contract kind (v1|legacy)"
-        required: false
-      clientNote:
-        description: "Note from API (for debugging)"
-        required: false
   repository_dispatch:
     types: [generate-apk]
 
 permissions:
   contents: write
-  actions: write
 
 concurrency:
-  group: android-build-${{ github.event_name }}-${{ inputs.runId || github.event.client_payload.runId || inputs.branch || github.event.client_payload.branch || github.event.client_payload.ref || github.ref }}
+  group: android-build-${{ github.event_name }}-${{ inputs.runId || github.event.client_payload.runId || inputs.branch || github.event.client_payload.ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -63,17 +46,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # ✅ 先看 inputs.branch，再看 repository_dispatch 的 branch/ref，最后退回当前 ref
-          ref: ${{ inputs.branch || github.event.client_payload.branch || github.event.client_payload.ref || github.ref }}
-
-      - name: NDJC | Debug dispatch context
-        shell: bash
-        run: |
-          echo "event_name=${{ github.event_name }}"
-          echo "github.ref=${{ github.ref }}"
-          echo "inputs.branch=${{ inputs.branch }}"
-          echo "client_payload (json below) =>"
-          echo '${{ toJson(github.event.client_payload) }}'
+          ref: ${{ inputs.branch || github.event.client_payload.ref || github.ref }}
 
       - name: Resolve inputs → env
         id: resolve
@@ -86,8 +59,6 @@ jobs:
           echo "RUN_ID=${RUN_ID}" >> "$GITHUB_ENV"
 
           BR="${{ inputs.branch }}"
-          # ✅ 同时兼容 repository_dispatch 的 branch/ref 两种字段
-          if [ -z "${BR}" ]; then BR="${{ github.event.client_payload.branch }}"; fi
           if [ -z "${BR}" ]; then BR="${{ github.event.client_payload.ref }}"; fi
           if [ -z "${BR}" ]; then BR="${{ github.ref }}"; fi
           BR="${BR#refs/heads/}"
@@ -101,7 +72,7 @@ jobs:
         if: ${{ steps.resolve.outputs.branch == '' }}
         shell: bash
         run: |
-          echo "::error::inputs.branch/client_payload.branch/ref empty. Must provide a run branch like 'ndjc-run/<runId>'."
+          echo "::error::inputs.branch/client_payload.ref empty. Must provide a run branch like 'ndjc-run/<runId>'."
           exit 1
 
       - name: Checkout run branch (resolved)
@@ -116,86 +87,9 @@ jobs:
           echo "HEAD: $(git rev-parse HEAD)"
           echo "Triggered by: ${{ github.event_name }}"
           echo "inputs.branch: '${{ inputs.branch }}'"
-          echo "client_payload.branch: '${{ github.event.client_payload.branch }}'"
           echo "client_payload.ref: '${{ github.event.client_payload.ref }}'"
           echo "client_payload.sha: '${{ github.event.client_payload.sha }}'"
           git show --name-only --oneline -1
-
-      # ──────────────────────────────────────────────────────────────
-      # Materialize inputs BEFORE guards: write requests/<runId>/*
-      # ──────────────────────────────────────────────────────────────
-      - name: NDJC | Materialize inputs (plan/orchestrator)
-        id: materialize
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "requests/${RUN_ID}"
-
-          PLAN_B64='${{ inputs.planB64 || github.event.client_payload.planB64 || '' }}'
-          ORCH_B64='${{ inputs.orchestratorB64 || github.event.client_payload.orchestratorB64 || '' }}'
-          TEMPLATE='${{ inputs.template || github.event.client_payload.template || '' }}'
-          MODE='${{ inputs.mode || github.event.client_payload.mode || 'A' }}'
-          APP_TITLE='${{ inputs.appTitle || github.event.client_payload.appTitle || '' }}'
-          PKG='${{ inputs.packageName || github.event.client_payload.packageName || '' }}'
-          export TEMPLATE APP_TITLE PKG MODE
-
-          wrote_plan=0
-          if [ -n "${PLAN_B64}" ]; then
-            echo "Decoding planB64 → requests/${RUN_ID}/02_plan.json"
-            echo "${PLAN_B64}" | base64 -d > "requests/${RUN_ID}/02_plan.json"
-            wrote_plan=1
-          fi
-
-          if [ ${wrote_plan} -eq 0 ] && [ -n "${ORCH_B64}" ]; then
-            echo "Decoding orchestratorB64 → requests/${RUN_ID}/01_orchestrator.json"
-            echo "${ORCH_B64}" | base64 -d > "requests/${RUN_ID}/01_orchestrator.json"
-            echo "Synthesize a minimal 02_plan.json from orchestrator (fallback)"
-            node - <<'NODE'
-            const fs = require('fs');
-            const runId = process.env.RUN_ID;
-            const pOrch = `requests/${runId}/01_orchestrator.json`;
-            let o = {};
-            try { o = JSON.parse(fs.readFileSync(pOrch, 'utf8')); } catch {}
-            const meta = {
-              template: o.template || process.env.TEMPLATE || 'circle-basic',
-              appName:  o.appName  || process.env.APP_TITLE || 'NDJC App',
-              packageId: o.packageId || process.env.PKG || 'com.ndjc.demo.app',
-              mode: (o.mode || process.env.MODE || 'A').toUpperCase() === 'B' ? 'B' : 'A',
-            };
-            const plan = {
-              meta: { runId, ...meta },
-              text: {
-                'NDJC:APP_LABEL': meta.appName,
-                'NDJC:HOME_TITLE': o.homeTitle || meta.appName,
-                'NDJC:PRIMARY_BUTTON_TEXT': o.mainButtonText || 'Start',
-                'NDJC:PACKAGE_NAME': meta.packageId,
-              },
-              block: {}, lists: {}, if: {}, resources: {}, hooks: {},
-              gradle: { applicationId: meta.packageId }
-            };
-            fs.writeFileSync(`requests/${runId}/02_plan.json`, JSON.stringify(plan, null, 2));
-            NODE
-            wrote_plan=1
-          fi
-
-          if [ ${wrote_plan} -eq 0 ]; then
-            echo "::warning::No planB64/orchestratorB64 provided; creating an empty placeholder plan"
-            cat > "requests/${RUN_ID}/02_plan.json" <<PL
-            {"meta":{"runId":"${RUN_ID}","template":"${TEMPLATE:-circle-basic}","appName":"${APP_TITLE:-NDJC App}","packageId":"${PKG:-com.ndjc.demo.app}","mode":"${MODE:-A}"},"text":{},"block":{},"lists":{},"if":{},"resources":{},"hooks":{},"gradle":{"applicationId":"${PKG:-com.ndjc.demo.app}"}}
-PL
-          fi
-
-          # 一些守卫脚本会找 03_apply_result.json；先放一个占位
-          if [ ! -f "requests/${RUN_ID}/03_apply_result.json" ]; then
-            echo '{"ok":true,"note":"placeholder (no apply in CI)","injected":false}' > "requests/${RUN_ID}/03_apply_result.json"
-          fi
-
-          # 提交物化结果，保证分支上看得到
-          git config user.name "ndjc-bot"
-          git config user.email "ndjc-bot@users.noreply.github.com"
-          git add "requests/${RUN_ID}" || true
-          git commit -m "[NDJC ${RUN_ID}] materialize inputs" || true
-          git push origin "${BUILD_BRANCH}" || true
 
       - name: Resolve project paths (APP_DIR/PROJ_DIR)
         id: paths
@@ -255,7 +149,7 @@ PL
           chmod +x scripts/ndjc-guards.sh || true
           scripts/ndjc-guards.sh "$APP_DIR"
 
-      # 预检
+      # -------------- 这里改为 scripts/ndjc-preflight.sh ----------------
       - name: NDJC | Preflight (anchors & resources)
         id: preflight
         shell: bash
@@ -282,6 +176,7 @@ PL
             anchors/**
             build-logs/preflight.log
           if-no-files-found: ignore
+      # ------------------------------------------------------------------
 
       - name: NDJC | Env snapshot (pre)
         if: always()
@@ -518,7 +413,7 @@ PL
 
           classes=""; notes=""
           add_class () { if [ -z "$classes" ]; then classes="$1"; else classes="$classes,$1"; fi; }
-          add_note  () { if [ -z "$notes" ];   then notes="$1";   else notes="$notes | $1";   fi; }
+          add_note  () { if [ -z "$notes" ]; then notes="$1"; else notes="$notes | $1"; fi; }
 
           if [ -s anchors/missing_text.txt ] || [ -s anchors/missing_block.txt ]; then add_class "anchor-missing"; add_note "Anchors missing: see anchors/missing_*"; fi
           grep -qi "Manifest merger failed" build-logs/manifest-probe.log build-logs/manifest-merger-report.txt 2>/dev/null && { add_class "manifest"; add_note "Manifest merge failed (see build-logs/manifest-merger-report.txt)"; }
@@ -535,10 +430,10 @@ PL
 
           {
             echo "{"
-            echo "  \"runId\": \"${RUN_ID}\"," 
-            echo "  \"branch\": \"${BUILD_BRANCH}\"," 
-            echo "  \"variant\": \"${VARIANT:-unknown}\"," 
-            echo "  \"apk\": \"${APK:-}\"," 
+            echo "  \"runId\": \"${RUN_ID}\","
+            echo "  \"branch\": \"${BUILD_BRANCH}\","
+            echo "  \"variant\": \"${VARIANT:-unknown}\","
+            echo "  \"apk\": \"${APK:-}\","
             echo "  \"errors\": { \"classes\": \"${classes:-}\", \"notes\": \"${notes:-}\" },"
             echo "  \"anchors\": { \"missing_text\": ${MT}, \"missing_block\": ${MB} },"
             echo "  \"snapshots\": { \"pre\": \"build-logs/versions-lock.pre.txt\", \"post\": \"build-logs/versions-lock.post.txt\" },"
