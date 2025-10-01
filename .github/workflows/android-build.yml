@@ -32,7 +32,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: android-build-${{ github.event_name }}-${{ inputs.runId || github.event.client_payload.runId || inputs.branch || github.event.client_payload.branch || github.event.client_payload.ref || github.ref }}
+  group: android-build-${{ github.event_name }}-${{ github.run_id }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -46,7 +46,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # 支持 repo_dispatch 传 branch 或 ref
           ref: ${{ inputs.branch || github.event.client_payload.branch || github.event.client_payload.ref || github.ref }}
 
       - name: Resolve inputs → env
@@ -71,10 +70,17 @@ jobs:
           if [ -z "${PREFLIGHT}" ]; then PREFLIGHT="warn"; fi
           echo "PREFLIGHT_MODE=${PREFLIGHT}" >> "$GITHUB_ENV"
 
-          echo "runId=${RUN_ID}"   >> "$GITHUB_OUTPUT"
-          echo "branch=${BR}"      >> "$GITHUB_OUTPUT"
+          TMPL="${{ inputs.template || github.event.client_payload.template || '' }}"
+          echo "TEMPLATE=${TMPL}" >> "$GITHUB_ENV"
+
+          APP_DIR_IN="${{ inputs.app_dir || '' }}"
+          echo "APP_DIR_IN=${APP_DIR_IN}" >> "$GITHUB_ENV"
+
+          echo "runId=${RUN_ID}" >> "$GITHUB_OUTPUT"
+          echo "branch=${BR}" >> "$GITHUB_OUTPUT"
           echo "preflight_mode=${PREFLIGHT}" >> "$GITHUB_OUTPUT"
-          echo "Resolved RUN_ID=${RUN_ID}, BUILD_BRANCH=${BR}, PREFLIGHT_MODE=${PREFLIGHT}"
+          echo "template=${TMPL}" >> "$GITHUB_OUTPUT"
+          echo "Resolved RUN_ID=${RUN_ID}, BUILD_BRANCH=${BR}, PREFLIGHT_MODE=${PREFLIGHT}, TEMPLATE=${TMPL}"
 
       - name: Guard | require run branch
         if: ${{ steps.resolve.outputs.branch == '' }}
@@ -105,8 +111,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TEMPLATE="${{ inputs.template || github.event.client_payload.template || '' }}"
-          APP_DIR_IN="${{ inputs.app_dir || '' }}"
+          TEMPLATE="${{ steps.resolve.outputs.template }}"
+          APP_DIR_IN="${{ env.APP_DIR_IN }}"
           APP_DIR=""
           if [ -n "$APP_DIR_IN" ]; then
             APP_DIR="$APP_DIR_IN"
@@ -151,7 +157,7 @@ jobs:
           fi
           python --version || true
 
-      # ===== 严格守卫：必须已在 run 分支存在 requests/<runId>/03_apply_result.json =====
+      # ===== 严格守卫：必须存在 requests/<RUN_ID>/03_apply_result.json =====
       - name: NDJC | Guards (strict: require 03_apply_result.json)
         shell: bash
         run: |
@@ -164,7 +170,7 @@ jobs:
             exit 1
           fi
 
-      # 可选：保留你原有的脚本守卫（锚点/占位等自检）
+      # 可选二次守卫脚本（若无则跳过）
       - name: NDJC | Guards (script)
         shell: bash
         run: |
@@ -180,14 +186,14 @@ jobs:
       - name: NDJC | Preflight (anchors & resources)
         id: preflight
         shell: bash
-        continue-on-error: ${{ (steps.resolve.outputs.preflight_mode || 'warn') != 'strict' }}
+        continue-on-error: ${{ steps.resolve.outputs.preflight_mode != 'strict' }}
         run: |
           set -euo pipefail
           mkdir -p anchors build-logs
           if [ -x scripts/ndjc-preflight.sh ]; then
-            scripts/ndjc-preflight.sh "$APP_DIR" "${{ steps.resolve.outputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
+            scripts/ndjc-preflight.sh "$APP_DIR" "${{ steps.resolve.outputs.preflight_mode }}" | tee build-logs/preflight.log
           elif [ -x .github/scripts/ndjc-preflight.sh ]; then
-            .github/scripts/ndjc-preflight.sh "$APP_DIR" "${{ steps.resolve.outputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
+            .github/scripts/ndjc-preflight.sh "$APP_DIR" "${{ steps.resolve.outputs.preflight_mode }}" | tee build-logs/preflight.log
           else
             echo "::warning::scripts/ndjc-preflight.sh not found; doing minimal checks" | tee build-logs/preflight.log
             [ -f "$APP_DIR/src/main/AndroidManifest.xml" ] || echo "::error::missing $APP_DIR/src/main/AndroidManifest.xml" | tee -a build-logs/preflight.log
@@ -340,7 +346,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-logs-${{ env.RUN_ID }}
-          path: build-logs/**
+          path: |
+            build-logs/**
           if-no-files-found: ignore
 
       - name: NDJC | Show build tail (on failure)
