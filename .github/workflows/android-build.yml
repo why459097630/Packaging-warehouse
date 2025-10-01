@@ -32,7 +32,6 @@ permissions:
   contents: write
 
 concurrency:
-  # 简化，避免复杂表达式在 push 校验时触发解析问题
   group: android-build-${{ github.run_id }}
   cancel-in-progress: true
 
@@ -156,7 +155,6 @@ jobs:
           fi
           python --version || true
 
-      # ===== 严格守卫：必须存在 requests/<RUN_ID>/03_apply_result.json =====
       - name: NDJC | Guards (strict: require 03_apply_result.json)
         shell: bash
         run: |
@@ -169,7 +167,6 @@ jobs:
             exit 1
           fi
 
-      # 可选二次守卫
       - name: NDJC | Guards (script)
         shell: bash
         run: |
@@ -181,7 +178,6 @@ jobs:
             echo "::notice:: scripts/ndjc-guards.sh not found; skip extra guards"
           fi
 
-      # -------------- 预检 ----------------
       - name: NDJC | Preflight (anchors & resources)
         id: preflight
         shell: bash
@@ -217,8 +213,10 @@ jobs:
           mkdir -p build-logs
           {
             echo "=== JAVA ==="; java -version 2>&1 || true
-            echo; echo "=== Gradle Wrapper ==="; ./gradlew -v || true
-            echo; echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
+            echo
+            echo "=== Gradle Wrapper ==="; ./gradlew -v || true
+            echo
+            echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
           } | tee build-logs/versions-lock.pre.txt
           ./gradlew -p "$PROJ_DIR" :app:dependencies --configuration releaseRuntimeClasspath --console=plain --no-daemon > build-logs/dependency-tree.pre.txt 2>&1 || true
 
@@ -363,8 +361,10 @@ jobs:
           mkdir -p build-logs
           {
             echo "=== JAVA ==="; java -version 2>&1 || true
-            echo; echo "=== Gradle Wrapper ==="; ./gradlew -v || true
-            echo; echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
+            echo
+            echo "=== Gradle Wrapper ==="; ./gradlew -v || true
+            echo
+            echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
           } | tee build-logs/versions-lock.post.txt
           ./gradlew -p "$PROJ_DIR" :app:dependencies --configuration releaseRuntimeClasspath --console=plain --no-daemon > build-logs/dependency-tree.post.txt 2>&1 || true
 
