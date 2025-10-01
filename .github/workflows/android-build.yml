@@ -32,7 +32,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: android-build-${{ github.event_name }}-${{ inputs.runId || github.event.client_payload.runId || inputs.branch || github.event.client_payload.ref || github.ref }}
+  group: android-build-${{ github.event_name }}-${{ inputs.runId || github.event.client_payload.runId || inputs.branch || github.event.client_payload.branch || github.event.client_payload.ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -46,7 +46,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ inputs.branch || github.event.client_payload.ref || github.ref }}
+          # 支持 repo_dispatch 传 branch 或 ref
+          ref: ${{ inputs.branch || github.event.client_payload.branch || github.event.client_payload.ref || github.ref }}
 
       - name: Resolve inputs → env
         id: resolve
@@ -59,20 +60,27 @@ jobs:
           echo "RUN_ID=${RUN_ID}" >> "$GITHUB_ENV"
 
           BR="${{ inputs.branch }}"
+          if [ -z "${BR}" ]; then BR="${{ github.event.client_payload.branch }}"; fi
           if [ -z "${BR}" ]; then BR="${{ github.event.client_payload.ref }}"; fi
           if [ -z "${BR}" ]; then BR="${{ github.ref }}"; fi
           BR="${BR#refs/heads/}"
           echo "BUILD_BRANCH=${BR}" >> "$GITHUB_ENV"
 
+          PREFLIGHT="${{ inputs.preflight_mode }}"
+          if [ -z "${PREFLIGHT}" ]; then PREFLIGHT="${{ github.event.client_payload.preflight_mode }}"; fi
+          if [ -z "${PREFLIGHT}" ]; then PREFLIGHT="warn"; fi
+          echo "PREFLIGHT_MODE=${PREFLIGHT}" >> "$GITHUB_ENV"
+
           echo "runId=${RUN_ID}"   >> "$GITHUB_OUTPUT"
           echo "branch=${BR}"      >> "$GITHUB_OUTPUT"
-          echo "Resolved RUN_ID=${RUN_ID}, BUILD_BRANCH=${BR}"
+          echo "preflight_mode=${PREFLIGHT}" >> "$GITHUB_OUTPUT"
+          echo "Resolved RUN_ID=${RUN_ID}, BUILD_BRANCH=${BR}, PREFLIGHT_MODE=${PREFLIGHT}"
 
       - name: Guard | require run branch
         if: ${{ steps.resolve.outputs.branch == '' }}
         shell: bash
         run: |
-          echo "::error::inputs.branch/client_payload.ref empty. Must provide a run branch like 'ndjc-run/<runId>'."
+          echo "::error::inputs.branch/client_payload.branch/ref empty. Must provide a run branch like 'ndjc-run/<runId>'."
           exit 1
 
       - name: Checkout run branch (resolved)
@@ -87,6 +95,7 @@ jobs:
           echo "HEAD: $(git rev-parse HEAD)"
           echo "Triggered by: ${{ github.event_name }}"
           echo "inputs.branch: '${{ inputs.branch }}'"
+          echo "client_payload.branch: '${{ github.event.client_payload.branch }}'"
           echo "client_payload.ref: '${{ github.event.client_payload.ref }}'"
           echo "client_payload.sha: '${{ github.event.client_payload.sha }}'"
           git show --name-only --oneline -1
@@ -142,25 +151,43 @@ jobs:
           fi
           python --version || true
 
-      - name: NDJC | Guards (strict fail if un-injected)
+      # ===== 严格守卫：必须已在 run 分支存在 requests/<runId>/03_apply_result.json =====
+      - name: NDJC | Guards (strict: require 03_apply_result.json)
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUN_DIR="requests/${RUN_ID}"
+          echo "RUN_DIR=$RUN_DIR"
+          ls -la "$RUN_DIR" || true
+          if [ ! -f "$RUN_DIR/03_apply_result.json" ]; then
+            echo "::error:: $RUN_DIR/03_apply_result.json not found (no materialize/apply result committed by API)"
+            exit 1
+          fi
+
+      # 可选：保留你原有的脚本守卫（锚点/占位等自检）
+      - name: NDJC | Guards (script)
         shell: bash
         run: |
           set -euo pipefail
           chmod +x scripts/ndjc-guards.sh || true
-          scripts/ndjc-guards.sh "$APP_DIR"
+          if [ -x scripts/ndjc-guards.sh ]; then
+            scripts/ndjc-guards.sh "$APP_DIR"
+          else
+            echo "::notice:: scripts/ndjc-guards.sh not found; skip extra guards"
+          fi
 
-      # -------------- 这里改为 scripts/ndjc-preflight.sh ----------------
+      # -------------- 预检 ----------------
       - name: NDJC | Preflight (anchors & resources)
         id: preflight
         shell: bash
-        continue-on-error: ${{ (inputs.preflight_mode || 'warn') != 'strict' }}
+        continue-on-error: ${{ (steps.resolve.outputs.preflight_mode || 'warn') != 'strict' }}
         run: |
           set -euo pipefail
           mkdir -p anchors build-logs
           if [ -x scripts/ndjc-preflight.sh ]; then
-            scripts/ndjc-preflight.sh "$APP_DIR" "${{ inputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
+            scripts/ndjc-preflight.sh "$APP_DIR" "${{ steps.resolve.outputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
           elif [ -x .github/scripts/ndjc-preflight.sh ]; then
-            .github/scripts/ndjc-preflight.sh "$APP_DIR" "${{ inputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
+            .github/scripts/ndjc-preflight.sh "$APP_DIR" "${{ steps.resolve.outputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
           else
             echo "::warning::scripts/ndjc-preflight.sh not found; doing minimal checks" | tee build-logs/preflight.log
             [ -f "$APP_DIR/src/main/AndroidManifest.xml" ] || echo "::error::missing $APP_DIR/src/main/AndroidManifest.xml" | tee -a build-logs/preflight.log
@@ -176,7 +203,7 @@ jobs:
             anchors/**
             build-logs/preflight.log
           if-no-files-found: ignore
-      # ------------------------------------------------------------------
+      # -----------------------------------
 
       - name: NDJC | Env snapshot (pre)
         if: always()
