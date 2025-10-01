@@ -1,0 +1,251 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "NDJC core",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "NDJC core",
+    "NDJC:HOME_TITLE": "Hello core",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start core"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/MainActivity.kt",
+      "content": "// MainActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.牛太郎餐厅.R\n\nclass MainActivity : AppCompatActivity() {\n    private lateinit var imageButton: Button\n    private lateinit var titleEditText: EditText\n    private lateinit var priceEditText: EditText\n    private lateinit var contentEditText: EditText\n    private lateinit var uploadButton: Button\n    private lateinit var saveButton: Button\n    private lateinit var imageView: ImageView\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        imageButton = findViewById(R.id.image_button)\n        titleEditText = findViewById(R.id.title_edit_text)\n        priceEditText = findViewById(R.id.price_edit_text)\n        contentEditText = findViewById(R.id.content_edit_text)\n        uploadButton = findViewById(R.id.upload_button)\n        saveButton = findViewById(R.id.save_button)\n        imageView = findViewById(R.id.image_view)\n\n        imageButton.setOnClickListener {\n            // 上传照片\n            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n            startActivityForResult(intent, 1)\n        }\n\n        saveButton.setOnClickListener {\n            // 保存菜品信息\n            val title = titleEditText.text.toString()\n            val price = priceEditText.text.toString()\n            val content = contentEditText.text.toString()\n            // TODO: 保存数据到数据库或服务器\n        }\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {\n            val imageUri = data.data\n            // TODO: 显示上传的照片\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/UploadActivity.kt",
+      "content": "// UploadActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.牛太郎餐厅.R\n\nclass UploadActivity : AppCompatActivity() {\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_upload)\n\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            // 上传照片\n            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n            startActivityForResult(intent, 1)\n        }\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {\n            val imageUri = data.data\n            // TODO: 上传照片到服务器\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/SaveActivity.kt",
+      "content": "// SaveActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.牛太郎餐厅.R\n\nclass SaveActivity : AppCompatActivity() {\n    private lateinit var titleEditText: EditText\n    private lateinit var priceEditText: EditText\n    private lateinit var contentEditText: EditText\n    private lateinit var saveButton: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_save)\n\n        titleEditText = findViewById(R.id.title_edit_text)\n        priceEditText = findViewById(R.id.price_edit_text)\n        contentEditText = findViewById(R.id.content_edit_text)\n        saveButton = findViewById(R.id.save_button)\n\n        saveButton.setOnClickListener {\n            // 保存菜品信息\n            val title = titleEditText.text.toString()\n            val price = priceEditText.text.toString()\n            val content = contentEditText.text.toString()\n            // TODO: 保存数据到数据库或服务器\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/CommentActivity.kt",
+      "content": "// CommentActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.牛太郎餐厅.R\n\nclass CommentActivity : AppCompatActivity() {\n    private lateinit var commentEditText: EditText\n    private lateinit var saveButton: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment)\n\n        commentEditText = findViewById(R.id.comment_edit_text)\n        saveButton = findViewById(R.id.save_button)\n\n        saveButton.setOnClickListener {\n            // 保存评论信息\n            val comment = commentEditText.text.toString()\n            // TODO: 保存数据到数据库或服务器\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/CommentListActivity.kt",
+      "content": "// CommentListActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.ListView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.牛太郎餐厅.R\n\nclass CommentListActivity : AppCompatActivity() {\n    private lateinit var listView: ListView\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment_list)\n\n        listView = findViewById(R.id.list_view)\n\n        // TODO: 加载评论列表\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/CommentAdapter.kt",
+      "content": "// CommentAdapter.kt\nimport android.content.Context\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.ArrayAdapter\nimport android.widget.TextView\nimport com.example.牛太郎餐厅.R\n\nclass CommentAdapter(private val context: Context, private val comments: List<Comment>) : ArrayAdapter<Comment>(context, 0, comments) {\n    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {\n        val view = LayoutInflater.from(context).inflate(R.layout.comment_item, parent, false)\n        val commentTextView = view.findViewById<TextView>(R.id.comment_text_view)\n        commentTextView.text = comments[position].comment\n        return view\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/Comment.kt",
+      "content": "// Comment.kt\nimport java.util.Date\n\nclass Comment(val comment: String, val date: Date) {\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/DatabaseHelper.kt",
+      "content": "// DatabaseHelper.kt\nimport android.content.Context\nimport android.database.sqlite.SQLiteDatabase\nimport android.database.sqlite.SQLiteOpenHelper\n\nclass DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, \"menu.db\", null, 1) {\n    override fun onCreate(db: SQLiteDatabase) {\n        db.execSQL(\"CREATE TABLE menu (id INTEGER PRIMARY KEY, title TEXT, price REAL, content TEXT)\")\n    }\n\n    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {\n        db.execSQL(\"DROP TABLE IF EXISTS menu\")\n        onCreate(db)\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/MenuActivity.kt",
+      "content": "// MenuActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.ListView\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.牛太郎餐厅.R\n\nclass MenuActivity : AppCompatActivity() {\n    private lateinit var listView: ListView\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_menu)\n\n        listView = findViewById(R.id.list_view)\n\n        // TODO: 加载菜品列表\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/MenuAdapter.kt",
+      "content": "// MenuAdapter.kt\nimport android.content.Context\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.ArrayAdapter\nimport android.widget.TextView\nimport com.example.牛太郎餐厅.R\n\nclass MenuAdapter(private val context: Context, private val menus: List<Menu>) : ArrayAdapter<Menu>(context, 0, menus) {\n    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {\n        val view = LayoutInflater.from(context).inflate(R.layout.menu_item, parent, false)\n        val titleTextView = view.findViewById<TextView>(R.id.title_text_view)\n        val priceTextView = view.findViewById<TextView>(R.id.price_text_view)\n        val contentTextView = view.findViewById<TextView>(R.id.content_text_view)\n        titleTextView.text = menus[position].title\n        priceTextView.text = menus[position].price.toString()\n        contentTextView.text = menus[position].content\n        return view\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/Menu.kt",
+      "content": "// Menu.kt\nimport java.util.Date\n\nclass Menu(val title: String, val price: Double, val content: String, val date: Date) {\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/NetworkHelper.kt",
+      "content": "// NetworkHelper.kt\nimport android.content.Context\nimport android.util.Log\nimport okhttp3.OkHttpClient\nimport okhttp3.Request\nimport okhttp3.Response\n\nclass NetworkHelper(private val context: Context) {\n    fun uploadImage(imageUri: Uri): String {\n        val client = OkHttpClient()\n        val request = Request.Builder()\n            .url(\"https://example.com/upload\")\n            .post(RequestBody.create(MediaType.get(\"image/jpeg\"), Files.readBytes(imageUri)))\n            .build()\n        val response = client.newCall(request).execute()\n        if (response.isSuccessful) {\n            return response.body()!!.string()\n        } else {\n            Log.e(\"NetworkHelper\", \"Failed to upload image\")\n            return \"\"\n        }\n    }\n\n    fun saveMenu(title: String, price: Double, content: String): String {\n        val client = OkHttpClient()\n        val request = Request.Builder()\n            .url(\"https://example.com/save\")\n            .post(RequestBody.create(MediaType.get(\"application/json\"), \"{\" + \"title\":\"$title\",\"price\":$price,\"content\":\"$content\" + \"}\"))\n            .build()\n        val response = client.newCall(request).execute()\n        if (response.isSuccessful) {\n            return response.body()!!.string()\n        } else {\n            Log.e(\"NetworkHelper\", \"Failed to save menu\")\n            return \"\"\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/Preferences.kt",
+      "content": "// Preferences.kt\nimport android.content.Context\nimport android.content.SharedPreferences\n\nclass Preferences(private val context: Context) {\n    fun getBoolean(key: String, defaultValue: Boolean): Boolean {\n        val preferences = context.getSharedPreferences(\"preferences\", Context.MODE_PRIVATE)\n        return preferences.getBoolean(key, defaultValue)\n    }\n\n    fun setBoolean(key: String, value: Boolean) {\n        val preferences = context.getSharedPreferences(\"preferences\", Context.MODE_PRIVATE)\n        preferences.edit().putBoolean(key, value).apply()\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/ToastHelper.kt",
+      "content": "// ToastHelper.kt\nimport android.content.Context\nimport android.widget.Toast\n\nclass ToastHelper(private val context: Context) {\n    fun show(message: String) {\n        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/Utils.kt",
+      "content": "// Utils.kt\nimport android.content.Context\nimport android.util.Log\n\nclass Utils(private val context: Context) {\n    fun getScreenWidth(): Int {\n        return context.resources.displayMetrics.widthPixels\n    }\n\n    fun getScreenHeight(): Int {\n        return context.resources.displayMetrics.heightPixels\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/ViewModel.kt",
+      "content": "// ViewModel.kt\nimport android.app.Application\nimport android.arch.lifecycle.AndroidViewModel\nimport android.arch.lifecycle.LiveData\nimport android.arch.lifecycle.MutableLiveData\nimport android.util.Log\n\nclass ViewModel(private val application: Application) : AndroidViewModel(application) {\n    private val menuRepository: MenuRepository\n\n    init {\n        menuRepository = MenuRepository(application)\n    }\n\n    fun getMenus(): LiveData<List<Menu>> {\n        return menuRepository.getMenus()\n    }\n\n    fun saveMenu(title: String, price: Double, content: String) {\n        menuRepository.saveMenu(title, price, content)\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/MenuRepository.kt",
+      "content": "// MenuRepository.kt\nimport android.app.Application\nimport android.arch.lifecycle.LiveData\nimport android.util.Log\n\nclass MenuRepository(private val application: Application) {\n    private val menuDao: MenuDao\n\n    init {\n        menuDao = MenuDao(application)\n    }\n\n    fun getMenus(): LiveData<List<Menu>> {\n        return menuDao.getMenus()\n    }\n\n    fun saveMenu(title: String, price: Double, content: String) {\n        menuDao.saveMenu(title, price, content)\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/MenuDao.kt",
+      "content": "// MenuDao.kt\nimport android.arch.persistence.room.Dao\nimport android.arch.persistence.room.Insert\nimport android.arch.persistence.room.Query\n\n@Dao\ninterface MenuDao {\n    @Query(\"SELECT * FROM menu\")\n    fun getMenus(): List<Menu>\n\n    @Insert\n    fun saveMenu(title: String, price: Double, content: String): Long\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/MenuEntity.kt",
+      "content": "// MenuEntity.kt\nimport android.arch.persistence.room.Entity\nimport android.arch.persistence.room.PrimaryKey\nimport java.util.Date\n\n@Entity\ndata class MenuEntity(\n    @PrimaryKey(autoGenerate = true)\n    val id: Long,\n    val title: String,\n    val price: Double,\n    val content: String,\n    val date: Date\n)\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/Database.kt",
+      "content": "// Database.kt\nimport android.arch.persistence.room.Room\n\nobject Database {\n    val instance: MenuDatabase\n\n    init {\n        instance = Room.databaseBuilder(\n            ApplicationProvider.getApplicationContext(),\n            MenuDatabase::class.java,\n            \"menu_database\")\n            .build()\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/MenuDatabase.kt",
+      "content": "// MenuDatabase.kt\nimport android.arch.persistence.room.Database\nimport android.arch.persistence.room.RoomDatabase\nimport com.example.牛太郎餐厅.MenuEntity\n\n@Database(entities = [MenuEntity::class], version = 1)abstract class MenuDatabase : RoomDatabase() {\n    abstract fun menuDao(): MenuDao\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/MainActivity.xml",
+      "content": "// MainActivity.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <Button\n        android:id=\"@+id/upload_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Upload\"\n        android:onClick=\"uploadButtonClicked\"/>\n\n    <EditText\n        android:id=\"@+id/title_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"Title\"/>\n\n    <EditText\n        android:id=\"@+id/price_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"Price\"/>\n\n    <EditText\n        android:id=\"@+id/content_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"Content\"/>\n\n    <Button\n        android:id=\"@+id/save_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Save\"/>\n\n    <ImageView\n        android:id=\"@+id/image_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/UploadActivity.xml",
+      "content": "// UploadActivity.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Upload\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/SaveActivity.xml",
+      "content": "// SaveActivity.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <EditText\n        android:id=\"@+id/title_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"Title\"/>\n\n    <EditText\n        android:id=\"@+id/price_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"Price\"/>\n\n    <EditText\n        android:id=\"@+id/content_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"Content\"/>\n\n    <Button\n        android:id=\"@+id/save_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Save\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/CommentActivity.xml",
+      "content": "// CommentActivity.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <EditText\n        android:id=\"@+id/comment_edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"Comment\"/>\n\n    <Button\n        android:id=\"@+id/save_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Save\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/CommentListActivity.xml",
+      "content": "// CommentListActivity.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <ListView\n        android:id=\"@+id/list_view\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/CommentItem.xml",
+      "content": "// CommentItem.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"wrap_content\"\n    android:orientation=\"vertical\">\n\n    <TextView\n        android:id=\"@+id/comment_text_view\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/MenuActivity.xml",
+      "content": "// MenuActivity.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <ListView\n        android:id=\"@+id/list_view\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/MenuItem.xml",
+      "content": "// MenuItem.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"wrap_content\"\n    android:orientation=\"vertical\">\n\n    <TextView\n        android:id=\"@+id/title_text_view\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n\n    <TextView\n        android:id=\"@+id/price_text_view\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n\n    <TextView\n        android:id=\"@+id/content_text_view\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/AndroidManifest.xml",
+      "content": "// AndroidManifest.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    package=\"com.example.牛太郎餐厅\"\n    android:versionCode=\"1\"\n    android:versionName=\"1.0\">\n\n    <application\n        android:allowBackup=\"true\"\n        android:icon=\"@mipmap/ic_launcher\"\n        android:label=\"@string/app_name\"\n        android:roundIcon=\"@mipmap/ic_launcher_round\"\n        android:supportsRtl=\"true\"\n        android:theme=\"@style/AppTheme\">\n\n        <activity android:name=\".MainActivity\">\n            <intent-filter>\n                <action android:name=\"android.intent.action.MAIN\"/>\n                <category android:name=\"android.intent.category.LAUNCHER\"/>\n            </intent-filter>\n        </activity>\n\n        <activity android:name=\".UploadActivity\"/>\n        <activity android:name=\".SaveActivity\"/>\n        <activity android:name=\".CommentActivity\"/>\n        <activity android:name=\".CommentListActivity\"/>\n        <activity android:name=\".MenuActivity\"/>\n\n    </application>\n</manifest>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "// strings.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"upload_button\">Upload</string>\n    <string name=\"save_button\">Save</string>\n    <string name=\"comment_button\">Comment</string>\n    <string name=\"menu_button\">Menu</string>\n</resources>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/values/styles.xml",
+      "content": "// styles.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n    <style name=\"AppTheme\" parent=\"Theme.AppCompat.Light.DarkActionBar\">\n        <item name=\"colorPrimary\">#6200EE</item>\n        <item name=\"colorPrimaryDark\">#3700B3</item>\n        <item name=\"colorAccent\">#03DAC5</item>\n    </style>\n</resources>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/drawable/ic_launcher.png",
+      "content": "// ic_launcher.png\n// 一个 48x48 的 PNG 图片\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/drawable/ic_launcher_round.png",
+      "content": "// ic_launcher_round.png\n// 一个 48x48 的圆形 PNG 图片\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/drawable-hdpi/ic_launcher.png",
+      "content": "// ic_launcher.png\n// 一个 72x72 的 PNG 图片\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/drawable-hdpi/ic_launcher_round.png",
+      "content": "// ic_launcher_round.png\n// 一个 72x72 的圆形 PNG 图片\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/drawable-xhdpi/ic_launcher.png",
+      "content": "// ic_launcher.png\n// 一个 96x96 的 PNG 图片\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/drawable-xhdpi/ic_launcher_round.png",
+      "content": "// ic_launcher_round.png\n// 一个 96x96 的圆形 PNG 图片\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/drawable-xxhdpi/ic_launcher.png",
+      "content": "// ic_launcher.png\n// 一个 144x144 的 PNG 图片\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/drawable-xxhdpi/ic_launcher_round.png",
+      "content": "// ic_launcher_round.png\n// 一个 144x144 的圆形 PNG 图片\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/drawable-xxxhdpi/ic_launcher.png",
+      "content": "// ic_launcher.png\n// 一个 192x192 的 PNG 图片\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/drawable-xxxhdpi/ic_launcher_round.png",
+      "content": "// ic_launcher_round.png\n// 一个 192x192 的圆形 PNG 图片\n",
+      "encoding": "utf8"
+    }
+  ]
+}
