@@ -141,10 +141,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f ./gradlew || { echo "::error::gradlew missing"; exit 1; }
-          test -d "$APP_DIR" || { echo "::error::APP_DIR '$APP_DIR' missing"; exit 1; }
-          test -f "$APP_DIR/build.gradle" -o -f "$APP_DIR/build.gradle.kts" || { echo "::error::Gradle file missing under $APP_DIR"; exit 1; }
-          test -f "$APP_DIR/src/main/AndroidManifest.xml" || { echo "::error::AndroidManifest.xml missing under $APP_DIR/src/main"; exit 1; }
+          if [ ! -f ./gradlew ]; then echo "::error::gradlew missing"; exit 1; fi
+          if [ ! -d "$APP_DIR" ]; then echo "::error::APP_DIR '$APP_DIR' missing"; exit 1; fi
+          if [ ! -f "$APP_DIR/build.gradle" ] && [ ! -f "$APP_DIR/build.gradle.kts" ]; then
+            echo "::error::Gradle file missing under $APP_DIR"; exit 1
+          fi
+          if [ ! -f "$APP_DIR/src/main/AndroidManifest.xml" ]; then
+            echo "::error::AndroidManifest.xml missing under $APP_DIR/src/main"; exit 1
+          fi
 
       - name: Ensure Python (alias)
         shell: bash
