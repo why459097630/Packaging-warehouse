@@ -32,7 +32,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: android-build-${{ github.event_name }}-${{ github.run_id }}-${{ github.ref_name }}
+  group: android-build-${{ github.event_name }}-${{ inputs.runId || github.event.client_payload.runId || inputs.branch || github.event.client_payload.branch || github.event.client_payload.ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -70,17 +70,10 @@ jobs:
           if [ -z "${PREFLIGHT}" ]; then PREFLIGHT="warn"; fi
           echo "PREFLIGHT_MODE=${PREFLIGHT}" >> "$GITHUB_ENV"
 
-          TMPL="${{ inputs.template || github.event.client_payload.template || '' }}"
-          echo "TEMPLATE=${TMPL}" >> "$GITHUB_ENV"
-
-          APP_DIR_IN="${{ inputs.app_dir || '' }}"
-          echo "APP_DIR_IN=${APP_DIR_IN}" >> "$GITHUB_ENV"
-
-          echo "runId=${RUN_ID}" >> "$GITHUB_OUTPUT"
-          echo "branch=${BR}" >> "$GITHUB_OUTPUT"
+          echo "runId=${RUN_ID}"   >> "$GITHUB_OUTPUT"
+          echo "branch=${BR}"      >> "$GITHUB_OUTPUT"
           echo "preflight_mode=${PREFLIGHT}" >> "$GITHUB_OUTPUT"
-          echo "template=${TMPL}" >> "$GITHUB_OUTPUT"
-          echo "Resolved RUN_ID=${RUN_ID}, BUILD_BRANCH=${BR}, PREFLIGHT_MODE=${PREFLIGHT}, TEMPLATE=${TMPL}"
+          echo "Resolved RUN_ID=${RUN_ID}, BUILD_BRANCH=${BR}, PREFLIGHT_MODE=${PREFLIGHT}"
 
       - name: Guard | require run branch
         if: ${{ steps.resolve.outputs.branch == '' }}
@@ -111,8 +104,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TEMPLATE="${{ steps.resolve.outputs.template }}"
-          APP_DIR_IN="${{ env.APP_DIR_IN }}"
+          TEMPLATE="${{ inputs.template || github.event.client_payload.template || '' }}"
+          APP_DIR_IN="${{ inputs.app_dir || '' }}"
           APP_DIR=""
           if [ -n "$APP_DIR_IN" ]; then
             APP_DIR="$APP_DIR_IN"
@@ -157,7 +150,7 @@ jobs:
           fi
           python --version || true
 
-      # ===== 严格守卫：必须存在 requests/<RUN_ID>/03_apply_result.json =====
+      # ===== 严格守卫：必须已在 run 分支存在 requests/<RUN_ID>/03_apply_result.json =====
       - name: NDJC | Guards (strict: require 03_apply_result.json)
         shell: bash
         run: |
@@ -170,7 +163,7 @@ jobs:
             exit 1
           fi
 
-      # 可选二次守卫脚本（若无则跳过）
+      # 可选：保留你原有的脚本守卫（锚点/占位等自检）
       - name: NDJC | Guards (script)
         shell: bash
         run: |
@@ -182,11 +175,11 @@ jobs:
             echo "::notice:: scripts/ndjc-guards.sh not found; skip extra guards"
           fi
 
-      # -------------- 预检 ----------------
+      # -------------- 这里改为 scripts/ndjc-preflight.sh ----------------
       - name: NDJC | Preflight (anchors & resources)
         id: preflight
         shell: bash
-        continue-on-error: ${{ steps.resolve.outputs.preflight_mode != 'strict' }}
+        continue-on-error: ${{ (steps.resolve.outputs.preflight_mode) != 'strict' }}
         run: |
           set -euo pipefail
           mkdir -p anchors build-logs
@@ -209,7 +202,7 @@ jobs:
             anchors/**
             build-logs/preflight.log
           if-no-files-found: ignore
-      # -----------------------------------
+      # ------------------------------------------------------------------
 
       - name: NDJC | Env snapshot (pre)
         if: always()
