@@ -1,0 +1,189 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "牛太郎餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "zh",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuActivity.kt",
+      "content": "// MenuActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.nittaro.menu.R\n\nclass MenuActivity : AppCompatActivity() {\n    private lateinit var menuName: EditText\n    private lateinit var menuPrice: EditText\n    private lateinit var menuDescription: EditText\n    private lateinit var menuImage: ImageView\n    private lateinit var uploadButton: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_menu)\n\n        menuName = findViewById(R.id.menu_name)\n        menuPrice = findViewById(R.id.menu_price)\n        menuDescription = findViewById(R.id.menu_description)\n        menuImage = findViewById(R.id.menu_image)\n        uploadButton = findViewById(R.id.upload_button)\n\n        uploadButton.setOnClickListener {\n            // 上传照片逻辑\n        }\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuModel.kt",
+      "content": "// MenuModel.kt\nimport java.io.Serializable\n\ndata class MenuModel(var name: String, var price: Double, var description: String, var image: String): Serializable\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuRepository.kt",
+      "content": "// MenuRepository.kt\nimport java.util.ArrayList\nimport java.util.List\n\nclass MenuRepository {\n    fun getMenuList(): List<MenuModel> {\n        // 从数据库或网络获取菜单列表\n        return ArrayList()\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuAdapter.kt",
+      "content": "// MenuAdapter.kt\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.ImageView\nimport android.widget.TextView\nimport androidx.recyclerview.widget.RecyclerView\n\nclass MenuAdapter(private val menuList: List<MenuModel>) : RecyclerView.Adapter<MenuAdapter.ViewHolder>() {\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {\n        // 创建菜单项视图\n        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.menu_item, parent, false))\n    }\n\n    override fun onBindViewHolder(holder: ViewHolder, position: Int) {\n        // 绑定菜单项数据\n        holder.name.text = menuList[position].name\n        holder.price.text = menuList[position].price.toString()\n        holder.description.text = menuList[position].description\n        holder.image.setImageResource(R.drawable.menu_image)\n    }\n\n    override fun getItemCount(): Int {\n        return menuList.size\n    }\n\n    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {\n        val name: TextView = itemView.findViewById(R.id.menu_name)\n        val price: TextView = itemView.findViewById(R.id.menu_price)\n        val description: TextView = itemView.findViewById(R.id.menu_description)\n        val image: ImageView = itemView.findViewById(R.id.menu_image)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuFragment.kt",
+      "content": "// MenuFragment.kt\nimport android.os.Bundle\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport androidx.fragment.app.Fragment\nimport androidx.recyclerview.widget.LinearLayoutManager\nimport androidx.recyclerview.widget.RecyclerView\n\nclass MenuFragment : Fragment() {\n    private lateinit var menuAdapter: MenuAdapter\n    private lateinit var menuList: List<MenuModel>\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        // 创建菜单项视图\n        return inflater.inflate(R.layout.fragment_menu, container, false)\n    }\n\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\n        super.onViewCreated(view, savedInstanceState)\n        // 初始化菜单列表\n        menuList = MenuRepository().getMenuList()\n        menuAdapter = MenuAdapter(menuList)\n        val recyclerView = view.findViewById<RecyclerView>(R.id.menu_recycler_view)\n        recyclerView.layoutManager = LinearLayoutManager(context)\n        recyclerView.adapter = menuAdapter\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuActivity.xml",
+      "content": "// MenuActivity.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <EditText\n        android:id=\"@+id/menu_name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\"/>\n    <EditText\n        android:id=\"@+id/menu_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品价格\"/>\n    <EditText\n        android:id=\"@+id/menu_description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品描述\"/>\n    <ImageView\n        android:id=\"@+id/menu_image\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/upload_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuModel.java",
+      "content": "// MenuModel.java\npublic class MenuModel implements Serializable {\n    private String name;\n    private double price;\n    private String description;\n    private String image;\n\n    public MenuModel(String name, double price, String description, String image) {\n        this.name = name;\n        this.price = price;\n        this.description = description;\n        this.image = image;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public void setName(String name) {\n        this.name = name;\n    }\n\n    public double getPrice() {\n        return price;\n    }\n\n    public void setPrice(double price) {\n        this.price = price;\n    }\n\n    public String getDescription() {\n        return description;\n    }\n\n    public void setDescription(String description) {\n        this.description = description;\n    }\n\n    public String getImage() {\n        return image;\n    }\n\n    public void setImage(String image) {\n        this.image = image;\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "java"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuRepository.java",
+      "content": "// MenuRepository.java\nimport java.util.ArrayList;\nimport java.util.List;\n\npublic class MenuRepository {\n    public List<MenuModel> getMenuList() {\n        // 从数据库或网络获取菜单列表\n        return new ArrayList<>();\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "java"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuAdapter.java",
+      "content": "// MenuAdapter.java\nimport android.view.LayoutInflater;\nimport android.view.View;\nimport android.view.ViewGroup;\nimport android.widget.ImageView;\nimport android.widget.TextView;\nimport androidx.recyclerview.widget.RecyclerView;\n\npublic class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {\n    private List<MenuModel> menuList;\n\n    public MenuAdapter(List<MenuModel> menuList) {\n        this.menuList = menuList;\n    }\n\n    @Override\n    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {\n        // 创建菜单项视图\n        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.menu_item, parent, false));\n    }\n\n    @Override\n    public void onBindViewHolder(ViewHolder holder, int position) {\n        // 绑定菜单项数据\n        holder.name.setText(menuList.get(position).getName());\n        holder.price.setText(String.valueOf(menuList.get(position).getPrice()));\n        holder.description.setText(menuList.get(position).getDescription());\n        holder.image.setImageResource(R.drawable.menu_image);\n    }\n\n    @Override\n    public int getItemCount() {\n        return menuList.size();\n    }\n\n    public class ViewHolder extends RecyclerView.ViewHolder {\n        public TextView name;\n        public TextView price;\n        public TextView description;\n        public ImageView image;\n\n        public ViewHolder(View itemView) {\n            super(itemView);\n            name = itemView.findViewById(R.id.menu_name);\n            price = itemView.findViewById(R.id.menu_price);\n            description = itemView.findViewById(R.id.menu_description);\n            image = itemView.findViewById(R.id.menu_image);\n        }\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "java"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuFragment.java",
+      "content": "// MenuFragment.java\nimport android.os.Bundle;\nimport android.view.LayoutInflater;\nimport android.view.View;\nimport android.view.ViewGroup;\nimport androidx.fragment.app.Fragment;\nimport androidx.recyclerview.widget.LinearLayoutManager;\nimport androidx.recyclerview.widget.RecyclerView;\n\npublic class MenuFragment extends Fragment {\n    private List<MenuModel> menuList;\n    private MenuAdapter menuAdapter;\n\n    @Override\n    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {\n        // 创建菜单项视图\n        return inflater.inflate(R.layout.fragment_menu, container, false);\n    }\n\n    @Override\n    public void onViewCreated(View view, Bundle savedInstanceState) {\n        super.onViewCreated(view, savedInstanceState);\n        // 初始化菜单列表\n        menuList = MenuRepository().getMenuList();\n        menuAdapter = new MenuAdapter(menuList);\n        RecyclerView recyclerView = view.findViewById(R.id.menu_recycler_view);\n        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));\n        recyclerView.setAdapter(menuAdapter);\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "java"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuActivity.java",
+      "content": "// MenuActivity.java\nimport android.os.Bundle;\nimport android.view.View;\nimport android.widget.Button;\nimport android.widget.EditText;\nimport android.widget.ImageView;\nimport android.widget.Toast;\nimport androidx.appcompat.app.AppCompatActivity;\n\npublic class MenuActivity extends AppCompatActivity {\n    private EditText menuName;\n    private EditText menuPrice;\n    private EditText menuDescription;\n    private ImageView menuImage;\n    private Button uploadButton;\n\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_menu);\n\n        menuName = findViewById(R.id.menu_name);\n        menuPrice = findViewById(R.id.menu_price);\n        menuDescription = findViewById(R.id.menu_description);\n        menuImage = findViewById(R.id.menu_image);\n        uploadButton = findViewById(R.id.upload_button);\n\n        uploadButton.setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                // 上传照片逻辑\n            }\n        });\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "java"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuModel.kt",
+      "content": "// MenuModel.kt\nimport java.io.Serializable\n\ndata class MenuModel(var name: String, var price: Double, var description: String, var image: String): Serializable\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuRepository.kt",
+      "content": "// MenuRepository.kt\nimport java.util.ArrayList\nimport java.util.List\n\nclass MenuRepository {\n    fun getMenuList(): List<MenuModel> {\n        // 从数据库或网络获取菜单列表\n        return ArrayList()\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuAdapter.kt",
+      "content": "// MenuAdapter.kt\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.ImageView\nimport android.widget.TextView\nimport androidx.recyclerview.widget.RecyclerView\n\nclass MenuAdapter(private val menuList: List<MenuModel>) : RecyclerView.Adapter<MenuAdapter.ViewHolder>() {\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {\n        // 创建菜单项视图\n        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.menu_item, parent, false))\n    }\n\n    override fun onBindViewHolder(holder: ViewHolder, position: Int) {\n        // 绑定菜单项数据\n        holder.name.text = menuList[position].name\n        holder.price.text = menuList[position].price.toString()\n        holder.description.text = menuList[position].description\n        holder.image.setImageResource(R.drawable.menu_image)\n    }\n\n    override fun getItemCount(): Int {\n        return menuList.size\n    }\n\n    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {\n        val name: TextView = itemView.findViewById(R.id.menu_name)\n        val price: TextView = itemView.findViewById(R.id.menu_price)\n        val description: TextView = itemView.findViewById(R.id.menu_description)\n        val image: ImageView = itemView.findViewById(R.id.menu_image)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuFragment.kt",
+      "content": "// MenuFragment.kt\nimport android.os.Bundle\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport androidx.fragment.app.Fragment\nimport androidx.recyclerview.widget.LinearLayoutManager\nimport androidx.recyclerview.widget.RecyclerView\n\nclass MenuFragment : Fragment() {\n    private lateinit var menuAdapter: MenuAdapter\n    private lateinit var menuList: List<MenuModel>\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        // 创建菜单项视图\n        return inflater.inflate(R.layout.fragment_menu, container, false)\n    }\n\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\n        super.onViewCreated(view, savedInstanceState)\n        // 初始化菜单列表\n        menuList = MenuRepository().getMenuList()\n        menuAdapter = MenuAdapter(menuList)\n        val recyclerView = view.findViewById<RecyclerView>(R.id.menu_recycler_view)\n        recyclerView.layoutManager = LinearLayoutManager(context)\n        recyclerView.adapter = menuAdapter\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuActivity.xml",
+      "content": "// MenuActivity.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <EditText\n        android:id=\"@+id/menu_name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\"/>\n    <EditText\n        android:id=\"@+id/menu_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品价格\"/>\n    <EditText\n        android:id=\"@+id/menu_description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品描述\"/>\n    <ImageView\n        android:id=\"@+id/menu_image\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/upload_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuModel.java",
+      "content": "// MenuModel.java\npublic class MenuModel implements Serializable {\n    private String name;\n    private double price;\n    private String description;\n    private String image;\n\n    public MenuModel(String name, double price, String description, String image) {\n        this.name = name;\n        this.price = price;\n        this.description = description;\n        this.image = image;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public void setName(String name) {\n        this.name = name;\n    }\n\n    public double getPrice() {\n        return price;\n    }\n\n    public void setPrice(double price) {\n        this.price = price;\n    }\n\n    public String getDescription() {\n        return description;\n    }\n\n    public void setDescription(String description) {\n        this.description = description;\n    }\n\n    public String getImage() {\n        return image;\n    }\n\n    public void setImage(String image) {\n        this.image = image;\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "java"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuRepository.java",
+      "content": "// MenuRepository.java\nimport java.util.ArrayList;\nimport java.util.List;\n\npublic class MenuRepository {\n    public List<MenuModel> getMenuList() {\n        // 从数据库或网络获取菜单列表\n        return new ArrayList<>();\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "java"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuAdapter.java",
+      "content": "// MenuAdapter.java\nimport android.view.LayoutInflater;\nimport android.view.View;\nimport android.view.ViewGroup;\nimport android.widget.ImageView;\nimport android.widget.TextView;\nimport androidx.recyclerview.widget.RecyclerView;\n\npublic class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {\n    private List<MenuModel> menuList;\n\n    public MenuAdapter(List<MenuModel> menuList) {\n        this.menuList = menuList;\n    }\n\n    @Override\n    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {\n        // 创建菜单项视图\n        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.menu_item, parent, false));\n    }\n\n    @Override\n    public void onBindViewHolder(ViewHolder holder, int position) {\n        // 绑定菜单项数据\n        holder.name.setText(menuList.get(position).getName());\n        holder.price.setText(String.valueOf(menuList.get(position).getPrice()));\n        holder.description.setText(menuList.get(position).getDescription());\n        holder.image.setImageResource(R.drawable.menu_image);\n    }\n\n    @Override\n    public int getItemCount() {\n        return menuList.size();\n    }\n\n    public class ViewHolder extends RecyclerView.ViewHolder {\n        public TextView name;\n        public TextView price;\n        public TextView description;\n        public ImageView image;\n\n        public ViewHolder(View itemView) {\n            super(itemView);\n            name = itemView.findViewById(R.id.menu_name);\n            price = itemView.findViewById(R.id.menu_price);\n            description = itemView.findViewById(R.id.menu_description);\n            image = itemView.findViewById(R.id.menu_image);\n        }\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "java"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuFragment.java",
+      "content": "// MenuFragment.java\nimport android.os.Bundle;\nimport android.view.LayoutInflater;\nimport android.view.View;\nimport android.view.ViewGroup;\nimport androidx.fragment.app.Fragment;\nimport androidx.recyclerview.widget.LinearLayoutManager;\nimport androidx.recyclerview.widget.RecyclerView;\n\npublic class MenuFragment extends Fragment {\n    private List<MenuModel> menuList;\n    private MenuAdapter menuAdapter;\n\n    @Override\n    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {\n        // 创建菜单项视图\n        return inflater.inflate(R.layout.fragment_menu, container, false);\n    }\n\n    @Override\n    public void onViewCreated(View view, Bundle savedInstanceState) {\n        super.onViewCreated(view, savedInstanceState);\n        // 初始化菜单列表\n        menuList = MenuRepository().getMenuList();\n        menuAdapter = new MenuAdapter(menuList);\n        RecyclerView recyclerView = view.findViewById(R.id.menu_recycler_view);\n        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));\n        recyclerView.setAdapter(menuAdapter);\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "java"
+    },
+    {
+      "path": "app/src/main/java/com/example/nittaro/menu/MenuActivity.java",
+      "content": "// MenuActivity.java\nimport android.os.Bundle;\nimport android.view.View;\nimport android.widget.Button;\nimport android.widget.EditText;\nimport android.widget.ImageView;\nimport android.widget.Toast;\nimport androidx.appcompat.app.AppCompatActivity;\n\npublic class MenuActivity extends AppCompatActivity {\n    private EditText menuName;\n    private EditText menuPrice;\n    private EditText menuDescription;\n    private ImageView menuImage;\n    private Button uploadButton;\n\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_menu);\n\n        menuName = findViewById(R.id.menu_name);\n        menuPrice = findViewById(R.id.menu_price);\n        menuDescription = findViewById(R.id.menu_description);\n        menuImage = findViewById(R.id.menu_image);\n        uploadButton = findViewById(R.id.upload_button);\n\n        uploadButton.setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                // 上传照片逻辑\n            }\n        });\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "java"
+    }
+  ],
+  "resources": {}
+}
