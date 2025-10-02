@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 # NDJC materialize: apply NdjcPlanV1 to template anchors.
-# 变更点：为 text/block/lists/if 的 key 加入 normalize_key() 规范化，避免“重复前缀”匹配失败。
+# 兼容锚点写法：
+#   文本：  NDJC:KEY
+#   块：    BLOCK:KEY ... (/BLOCK:KEY | END_BLOCK)
+#   列表：  LIST:KEY  ... (/LIST:KEY  | END_LIST)
+#   条件：  IF:KEY    ... (/IF:KEY    | END_IF)
+# 资源：   RES:type/path -> src/main/res/type/path
+# Hook：   HOOK:KEY
+# 严格模式(--strict)：若替换总数为 0，则失败退出码 2
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -56,7 +63,7 @@ replaced_if=0;     missing_if=0
 resources_written=0
 hooks_applied=0
 
-# ---------- 关键改动：规范化键名 ----------
+# ---------- 关键：规范化键名 ----------
 normalize_key() {
   local k="$1"
   # 连续剥离，兼容重复/混用
@@ -64,6 +71,7 @@ normalize_key() {
   echo "$k"
 }
 
+# 文本替换（全量）
 safe_replace_all() {
   local pattern="$1" content="$2" file="$3"
   if grep -q -- "$pattern" "$file"; then
@@ -73,6 +81,32 @@ safe_replace_all() {
   else
     return 1
   fi
+}
+
+# 通用：替换起止标记之间内容；end2 为备用结束标记（可为空）
+replace_between() {
+  local file="$1" start="$2" end1="$3" end2="${4:-}" content="$5"
+
+  grep -q -- "$start" "$file" || return 1
+
+  awk -v S="$start" -v E1="$end1" -v E2="$end2" -v CONTENT="$(printf '%s' "$content")" '
+    BEGIN{inblk=0}
+    {
+      if (index($0,S)>0 && inblk==0) { print; inblk=1; next }
+      if (inblk==1 && (index($0,E1)>0 || (length(E2)>0 && index($0,E2)>0))) {
+        print CONTENT; print; inblk=0; next
+      }
+      if (inblk==0) { print }
+    }
+  ' "$file" > "$file.ndjc.tmp" && mv "$file.ndjc.tmp" "$file" || return 1
+
+  return 0
+}
+
+# 搜索范围（排除构建/缓存目录）
+find_files_with() {
+  local needle="$1"
+  grep -RIl --null --exclude-dir=build --exclude-dir=.gradle --exclude-dir=.git -- "${needle}" "${APP_DIR_ABS}" || true
 }
 
 # ========== 1) 文本 NDJC:KEY ==========
@@ -88,7 +122,7 @@ if jq -e '.text? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
         log "文本替换：${file} ← ${anchor}"
         ((replaced_text+=1, replaced_total+=1, hit=1))
       fi
-    done < <(grep -RIl --null --exclude-dir=build --exclude-dir=.gradle --exclude-dir=.git -- "${anchor}" "${APP_DIR_ABS}" || true)
+    done < <(find_files_with "${anchor}")
     if [[ ${hit} -eq 0 ]]; then
       echo "${anchor}" >> "${MISS_DIR}/missing_text.txt"
       ((missing_text+=1))
@@ -98,28 +132,23 @@ else
   log "Plan 无 .text，跳过文本"
 fi
 
-# ========== 2) 块 BLOCK:KEY ... /BLOCK:KEY ==========
+# ========== 2) 块 BLOCK:KEY ... (/BLOCK:KEY | END_BLOCK) ==========
 if jq -e '.block? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key val; do
     [[ -n "${key}" ]] || continue
     key="$(normalize_key "${key}")"
-    start="BLOCK:${key}"; end="/BLOCK:${key}"
+    start="BLOCK:${key}"
+    end_primary="/BLOCK:${key}"
+    end_compat="END_BLOCK"
+
     hit=0
     while IFS= read -r -d '' file; do
       within_appdir "${file}" || { log "跳过越界文件：${file}"; continue; }
-      awk -v S="${start}" -v E="${end}" -v CONTENT="$(printf '%s' "${val}")" '
-        BEGIN{inblk=0}
-        {
-          if (index($0,S)>0 && inblk==0) { print; inblk=1; next }
-          if (index($0,E)>0 && inblk==1) { print CONTENT; print; inblk=0; next }
-          if (inblk==0) { print }
-        }
-      ' "$file" > "$file.ndjc.tmp" && mv "$file.ndjc.tmp" "$file" || true
-      if grep -q -- "$start" "$file"; then
-        log "块替换：${file} ← ${start}..${end}"
+      if replace_between "$file" "$start" "$end_primary" "$end_compat" "${val}"; then
+        log "块替换：${file} ← ${start}..(${end_primary}|${end_compat})"
         ((replaced_block+=1, replaced_total+=1, hit=1))
       fi
-    done < <(grep -RIl --null --exclude-dir=build --exclude-dir=.gradle --exclude-dir=.git -- "${start}" "${APP_DIR_ABS}" || true)
+    done < <(find_files_with "${start}")
     if [[ ${hit} -eq 0 ]]; then
       echo "${start}" >> "${MISS_DIR}/missing_block.txt"
       ((missing_block+=1))
@@ -129,29 +158,24 @@ else
   log "Plan 无 .block，跳过块"
 fi
 
-# ========== 3) 列表 LIST:KEY ... /LIST:KEY ==========
+# ========== 3) 列表 LIST:KEY ... (/LIST:KEY | END_LIST) ==========
 if jq -e '.lists? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key json; do
     [[ -n "${key}" ]] || continue
     key="$(normalize_key "${key}")"
-    start="LIST:${key}"; end="/LIST:${key}"
+    start="LIST:${key}"
+    end_primary="/LIST:${key}"
+    end_compat="END_LIST"
     content="$(jq -r '[.[]] | join("\n")' <<<"${json}")"
+
     hit=0
     while IFS= read -r -d '' file; do
       within_appdir "${file}" || { log "跳过越界文件：${file}"; continue; }
-      awk -v S="${start}" -v E="${end}" -v CONTENT="$(printf '%s' "${content}")" '
-        BEGIN{inblk=0}
-        {
-          if (index($0,S)>0 && inblk==0) { print; inblk=1; next }
-          if (index($0,E)>0 && inblk==1) { print CONTENT; print; inblk=0; next }
-          if (inblk==0) { print }
-        }
-      ' "$file" > "$file.ndjc.tmp" && mv "$file.ndjc.tmp" "$file" || true
-      if grep -q -- "$start" "$file"; then
-        log "列表替换：${file} ← ${start}..${end} (items=$(jq -r 'length' <<<"${json}"))"
+      if replace_between "$file" "$start" "$end_primary" "$end_compat" "${content}"; then
+        log "列表替换：${file} ← ${start}..(${end_primary}|${end_compat}) (items=$(jq -r 'length' <<<"${json}"))"
         ((replaced_list+=1, replaced_total+=1, hit=1))
       fi
-    done < <(grep -RIl --null --exclude-dir=build --exclude-dir=.gradle --exclude-dir=.git -- "${start}" "${APP_DIR_ABS}" || true)
+    done < <(find_files_with "${start}")
     if [[ ${hit} -eq 0 ]]; then
       echo "${start}" >> "${MISS_DIR}/missing_list.txt"
       ((missing_list+=1))
@@ -161,38 +185,34 @@ else
   log "Plan 无 .lists，跳过列表"
 fi
 
-# ========== 4) 条件 IF:KEY ... /IF:KEY ==========
+# ========== 4) 条件 IF:KEY ... (/IF:KEY | END_IF) ==========
 if jq -e '.if? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key raw; do
     [[ -n "${key}" ]] || continue
     key="$(normalize_key "${key}")"
-    start="IF:${key}"; end="/IF:${key}"
+    start="IF:${key}"
+    end_primary="/IF:${key}"
+    end_compat="END_IF"
+
     truthy=0
     if [[ "${raw}" != "false" && "${raw}" != "null" && "${raw}" != "0" && -n "${raw}" ]]; then truthy=1; fi
+
     hit=0
     while IFS= read -r -d '' file; do
       within_appdir "${file}" || { log "跳过越界文件：${file}"; continue; }
       if [[ ${truthy} -eq 1 ]]; then
         if grep -q -- "$start" "$file"; then
-          log "条件保留：${file} ← ${start}..${end}"
+          log "条件保留：${file} ← ${start}"
           hit=1
         fi
       else
-        awk -v S="${start}" -v E="${end}" '
-          BEGIN{inblk=0}
-          {
-            if (index($0,S)>0 && inblk==0) { print; inblk=1; next }
-            if (index($0,E)>0 && inblk==1) { print ""; print; inblk=0; next }
-            if (inblk==0) { print }
-          }
-        ' "$file" > "$file.ndjc.tmp" && mv "$file.ndjc.tmp" "$file" || true
-        if grep -q -- "$start" "$file"; then
-          log "条件清空：${file} ← ${start}..${end}"
+        if replace_between "$file" "$start" "$end_primary" "$end_compat" ""; then
+          log "条件清空：${file} ← ${start}..(${end_primary}|${end_compat})"
           ((replaced_if+=1, replaced_total+=1))
           hit=1
         fi
       fi
-    done < <(grep -RIl --null --exclude-dir=build --exclude-dir=.gradle --exclude-dir=.git -- "${start}" "${APP_DIR_ABS}" || true)
+    done < <(find_files_with "${start}")
     if [[ ${hit} -eq 0 ]]; then
       echo "${start}" >> "${MISS_DIR}/missing_if.txt"
       ((missing_if+=1))
@@ -233,7 +253,7 @@ if jq -e '.hooks? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
         log "HOOK 应用：${file} ← ${anchor} (lines=$(jq -r 'length' <<<"${json}"))"
         ((hooks_applied+=1, replaced_total+=1))
       fi
-    done < <(grep -RIl --null --exclude-dir=build --exclude-dir=.gradle --exclude-dir=.git -- "${anchor}" "${APP_DIR_ABS}" || true)
+    done < <(find_files_with "${anchor}")
   done < <(jq -r '(.hooks // {}) | to_entries[] | "\(.key)\t\(.value|tostring)"' "${PLAN_ABS}")
 else
   log "Plan 无 .hooks，跳过 Hook"
