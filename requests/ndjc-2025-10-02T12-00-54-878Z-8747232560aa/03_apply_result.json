@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-02T12-00-54-878Z-8747232560aa",
+  "status": "pre-ci",
+  "template": "circle-basic",
+  "appTitle": "牛太郎餐厅",
+  "packageName": "com.ndjc.demo.core",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
