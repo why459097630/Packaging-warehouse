@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.niutao.restaurant",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.niutao.restaurant",
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "欢迎来到牛太郎餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.niutao.restaurant",
+    "resConfigs": [
+      "zh-CN",
+      "en-US"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.CAMERA",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/model/Menu.java",
+      "content": "data class Menu(val id: Int, val name: String, val description: String, val price: Double, val image: String)",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/UploadFragment.java",
+      "content": "class UploadFragment : Fragment() {\n    private lateinit var binding: FragmentUploadBinding\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        binding = FragmentUploadBinding.inflate(inflater, container, false)\n        return binding.root\n    }\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\n        super.onViewCreated(view, savedInstanceState)\n        binding.uploadButton.setOnClickListener {\n            // 上传照片\n        }\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/EditFragment.java",
+      "content": "class EditFragment : Fragment() {\n    private lateinit var binding: FragmentEditBinding\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        binding = FragmentEditBinding.inflate(inflater, container, false)\n        return binding.root\n    }\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\n        super.onViewCreated(view, savedInstanceState)\n        binding.saveButton.setOnClickListener {\n            // 保存文字介绍\n        }\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/PriceFragment.java",
+      "content": "class PriceFragment : Fragment() {\n    private lateinit var binding: FragmentPriceBinding\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        binding = FragmentPriceBinding.inflate(inflater, container, false)\n        return binding.root\n    }\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\n        super.onViewCreated(view, savedInstanceState)\n        binding.saveButton.setOnClickListener {\n            // 保存价格\n        }\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/CommentFragment.java",
+      "content": "class CommentFragment : Fragment() {\n    private lateinit var binding: FragmentCommentBinding\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        binding = FragmentCommentBinding.inflate(inflater, container, false)\n        return binding.root\n    }\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\n        super.onViewCreated(view, savedInstanceState)\n        binding.likeButton.setOnClickListener {\n            // 点赞\n        }\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/fragment_upload.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <Button\n        android:id=\"@+id/uploadButton\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/fragment_edit.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/introduction\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"请输入文字介绍\"/>\n    <Button\n        android:id=\"@+id/saveButton\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"保存\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/fragment_price.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"请输入价格\"/>\n    <Button\n        android:id=\"@+id/saveButton\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"保存\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/fragment_comment.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <Button\n        android:id=\"@+id/likeButton\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    }
+  ]
+}
