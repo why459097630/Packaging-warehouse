@@ -1,0 +1,129 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "牛太郎餐厅 - 美味的介绍菜品",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "zh-CN"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.CAMERA",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/model/MenuItem.java",
+      "content": "data class MenuItem(val id: Int, val name: String, val price: Double, val description: String, val image: String)\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/UploadFragment.kt",
+      "content": "import android.net.Uri\nimport android.os.Bundle\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.fragment.app.Fragment\nimport com.google.android.gms.tasks.OnFailureListener\nimport com.google.android.gms.tasks.OnSuccessListener\nimport com.google.firebase.storage.FirebaseStorage\nimport com.google.firebase.storage.StorageReference\nimport com.google.firebase.storage.UploadTask\n\nclass UploadFragment : Fragment() {\n    private lateinit var imageView: ImageView\n    private lateinit var button: Button\n    private lateinit var storage: FirebaseStorage\n    private lateinit var storageReference: StorageReference\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        val view = inflater.inflate(R.layout.fragment_upload, container, false)\n        imageView = view.findViewById(R.id.image_view)\n        button = view.findViewById(R.id.button)\n        storage = FirebaseStorage.getInstance()\n        storageReference = storage.getReference(\"images\")\n\n        button.setOnClickListener {\n            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n            startActivityForResult(intent, 1)\n        }\n\n        return view\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == Activity.RESULT_OK && data != null) {\n            val uri = data.data\n            imageView.setImageURI(uri)\n            val file = File(uri.path)\n            val uploadTask = storageReference.child(file.name).putFile(uri)\n            uploadTask.addOnFailureListener { e -> Toast.makeText(context, \"上传失败\", Toast.LENGTH_SHORT).show() }\n            uploadTask.addOnSuccessListener { taskSnapshot -> Toast.makeText(context, \"上传成功\", Toast.LENGTH_SHORT).show() }\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/EditFragment.kt",
+      "content": "import android.os.Bundle\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.Toast\nimport androidx.fragment.app.Fragment\n\nclass EditFragment : Fragment() {\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        val view = inflater.inflate(R.layout.fragment_edit, container, false)\n        editText = view.findViewById(R.id.edit_text)\n        button = view.findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val text = editText.text.toString()\n            Toast.makeText(context, \"编辑成功\", Toast.LENGTH_SHORT).show()\n        }\n\n        return view\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/ReviewFragment.kt",
+      "content": "import android.os.Bundle\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.Button\nimport android.widget.RatingBar\nimport android.widget.Toast\nimport androidx.fragment.app.Fragment\n\nclass ReviewFragment : Fragment() {\n    private lateinit var ratingBar: RatingBar\n    private lateinit var button: Button\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        val view = inflater.inflate(R.layout.fragment_review, container, false)\n        ratingBar = view.findViewById(R.id.rating_bar)\n        button = view.findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val rating = ratingBar.rating\n            Toast.makeText(context, \"评论成功\", Toast.LENGTH_SHORT).show()\n        }\n\n        return view\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/CommentFragment.kt",
+      "content": "import android.os.Bundle\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.Toast\nimport androidx.fragment.app.Fragment\n\nclass CommentFragment : Fragment() {\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        val view = inflater.inflate(R.layout.fragment_comment, container, false)\n        editText = view.findViewById(R.id.edit_text)\n        button = view.findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val text = editText.text.toString()\n            Toast.makeText(context, \"评论成功\", Toast.LENGTH_SHORT).show()\n        }\n\n        return view\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/DetailFragment.kt",
+      "content": "import android.os.Bundle\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.TextView\nimport androidx.fragment.app.Fragment\n\nclass DetailFragment : Fragment() {\n    private lateinit var imageView: ImageView\n    private lateinit var textView: TextView\n    private lateinit var button: Button\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        val view = inflater.inflate(R.layout.fragment_detail, container, false)\n        imageView = view.findViewById(R.id.image_view)\n        textView = view.findViewById(R.id.text_view)\n        button = view.findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val intent = Intent(context, MainActivity::class.java)\n            startActivity(intent)\n        }\n\n        return view\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/activity/MainActivity.kt",
+      "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport androidx.appcompat.app.AppCompatActivity\n\nclass MainActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val intent = Intent(this, DetailActivity::class.java)\n            startActivity(intent)\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/activity/DetailActivity.kt",
+      "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport androidx.appcompat.app.AppCompatActivity\n\nclass DetailActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_detail)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val intent = Intent(this, ReviewActivity::class.java)\n            startActivity(intent)\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/activity/ReviewActivity.kt",
+      "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport androidx.appcompat.app.AppCompatActivity\n\nclass ReviewActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_review)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val intent = Intent(this, CommentActivity::class.java)\n            startActivity(intent)\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/activity/CommentActivity.kt",
+      "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport androidx.appcompat.app.AppCompatActivity\n\nclass CommentActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val intent = Intent(this, MainActivity::class.java)\n            startActivity(intent)\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/utils/FirebaseHelper.kt",
+      "content": "import com.google.firebase.auth.FirebaseAuth\nimport com.google.firebase.auth.FirebaseUser\n\nobject FirebaseHelper {\n    fun getCurrentUser(): FirebaseUser? {\n        return FirebaseAuth.getInstance().currentUser\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/utils/StorageHelper.kt",
+      "content": "import android.content.Context\nimport android.net.Uri\nimport android.os.Build\nimport android.os.Environment\nimport android.provider.MediaStore\nimport androidx.core.content.FileProvider\n\nobject StorageHelper {\n    fun getExternalStorageDirectory(): File {\n        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {\n            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)\n        } else {\n            Environment.getExternalStorageDirectory()\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".MainActivity\">\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Upload\"\n        android:layout_gravity=\"center_horizontal\"/>\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_detail.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".DetailActivity\">\n    <ImageView\n        android:id=\"@+id/image_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n    <TextView\n        android:id=\"@+id/text_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Review\"\n        android:layout_gravity=\"center_horizontal\"/>\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_review.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".ReviewActivity\">\n    <RatingBar\n        android:id=\"@+id/rating_bar\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Comment\"\n        android:layout_gravity=\"center_horizontal\"/>\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_comment.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".CommentActivity\">\n    <EditText\n        android:id=\"@+id/edit_text\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Submit\"\n        android:layout_gravity=\"center_horizontal\"/>\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"upload_button\">Upload</string>\n    <string name=\"review_button\">Review</string>\n    <string name=\"comment_button\">Comment</string>\n    <string name=\"submit_button\">Submit</string>\n</resources>\n",
+      "encoding": "utf8"
+    }
+  ]
+}
