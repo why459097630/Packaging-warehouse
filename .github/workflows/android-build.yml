@@ -1,31 +1,6 @@
-name: Android Build (NDJC)
+name: generate-apk
 
 on:
-  workflow_dispatch:
-    inputs:
-      runId:
-        description: "NDJC run id（不要带 requests/ 前缀）"
-        required: true
-      template:
-        description: "Template key (circle-basic/flow/map/shop/showcase)"
-        required: false
-        default: "circle-basic"
-      appTitle:
-        description: "App title"
-        required: false
-      packageName:
-        description: "Android applicationId"
-        required: false
-      branch:
-        description: "Branch to build (e.g. ndjc-run/<runId>)"
-        required: false
-      app_dir:
-        description: "Android module dir (e.g. templates/circle-basic/app or app)"
-        required: false
-      preflight_mode:
-        description: "Preflight mode: warn (default) or strict"
-        required: false
-        default: "warn"
   repository_dispatch:
     types: [generate-apk]
 
@@ -37,118 +12,114 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout
+      - name: Checkout (bootstrap)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ inputs.branch || github.event.client_payload.ref || github.ref }}
 
-      - name: NDJC | Show commit info
-        run: |
-          echo "HEAD: $(git rev-parse HEAD)"
-          echo "Triggered by: ${{ github.event_name }}"
-          echo "inputs.runId: '${{ inputs.runId }}'"
-          echo "client_payload.runId: '${{ github.event.client_payload.runId }}'"
-
-      # 关键修复点：规范 runId，去掉可能的 `requests/` 前缀，并统一导出 PLAN/APPLY 路径
+      # 解析 runId / 目录 / 分支，并输出给后续步骤使用
       - name: Resolve inputs → env
         id: resolve
         shell: bash
         run: |
           set -euo pipefail
 
-          # 1) 取 runId（优先 workflow_dispatch，其次 repository_dispatch）
-          RID_IN="${{ inputs.runId || github.event.client_payload.runId || '' }}"
-          if [ -z "$RID_IN" ]; then
-            echo "::error::runId missing (inputs.runId or client_payload.runId required)"
+          # 从 inputs 或 repository_dispatch 的 client_payload 中取 runId
+          RUN_ID="${{ inputs.runId || '' }}"
+          if [ -z "$RUN_ID" ]; then
+            RUN_ID="${{ github.event.client_payload.runId || '' }}"
+          fi
+          if [ -z "$RUN_ID" ]; then
+            echo "::error::RUN_ID missing (neither inputs.runId nor client_payload.runId provided)"
             exit 1
           fi
 
-          # 2) 去掉可能的 'requests/' 前缀，防止拼出 'requests/requests/...'
-          RID="${RID_IN#requests/}"
-          echo "RUN_ID=$RID"               >> "$GITHUB_ENV"
-          echo "REQ_DIR=requests/$RID"     >> "$GITHUB_ENV"
-          echo "PLAN_JSON=requests/$RID/02_plan.json"   >> "$GITHUB_ENV"
-          echo "APPLY_JSON=requests/$RID/03_apply_result.json" >> "$GITHUB_ENV"
+          # run 分支名，按约定：ndjc-run/<RUN_ID>
+          BRANCH="ndjc-run/${RUN_ID}"
 
-          # 3) 解析 APP_DIR（优先 inputs.app_dir，否则按模板推断）
-          TPL="${{ inputs.template || github.event.client_payload.template || 'circle-basic' }}"
-          APP_DIR_IN="${{ inputs.app_dir || '' }}"
-          if [ -n "$APP_DIR_IN" ]; then
-            APP_DIR="$APP_DIR_IN"
-          else
-            if [ -d "templates/$TPL/app" ]; then
-              APP_DIR="templates/$TPL/app"
-            elif [ -d "app" ]; then
-              APP_DIR="app"
-            else
-              echo "::error::Cannot determine APP_DIR. Provide inputs.app_dir or ensure templates/$TPL/app exists."
-              exit 1
-            fi
-          fi
-          echo "APP_DIR=$APP_DIR" >> "$GITHUB_ENV"
+          # requests 目录及三种文件路径
+          REQ_DIR="requests/${RUN_ID}"
+          PLAN_JSON="${REQ_DIR}/02_plan.json"
+          APPLY_JSON="${REQ_DIR}/03_apply_result.json"
+
+          # 模板根（按你当前仓库模板结构）
+          APP_DIR="templates/circle-basic/app"
+
+          echo "RUN_ID=$RUN_ID"           | tee -a "$GITHUB_ENV"
+          echo "REQ_DIR=$REQ_DIR"         | tee -a "$GITHUB_ENV"
+          echo "PLAN_JSON=$PLAN_JSON"     | tee -a "$GITHUB_ENV"
+          echo "APPLY_JSON=$APPLY_JSON"   | tee -a "$GITHUB_ENV"
+          echo "APP_DIR=$APP_DIR"         | tee -a "$GITHUB_ENV"
+          echo "BRANCH=$BRANCH"           | tee -a "$GITHUB_ENV"
+
+          # 同时作为输出给后续 steps 引用（例如 checkout）
+          {
+            echo "run_id=$RUN_ID"
+            echo "branch=$BRANCH"
+            echo "plan_json=$PLAN_JSON"
+            echo "apply_json=$APPLY_JSON"
+            echo "app_dir=$APP_DIR"
+          } >> "$GITHUB_OUTPUT"
 
           echo "Resolved:"
-          echo "  RUN_ID=$RID"
-          echo "  REQ_DIR=requests/$RID"
-          echo "  PLAN_JSON=requests/$RID/02_plan.json"
-          echo "  APPLY_JSON=requests/$RID/03_apply_result.json"
+          echo "  RUN_ID=$RUN_ID"
+          echo "  BRANCH=$BRANCH"
+          echo "  REQ_DIR=$REQ_DIR"
+          echo "  PLAN_JSON=$PLAN_JSON"
+          echo "  APPLY_JSON=$APPLY_JSON"
           echo "  APP_DIR=$APP_DIR"
 
-          # 4) 早期显式检查 plan 是否存在（避免后续脚本报 plan not found）
-          if [ ! -f "requests/$RID/02_plan.json" ]; then
-            echo "::error::Plan JSON not found at requests/$RID/02_plan.json"
-            exit 1
-          fi
+      # 关键：切换到 run 分支（ndjc-run/<RUN_ID>），这样 requests/<RUN_ID>/02_plan.json 才存在
+      - name: Checkout run branch (resolved)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.resolve.outputs.branch }}
 
-      # 确保脚本可执行（之前报过 Permission denied）
+      # 你的预检/快照/探针等可以继续保留，这里略…
+
       - name: Make ndjc-materialize.sh executable
-        shell: bash
-        run: chmod +x scripts/ndjc-materialize.sh
+        if: ${{ always() }}
+        run: |
+          chmod +x scripts/ndjc-materialize.sh
 
-      # 应用 plan（脚本依赖上一步导出的 PLAN_JSON/APPLY_JSON/APP_DIR/RUN_ID 环境变量）
+      # 物化：根据 02_plan.json 把模板锚点替换
       - name: NDJC | Materialize (apply plan → template)
         shell: bash
         run: |
           set -euo pipefail
-          scripts/ndjc-materialize.sh
+          echo "APP_DIR=${APP_DIR}"
+          echo "PLAN_JSON=${PLAN_JSON}"
+          test -f "${PLAN_JSON}" || { echo "::error::Plan JSON not found at ${PLAN_JSON}"; exit 1; }
 
-      # —— 以下为常规 Android 构建 —— #
+          scripts/ndjc-materialize.sh \
+            --plan "${PLAN_JSON}" \
+            --app-dir "${APP_DIR}" \
+            --result "${APPLY_JSON}"
 
-      - name: Setup Java 17
-        id: jdk
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-          check-latest: true
-
-      - name: Force JDK 17 for all next steps
-        shell: bash
-        run: |
-          echo "JAVA_HOME=${{ steps.jdk.outputs.path }}" >> "$GITHUB_ENV"
-          echo "${{ steps.jdk.outputs.path }}/bin" >> "$GITHUB_PATH"
-          echo "ORG_GRADLE_JAVA_HOME=${{ steps.jdk.outputs.path }}" >> "$GITHUB_ENV"
-          java -version
-
-      - name: Setup Gradle cache
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      - name: Build (debug)
-        shell: bash
-        run: |
-          ./gradlew -p "$APP_DIR/.." :app:assembleDebug -x lint --stacktrace --info --warning-mode all
-
-      # 可选：上传日志/产物（按需保留）
+      # （可选）把 03_apply_result.json / actions-summary.txt 等产物回写到 run 分支
       - name: NDJC | Upload materialize logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: materialize-${{ env.RUN_ID }}
+          name: ndjc-materialize-${{ steps.resolve.outputs.run_id }}
           path: |
-            ${{ env.REQ_DIR }}/02_plan.json
             ${{ env.REQ_DIR }}/03_apply_result.json
           if-no-files-found: ignore
+
+      # 下面继续你的 Java/Gradle 环节…
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build (debug)
+        env:
+          ORG_GRADLE_JAVA_HOME: ${{ env.JAVA_HOME }}
+        run: |
+          ./gradlew -p "${APP_DIR%/app}" :app:assembleDebug -x lint --stacktrace --info --warning-mode all
+
