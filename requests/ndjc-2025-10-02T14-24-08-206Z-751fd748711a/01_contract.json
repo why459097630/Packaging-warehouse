@@ -1,0 +1,141 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.niutao.restaurant",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.niutao.restaurant",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "牛太郎餐厅 - 美味的介绍",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.niutao.restaurant",
+      "resConfigs": [
+        "zh",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/model/Menu.java",
+      "content": "data class Menu(val id: Int, val name: String, val description: String, val price: Double, val image: String)",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/UploadActivity.java",
+      "content": "class UploadActivity : AppCompatActivity() { ... }",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/EditMenuActivity.java",
+      "content": "class EditMenuActivity : AppCompatActivity() { ... }",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/CommentActivity.java",
+      "content": "class CommentActivity : AppCompatActivity() { ... }",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/MainActivity.java",
+      "content": "class MainActivity : AppCompatActivity() { ... }",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_upload.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" ...>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_edit_menu.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" ...>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_comment.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" ...>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" ...>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<resources><string name=\"app_name\">牛太郎餐厅</string>...</resources>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/drawable/ic_upload.png",
+      "content": "上传照片",
+      "encoding": "utf8",
+      "kind": "png"
+    },
+    {
+      "path": "app/src/main/res/drawable/ic_edit.png",
+      "content": "编辑文字",
+      "encoding": "utf8",
+      "kind": "png"
+    },
+    {
+      "path": "app/src/main/res/drawable/ic_comment.png",
+      "content": "评论点赞",
+      "encoding": "utf8",
+      "kind": "png"
+    }
+  ],
+  "resources": {}
+}
