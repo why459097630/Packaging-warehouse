@@ -1,0 +1,87 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.niutao.restaurant",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.niutao.restaurant",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "牛太郎餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.niutao.restaurant",
+      "resConfigs": [
+        "zh-CN",
+        "en-US"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh-CN",
+        "en-US"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/model/Menu.java",
+      "content": "// Menu.java\n// 牛太郎餐厅菜品模型\npublic class Menu {\n    private String id;\n    private String name;\n    private String introduction;\n    private double price;\n    private String image;\n    private int likes;\n\n    public Menu(String id, String name, String introduction, double price, String image) {\n        this.id = id;\n        this.name = name;\n        this.introduction = introduction;\n        this.price = price;\n        this.image = image;\n    }\n\n    // getter and setter\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/activity/MainActivity.java",
+      "content": "// MainActivity.java\n// 牛太郎餐厅主界面\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\n\npublic class MainActivity : AppCompatActivity() {\n    private lateinit var menu: Menu\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            // 上传照片\n            val image = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n            startActivityForResult(image, 1)\n        }\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == Activity.RESULT_OK && data != null) {\n            val image = data.data\n            // 编辑文字介绍\n            val introduction = findViewById<EditText>(R.id.introduction)\n            // 设定价格\n            val price = findViewById<EditText>(R.id.price)\n            // 评论点赞\n            val likes = findViewById<EditText>(R.id.likes)\n            // 上传菜品\n            menu = Menu(image.toString(), introduction.text.toString(), price.text.toString(), likes.text.toString().toDouble(), image.toString())\n            Toast.makeText(this, \"菜品上传成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n\n    <EditText\n        android:id=\"@+id/introduction\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"介绍\"/>\n\n    <EditText\n        android:id=\"@+id/price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"价格\"/>\n\n    <EditText\n        android:id=\"@+id/likes\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"点赞\"/>\n\n    <ImageView\n        android:id=\"@+id/image\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"home_title\">牛太郎餐厅</string>\n    <string name=\"main_button_text\">上传照片</string>\n</resources>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    }
+  ],
+  "resources": {}
+}
