@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "NDJC core",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "NDJC core",
+    "NDJC:HOME_TITLE": "Hello core",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start core"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/example/niutao/MainActivity.kt",
+      "content": "import androidx.appcompat.app.AppCompatActivity\nimport android.os.Bundle\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.TextView\nimport android.widget.Toast\n\nclass MainActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            Toast.makeText(this, \"上传成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/Menu.kt",
+      "content": "data class Menu(val name: String, val price: Double, val description: String, val image: String)",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/UploadActivity.kt",
+      "content": "import androidx.appcompat.app.AppCompatActivity\nimport android.os.Bundle\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.TextView\nimport android.widget.Toast\n\nclass UploadActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_upload)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            Toast.makeText(this, \"上传成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/Comment.kt",
+      "content": "data class Comment(val content: String, val likes: Int)",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".MainActivity\">\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传菜品\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_upload.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".UploadActivity\">\n    <ImageView\n        android:id=\"@+id/image\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n    <EditText\n        android:id=\"@+id/name\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\"/>\n    <EditText\n        android:id=\"@+id/description\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品描述\"/>\n    <EditText\n        android:id=\"@+id/price\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品价格\"/>\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"title\">菜品介绍</string>\n    <string name=\"button_text\">上传菜品</string>\n</resources>",
+      "encoding": "utf8"
+    }
+  ]
+}
