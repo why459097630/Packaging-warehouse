@@ -1,0 +1,7 @@
+branch=main
+variant=unknown
+apk=
+classes=anchor-missing,env-drift
+missing_text=4
+missing_block=1
+ts=2025-10-02T02:46:11Z

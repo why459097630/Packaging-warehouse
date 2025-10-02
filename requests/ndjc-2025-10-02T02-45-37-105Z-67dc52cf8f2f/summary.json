@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-02T02-45-37-105Z-67dc52cf8f2f",
+  "branch": "main",
+  "variant": "unknown",
+  "apk": "",
+  "errors": { "classes": "anchor-missing,env-drift", "notes": "Anchors missing: see anchors/missing_* | Environment/Dependency drift between pre & post snapshots" },
+  "anchors": { "missing_text": 4, "missing_block": 1 },
+  "snapshots": { "pre": "build-logs/versions-lock.pre.txt", "post": "build-logs/versions-lock.post.txt" },
+  "generated_at": "2025-10-02T02:46:11Z"
+}
