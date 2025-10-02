@@ -24,7 +24,7 @@ on:
       preflight_mode:
         description: "Preflight mode: warn (default) or strict"
         required: false
-        default: "warn"
+        default: "strict"
   repository_dispatch:
     types: [generate-apk]
 
@@ -42,6 +42,9 @@ jobs:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
     steps:
+      - name: Set up job
+        run: echo "job start"
+
       - name: Checkout branch (bootstrap)
         uses: actions/checkout@v4
         with:
@@ -53,34 +56,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
-          # ---------- runId / branch ----------
           RUN_ID="${{ inputs.runId }}"
           if [ -z "${RUN_ID}" ]; then RUN_ID="${{ github.event.client_payload.runId }}"; fi
           if [ -z "${RUN_ID}" ]; then RUN_ID="ndjc-$(date -u +%Y%m%dT%H%M%SZ)"; fi
           echo "RUN_ID=${RUN_ID}" >> "$GITHUB_ENV"
-          echo "runId=${RUN_ID}" >> "$GITHUB_OUTPUT"
-
           BR="${{ inputs.branch }}"
           if [ -z "${BR}" ]; then BR="${{ github.event.client_payload.ref }}"; fi
           if [ -z "${BR}" ]; then BR="${{ github.ref }}"; fi
           BR="${BR#refs/heads/}"
           echo "BUILD_BRANCH=${BR}" >> "$GITHUB_ENV"
-          echo "branch=${BR}" >> "$GITHUB_OUTPUT"
-
-          # ---------- requests dir & json paths (仅用于后续步骤引用；传脚本时只传纯 runId) ----------
-          REQ_DIR="requests/${RUN_ID}"
-          PLAN_JSON="${REQ_DIR}/02_plan.json"
-          APPLY_JSON="${REQ_DIR}/03_apply_result.json"
-          echo "REQ_DIR=${REQ_DIR}"     >> "$GITHUB_ENV"
-          echo "PLAN_JSON=${PLAN_JSON}" >> "$GITHUB_ENV"
-          echo "APPLY_JSON=${APPLY_JSON}" >> "$GITHUB_ENV"
-
-          echo "Resolved RUN_ID=${RUN_ID}, BUILD_BRANCH=${BR}"
+          echo "runId=${RUN_ID}"   >> "$GITHUB_OUTPUT"
+          echo "branch=${BR}"      >> "$GITHUB_OUTPUT"
 
       - name: Guard | require run branch
         if: ${{ steps.resolve.outputs.branch == '' }}
-        shell: bash
         run: |
           echo "::error::inputs.branch/client_payload.ref empty. Must provide a run branch like 'ndjc-run/<runId>'."
           exit 1
@@ -92,14 +81,11 @@ jobs:
           ref: ${{ steps.resolve.outputs.branch }}
 
       - name: NDJC | Show commit info
-        shell: bash
         run: |
           echo "HEAD: $(git rev-parse HEAD)"
           echo "Triggered by: ${{ github.event_name }}"
           echo "inputs.branch: '${{ inputs.branch }}'"
           echo "client_payload.ref: '${{ github.event.client_payload.ref }}'"
-          echo "client_payload.sha: '${{ github.event.client_payload.sha }}'"
-          git show --name-only --oneline -1
 
       - name: Resolve project paths (APP_DIR/PROJ_DIR)
         id: paths
@@ -132,7 +118,6 @@ jobs:
           echo "PROJ_DIR=$PROJ_DIR" >> "$GITHUB_ENV"
           echo "app_dir=$APP_DIR"   >> "$GITHUB_OUTPUT"
           echo "proj_dir=$PROJ_DIR" >> "$GITHUB_OUTPUT"
-          echo "Resolved APP_DIR=$APP_DIR, PROJ_DIR=$PROJ_DIR"
 
       - name: Sanity check
         shell: bash
@@ -152,20 +137,20 @@ jobs:
           fi
           python --version || true
 
-      # 可选：预检 anchors/resources（脚本存在则执行）
+      # 预检脚本（你的 scripts/ndjc-preflight.sh，保留）
       - name: NDJC | Preflight (anchors & resources)
         id: preflight
         shell: bash
-        continue-on-error: ${{ (inputs.preflight_mode || 'warn') != 'strict' }}
+        continue-on-error: ${{ (inputs.preflight_mode || 'strict') != 'strict' }}
         run: |
           set -euo pipefail
           mkdir -p anchors build-logs
           if [ -x scripts/ndjc-preflight.sh ]; then
-            scripts/ndjc-preflight.sh "$APP_DIR" "${{ inputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
+            scripts/ndjc-preflight.sh "$APP_DIR" "${{ inputs.preflight_mode || 'strict' }}" | tee build-logs/preflight.log
           elif [ -x .github/scripts/ndjc-preflight.sh ]; then
-            .github/scripts/ndjc-preflight.sh "$APP_DIR" "${{ inputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
+            .github/scripts/ndjc-preflight.sh "$APP_DIR" "${{ inputs.preflight_mode || 'strict' }}" | tee build-logs/preflight.log
           else
-            echo "::notice::no preflight script; skip"
+            echo "::warning::scripts/ndjc-preflight.sh not found; doing minimal checks" | tee build-logs/preflight.log
           fi
 
       - name: NDJC | Upload preflight logs
@@ -178,15 +163,19 @@ jobs:
             build-logs/preflight.log
           if-no-files-found: ignore
 
-      # ===================== 关键改动在这里 =====================
-      - name: NDJC | Materialize (apply plan → template)
+      # === 关键修复：赋予可执行权限 ===
+      - name: Make ndjc-materialize.sh executable
         shell: bash
+        run: chmod +x scripts/ndjc-materialize.sh
+
+      - name: NDJC | Materialize (apply plan → template)
+        id: materialize
+        shell: bash
+        env:
+          RUN_ID: ${{ steps.resolve.outputs.runId }}
         run: |
           set -euo pipefail
-          echo "APP_DIR=$APP_DIR"
-          echo "RUN_ID=$RUN_ID"
-          # 只传「纯 runId」给脚本；脚本内部自己拼 requests/<runId>/02_plan.json
-          scripts/ndjc-materialize.sh "$APP_DIR" "$RUN_ID"
+          scripts/ndjc-materialize.sh "${APP_DIR}" "${RUN_ID}"
 
       - name: NDJC | Upload materialize logs
         if: always()
@@ -194,23 +183,41 @@ jobs:
         with:
           name: materialize-logs-${{ env.RUN_ID }}
           path: |
-            build-logs/**
+            requests/${{ env.RUN_ID }}/01_contract.json
             requests/${{ env.RUN_ID }}/02_plan.json
             requests/${{ env.RUN_ID }}/03_apply_result.json
+            anchors/**
+            build-logs/**
           if-no-files-found: ignore
 
       - name: NDJC | Guard apply result (strict)
         shell: bash
         run: |
           set -euo pipefail
-          APPLY_JSON="requests/${RUN_ID}/03_apply_result.json"
-          if [ ! -s "$APPLY_JSON" ]; then
-            echo "::error::apply result not found at $APPLY_JSON (runId=$RUN_ID)."
+          AJ="requests/${RUN_ID}/03_apply_result.json"
+          if [ ! -f "$AJ" ]; then
+            echo "::error::apply result not found: $AJ"
             exit 1
           fi
-          echo "apply result present: $APPLY_JSON"
+          # 至少有一个替换或资源写入
+          ok=$(jq -r '((.replaced_total // 0) + (.resources_written // 0)) > 0' "$AJ")
+          if [ "$ok" != "true" ]; then
+            echo "::error::no anchors/resources applied, see $AJ"
+            cat "$AJ" || true
+            exit 1
+          fi
 
-      # ===== 下面保持你的原有探针 / 构建 / 签名 / 上传产物 等步骤 =====
+      - name: NDJC | Env snapshot (pre)
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs
+          {
+            echo "=== JAVA ==="; java -version 2>&1 || true
+            echo; echo "=== Gradle Wrapper ==="; ./gradlew -v || true
+            echo; echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
+          } | tee build-logs/versions-lock.pre.txt
 
       - name: Setup Java 17
         id: jdk
@@ -240,15 +247,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build-logs
-          echo "JAVA_HOME=$JAVA_HOME"; java -version
-          export ORG_GRADLE_JAVA_HOME="$JAVA_HOME"
           if [ -z "${KS}" ]; then
-            echo "No keystore → assembleDebug"
             ./gradlew -p "$PROJ_DIR" :app:clean :app:assembleDebug -x lint --stacktrace --info --warning-mode all 2>&1 | tee build-logs/build.log
             OUTDIR="$PROJ_DIR/app/build/outputs/apk/debug"
             VARIANT=debug
           else
-            echo "Keystore present → assembleRelease"
             ./gradlew -p "$PROJ_DIR" :app:clean :app:assembleRelease -x lint --stacktrace --info --warning-mode all 2>&1 | tee build-logs/build.log
             OUTDIR="$PROJ_DIR/app/build/outputs/apk/release"
             VARIANT=release
@@ -264,4 +267,25 @@ jobs:
           path: build-logs/**
           if-no-files-found: ignore
 
-      # ……（签名、校验、上传 APK、收尾摘要 等步骤保持你当前版本不变）……
+      - name: Pick APK
+        id: pick
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          SIGNED=$(ls -t "$APK_DIR"/*.apk 2>/dev/null | grep -Ev -- '-unsigned\.apk$' | head -n1 || true)
+          UNSIGNED=$(ls -t "$APK_DIR"/*-unsigned.apk 2>/dev/null | head -n1 || true)
+          APK=""
+          if [ -n "$SIGNED" ]; then APK="$SIGNED"
+          elif [ -n "$UNSIGNED" ]; then APK="$UNSIGNED"
+          else echo "::error::No APK found under $APK_DIR"; fi
+          echo "APK=$APK" >> "$GITHUB_ENV"
+          echo "apk=$APK" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK
+        if: ${{ env.APK != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ env.VARIANT }}-${{ env.RUN_ID }}
+          path: ${{ env.APK }}
+          if-no-files-found: ignore
