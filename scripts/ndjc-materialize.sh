@@ -3,32 +3,29 @@
 # @file    scripts/ndjc-materialize.sh
 # @role    NDJC 物化脚本：按 NdjcPlanV1 把模板中的锚点替换为实际内容
 #
-# ✅ 支持锚点类型（覆盖你清单中的所有大类）：
-#   1) 文本锚点   NDJC:KEY
-#   2) 块锚点     BLOCK:KEY ... /BLOCK:KEY
-#   3) 列表锚点   LIST:KEY  ... /LIST:KEY          （数组 items 渲染为多段）
-#   4) 条件锚点   IF:KEY    ... /IF:KEY            （truthy 保留；falsey 清空）
-#   5) 资源锚点   RES:type/path                    （落盘到 src/main/res/type/path）
-#   6) Hook 锚点  HOOK:KEY                         （将片段替换 HOOK 占位）
+# ✅ 支持锚点类型：
+#   1) 文本： NDJC:KEY
+#   2) 块：   BLOCK:KEY ... /BLOCK:KEY
+#   3) 列表： LIST:KEY  ... /LIST:KEY                 （数组 items 渲染为多段）
+#   4) 条件： IF:KEY    ... /IF:KEY                   （truthy 保留；falsey 清空）
+#   5) 资源： RES:type/path                           （落盘到 src/main/res/type/path）
+#   6) Hook： HOOK:KEY                                （片段替换 HOOK 占位）
 #
-# @plan   预期字段（NdjcPlanV1）：
-#   .text         { Key: "string", ... }
-#   .block        { Key: "multiline-string", ... }
-#   .lists        { Key: ["fragment1", "fragment2", ...], ... }
-#   .if           { Key: true|false|0|1|"", ... }   # 非 false/null/0/空 即 truthy
-#   .resources    { "RES:drawable/logo.png": "<content or base64:...>", ... }
-#   .hooks        { Key: ["line1","line2",...], ... }
+# @plan 字段：
+#   .text       { Key: "string" }
+#   .block      { Key: "multiline-string" }
+#   .lists      { Key: ["frag1","frag2",...] }
+#   .if         { Key: true|false|0|1|"" }
+#   .resources  { "RES:drawable/logo.png": "<text 或 base64:...>" }
+#   .hooks      { Key: ["line1","line2",...] }
 #
 # @usage  bash scripts/ndjc-materialize.sh <APP_DIR> <PLAN_JSON> <OUT_JSON> [--strict]
-#         --strict：严格模式（若完全没有任何替换 → 退出码≠0）
+#         --strict：严格模式（若完全没有任何替换 → 退出码 2）
 #
 # @output
-#   build-logs/materialize.log                        # 过程日志
-#   anchors/missing_{text,block,list,if}.txt          # 未命中锚点清单
-#   requests/<runId>/03_apply_result.json             # 统计 JSON
-#
-# @exit
-#   0 正常；1 参数/环境错误；2 严格模式且 replaced_total==0
+#   build-logs/materialize.log
+#   anchors/missing_{text,block,list,if}.txt
+#   requests/<runId>/03_apply_result.json
 # -----------------------------------------------------------------------------
 
 set -euo pipefail
@@ -49,7 +46,7 @@ STRICT=0; [[ "${4:-}" == "--strict" ]] && STRICT=1
 [[ -n "${PLAN_JSON}" ]] || fail "缺少 PLAN_JSON"
 [[ -n "${OUT_JSON}"  ]] || fail "缺少 OUT_JSON"
 
-# ---------- 归一化路径，限制只改 APP_DIR ----------
+# ---------- 路径归一化、限定修改范围 ----------
 realpath_cmd() { python3 - "$1" <<'PY'
 import os,sys; print(os.path.realpath(sys.argv[1]))
 PY
@@ -75,7 +72,7 @@ fi
 log "物化开始：APP_DIR=${APP_DIR_ABS}"
 log "读取计划：PLAN_JSON=${PLAN_ABS}"
 log "输出统计：OUT_JSON=${OUT_ABS}"
-[[ ${STRICT} -eq 1 ]] && log "严格模式已开启：完全无替换将报错"
+[[ ${STRICT} -eq 1 ]] && log "严格模式：完全无替换将失败"
 
 # ---------- 统计 ----------
 replaced_total=0
@@ -86,7 +83,7 @@ replaced_if=0;     missing_if=0
 resources_written=0
 hooks_applied=0
 
-# ---------- 工具：安全全量替换（不易被 / & 等字符绊倒） ----------
+# ---------- 文本安全替换 ----------
 safe_replace_all() {
   local pattern="$1" content="$2" file="$3"
   if grep -q -- "$pattern" "$file"; then
@@ -98,7 +95,7 @@ safe_replace_all() {
   fi
 }
 
-# ---------- 文本锚点 NDJC:KEY ----------
+# ========== 1) 文本 NDJC:KEY ==========
 if jq -e '.text? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key val; do
     [[ -n "${key}" ]] || continue
@@ -114,13 +111,13 @@ if jq -e '.text? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
     if [[ ${hit} -eq 0 ]]; then
       echo "${anchor}" >> "${MISS_DIR}/missing_text.txt"
       ((missing_text+=1))
-    end
+    fi
   done < <(jq -r '(.text // {}) | to_entries[] | "\(.key)\t\(.value)"' "${PLAN_ABS}")
 else
-  log "Plan 无 .text，跳过"
+  log "Plan 无 .text，跳过文本"
 fi
 
-# ---------- 块锚点 BLOCK:KEY ... /BLOCK:KEY ----------
+# ========== 2) 块 BLOCK:KEY ... /BLOCK:KEY ==========
 if jq -e '.block? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key val; do
     [[ -n "${key}" ]] || continue
@@ -128,6 +125,7 @@ if jq -e '.block? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
     hit=0
     while IFS= read -r -d '' file; do
       within_appdir "${file}" || { log "跳过越界文件：${file}"; continue; }
+      # 把开始/结束标记之间替换为 val；保留标记行
       awk -v S="${start}" -v E="${end}" -v CONTENT="$(printf '%s' "${val}")" '
         BEGIN{inblk=0}
         {
@@ -135,8 +133,7 @@ if jq -e '.block? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
           if (index($0,E)>0 && inblk==1) { print CONTENT; print; inblk=0; next }
           if (inblk==0) { print }
         }
-      ' "$file" > "$file.ndjc.tmp" && mv "$file.ndjc.tmp" "$file"
-      # 注意：此处按“命中一个开始标记即视为命中”处理
+      ' "$file" > "$file.ndjc.tmp" && mv "$file.ndjc.tmp" "$file" || true
       if grep -q -- "$start" "$file"; then
         log "块替换：${file} ← ${start}..${end}"
         ((replaced_block+=1, replaced_total+=1, hit=1))
@@ -148,11 +145,10 @@ if jq -e '.block? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
     fi
   done < <(jq -r '(.block // {}) | to_entries[] | "\(.key)\t\(.value)"' "${PLAN_ABS}")
 else
-  log "Plan 无 .block，跳过"
+  log "Plan 无 .block，跳过块"
 fi
 
-# ---------- 列表锚点 LIST:KEY ... /LIST:KEY ----------
-# 将数组 items 用换行拼接填入两锚点之间
+# ========== 3) 列表 LIST:KEY ... /LIST:KEY ==========
 if jq -e '.lists? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key json; do
     [[ -n "${key}" ]] || continue
@@ -168,7 +164,7 @@ if jq -e '.lists? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
           if (index($0,E)>0 && inblk==1) { print CONTENT; print; inblk=0; next }
           if (inblk==0) { print }
         }
-      ' "$file" > "$file.ndjc.tmp" && mv "$file.ndjc.tmp" "$file"
+      ' "$file" > "$file.ndjc.tmp" && mv "$file.ndjc.tmp" "$file" || true
       if grep -q -- "$start" "$file"; then
         log "列表替换：${file} ← ${start}..${end} (items=$(jq -r 'length' <<<"${json}"))"
         ((replaced_list+=1, replaced_total+=1, hit=1))
@@ -180,11 +176,10 @@ if jq -e '.lists? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
     fi
   done < <(jq -r '(.lists // {}) | to_entries[] | "\(.key)\t\(.value|tostring)"' "${PLAN_ABS}")
 else
-  log "Plan 无 .lists，跳过"
+  log "Plan 无 .lists，跳过列表"
 fi
 
-# ---------- 条件锚点 IF:KEY ... /IF:KEY ----------
-# truthy → 保留原内容；falsey → 清空（保留锚点行）
+# ========== 4) 条件 IF:KEY ... /IF:KEY ==========
 if jq -e '.if? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key raw; do
     [[ -n "${key}" ]] || continue
@@ -195,13 +190,11 @@ if jq -e '.if? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
     while IFS= read -r -d '' file; do
       within_appdir "${file}" || { log "跳过越界文件：${file}"; continue; }
       if [[ ${truthy} -eq 1 ]]; then
-        # 保留：不动中间内容
         if grep -q -- "$start" "$file"; then
           log "条件保留：${file} ← ${start}..${end}"
-          ((hit=1))
+          hit=1
         fi
       else
-        # 清空：将中间内容替换为空
         awk -v S="${start}" -v E="${end}" '
           BEGIN{inblk=0}
           {
@@ -209,10 +202,11 @@ if jq -e '.if? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
             if (index($0,E)>0 && inblk==1) { print ""; print; inblk=0; next }
             if (inblk==0) { print }
           }
-        ' "$file" > "$file.ndjc.tmp" && mv "$file.ndjc.tmp" "$file"
+        ' "$file" > "$file.ndjc.tmp" && mv "$file.ndjc.tmp" "$file" || true
         if grep -q -- "$start" "$file"; then
           log "条件清空：${file} ← ${start}..${end}"
-          ((replaced_if+=1, replaced_total+=1, hit=1))
+          ((replaced_if+=1, replaced_total+=1))
+          hit=1
         fi
       fi
     done < <(grep -RIl --null --exclude-dir=build --exclude-dir=.gradle --exclude-dir=.git -- "${start}" "${APP_DIR_ABS}" || true)
@@ -222,35 +216,32 @@ if jq -e '.if? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
     fi
   done < <(jq -r '(.if // {}) | to_entries[] | "\(.key)\t\(.value|tostring)"' "${PLAN_ABS}")
 else
-  log "Plan 无 .if，跳过"
+  log "Plan 无 .if，跳过条件"
 fi
 
-# ---------- 资源锚点 RES:type/path ----------
-# 值支持：
-#   - 纯文本（直接写入）
-#   - base64:xxxx（以 "base64:" 前缀识别并解码为二进制）
+# ========== 5) 资源 RES:type/path ==========
+# 支持：纯文本；或以 base64: 前缀标识的二进制
 if jq -e '.resources? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r rkey content; do
     [[ "${rkey}" == RES:*/* ]] || { log "资源键不规范：${rkey}"; continue; }
     rel="${rkey#RES:}"                                # drawable/logo.png
     target="${APP_DIR_ABS}/src/main/res/${rel}"
-    within_appdir "${target}" || { log "越界资源，已跳过：${target}"; continue; }
+    within_appdir "${target}" || { log "越界资源，跳过：${target}"; continue; }
     mkdir -p "$(dirname "${target}")"
     if [[ "${content}" == base64:* ]]; then
       printf '%s' "${content#base64:}" | base64 -d > "${target}"
     else
-      # 文本资源
       printf '%s' "${content}" > "${target}"
     fi
     log "资源写入：${target}"
     ((resources_written+=1))
   done < <(jq -r '(.resources // {}) | to_entries[] | "\(.key)\t\(.value)"' "${PLAN_ABS}")
 else
-  log "Plan 无 .resources，跳过"
+  log "Plan 无 .resources，跳过资源"
 fi
 
-# ---------- HOOK 锚点 HOOK:KEY ----------
-# 简单策略：将文件中的 "HOOK:KEY" 直接替换为拼接后的片段
+# ========== 6) HOOK:KEY ==========
+# 策略：将 "HOOK:KEY" 直接替换为拼接后的片段
 if jq -e '.hooks? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key json; do
     anchor="HOOK:${key}"
@@ -264,7 +255,7 @@ if jq -e '.hooks? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
     done < <(grep -RIl --null --exclude-dir=build --exclude-dir=.gradle --exclude-dir=.git -- "${anchor}" "${APP_DIR_ABS}" || true)
   done < <(jq -r '(.hooks // {}) | to_entries[] | "\(.key)\t\(.value|tostring)"' "${PLAN_ABS}")
 else
-  log "Plan 无 .hooks，跳过"
+  log "Plan 无 .hooks，跳过 Hook"
 fi
 
 # ---------- 输出统计 ----------
@@ -288,7 +279,7 @@ log "统计完成：${OUT_ABS}"
 
 # ---------- 严格模式：完全无替换时失败 ----------
 if [[ ${STRICT} -eq 1 && ${replaced_total} -eq 0 ]]; then
-  echo "Strict: replaced_total=0" >> "${LOG_FILE}"
+  log "严格模式失败：replaced_total=0"
   exit 2
 fi
 
