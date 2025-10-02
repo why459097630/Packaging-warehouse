@@ -1,0 +1,87 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "特色菜品",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "zh_CN",
+        "en_US"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh_CN",
+        "en_US"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/example/ntc/MenuActivity.kt",
+      "content": "// activity_menu.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <EditText\n        android:id=\"@+id/menu_name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\"/>\n\n    <EditText\n        android:id=\"@+id/menu_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品价格\"/>\n\n    <ImageView\n        android:id=\"@+id/menu_image\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n\n    <EditText\n        android:id=\"@+id/menu_description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品描述\"/>\n\n    <Button\n        android:id=\"@+id/upload_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n\n    <Button\n        android:id=\"@+id/save_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"保存菜品\"/>\n\n    <Button\n        android:id=\"@+id/review_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论\"/>\n\n    <Button\n        android:id=\"@+id/like_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntc/MenuDBHelper.kt",
+      "content": "// MenuDBHelper.kt\nimport android.content.Context\nimport android.database.sqlite.SQLiteDatabase\nimport android.database.sqlite.SQLiteOpenHelper\n\nclass MenuDBHelper(context: Context) : SQLiteOpenHelper(context, \"menu.db\", null, 1) {\n    override fun onCreate(db: SQLiteDatabase) {\n        // 创建菜品表\n        db.execSQL(\"CREATE TABLE menu (id INTEGER PRIMARY KEY, name TEXT, price REAL, description TEXT, image TEXT)\")\n    }\n\n    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {\n        // 升级菜品表\n        db.execSQL(\"DROP TABLE IF EXISTS menu\")\n        onCreate(db)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntc/MenuActivity.kt",
+      "content": "// activity_menu.xml\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <EditText\n        android:id=\"@+id/menu_name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\"/>\n\n    <EditText\n        android:id=\"@+id/menu_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品价格\"/>\n\n    <ImageView\n        android:id=\"@+id/menu_image\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n\n    <EditText\n        android:id=\"@+id/menu_description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品描述\"/>\n\n    <Button\n        android:id=\"@+id/upload_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n\n    <Button\n        android:id=\"@+id/save_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"保存菜品\"/>\n\n    <Button\n        android:id=\"@+id/review_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论\"/>\n\n    <Button\n        android:id=\"@+id/like_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntc/MenuDBHelper.kt",
+      "content": "// MenuDBHelper.kt\nimport android.content.Context\nimport android.database.sqlite.SQLiteDatabase\nimport android.database.sqlite.SQLiteOpenHelper\n\nclass MenuDBHelper(context: Context) : SQLiteOpenHelper(context, \"menu.db\", null, 1) {\n    override fun onCreate(db: SQLiteDatabase) {\n        // 创建菜品表\n        db.execSQL(\"CREATE TABLE menu (id INTEGER PRIMARY KEY, name TEXT, price REAL, description TEXT, image TEXT)\")\n    }\n\n    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {\n        // 升级菜品表\n        db.execSQL(\"DROP TABLE IF EXISTS menu\")\n        onCreate(db)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    }
+  ],
+  "resources": {}
+}
