@@ -1,32 +1,6 @@
 #!/usr/bin/env bash
-# -----------------------------------------------------------------------------
-# @file    scripts/ndjc-materialize.sh
-# @role    NDJC 物化脚本：按 NdjcPlanV1 把模板中的锚点替换为实际内容
-#
-# ✅ 支持锚点类型：
-#   1) 文本： NDJC:KEY
-#   2) 块：   BLOCK:KEY ... /BLOCK:KEY
-#   3) 列表： LIST:KEY  ... /LIST:KEY                 （数组 items 渲染为多段）
-#   4) 条件： IF:KEY    ... /IF:KEY                   （truthy 保留；falsey 清空）
-#   5) 资源： RES:type/path                           （落盘到 src/main/res/type/path）
-#   6) Hook： HOOK:KEY                                （片段替换 HOOK 占位）
-#
-# @plan 字段：
-#   .text       { Key: "string" }
-#   .block      { Key: "multiline-string" }
-#   .lists      { Key: ["frag1","frag2",...] }
-#   .if         { Key: true|false|0|1|"" }
-#   .resources  { "RES:drawable/logo.png": "<text 或 base64:...>" }
-#   .hooks      { Key: ["line1","line2",...] }
-#
-# @usage  bash scripts/ndjc-materialize.sh <APP_DIR> <PLAN_JSON> <OUT_JSON> [--strict]
-#         --strict：严格模式（若完全没有任何替换 → 退出码 2）
-#
-# @output
-#   build-logs/materialize.log
-#   anchors/missing_{text,block,list,if}.txt
-#   requests/<runId>/03_apply_result.json
-# -----------------------------------------------------------------------------
+# NDJC materialize: apply NdjcPlanV1 to template anchors.
+# 变更点：为 text/block/lists/if 的 key 加入 normalize_key() 规范化，避免“重复前缀”匹配失败。
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -46,7 +20,6 @@ STRICT=0; [[ "${4:-}" == "--strict" ]] && STRICT=1
 [[ -n "${PLAN_JSON}" ]] || fail "缺少 PLAN_JSON"
 [[ -n "${OUT_JSON}"  ]] || fail "缺少 OUT_JSON"
 
-# ---------- 路径归一化、限定修改范围 ----------
 realpath_cmd() { python3 - "$1" <<'PY'
 import os,sys; print(os.path.realpath(sys.argv[1]))
 PY
@@ -61,7 +34,7 @@ mkdir -p "$(dirname "${OUT_ABS}")"
 
 within_appdir() { [[ "$(realpath_cmd "$1")" == ${APP_DIR_ABS}/* ]]; }
 
-# ---------- 依赖 jq ----------
+# jq
 if ! command -v jq >/dev/null 2>&1; then
   log "jq 未安装，尝试安装..."
   sudo apt-get update -y >/dev/null 2>&1 || true
@@ -74,7 +47,7 @@ log "读取计划：PLAN_JSON=${PLAN_ABS}"
 log "输出统计：OUT_JSON=${OUT_ABS}"
 [[ ${STRICT} -eq 1 ]] && log "严格模式：完全无替换将失败"
 
-# ---------- 统计 ----------
+# 统计
 replaced_total=0
 replaced_text=0;   missing_text=0
 replaced_block=0;  missing_block=0
@@ -83,7 +56,14 @@ replaced_if=0;     missing_if=0
 resources_written=0
 hooks_applied=0
 
-# ---------- 文本安全替换 ----------
+# ---------- 关键改动：规范化键名 ----------
+normalize_key() {
+  local k="$1"
+  # 连续剥离，兼容重复/混用
+  k="${k#NDJC:}"; k="${k#BLOCK:}"; k="${k#LIST:}"; k="${k#IF:}"
+  echo "$k"
+}
+
 safe_replace_all() {
   local pattern="$1" content="$2" file="$3"
   if grep -q -- "$pattern" "$file"; then
@@ -99,6 +79,7 @@ safe_replace_all() {
 if jq -e '.text? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key val; do
     [[ -n "${key}" ]] || continue
+    key="$(normalize_key "${key}")"
     anchor="NDJC:${key}"
     hit=0
     while IFS= read -r -d '' file; do
@@ -121,11 +102,11 @@ fi
 if jq -e '.block? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key val; do
     [[ -n "${key}" ]] || continue
+    key="$(normalize_key "${key}")"
     start="BLOCK:${key}"; end="/BLOCK:${key}"
     hit=0
     while IFS= read -r -d '' file; do
       within_appdir "${file}" || { log "跳过越界文件：${file}"; continue; }
-      # 把开始/结束标记之间替换为 val；保留标记行
       awk -v S="${start}" -v E="${end}" -v CONTENT="$(printf '%s' "${val}")" '
         BEGIN{inblk=0}
         {
@@ -152,6 +133,7 @@ fi
 if jq -e '.lists? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key json; do
     [[ -n "${key}" ]] || continue
+    key="$(normalize_key "${key}")"
     start="LIST:${key}"; end="/LIST:${key}"
     content="$(jq -r '[.[]] | join("\n")' <<<"${json}")"
     hit=0
@@ -183,6 +165,7 @@ fi
 if jq -e '.if? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key raw; do
     [[ -n "${key}" ]] || continue
+    key="$(normalize_key "${key}")"
     start="IF:${key}"; end="/IF:${key}"
     truthy=0
     if [[ "${raw}" != "false" && "${raw}" != "null" && "${raw}" != "0" && -n "${raw}" ]]; then truthy=1; fi
@@ -220,11 +203,10 @@ else
 fi
 
 # ========== 5) 资源 RES:type/path ==========
-# 支持：纯文本；或以 base64: 前缀标识的二进制
 if jq -e '.resources? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r rkey content; do
     [[ "${rkey}" == RES:*/* ]] || { log "资源键不规范：${rkey}"; continue; }
-    rel="${rkey#RES:}"                                # drawable/logo.png
+    rel="${rkey#RES:}"
     target="${APP_DIR_ABS}/src/main/res/${rel}"
     within_appdir "${target}" || { log "越界资源，跳过：${target}"; continue; }
     mkdir -p "$(dirname "${target}")"
@@ -241,10 +223,9 @@ else
 fi
 
 # ========== 6) HOOK:KEY ==========
-# 策略：将 "HOOK:KEY" 直接替换为拼接后的片段
 if jq -e '.hooks? // empty' "${PLAN_ABS}" >/dev/null 2>&1; then
   while IFS=$'\t' read -r key json; do
-    anchor="HOOK:${key}"
+    anchor="HOOK:$(normalize_key "${key}")"
     payload="$(jq -r '[.[]] | join("\n")' <<<"${json}")"
     while IFS= read -r -d '' file; do
       within_appdir "${file}" || { log "跳过越界文件：${file}"; continue; }
@@ -258,7 +239,7 @@ else
   log "Plan 无 .hooks，跳过 Hook"
 fi
 
-# ---------- 输出统计 ----------
+# 输出统计
 cat > "${OUT_ABS}" <<JSON
 {
   "replaced_total": ${replaced_total},
@@ -277,7 +258,7 @@ cat > "${OUT_ABS}" <<JSON
 JSON
 log "统计完成：${OUT_ABS}"
 
-# ---------- 严格模式：完全无替换时失败 ----------
+# 严格模式：完全无替换则失败
 if [[ ${STRICT} -eq 1 && ${replaced_total} -eq 0 ]]; then
   log "严格模式失败：replaced_total=0"
   exit 2
