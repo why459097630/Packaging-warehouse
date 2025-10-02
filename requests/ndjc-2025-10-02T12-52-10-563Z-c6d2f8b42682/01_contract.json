@@ -1,0 +1,103 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.niutao.restaurant",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.niutao.restaurant",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "牛太郎餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.niutao.restaurant",
+      "resConfigs": [
+        "zh-CN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh-CN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/model/Dish.java",
+      "content": "data class Dish(val id: Int, val name: String, val price: Double, val description: String, val image: String)\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/repository/DishRepository.java",
+      "content": "interface DishRepository {\n    suspend fun getDishes(): List<Dish>\n    suspend fun addDish(dish: Dish)\n    suspend fun updateDish(dish: Dish)\n    suspend fun deleteDish(id: Int)\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/DishFragment.java",
+      "content": "class DishFragment : Fragment() {\n    private lateinit var binding: FragmentDishBinding\n    private lateinit var repository: DishRepository\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        binding = FragmentDishBinding.inflate(inflater, container, false)\n        return binding.root\n    }\n\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\n        super.onViewCreated(view, savedInstanceState)\n        repository = DishRepositoryImpl()\n        binding.btnAddDish.setOnClickListener {\n            val name = binding.etName.text.toString()\n            val price = binding.etPrice.text.toString().toDouble()\n            val description = binding.etDescription.text.toString()\n            val image = binding.ivImage.toString()\n            repository.addDish(Dish(0, name, price, description, image))\n        }\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/DishAdapter.java",
+      "content": "class DishAdapter(private val repository: DishRepository) : RecyclerView.Adapter<DishAdapter.ViewHolder>() {\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {\n        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_dish, parent, false))\n    }\n\n    override fun onBindViewHolder(holder: ViewHolder, position: Int) {\n        val dish = repository.getDishes()[position]\n        holder.bind(dish)\n    }\n\n    override fun getItemCount(): Int {\n        return repository.getDishes().size\n    }\n\n    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {\n        fun bind(dish: Dish) {\n            itemView.tvName.text = dish.name\n            itemView.tvPrice.text = \"¥${dish.price}\"n            itemView.tvDescription.text = dish.description\n            itemView.ivImage.setImageResource(R.drawable.image)\n        }\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/res/layout/item_dish.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"wrap_content\"\n    android:orientation=\"vertical\">\n    <TextView\n        android:id=\"@+id/tvName\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:textSize=\"16sp\"/>\n    <TextView\n        android:id=\"@+id/tvPrice\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:textSize=\"14sp\"/>\n    <TextView\n        android:id=\"@+id/tvDescription\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:textSize=\"12sp\"/>\n    <ImageView\n        android:id=\"@+id/ivImage\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/fragment_dish.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <EditText\n        android:id=\"@+id/etName\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\"/>\n    <EditText\n        android:id=\"@+id/etPrice\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"价格\"/>\n    <EditText\n        android:id=\"@+id/etDescription\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"介绍\"/>\n    <ImageView\n        android:id=\"@+id/ivImage\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/btnAddDish\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传菜品\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"home_title\">牛太郎餐厅</string>\n    <string name=\"main_button_text\">上传菜品</string>\n</resources>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    }
+  ],
+  "resources": {}
+}
