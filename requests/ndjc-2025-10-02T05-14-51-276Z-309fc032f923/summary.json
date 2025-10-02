@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-02T05-14-51-276Z-309fc032f923",
+  "branch": "main",
+  "variant": "unknown",
+  "apk": "",
+  "errors": { "classes": "env-drift", "notes": "Environment/Dependency drift between pre & post snapshots" },
+  "anchors": { "missing_text": 0, "missing_block": 0 },
+  "snapshots": { "pre": "build-logs/versions-lock.pre.txt", "post": "build-logs/versions-lock.post.txt" },
+  "generated_at": "2025-10-02T05:15:38Z"
+}
