@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "NDJC core",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "NDJC core",
+    "NDJC:HOME_TITLE": "Hello core",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start core"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/model/Menu.java",
+      "content": "class Menu {\n  var id: Int = 0\n  var name: String = \"\"\n  var price: Double = 0.0\n  var description: String = \"\"\n  var image: String = \"\"\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/UploadFragment.java",
+      "content": "class UploadFragment : Fragment() {\n  override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n    // TODO: Implement onCreateView\n  }\n\n  fun uploadImage(image: Bitmap) {\n    // TODO: Implement uploadImage\n  }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/EditFragment.java",
+      "content": "class EditFragment : Fragment() {\n  override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n    // TODO: Implement onCreateView\n  }\n\n  fun editDescription(description: String) {\n    // TODO: Implement editDescription\n  }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/PriceFragment.java",
+      "content": "class PriceFragment : Fragment() {\n  override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n    // TODO: Implement onCreateView\n  }\n\n  fun setPrice(price: Double) {\n    // TODO: Implement setPrice\n  }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/CommentFragment.java",
+      "content": "class CommentFragment : Fragment() {\n  override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n    // TODO: Implement onCreateView\n  }\n\n  fun likeComment() {\n    // TODO: Implement likeComment\n  }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_upload.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".UploadActivity\">\n    <ImageView\n        android:id=\"@+id/image_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <EditText\n        android:id=\"@+id/edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_edit.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".EditActivity\">\n    <EditText\n        android:id=\"@+id/edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_price.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".PriceActivity\">\n    <EditText\n        android:id=\"@+id/edit_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_comment.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".CommentActivity\">\n    <TextView\n        android:id=\"@+id/text_view\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"upload_image\">上传图片</string>\n    <string name=\"edit_description\">编辑描述</string>\n    <string name=\"set_price\">设置价格</string>\n    <string name=\"like_comment\">点赞</string>\n</resources>",
+      "encoding": "utf8"
+    }
+  ]
+}
