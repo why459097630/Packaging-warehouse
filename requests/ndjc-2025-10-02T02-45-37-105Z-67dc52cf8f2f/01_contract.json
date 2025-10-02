@@ -1,0 +1,49 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "NDJC core",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "NDJC core",
+      "NDJC:HOME_TITLE": "Hello core",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Start core"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": []
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": []
+    },
+    "manifest": {
+      "permissions": []
+    }
+  },
+  "files": [],
+  "resources": {}
+}
