@@ -25,6 +25,13 @@ on:
         description: "Preflight mode: warn (default) or strict"
         required: false
         default: "warn"
+      # （可选）透传物化所需的计划/编排（base64）
+      planB64:
+        description: "NdjcPlanV1 JSON (base64)"
+        required: false
+      orchestratorB64:
+        description: "Orchestrator result JSON (base64)"
+        required: false
   repository_dispatch:
     types: [generate-apk]
 
@@ -32,7 +39,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: android-build-${{ github.run_id }}
+  group: android-build-${{ github.event_name }}-${{ inputs.runId || github.event.client_payload.runId || inputs.branch || github.event.client_payload.ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -46,7 +53,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ inputs.branch || github.event.client_payload.branch || github.event.client_payload.ref || github.ref }}
+          ref: ${{ inputs.branch || github.event.client_payload.ref || github.ref }}
 
       - name: "Resolve inputs → env"
         id: resolve
@@ -54,38 +61,30 @@ jobs:
         run: |
           set -euo pipefail
           RUN_ID="${{ inputs.runId }}"
-          if [ -z "$RUN_ID" ]; then RUN_ID="${{ github.event.client_payload.runId }}"; fi
-          if [ -z "$RUN_ID" ]; then RUN_ID="ndjc-$(date -u +%Y%m%dT%H%M%SZ)"; fi
-          echo "RUN_ID=$RUN_ID" >> "$GITHUB_ENV"
+          if [ -z "${RUN_ID}" ]; then RUN_ID="${{ github.event.client_payload.runId }}"; fi
+          if [ -z "${RUN_ID}" ]; then RUN_ID="ndjc-$(date -u +%Y%m%dT%H%M%SZ)"; fi
+          echo "RUN_ID=${RUN_ID}" >> "$GITHUB_ENV"
 
           BR="${{ inputs.branch }}"
-          if [ -z "$BR" ]; then BR="${{ github.event.client_payload.branch }}"; fi
-          if [ -z "$BR" ]; then BR="${{ github.event.client_payload.ref }}"; fi
-          if [ -z "$BR" ]; then BR="${{ github.ref }}"; fi
+          if [ -z "${BR}" ]; then BR="${{ github.event.client_payload.ref }}"; fi
+          if [ -z "${BR}" ]; then BR="${{ github.ref }}"; fi
           BR="${BR#refs/heads/}"
-          echo "BUILD_BRANCH=$BR" >> "$GITHUB_ENV"
+          echo "BUILD_BRANCH=${BR}" >> "$GITHUB_ENV"
 
           PREFLIGHT="${{ inputs.preflight_mode }}"
-          if [ -z "$PREFLIGHT" ]; then PREFLIGHT="${{ github.event.client_payload.preflight_mode }}"; fi
-          if [ -z "$PREFLIGHT" ]; then PREFLIGHT="warn"; fi
-          echo "PREFLIGHT_MODE=$PREFLIGHT" >> "$GITHUB_ENV"
+          if [ -z "${PREFLIGHT}" ]; then PREFLIGHT="${{ github.event.client_payload.preflight_mode }}"; fi
+          if [ -z "${PREFLIGHT}" ]; then PREFLIGHT="warn"; fi
+          echo "PREFLIGHT_MODE=${PREFLIGHT}" >> "$GITHUB_ENV"
 
-          TMPL="${{ inputs.template || github.event.client_payload.template || '' }}"
-          echo "TEMPLATE=$TMPL" >> "$GITHUB_ENV"
-
-          APP_DIR_IN="${{ inputs.app_dir || '' }}"
-          echo "APP_DIR_IN=$APP_DIR_IN" >> "$GITHUB_ENV"
-
-          echo "runId=$RUN_ID" >> "$GITHUB_OUTPUT"
-          echo "branch=$BR" >> "$GITHUB_OUTPUT"
-          echo "preflight_mode=$PREFLIGHT" >> "$GITHUB_OUTPUT"
-          echo "template=$TMPL" >> "$GITHUB_OUTPUT"
+          echo "runId=${RUN_ID}"   >> "$GITHUB_OUTPUT"
+          echo "branch=${BR}"      >> "$GITHUB_OUTPUT"
+          echo "preflight_mode=${PREFLIGHT}" >> "$GITHUB_OUTPUT"
 
       - name: "Guard | require run branch"
         if: ${{ steps.resolve.outputs.branch == '' }}
         shell: bash
         run: |
-          echo "::error::inputs.branch/client_payload.branch/ref empty. Must provide a run branch like 'ndjc-run/<runId>'."
+          echo "::error::inputs.branch/client_payload.ref empty. Must provide a run branch like 'ndjc-run/<runId>'."
           exit 1
 
       - name: "Checkout run branch (resolved)"
@@ -100,7 +99,6 @@ jobs:
           echo "HEAD: $(git rev-parse HEAD)"
           echo "Triggered by: ${{ github.event_name }}"
           echo "inputs.branch: '${{ inputs.branch }}'"
-          echo "client_payload.branch: '${{ github.event.client_payload.branch }}'"
           echo "client_payload.ref: '${{ github.event.client_payload.ref }}'"
           echo "client_payload.sha: '${{ github.event.client_payload.sha }}'"
           git show --name-only --oneline -1
@@ -110,8 +108,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TEMPLATE="${{ steps.resolve.outputs.template }}"
-          APP_DIR_IN="${{ env.APP_DIR_IN }}"
+          TEMPLATE="${{ inputs.template || github.event.client_payload.template || '' }}"
+          APP_DIR_IN="${{ inputs.app_dir || '' }}"
           APP_DIR=""
           if [ -n "$APP_DIR_IN" ]; then
             APP_DIR="$APP_DIR_IN"
@@ -141,14 +139,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ ! -f ./gradlew ]; then echo "::error::gradlew missing"; exit 1; fi
-          if [ ! -d "$APP_DIR" ]; then echo "::error::APP_DIR '$APP_DIR' missing"; exit 1; fi
-          if [ ! -f "$APP_DIR/build.gradle" ] && [ ! -f "$APP_DIR/build.gradle.kts" ]; then
-            echo "::error::Gradle file missing under $APP_DIR"; exit 1
-          fi
-          if [ ! -f "$APP_DIR/src/main/AndroidManifest.xml" ]; then
-            echo "::error::AndroidManifest.xml missing under $APP_DIR/src/main"; exit 1
-          fi
+          test -f ./gradlew || { echo "::error::gradlew missing"; exit 1; }
+          test -d "$APP_DIR" || { echo "::error::APP_DIR '$APP_DIR' missing"; exit 1; }
+          test -f "$APP_DIR/build.gradle" -o -f "$APP_DIR/build.gradle.kts" || { echo "::error::Gradle file missing under $APP_DIR"; exit 1; }
+          test -f "$APP_DIR/src/main/AndroidManifest.xml" || { echo "::error::AndroidManifest.xml missing under $APP_DIR/src/main"; exit 1; }
 
       - name: "Ensure Python (alias)"
         shell: bash
@@ -159,6 +153,55 @@ jobs:
           fi
           python --version || true
 
+      # ----------------- 新增：物化（decode + apply） -----------------
+      - name: "NDJC | Materialize inputs (decode plan/orchestrator)"
+        id: materialize_inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "requests/${RUN_ID}" build-logs
+          PLAN_B64_IN="${{ inputs.planB64 || github.event.client_payload.planB64 || '' }}"
+          ORCH_B64_IN="${{ inputs.orchestratorB64 || github.event.client_payload.orchestratorB64 || '' }}"
+
+          if [ -n "$PLAN_B64_IN" ]; then
+            echo "$PLAN_B64_IN" | base64 -d > "requests/${RUN_ID}/02_plan.json" || { echo "::error::decode planB64 failed"; exit 1; }
+            echo "source=plan" >> "$GITHUB_OUTPUT"
+            echo "decoded plan → requests/${RUN_ID}/02_plan.json" | tee -a build-logs/materialize.log
+          elif [ -n "$ORCH_B64_IN" ]; then
+            echo "$ORCH_B64_IN" | base64 -d > "requests/${RUN_ID}/01_orchestrator.json" || { echo "::warning::decode orchestratorB64 failed"; }
+            echo "source=orchestrator" >> "$GITHUB_OUTPUT"
+            echo "decoded orchestrator → requests/${RUN_ID}/01_orchestrator.json" | tee -a build-logs/materialize.log
+          else
+            echo "source=none" >> "$GITHUB_OUTPUT"
+            echo "::warning:: no planB64/orchestratorB64 provided" | tee -a build-logs/materialize.log
+          fi
+
+      - name: "NDJC | Materialize (apply plan → template)"
+        if: ${{ steps.materialize_inputs.outputs.source == 'plan' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x scripts/ndjc-materialize.sh || true
+          if [ -x scripts/ndjc-materialize.sh ]; then
+            scripts/ndjc-materialize.sh "$APP_DIR" "requests/${RUN_ID}/02_plan.json" "requests/${RUN_ID}/03_apply_result.json" --strict
+          else
+            echo "::error:: scripts/ndjc-materialize.sh not found; please add the script or disable strict guards"
+            exit 1
+          fi
+
+      - name: "NDJC | Upload materialize logs"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: materialize-logs-${{ env.RUN_ID }}
+          path: |
+            build-logs/materialize.log
+            requests/${{ env.RUN_ID }}/02_plan.json
+            requests/${{ env.RUN_ID }}/01_orchestrator.json
+            requests/${{ env.RUN_ID }}/03_apply_result.json
+          if-no-files-found: ignore
+      # ----------------------------------------------------------------
+
       - name: "NDJC | Guards (strict: require 03_apply_result.json)"
         shell: bash
         run: |
@@ -167,7 +210,7 @@ jobs:
           echo "RUN_DIR=$RUN_DIR"
           ls -la "$RUN_DIR" || true
           if [ ! -f "$RUN_DIR/03_apply_result.json" ]; then
-            echo "::error:: $RUN_DIR/03_apply_result.json not found (no materialize/apply result committed by API)"
+            echo "::error:: $RUN_DIR/03_apply_result.json not found (materialize missing)"
             exit 1
           fi
 
@@ -185,14 +228,14 @@ jobs:
       - name: "NDJC | Preflight (anchors & resources)"
         id: preflight
         shell: bash
-        continue-on-error: ${{ steps.resolve.outputs.preflight_mode != 'strict' }}
+        continue-on-error: ${{ (inputs.preflight_mode || 'warn') != 'strict' }}
         run: |
           set -euo pipefail
           mkdir -p anchors build-logs
           if [ -x scripts/ndjc-preflight.sh ]; then
-            scripts/ndjc-preflight.sh "$APP_DIR" "${{ steps.resolve.outputs.preflight_mode }}" | tee build-logs/preflight.log
+            scripts/ndjc-preflight.sh "$APP_DIR" "${{ inputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
           elif [ -x .github/scripts/ndjc-preflight.sh ]; then
-            .github/scripts/ndjc-preflight.sh "$APP_DIR" "${{ steps.resolve.outputs.preflight_mode }}" | tee build-logs/preflight.log
+            .github/scripts/ndjc-preflight.sh "$APP_DIR" "${{ inputs.preflight_mode || 'warn' }}" | tee build-logs/preflight.log
           else
             echo "::warning::scripts/ndjc-preflight.sh not found; doing minimal checks" | tee build-logs/preflight.log
             [ -f "$APP_DIR/src/main/AndroidManifest.xml" ] || echo "::error::missing $APP_DIR/src/main/AndroidManifest.xml" | tee -a build-logs/preflight.log
@@ -217,10 +260,8 @@ jobs:
           mkdir -p build-logs
           {
             echo "=== JAVA ==="; java -version 2>&1 || true
-            echo
-            echo "=== Gradle Wrapper ==="; ./gradlew -v || true
-            echo
-            echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
+            echo; echo "=== Gradle Wrapper ==="; ./gradlew -v || true
+            echo; echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
           } | tee build-logs/versions-lock.pre.txt
           ./gradlew -p "$PROJ_DIR" :app:dependencies --configuration releaseRuntimeClasspath --console=plain --no-daemon > build-logs/dependency-tree.pre.txt 2>&1 || true
 
@@ -346,8 +387,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-logs-${{ env.RUN_ID }}
-          path: |
-            build-logs/**
+          path: build-logs/**
           if-no-files-found: ignore
 
       - name: "NDJC | Show build tail (on failure)"
@@ -365,10 +405,8 @@ jobs:
           mkdir -p build-logs
           {
             echo "=== JAVA ==="; java -version 2>&1 || true
-            echo
-            echo "=== Gradle Wrapper ==="; ./gradlew -v || true
-            echo
-            echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
+            echo; echo "=== Gradle Wrapper ==="; ./gradlew -v || true
+            echo; echo "=== SDK / Build-tools ==="; ls -1 "$ANDROID_SDK_ROOT/build-tools" 2>/dev/null || true
           } | tee build-logs/versions-lock.post.txt
           ./gradlew -p "$PROJ_DIR" :app:dependencies --configuration releaseRuntimeClasspath --console=plain --no-daemon > build-logs/dependency-tree.post.txt 2>&1 || true
 
