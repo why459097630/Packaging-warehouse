@@ -19,7 +19,7 @@ jobs:
       - name: Checkout (bootstrap)
         uses: actions/checkout@v4
         with:
-            fetch-depth: 0
+          fetch-depth: 0
 
       - name: Resolve inputs → env & summary
         id: resolve
@@ -33,12 +33,12 @@ jobs:
           [ -n "$TEMPLATE" ] || TEMPLATE="${TEMPLATE_DEFAULT}"
 
           if [ -z "$RUN_ID" ]; then
-            # 无 runId 时，用时间戳兜底，仍然要求能在仓库中找到 plan
             RUN_ID="ndjc-$(date -u +%Y-%m-%dT%H-%M%SZ)-${GITHUB_RUN_ID}"
           fi
 
           RUN_BRANCH="ndjc-run/${RUN_ID}"
           APP_DIR="templates/${TEMPLATE}/app"
+          TEMPLATE_ROOT="$(dirname "$APP_DIR")"
           REQ_DIR="requests/${RUN_ID}"
 
           # 2) 写入环境
@@ -47,25 +47,24 @@ jobs:
             echo "RUN_BRANCH=${RUN_BRANCH}"
             echo "TEMPLATE=${TEMPLATE}"
             echo "APP_DIR=${APP_DIR}"
+            echo "TEMPLATE_ROOT=${TEMPLATE_ROOT}"
             echo "REQ_DIR=${REQ_DIR}"
-            # 计划、应用结果文件规范路径（相对仓库根）
             echo "PLAN_JSON=${REQ_DIR}/02_plan.json"
             echo "APPLY_JSON=${REQ_DIR}/03_apply_result.json"
           } >> "$GITHUB_ENV"
 
-          # 3) 输出构建摘要（方便点击）
+          # 3) 输出构建摘要
           {
             echo "### NDJC build inputs"
             echo "- **Run ID:** \`${RUN_ID}\`"
             echo "- **Run branch:** [\`${RUN_BRANCH}\`](https://github.com/${{ github.repository }}/tree/${RUN_BRANCH})"
             echo "- **Template:** \`${TEMPLATE}\` — **APP_DIR:** \`${APP_DIR}\`"
+            echo "- **TEMPLATE_ROOT:** \`${TEMPLATE_ROOT}\`"
             echo "- **Requests (will be generated):** [\`requests/${RUN_ID}\`](https://github.com/${{ github.repository }}/tree/${RUN_BRANCH}/requests/${RUN_ID})"
             echo "- **Expect plan at:** \`${REQ_DIR}/02_plan.json\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # -------------------------------
       # 优先在 run 分支上构建 & 查计划；若 run 分支不存在则回退到 main
-      # -------------------------------
       - name: Checkout run branch
         id: checkout_run
         shell: bash
@@ -94,15 +93,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           PLAN_PATH="${PLAN_JSON}"
-
           found_at=""
-          # a) 先看当前所在分支（若之前成功切到 run 分支，就在 run 分支；否则是 main）
+
           if [ -f "${PLAN_PATH}" ]; then
             found_at="$(git rev-parse --abbrev-ref HEAD)"
           else
-            # b) 若当前是 run 分支但没找到，再到 main 尝试
             HEAD_B="$(git rev-parse --abbrev-ref HEAD)"
             if [ "${HEAD_B}" != "main" ]; then
               git checkout -q main
@@ -118,10 +114,7 @@ jobs:
           fi
 
           echo "PLAN_BRANCH=${found_at}" >> "$GITHUB_ENV"
-
-          {
-            echo "- **Found 02_plan.json at:** \`${PLAN_PATH}\` *(from ${found_at})*"
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Found 02_plan.json at:** \`${PLAN_PATH}\` *(from ${found_at})*" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Make ndjc-materialize.sh executable
         shell: bash
@@ -144,7 +137,23 @@ jobs:
           echo "APP_DIR=${APP_DIR}"
           scripts/ndjc-materialize.sh
 
-      # -------------- 可选：构建 Android（保持精简） --------------
+      # ---------- 强守卫：目录与 Gradle 文件 ----------
+      - name: Guards (template root & app module)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # 模板根必须有 settings.gradle(.kts)
+          if [[ ! -f "${TEMPLATE_ROOT}/settings.gradle" && ! -f "${TEMPLATE_ROOT}/settings.gradle.kts" ]]; then
+            echo "::error ::settings.gradle(.kts) not found under TEMPLATE_ROOT=${TEMPLATE_ROOT}"
+            exit 1
+          fi
+          # app 模块必须有 build.gradle(.kts)
+          if [[ ! -f "${APP_DIR}/build.gradle" && ! -f "${APP_DIR}/build.gradle.kts" ]]; then
+            echo "::error ::build.gradle(.kts) not found under APP_DIR=${APP_DIR}"
+            exit 1
+          fi
+
+      # -------------- 构建 Android：在模板根执行 --------------
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -154,19 +163,28 @@ jobs:
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Build (debug)
+      - name: Build (debug) at TEMPLATE_ROOT
         shell: bash
+        working-directory: ${{ env.TEMPLATE_ROOT }}
         run: |
           set -euo pipefail
-          ./gradlew :app:assembleDebug
+          chmod +x ./gradlew || true
+          ./gradlew --no-daemon --stacktrace :app:assembleDebug
 
       # -------------- 产出与诊断 --------------
-      - name: NDJC | Upload artifacts
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ndjc-apk-${{ env.RUN_ID }}
+          path: |
+            ${{ env.TEMPLATE_ROOT }}/app/build/outputs/apk/**/*.apk
+
+      - name: NDJC | Upload logs
         uses: actions/upload-artifact@v4
         with:
           name: ndjc-diag-${{ env.RUN_ID }}
           path: |
-            build-logs/**/* 
+            build-logs/**/*
             requests/${{ env.RUN_ID }}/02_plan.json
             requests/${{ env.RUN_ID }}/03_apply_result.json
           if-no-files-found: warn
