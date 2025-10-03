@@ -1,0 +1,96 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "欢迎光临牛太郎餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "zh-Hans",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh-Hans",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/example/niutao/MainActivity.kt",
+      "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\n\nclass MainActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n    }\n\n    fun uploadPhoto(view: View) {\n        // 上传照片逻辑\n    }\n\n    fun editIntroduction(view: View) {\n        // 编辑文字介绍逻辑\n    }\n\n    fun setPrice(view: View) {\n        // 设定价格逻辑\n    }\n\n    fun commentLike(view: View) {\n        // 评论点赞逻辑\n    }\n}",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/PhotoUploader.kt",
+      "content": "import android.content.Intent\nimport android.net.Uri\nimport android.os.Bundle\nimport android.provider.MediaStore\nimport androidx.appcompat.app.AppCompatActivity\n\nclass PhotoUploader : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        // 上传照片逻辑\n    }\n\n    fun uploadPhoto() {\n        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n        startActivityForResult(intent, 1)\n    }\n}",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <Button\n        android:id=\"@+id/upload_photo_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"\n        android:onClick=\"uploadPhoto\"/>\n    <Button\n        android:id=\"@+id/edit_introduction_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"编辑文字介绍\"\n        android:onClick=\"editIntroduction\"/>\n    <Button\n        android:id=\"@+id/set_price_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"设定价格\"\n        android:onClick=\"setPrice\"/>\n    <Button\n        android:id=\"@+id/comment_like_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论点赞\"\n        android:onClick=\"commentLike\"/>\n</LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"home_title\">欢迎光临牛太郎餐厅</string>\n    <string name=\"main_button_text\">上传菜品</string>\n</resources>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/values/arrays.xml",
+      "content": "<resources>\n    <string-array name=\"permissions\">\n        <item>android.permission.INTERNET</item>\n        <item>android.permission.ACCESS_FINE_LOCATION</item>\n        <item>android.permission.CAMERA</item>\n        <item>android.permission.READ_EXTERNAL_STORAGE</item>\n        <item>android.permission.WRITE_EXTERNAL_STORAGE</item>\n    </string-array>\n    <string-array name=\"locales\">\n        <item>zh-Hans</item>\n        <item>en</item>\n    </string-array>\n</resources>",
+      "encoding": "utf8",
+      "kind": "xml"
+    }
+  ],
+  "resources": {}
+}
