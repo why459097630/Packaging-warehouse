@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "NDJC core",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "NDJC core",
+    "NDJC:HOME_TITLE": "Hello core",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start core"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/example/ntrestaurant/MainActivity.kt",
+      "content": "import android.os.Bundle\nimport android.util.Log\nimport androidx.appcompat.app.AppCompatActivity\n\nclass MainActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntrestaurant/UploadActivity.kt",
+      "content": "import android.os.Bundle\nimport android.util.Log\nimport androidx.appcompat.app.AppCompatActivity\nimport android.content.Intent\nimport android.net.Uri\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.Toast\n\nclass UploadActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_upload)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val intent = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n            startActivityForResult(intent, 1)\n        }\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {\n            val uri = data.data\n            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)\n            val imageView = findViewById<ImageView>(R.id.imageView)\n            imageView.setImageBitmap(bitmap)\n        }\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntrestaurant/EditActivity.kt",
+      "content": "import android.os.Bundle\nimport android.util.Log\nimport androidx.appcompat.app.AppCompatActivity\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.Toast\n\nclass EditActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_edit)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val editText = findViewById<EditText>(R.id.editText)\n            val text = editText.text.toString()\n            Toast.makeText(this, text, Toast.LENGTH_SHORT).show()\n        }\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntrestaurant/PriceActivity.kt",
+      "content": "import android.os.Bundle\nimport android.util.Log\nimport androidx.appcompat.app.AppCompatActivity\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.Toast\n\nclass PriceActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_price)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val editText = findViewById<EditText>(R.id.editText)\n            val price = editText.text.toString()\n            Toast.makeText(this, price, Toast.LENGTH_SHORT).show()\n        }\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntrestaurant/CommentActivity.kt",
+      "content": "import android.os.Bundle\nimport android.util.Log\nimport androidx.appcompat.app.AppCompatActivity\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.Toast\n\nclass CommentActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            val editText = findViewById<EditText>(R.id.editText)\n            val comment = editText.text.toString()\n            Toast.makeText(this, comment, Toast.LENGTH_SHORT).show()\n        }\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntrestaurant/LikeActivity.kt",
+      "content": "import android.os.Bundle\nimport android.util.Log\nimport androidx.appcompat.app.AppCompatActivity\nimport android.widget.Button\nimport android.widget.Toast\n\nclass LikeActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_like)\n\n        val button = findViewById<Button>(R.id.button)\n        button.setOnClickListener {\n            Toast.makeText(this, \"已点赞\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传菜品\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_upload.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <ImageView\n        android:id=\"@+id/imageView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_edit.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"保存\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_price.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"保存\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_comment.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_like.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    }
+  ]
+}
