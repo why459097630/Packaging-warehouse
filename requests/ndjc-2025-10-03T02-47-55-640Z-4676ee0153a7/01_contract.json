@@ -1,0 +1,121 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "牛太郎餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "添加菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "zh"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/example/niutao/Customer.java",
+      "content": "data class Customer(val name: String, val phone: String)",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/Menu.java",
+      "content": "data class Menu(val name: String, val price: Double, val description: String, val image: String)",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/Comment.java",
+      "content": "data class Comment(val content: String, val likes: Int)",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/MainActivity.kt",
+      "content": "class MainActivity : AppCompatActivity() {\n    private lateinit var binding: ActivityMainBinding\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        binding = ActivityMainBinding.inflate(layoutInflater)\n        setContentView(binding.root)\n        val menu = Menu(\"牛太郎餐厅\", 20.0, \"牛太郎餐厅的美食\", \"https://example.com/image.jpg\")\n        val comment = Comment(\"很好吃\", 10)\n        // 添加菜品和评论逻辑\n    }\n}",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/MenuAdapter.kt",
+      "content": "class MenuAdapter(private val menus: List<Menu>) : RecyclerView.Adapter<MenuAdapter.ViewHolder>() {\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {\n        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.menu_item, parent, false))\n    }\n    override fun onBindViewHolder(holder: ViewHolder, position: Int) {\n        holder.bind(menus[position])\n    }\n    override fun getItemCount(): Int {\n        return menus.size\n    }\n    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {\n        fun bind(menu: Menu) {\n            // 绑定菜品数据\n        }\n    }\n}",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/CommentAdapter.kt",
+      "content": "class CommentAdapter(private val comments: List<Comment>) : RecyclerView.Adapter<CommentAdapter.ViewHolder>() {\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {\n        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.comment_item, parent, false))\n    }\n    override fun onBindViewHolder(holder: ViewHolder, position: Int) {\n        holder.bind(comments[position])\n    }\n    override fun getItemCount(): Int {\n        return comments.size\n    }\n    inner class ViewHolder(itemView: View) : RecyclerView.Adapter.ViewHolder(itemView) {\n        fun bind(comment: Comment) {\n            // 绑定评论数据\n        }\n    }\n}",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <androidx.recyclerview.widget.RecyclerView\n        android:id=\"@+id/menu_recycler\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\"/>\n    <androidx.recyclerview.widget.RecyclerView\n        android:id=\"@+id/comment_recycler\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\"/>\n</LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/menu_item.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"wrap_content\">\n    <ImageView\n        android:id=\"@+id/menu_image\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n    <TextView\n        android:id=\"@+id/menu_name\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n    <TextView\n        android:id=\"@+id/menu_price\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n</LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/comment_item.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"wrap_content\">\n    <TextView\n        android:id=\"@+id/comment_content\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/comment_like\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n</LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"menu_name\">牛太郎餐厅</string>\n    <string name=\"menu_price\">20.0</string>\n    <string name=\"comment_content\">很好吃</string>\n    <string name=\"comment_like\">点赞</string>\n</resources>",
+      "encoding": "utf8",
+      "kind": "xml"
+    }
+  ],
+  "resources": {}
+}
