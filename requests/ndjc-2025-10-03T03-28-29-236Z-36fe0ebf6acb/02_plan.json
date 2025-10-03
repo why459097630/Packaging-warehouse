@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "牛太郎餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "zh-CN"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.CAMERA",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/example/niutao/CameraActivity.kt",
+      "content": "// 上传照片功能\nimport android.content.Intent\nimport android.net.Uri\nimport android.os.Bundle\nimport android.provider.MediaStore\nimport androidx.appcompat.app.AppCompatActivity\n\nclass CameraActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n        startActivityForResult(intent, 1)\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == Activity.RESULT_OK && data != null) {\n            val uri = data.data\n            // 上传照片逻辑\n        }\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/EditActivity.kt",
+      "content": "// 编辑文字介绍功能\nimport android.os.Bundle\nimport android.widget.EditText\nimport androidx.appcompat.app.AppCompatActivity\n\nclass EditActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        val editText = findViewById<EditText>(R.id.edit_text)\n        editText.setText(intent.getStringExtra(\"text\"))\n    }\n\n    override fun onBackPressed() {\n        val text = findViewById<EditText>(R.id.edit_text).text.toString()\n        // 保存文字介绍逻辑\n        super.onBackPressed()\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/PriceActivity.kt",
+      "content": "// 设定价格功能\nimport android.os.Bundle\nimport android.widget.EditText\nimport androidx.appcompat.app.AppCompatActivity\n\nclass PriceActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        val editText = findViewById<EditText>(R.id.price_edit_text)\n        editText.setText(intent.getStringExtra(\"price\"))\n    }\n\n    override fun onBackPressed() {\n        val price = findViewById<EditText>(R.id.price_edit_text).text.toString()\n        // 保存价格逻辑\n        super.onBackPressed()\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/CommentActivity.kt",
+      "content": "// 评论点赞功能\nimport android.os.Bundle\nimport android.widget.Button\nimport androidx.appcompat.app.AppCompatActivity\n\nclass CommentActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        val button = findViewById<Button>(R.id.like_button)\n        button.setOnClickListener {\n            // 点赞逻辑\n        }\n    }\n}",
+      "encoding": "utf8"
+    }
+  ]
+}
