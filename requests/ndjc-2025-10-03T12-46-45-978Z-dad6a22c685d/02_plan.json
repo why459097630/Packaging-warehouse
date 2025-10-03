@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "牛太郎餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "添加菜品"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "zh"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.CAMERA",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/example/niutao/MainActivity.kt",
+      "content": "// MainActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\n\nclass MainActivity : AppCompatActivity() {\n    private lateinit var etTitle: EditText\n    private lateinit var etPrice: EditText\n    private lateinit var ivPhoto: ImageView\n    private lateinit var btnUpload: Button\n    private lateinit var btnEdit: Button\n    private lateinit var btnLike: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        etTitle = findViewById(R.id.et_title)\n        etPrice = findViewById(R.id.et_price)\n        ivPhoto = findViewById(R.id.iv_photo)\n        btnUpload = findViewById(R.id.btn_upload)\n        btnEdit = findViewById(R.id.btn_edit)\n        btnLike = findViewById(R.id.btn_like)\n\n        btnUpload.setOnClickListener {\n            // 上传照片逻辑\n        }\n\n        btnEdit.setOnClickListener {\n            // 编辑文字介绍逻辑\n        }\n\n        btnLike.setOnClickListener {\n            // 点赞逻辑\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/PhotoUploadActivity.kt",
+      "content": "// PhotoUploadActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.ImageView\nimport androidx.appcompat.app.AppCompatActivity\n\nclass PhotoUploadActivity : AppCompatActivity() {\n    private lateinit var ivPhoto: ImageView\n    private lateinit var btnUpload: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_photo_upload)\n\n        ivPhoto = findViewById(R.id.iv_photo)\n        btnUpload = findViewById(R.id.btn_upload)\n\n        btnUpload.setOnClickListener {\n            // 上传照片逻辑\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/EditActivity.kt",
+      "content": "// EditActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport androidx.appcompat.app.AppCompatActivity\n\nclass EditActivity : AppCompatActivity() {\n    private lateinit var etTitle: EditText\n    private lateinit var etPrice: EditText\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_edit)\n\n        etTitle = findViewById(R.id.et_title)\n        etPrice = findViewById(R.id.et_price)\n\n        // 编辑文字介绍逻辑\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/LikeActivity.kt",
+      "content": "// LikeActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.ImageView\nimport androidx.appcompat.app.AppCompatActivity\n\nclass LikeActivity : AppCompatActivity() {\n    private lateinit var ivLike: ImageView\n    private lateinit var btnLike: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_like)\n\n        ivLike = findViewById(R.id.iv_like)\n        btnLike = findViewById(R.id.btn_like)\n\n        // 点赞逻辑\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".MainActivity\">\n    <EditText\n        android:id=\"@+id/et_title\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"标题\" />\n    <EditText\n        android:id=\"@+id/et_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"价格\" />\n    <ImageView\n        android:id=\"@+id/iv_photo\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/btn_upload\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\" />\n    <Button\n        android:id=\"@+id/btn_edit\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"编辑\" />\n    <Button\n        android:id=\"@+id/btn_like\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\" />\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_photo_upload.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".PhotoUploadActivity\">\n    <ImageView\n        android:id=\"@+id/iv_photo\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/btn_upload\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\" />\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_edit.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".EditActivity\">\n    <EditText\n        android:id=\"@+id/et_title\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"标题\" />\n    <EditText\n        android:id=\"@+id/et_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"价格\" />\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_like.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".LikeActivity\">\n    <ImageView\n        android:id=\"@+id/iv_like\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/btn_like\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\" />\n</LinearLayout>",
+      "encoding": "utf8"
+    }
+  ]
+}
