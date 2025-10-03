@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "欢迎光临牛太郎餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "zh_CN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh_CN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/example/ntrestaurant/model/Menu.java",
+      "content": "data class Menu(val id: Int, val name: String, val description: String, val price: Double, val image: String, val likes: Int)\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntrestaurant/repository/MenuRepository.kt",
+      "content": "import android.content.Context\nimport android.net.Uri\nimport android.provider.MediaStore\n\nclass MenuRepository(private val context: Context) {\n    fun uploadMenuImage(imageUri: Uri) {\n        // 上传图片逻辑\n    }\n\n    fun editMenuDescription(menuId: Int, description: String) {\n        // 编辑菜品描述逻辑\n    }\n\n    fun setMenuPrice(menuId: Int, price: Double) {\n        // 设定菜品价格逻辑\n    }\n\n    fun likeMenu(menuId: Int) {\n        // 点赞菜品逻辑\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_menu.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".MenuActivity\">\n    <EditText\n        android:id=\"@+id/menu_name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\" />\n    <EditText\n        android:id=\"@+id/menu_description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品描述\" />\n    <EditText\n        android:id=\"@+id/menu_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品价格\" />\n    <Button\n        android:id=\"@+id/upload_image\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传图片\" />\n    <Button\n        android:id=\"@+id/like_menu\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\" />\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/menu/menu.xml",
+      "content": "<menu xmlns:android=\"http://schemas.android.com/apk/res/android\">\n    <item\n        android:id=\"@+id/upload_menu\"\n        android:title=\"上传菜品\" />\n    <item\n        android:id=\"@+id/edit_menu\"\n        android:title=\"编辑菜品\" />\n</menu>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"home_title\">欢迎光临牛太郎餐厅</string>\n    <string name=\"main_button_text\">上传菜品</string>\n</resources>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_menu_details.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".MenuDetailsActivity\">\n    <TextView\n        android:id=\"@+id/menu_name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"菜品名称\" />\n    <TextView\n        android:id=\"@+id/menu_description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"菜品描述\" />\n    <TextView\n        android:id=\"@+id/menu_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"菜品价格\" />\n    <ImageView\n        android:id=\"@+id/menu_image\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:src=\"@drawable/menu_image\" />\n    <Button\n        android:id=\"@+id/like_menu\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\" />\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    }
+  ],
+  "resources": {}
+}
