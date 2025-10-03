@@ -153,7 +153,7 @@ jobs:
             exit 1
           fi
 
-      # -------------- 构建 Android：在模板根执行 --------------
+      # -------------- 构建 Android（用仓库根的 gradlew） --------------
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -163,13 +163,15 @@ jobs:
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Build (debug) at TEMPLATE_ROOT
+      - name: Build (debug) with root wrapper
         shell: bash
-        working-directory: ${{ env.TEMPLATE_ROOT }}
         run: |
           set -euo pipefail
+          if [[ ! -f "./gradlew" ]]; then
+            echo "::error ::gradlew not found at repository root"; exit 1;
+          fi
           chmod +x ./gradlew || true
-          ./gradlew --no-daemon --stacktrace :app:assembleDebug
+          ./gradlew -p "${TEMPLATE_ROOT}" --no-daemon --stacktrace :app:assembleDebug
 
       # -------------- 产出与诊断 --------------
       - name: Upload APK artifacts
