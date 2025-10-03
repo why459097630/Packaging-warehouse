@@ -1,0 +1,111 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "牛太郎餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "zh",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/example/ntt/MainActivity.kt",
+      "content": "import androidx.appcompat.app.AppCompatActivity\nimport android.os.Bundle\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport com.bumptech.glide.Glide\nimport com.google.android.material.snackbar.Snackbar\n\nclass MainActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        imageView = findViewById(R.id.imageView)\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val imageUri = intent?.extras?.getString(\"imageUri\")\n            Glide.with(this).load(imageUri).into(imageView)\n            editText.setText(intent?.extras?.getString(\"description\"))\n            val price = intent?.extras?.getString(\"price\")?.toDouble()\n            Toast.makeText(this, \"价格:${price}\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntt/Menu.kt",
+      "content": "data class Menu(val imageUri: String, val description: String, val price: Double)\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntt/UploadActivity.kt",
+      "content": "import android.content.Intent\nimport android.net.Uri\nimport android.os.Bundle\nimport android.provider.MediaStore\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.google.android.material.snackbar.Snackbar\n\nclass UploadActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_upload)\n\n        imageView = findViewById(R.id.imageView)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n            startActivityForResult(intent, 1)\n        }\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {\n            val imageUri = data.data\n            imageView.setImageURI(imageUri)\n            val intent = Intent(this, MainActivity::class.java)\n            intent.putExtra(\"imageUri\", imageUri.toString())\n            startActivity(intent)\n        }\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <ImageView\n        android:id=\"@+id/imageView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\" />\n\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_upload.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <ImageView\n        android:id=\"@+id/imageView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\" />\n\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"home_title\">牛太郎餐厅</string>\n    <string name=\"main_button_text\">上传菜品</string>\n</resources>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/drawable/ic_launcher.png",
+      "content": "图片内容",
+      "encoding": "utf8",
+      "kind": "png"
+    },
+    {
+      "path": "app/src/main/res/values/arrays.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n    <string-array name=\"permissions\">\n        <item>android.permission.INTERNET</item>\n        <item>android.permission.READ_EXTERNAL_STORAGE</item>\n        <item>android.permission.WRITE_EXTERNAL_STORAGE</item>\n        <item>android.permission.ACCESS_FINE_LOCATION</item>\n    </string-array>\n</resources>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    }
+  ],
+  "resources": {}
+}
