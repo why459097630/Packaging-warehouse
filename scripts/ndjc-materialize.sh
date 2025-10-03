@@ -9,7 +9,6 @@
 set -euo pipefail
 
 # ---------- 参数/环境 ----------
-# 优先级：参数 > 环境变量 > 默认
 APP_DIR="${1:-${APP_DIR:-app}}"
 RUN_ID="${2:-${RUN_ID:-}}"
 
@@ -36,7 +35,6 @@ fi
 ts_utc() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 escape_sed() { printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'; }
 
-# 变更记录（行）
 CHANGES_FILE="$(mktemp)"
 add_change() {
   local file="$1" marker="$2" count="$3" kind="$4"
@@ -70,10 +68,14 @@ def sh_kv_map(name, d):
     out.append(')')
     return ' '.join(out)
 
-print(f'META_TEMPLATE="{meta.get("template","")}"')
-print(f'META_APPNAME="{meta.get("appName","")}"")
-print(f'META_PKG="{meta.get("packageId","")}"')
-print(f'META_MODE="{meta.get("mode","")}"')
+# 用 JSON 串安全输出，避免引号造成的语法错误
+def echo_meta(name, value):
+    print(f'{name}=' + json.dumps(value if value is not None else ""))
+
+echo_meta('META_TEMPLATE', meta.get('template',''))
+echo_meta('META_APPNAME',  meta.get('appName',''))
+echo_meta('META_PKG',      meta.get('packageId',''))
+echo_meta('META_MODE',     meta.get('mode',''))
 
 print(sh_kv_map('TEXT_KV', text))
 print(sh_kv_map('BLOCK_KV', block))
@@ -250,7 +252,7 @@ apply_well_known() {
     sed -i "s#applicationId 'com.ndjc.app'#applicationId '${pkg}'#g" "$gradle" 2>/dev/null || true
     sed -i "s#namespace 'com.ndjc.app'#namespace '${pkg}'#g" "$gradle" 2>/dev/null || true
     sed -i "s#package=\"com.ndjc.app\"#package=\"${pkg}\"#g" "$manifest" 2>/dev/null || true
-    # AGP8: 去掉 Manifest 顶层 package 属性（若仍存在）
+    # AGP8: 可移除 Manifest 顶层 package 属性（若仍存在）
     sed -i -E '1,40{s/[[:space:]]+package="[^"]+"//}' "$manifest" 2>/dev/null || true
     add_change "$gradle"  "NDJC:PACKAGE_NAME" 1 "semantic"
     add_change "$manifest" "NDJC:PACKAGE_NAME" 1 "semantic"
@@ -265,6 +267,12 @@ apply_well_known() {
 
 # ---------- companions 写入（并对齐 package / R 导入） ----------
 apply_companions() {
+  # 需要 jq
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "::warning::jq not found; skip companions"
+    return 0
+  fi
+
   jq -c '.companions[]? // empty' "$PLAN_JSON" | while read -r item; do
     rel=$(echo "$item" | jq -r '.path // empty')
     enc=$(echo "$item" | jq -r '.encoding // "utf8"')
@@ -295,7 +303,6 @@ apply_companions() {
 fix_r_imports() {
   local newpkg="${META_PKG:-}"
   [ -z "$newpkg" ] && return 0
-  # 仅替换模板中已知旧包名的 R 导入
   local candidates=("com.ndjc.app" "com.ndjc.demo.core")
   for p in "${candidates[@]}"; do
     grep -RIl --include='*.kt' --include='*.java' "^import[[:space:]]\+${p//./\\.}\.R" "$APP_DIR" | while read -r f; do
