@@ -1,0 +1,80 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.niutao.restaurant",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.niutao.restaurant",
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "牛太郎餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.niutao.restaurant",
+    "resConfigs": [
+      "zh-CN",
+      "en-US"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.CAMERA",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/model/Menu.java",
+      "content": "class Menu {\n    var id: String? = null\n    var name: String? = null\n    var price: Double? = null\n    var photo: String? = null\n    var introduction: String? = null\n    var likes: Int? = null\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/UploadFragment.kt",
+      "content": "import android.net.Uri\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.fragment.app.Fragment\nimport com.google.android.gms.tasks.OnFailureListener\nimport com.google.android.gms.tasks.OnSuccessListener\nimport com.google.firebase.storage.FirebaseStorage\nimport com.google.firebase.storage.StorageReference\nimport com.google.firebase.storage.UploadTask\nimport kotlinx.android.synthetic.main.fragment_upload.*\n\nclass UploadFragment : Fragment() {\n    private lateinit var storage: FirebaseStorage\n    private lateinit var storageReference: StorageReference\n\n    override fun onCreateView(\n        inflater: LayoutInflater,\n        container: ViewGroup?,\n        savedInstanceState: Bundle?\n    ): View? {\n        return inflater.inflate(R.layout.fragment_upload, container, false)\n    }\n\n    fun uploadPhoto(view: View) {\n        val intent = Intent(Intent.ACTION_PICK)\n        intent.type = \"image/*\"\n        startActivityForResult(intent, 0)\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 0 && resultCode == Activity.RESULT_OK && data != null) {\n            val uri = data.data\n            val photoRef = storageReference.child(\"photos/${uri.lastPathSegment}\")\n            photoRef.putFile(uri!!)\n                .addOnSuccessListener { taskSnapshot ->\n                    Toast.makeText(context, \"Photo uploaded\", Toast.LENGTH_SHORT).show()\n                }\n                .addOnFailureListener { e ->\n                    Toast.makeText(context, \"Error uploading photo\", Toast.LENGTH_SHORT).show()\n                }\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/EditFragment.kt",
+      "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.Toast\nimport androidx.fragment.app.Fragment\n\nclass EditFragment : Fragment() {\n    override fun onCreateView(\n        inflater: LayoutInflater,\n        container: ViewGroup?,\n        savedInstanceState: Bundle?\n    ): View? {\n        return inflater.inflate(R.layout.fragment_edit, container, false)\n    }\n\n    fun saveChanges(view: View) {\n        val name = edit_name.text.toString()\n        val introduction = edit_introduction.text.toString()\n        val price = edit_price.text.toString().toDouble()\n        val photo = photo_uri.toString()\n        val menu = Menu()\n        menu.name = name\n        menu.introduction = introduction\n        menu.price = price\n        menu.photo = photo\n        Toast.makeText(context, \"Changes saved\", Toast.LENGTH_SHORT).show()\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/fragment/LikeFragment.kt",
+      "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.Toast\nimport androidx.fragment.app.Fragment\n\nclass LikeFragment : Fragment() {\n    override fun onCreateView(\n        inflater: LayoutInflater,\n        container: ViewGroup?,\n        savedInstanceState: Bundle?\n    ): View? {\n        return inflater.inflate(R.layout.fragment_like, container, false)\n    }\n\n    fun like(view: View) {\n        val likes = likes_text.text.toString().toInt()\n        likes_text.text = (likes + 1).toString()\n        Toast.makeText(context, \"Liked\", Toast.LENGTH_SHORT).show()\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/fragment_upload.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <Button\n        android:id=\"@+id/button_upload\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Upload Photo\"/>\n    <ImageView\n        android:id=\"@+id/image_view\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/fragment_edit.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <EditText\n        android:id=\"@+id/edit_name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"Name\"/>\n    <EditText\n        android:id=\"@+id/edit_introduction\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"Introduction\"/>\n    <EditText\n        android:id=\"@+id/edit_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"Price\"/>\n    <Button\n        android:id=\"@+id/button_save\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Save Changes\"/>\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/fragment_like.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <TextView\n        android:id=\"@+id/likes_text\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Likes: 0\"/>\n    <Button\n        android:id=\"@+id/button_like\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Like\"/>\n</LinearLayout>\n",
+      "encoding": "utf8"
+    }
+  ]
+}
