@@ -1,0 +1,90 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.niutao.restaurant",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.niutao.restaurant",
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "牛太郎餐厅 - 美味的介绍",
+    "NDJC:PRIMARY_BUTTON_TEXT": "添加菜品"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.niutao.restaurant",
+    "resConfigs": [
+      "zh",
+      "en"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.CAMERA",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/model/Menu.java",
+      "content": "data class Menu(val id: Int, val name: String, val description: String, val price: Double, val image: String)",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/MenuActivity.java",
+      "content": "class MenuActivity : AppCompatActivity() {\n    private lateinit var menuAdapter: MenuAdapter\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_menu)\n\n        menuAdapter = MenuAdapter(this, mutableListOf())\n        recyclerView.adapter = menuAdapter\n    }\n\n    fun addMenu() {\n        val intent = Intent(this, AddMenuActivity::class.java)\n        startActivity(intent)\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/AddMenuActivity.java",
+      "content": "class AddMenuActivity : AppCompatActivity() {\n    private lateinit var imagePicker: ImagePicker\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_add_menu)\n\n        imagePicker = ImagePicker(this)\n        imagePicker.setOnPickResult { uri, file ->\n            val image = uri.toString()\n            // 上传照片\n        }\n    }\n\n    fun uploadImage() {\n        // 上传照片到服务器\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/MenuAdapter.java",
+      "content": "class MenuAdapter(private val context: Context, private val menus: List<Menu>) : RecyclerView.Adapter<MenuAdapter.ViewHolder>() {\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {\n        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_menu, parent, false))\n    }\n\n    override fun onBindViewHolder(holder: ViewHolder, position: Int) {\n        val menu = menus[position]\n        holder.name.text = menu.name\n        holder.description.text = menu.description\n        holder.price.text = \"¥${menu.price}\"",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/ViewHolder.java",
+      "content": "class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {\n    val name: TextView = itemView.findViewById(R.id.name)\n    val description: TextView = itemView.findViewById(R.id.description)\n    val price: TextView = itemView.findViewById(R.id.price)\n    val image: ImageView = itemView.findViewById(R.id.image)\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/CommentActivity.java",
+      "content": "class CommentActivity : AppCompatActivity() {\n    private lateinit var commentAdapter: CommentAdapter\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment)\n\n        commentAdapter = CommentAdapter(this, mutableListOf())\n        recyclerView.adapter = commentAdapter\n    }\n\n    fun addComment() {\n        val intent = Intent(this, AddCommentActivity::class.java)\n        startActivity(intent)\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/AddCommentActivity.java",
+      "content": "class AddCommentActivity : AppCompatActivity() {\n    private lateinit var commentText: EditText\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_add_comment)\n\n        commentText = findViewById(R.id.comment_text)\n    }\n\n    fun submitComment() {\n        val comment = commentText.text.toString()\n        // 上传评论\n    }\n}",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/CommentAdapter.java",
+      "content": "class CommentAdapter(private val context: Context, private val comments: List<Comment>) : RecyclerView.Adapter<CommentAdapter.ViewHolder>() {\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {\n        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_comment, parent, false))\n    }\n\n    override fun onBindViewHolder(holder: ViewHolder, position: Int) {\n        val comment = comments[position]\n        holder.text.text = comment.text\n        holder.like.text = \"${comment.like} likes\"",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/ViewHolder.java",
+      "content": "class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {\n    val text: TextView = itemView.findViewById(R.id.text)\n    val like: TextView = itemView.findViewById(R.id.like)\n}",
+      "encoding": "utf8"
+    }
+  ]
+}
