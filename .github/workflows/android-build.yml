@@ -1,144 +1,143 @@
-name: Android Build (NDJC)
+name: Android Build (NDJC • single-tree)
 
 on:
-  # 由前端服务触发
   repository_dispatch:
     types: [generate-apk]
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: ndjc-${{ github.event.client_payload.runId || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # --- 0) Bootstrap checkout（拿到仓库根目录，供脚本等使用） ---
-      - name: Checkout (bootstrap)
-        uses: actions/checkout@v4
-
-      # --- 1) 解析触发输入，写入 env & Job Summary ---
-      - name: Resolve inputs → env & write summary
+      # 1) 解析触发参数与关键路径
+      - name: Resolve inputs → env & summary
         id: resolve
         shell: bash
         run: |
           set -euo pipefail
 
-          # 从 repository_dispatch 里取 runId/branch；为空则兜底
           RUN_ID="${{ github.event.client_payload.runId || '' }}"
           RUN_BRANCH="${{ github.event.client_payload.branch || '' }}"
           TEMPLATE="${{ github.event.client_payload.template || 'circle-basic' }}"
+          MODE="${{ github.event.client_payload.mode || 'B' }}"
 
-          if [[ -z "${RUN_ID}" ]]; then
-            # 兜底：用当前 workflow run id 充当，但前端应始终传 runId
-            RUN_ID="ndjc-${GITHUB_RUN_ID}"
-          fi
-          if [[ -z "${RUN_BRANCH}" ]]; then
-            RUN_BRANCH="ndjc-run/${RUN_ID}"
-          fi
-
-          echo "RUN_ID=${RUN_ID}"           | tee -a "$GITHUB_ENV"
-          echo "RUN_BRANCH=${RUN_BRANCH}"   | tee -a "$GITHUB_ENV"
-          echo "TEMPLATE=${TEMPLATE}"       | tee -a "$GITHUB_ENV"
-
-          # 方便后续脚本：在不同工作树路径下分别 checkout
-          echo "REPO_RUN=repo_run"   | tee -a "$GITHUB_ENV"
-          echo "REPO_MAIN=repo_main" | tee -a "$GITHUB_ENV"
-
-          # 生成概要（包含可点击的分支与请求目录）
-          {
-            echo "### NDJC build inputs"
-            echo ""
-            echo "- Run ID: \`${RUN_ID}\`"
-            echo "- Run branch: [\`${RUN_BRANCH}\`](https://github.com/${{ github.repository }}/tree/${RUN_BRANCH})"
-            echo "- Requests (will be generated): [\`requests/${RUN_ID}\`](https://github.com/${{ github.repository }}/tree/${RUN_BRANCH}/requests/${RUN_ID})"
-            echo "- Expect plan at: \`requests/${RUN_ID}/02_plan.json\`"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      # --- 2) Checkout 运行分支：用于构建和日志落地 ---
-      - name: Checkout run branch (for build & logs)
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.RUN_BRANCH }}
-          path: ${{ env.REPO_RUN }}
-
-      # --- 3) Checkout main：作为请求文件回退目录 ---
-      - name: Checkout main (fallback for requests)
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          path: ${{ env.REPO_MAIN }}
-
-      # --- 4) 定位 02_plan.json（优先 run 分支，失败回退 main） ---
-      - name: Locate 02_plan.json (prefer run branch, fallback to main)
-        id: locate_plan
-        shell: bash
-        run: |
-          set -euo pipefail
-          set -x
-
-          PLAN_RUN="${REPO_RUN}/requests/${RUN_ID}/02_plan.json"
-          PLAN_MAIN="${REPO_MAIN}/requests/${RUN_ID}/02_plan.json"
-
-          if [[ -f "${PLAN_RUN}" ]]; then
-            PLAN_PATH="${PLAN_RUN}"
-            SRC="from run-branch"
-          elif [[ -f "${PLAN_MAIN}" ]]; then
-            PLAN_PATH="${PLAN_MAIN}"
-            SRC="from main"
-          else
-            echo "::error::02_plan.json not found in either '${PLAN_RUN}' or '${PLAN_MAIN}'."
+          if [[ -z "$RUN_ID" || -z "$RUN_BRANCH" ]]; then
+            echo "::error::repository_dispatch payload 缺少 runId 或 branch（必须）"
+            echo "payload.runId='${{ github.event.client_payload.runId }}'"
+            echo "payload.branch='${{ github.event.client_payload.branch }}'"
             exit 1
           fi
 
-          echo "PLAN_PATH=${PLAN_PATH}" | tee -a "$GITHUB_ENV"
-          echo "Found 02_plan.json at \`${PLAN_PATH#${PWD}/}\` (${SRC})" >> "$GITHUB_STEP_SUMMARY"
+          APP_DIR="templates/${TEMPLATE}/app"
+          REQ_DIR="requests/${RUN_ID}"
+          PLAN_JSON="${REQ_DIR}/02_plan.json"
+          APPLY_JSON="${REQ_DIR}/03_apply_result.json"
 
-      # --- 5) 保证 materialize 脚本可执行 ---
-      - name: Make ndjc-materialize.sh executable
+          {
+            echo "RUN_ID=$RUN_ID"
+            echo "RUN_BRANCH=$RUN_BRANCH"
+            echo "TEMPLATE=$TEMPLATE"
+            echo "MODE=$MODE"
+            echo "APP_DIR=$APP_DIR"
+            echo "REQ_DIR=$REQ_DIR"
+            echo "PLAN_JSON=$PLAN_JSON"
+            echo "APPLY_JSON=$APPLY_JSON"
+          } >> "$GITHUB_ENV"
+
+          {
+            echo "### NDJC (single-tree) inputs"
+            echo "- **Run ID:** \`$RUN_ID\`"
+            echo "- **Run branch:** [\`$RUN_BRANCH\`](https://github.com/${{ github.repository }}/tree/$RUN_BRANCH)"
+            echo "- **Template:** \`$TEMPLATE\`  →  **APP_DIR:** \`$APP_DIR\`"
+            echo "- **Requests:** [\`$REQ_DIR\`](https://github.com/${{ github.repository }}/tree/$RUN_BRANCH/$REQ_DIR)"
+            echo "- **Expect plan:** \`$PLAN_JSON\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # 2) 仅检出构建分支（单树）
+      - name: Checkout run branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RUN_BRANCH }}
+          fetch-depth: 0
+
+      # 3) 严格守卫：构建分支必须已经包含 02_plan.json
+      - name: Require plan in run branch
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x scripts/ndjc-materialize.sh
+          if [[ ! -f "$PLAN_JSON" ]]; then
+            echo "::error::缺少 $PLAN_JSON（请确保触发前已把 plan 提交到 $RUN_BRANCH）"
+            echo "pwd=$(pwd)"
+            echo "ls -la $REQ_DIR :"
+            ls -la "$REQ_DIR" || true
+            exit 1
+          fi
+          echo "- Found plan at \`$PLAN_JSON\`" >> "$GITHUB_STEP_SUMMARY"
 
-      # --- 6) 执行 Materialize（把 plan 应用到模板） ---
+      # 4) materialize 脚本可执行
+      - name: Make ndjc-materialize.sh executable
+        shell: bash
+        run: chmod +x scripts/ndjc-materialize.sh
+
+      # 5) 物化（把 plan 应用到模板）
+      #    规范参数顺序：PLAN_PATH APP_DIR APPLY_JSON
       - name: NDJC | Materialize (apply plan → template)
         shell: bash
         run: |
           set -euo pipefail
-          ./scripts/ndjc-materialize.sh "${PLAN_PATH}"
+          echo "PLAN_JSON=$PLAN_JSON"
+          echo "APP_DIR=$APP_DIR"
+          echo "APPLY_JSON=$APPLY_JSON"
+          ./scripts/ndjc-materialize.sh "$PLAN_JSON" "$APP_DIR" "$APPLY_JSON"
 
-      # ====== （可选）后续真实构建环节：需要时放开 ======
+      # 6) Java / Gradle（如需实际打包可启用 assemble）
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
 
-      - name: Setup Gradle cache
-        uses: gradle/actions/setup-gradle@v4
-
-      # 你可以根据模板/产物开启 assembleDebug 等；当前占位以便后续对接
       - name: Build (debug)
         shell: bash
         run: |
-          echo "No-op build step (hook for real Gradle tasks)."
+          set -euo pipefail
+          # 如需真实构建，请取消下一行注释
+          # ./gradlew -p "$(dirname "$APP_DIR")" :app:assembleDebug --stacktrace --no-daemon || true
+          echo "Skip real assemble in this profile."
 
-      # --- 7) 上传 materialize 相关日志/快照（使用 v4，避免 v3 废弃问题） ---
-      - name: NDJC | Upload materialize logs
+      # 7) 上传诊断/日志/请求产物（v4）
+      - name: Upload NDJC artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ndjc-diag-${{ env.RUN_ID }}
+          name: ndjc-${{ env.RUN_ID }}
           if-no-files-found: warn
           path: |
+            ${{ env.REQ_DIR }}/**
             build-logs/**
-            requests/${{ env.RUN_ID }}/03_apply_result.json
-            actions-summary.txt
-            build-logs/**/*.txt
-            build-logs/**/*.log
             **/build/reports/**
             **/build/outputs/**
 
-      # --- 8) 结束 ---
-      - name: Complete job
-        run: echo "Done."
+      # 8) 可选：把 requests 回写到构建分支（便于在分支里直接查看）
+      - name: Commit requests back to run branch
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name  "ndjc-bot"
+          git config user.email "ndjc-bot@users.noreply.github.com"
+          git add "${REQ_DIR}" || true
+          if ! git diff --cached --quiet; then
+            git commit -m "NDJC ${RUN_ID}: add logs & apply result"
+            git push origin "${RUN_BRANCH}"
+          else
+            echo "No changes to commit in ${REQ_DIR}"
+          fi
