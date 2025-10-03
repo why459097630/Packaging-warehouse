@@ -135,19 +135,34 @@ jobs:
           echo "PLAN_JSON=${PLAN_JSON}"
           echo "APPLY_JSON=${APPLY_JSON}"
           echo "APP_DIR=${APP_DIR}"
-          scripts/ndjc-materialize.sh
+          # 关键：把 APP_DIR、RUN_ID 作为参数传进去
+          scripts/ndjc-materialize.sh "${APP_DIR}" "${RUN_ID}"
+
+      # 两步只读诊断（不影响通过，便于排查）
+      - name: Show modified files after materialize
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Diff after materialize (expect changes under ${APP_DIR})"
+          git status --porcelain
+          git diff --name-only | sed 's/^/ - /'
+
+      - name: Anchor scan (warn if anchors remain)
+        shell: bash
+        run: |
+          set -euo pipefail
+          hits=$(grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" | wc -l || true)
+          echo "::notice ::anchor_hits=${hits}"
 
       # ---------- 强守卫：目录与 Gradle 文件 ----------
       - name: Guards (template root & app module)
         shell: bash
         run: |
           set -euo pipefail
-          # 模板根必须有 settings.gradle(.kts)
           if [[ ! -f "${TEMPLATE_ROOT}/settings.gradle" && ! -f "${TEMPLATE_ROOT}/settings.gradle.kts" ]]; then
             echo "::error ::settings.gradle(.kts) not found under TEMPLATE_ROOT=${TEMPLATE_ROOT}"
             exit 1
           fi
-          # app 模块必须有 build.gradle(.kts)
           if [[ ! -f "${APP_DIR}/build.gradle" && ! -f "${APP_DIR}/build.gradle.kts" ]]; then
             echo "::error ::build.gradle(.kts) not found under APP_DIR=${APP_DIR}"
             exit 1
