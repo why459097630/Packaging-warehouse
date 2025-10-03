@@ -1,0 +1,117 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.niutao.restaurant",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.niutao.restaurant",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "牛太郎餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.niutao.restaurant",
+      "resConfigs": [
+        "zh",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/model/Menu.java",
+      "content": "data class Menu(val id: Int, val name: String, val description: String, val price: Double, val image: String)\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/repository/MenuRepository.java",
+      "content": "interface MenuRepository {\n    fun getMenu(): List<Menu>\n    fun uploadMenu(menu: Menu)\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/MenuActivity.java",
+      "content": "class MenuActivity : AppCompatActivity() {\n    private lateinit var menuRepository: MenuRepository\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_menu)\n        menuRepository = MenuRepositoryImpl()\n    }\n\n    fun uploadMenu() {\n        val menu = Menu(1, \"牛太郎餐厅\", \"牛太郎餐厅的介绍\", 10.99, \"image.jpg\")\n        menuRepository.uploadMenu(menu)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/MenuFragment.java",
+      "content": "class MenuFragment : Fragment() {\n    private lateinit var menuRepository: MenuRepository\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        return inflater.inflate(R.layout.fragment_menu, container, false)\n    }\n\n    fun uploadMenu() {\n        val menu = Menu(1, \"牛太郎餐厅\", \"牛太郎餐厅的介绍\", 10.99, \"image.jpg\")\n        menuRepository.uploadMenu(menu)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/repository/MenuRepositoryImpl.java",
+      "content": "class MenuRepositoryImpl : MenuRepository {\n    override fun getMenu(): List<Menu> {\n        // 从数据库或网络获取菜单列表\n        return listOf(Menu(1, \"牛太郎餐厅\", \"牛太郎餐厅的介绍\", 10.99, \"image.jpg\"))\n    }\n\n    override fun uploadMenu(menu: Menu) {\n        // 上传菜单到服务器\n        println(\"上传菜单成功\")\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_menu.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/menu_name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\"/>\n    <EditText\n        android:id=\"@+id/menu_description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品介绍\"/>\n    <EditText\n        android:id=\"@+id/menu_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品价格\"/>\n    <Button\n        android:id=\"@+id/upload_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传菜品\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/fragment_menu.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <ImageView\n        android:id=\"@+id/menu_image\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <TextView\n        android:id=\"@+id/menu_name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <TextView\n        android:id=\"@+id/menu_description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <TextView\n        android:id=\"@+id/menu_price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/like_button\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"menu_name\">菜品名称</string>\n    <string name=\"menu_description\">菜品介绍</string>\n    <string name=\"menu_price\">菜品价格</string>\n    <string name=\"upload_button\">上传菜品</string>\n    <string name=\"like_button\">点赞</string>\n</resources>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/drawable/image.jpg",
+      "content": "一张图片",
+      "encoding": "utf8",
+      "kind": "image"
+    }
+  ],
+  "resources": {}
+}
