@@ -8,7 +8,8 @@
 #   requests/<RUN_ID>/actions-summary.txt
 set -euo pipefail
 
-APP_DIR="${1:-app}"
+# 允许参数 > 环境变量 > 默认值 的优先级
+APP_DIR="${1:-${APP_DIR:-app}}"
 RUN_ID="${2:-${RUN_ID:-}}"
 
 if [ -z "${RUN_ID:-}" ]; then
@@ -59,7 +60,6 @@ lists = plan.get('lists',{}) or plan.get('LISTS',{}) or {}
 iff   = plan.get('if',{})   or plan.get('IF',{})   or {}
 
 def sh_kv_map(name, d):
-    # declare -A NAME=(["k"]="v" ...)
     out = [f'declare -gA {name}=(']
     for k,v in d.items():
         k = str(k); v = '' if v is None else str(v)
@@ -75,7 +75,7 @@ print(f'META_MODE="{meta.get("mode","")}"')
 
 print(sh_kv_map('TEXT_KV', text))
 print(sh_kv_map('BLOCK_KV', block))
-# lists: ensure list of strings; also coerce primitives to single item
+# lists to assoc with \x1f-joined values
 lists_norm = {}
 for k,v in lists.items():
     if isinstance(v,list):
@@ -84,7 +84,6 @@ for k,v in lists.items():
         lists_norm[k] = []
     else:
         lists_norm[k] = [str(v)]
-# encode list map as declare -A with \x1f join
 print('declare -gA LISTS_KV=(' +
       ' '.join([f'["{k}"]="' + "\x1f".join(v) + '"' for k,v in lists_norm.items()]) + ')')
 
@@ -95,7 +94,7 @@ PY
 # apply python → bash
 eval "$(read_plan)"
 
-# --------- hardening: ensure 4 kvs are assoc arrays ----------
+# --------- hardening ----------
 ensure_assoc() {
   local name="$1"
   if ! declare -p "$name" >/dev/null 2>&1; then
@@ -109,9 +108,8 @@ ensure_assoc BLOCK_KV
 ensure_assoc LISTS_KV
 ensure_assoc IFCOND_KV
 
-# decode LISTS_KV values (split by \x1f) to bash arrays when需要
+# decode LISTS_KV value to lines
 get_list_items() {
-  # $1 key  -> print items one per line
   local raw="${LISTS_KV[$1]-}"
   [ -z "$raw" ] && return 0
   python - "$raw" <<'PY'
@@ -133,7 +131,6 @@ missing_list=0
 missing_if=0
 
 # ---------- file selection ----------
-# 普遍地在模板中常见的后缀；可按需补
 mapfile -t WORK_FILES < <(find "$APP_DIR" -type f \( \
   -name "*.xml" -o -name "*.kt" -o -name "*.kts" -o -name "*.gradle" -o \
   -name "*.pro" -o -name "AndroidManifest.xml" -o -name "*.txt" \
@@ -158,10 +155,7 @@ replace_text_in_file() {
   return 0
 }
 
-# ---------- block replacement (3 styles) ----------
-# XML:   <!-- BLOCK:NAME --> ... <!-- END_BLOCK -->
-# Line:  // BLOCK:NAME       ... // END_BLOCK
-# C:     /* BLOCK:NAME */    ... /* END_BLOCK */
+# ---------- block replacement ----------
 replace_block_in_file() {
   local file="$1" name="$2" body="$3"
   local cnt=0 new_body
@@ -172,12 +166,12 @@ replace_block_in_file() {
     perl -0777 -i -pe 's/<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*END_BLOCK\s*-->/<!-- BLOCK:'"$name"' -->\n'"$new_body"'\n<!-- END_BLOCK -->/s' "$file"
     cnt=$((cnt+1))
   fi
-  # // line comment region
+  # // region
   if perl -0777 -ne 'exit 1 unless /\/\/\s*BLOCK:'"$name"'.*?\/\/\s*END_BLOCK/s' "$file"; then
     perl -0777 -i -pe 's/\/\/\s*BLOCK:'"$name"'.*?\/\/\s*END_BLOCK/\/\/ BLOCK:'"$name"'\n'"$new_body"'\n\/\/ END_BLOCK/s' "$file"
     cnt=$((cnt+1))
   fi
-  # /* */ c-style region
+  # /* */ region
   if perl -0777 -ne 'exit 1 unless /\/\*\s*BLOCK:'"$name"'\s*\*\/.*?\/\*\s*END_BLOCK\s*\*\//s' "$file"; then
     perl -0777 -i -pe 's/\/\*\s*BLOCK:'"$name"'\s*\*\/.*?\/\*\s*END_BLOCK\s*\*\//\/\* BLOCK:'"$name"' \*\/\n'"$new_body"'\n\/\* END_BLOCK \*\//s' "$file"
     cnt=$((cnt+1))
@@ -192,15 +186,11 @@ replace_block_in_file() {
 }
 
 # ---------- list replacement ----------
-# Region form:
-#   ... LIST:NAME ... (template chunk) ... END_LIST ...
-# The template chunk will be duplicated per item, replacing ${ITEM}
 replace_list_in_file() {
   local file="$1" name="$2"
   local items; items="$(get_list_items "$name" || true)"
   [ -z "$items" ] && return 1
 
-  # capture region and inner template
   if ! perl -0777 -ne 'exit 1 unless /LIST:'"$name"'.*?END_LIST/s' "$file"; then
     return 1
   fi
@@ -209,10 +199,8 @@ replace_list_in_file() {
   tmpl="$(perl -0777 -ne '
     if (/LIST:'"$name"'\s*(.*)\s*END_LIST/s) { print($1) }
   ' "$file")"
-
   [ -z "$tmpl" ] && return 1
 
-  # render with ${ITEM}
   local rendered=""
   while IFS= read -r it; do
     rendered+=$(python - <<PY
@@ -230,17 +218,11 @@ PY
   return 0
 }
 
-# ---------- IF replacement (very simple on/off) ----------
-# Region form (任一风格均可):
-#   IF:NAME ... END_IF
-# 若 IFCOND_KV["NAME"] 为真(非空且不为 "false"/"0") → 保留区域；否则清空区域
+# ---------- IF replacement ----------
 replace_if_in_file() {
   local file="$1" name="$2" cond="$3"
   local truthy=0
-  case "${cond,,}" in
-    ""|"false"|"0"|"no"|"off") truthy=0;;
-    *) truthy=1;;
-  esac
+  case "${cond,,}" in ""|"false"|"0"|"no"|"off") truthy=0;; *) truthy=1;; esac
   local hit=0
   # xml
   if perl -0777 -ne 'exit 1 unless /<!--\s*IF:'"$name"'\s*-->.*?<!--\s*END_IF\s*-->/s' "$file"; then
@@ -251,7 +233,7 @@ replace_if_in_file() {
       perl -0777 -i -pe 's/<!--\s*IF:'"$name"'\s*-->.*?<!--\s*END_IF\s*-->/<!-- IF:'"$name"' -->\n<!-- END_IF -->/s' "$file"
     fi
   fi
-  # // line
+  # //
   if perl -0777 -ne 'exit 1 unless /\/\/\s*IF:'"$name"'.*?\/\/\s*END_IF/s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
@@ -260,7 +242,7 @@ replace_if_in_file() {
       perl -0777 -i -pe 's/\/\/\s*IF:'"$name"'.*?\/\/\s*END_IF/\/\/ IF:'"$name"'\n\/\/ END_IF/s' "$file"
     fi
   fi
-  # /* */ c-style
+  # /* */
   if perl -0777 -ne 'exit 1 unless /\/\*\s*IF:'"$name"'\s*\*\/.*?\/\*\s*END_IF\s*\*\//s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
@@ -277,19 +259,64 @@ replace_if_in_file() {
   return 1
 }
 
+# ---------- well-known semantic replacements ----------
+apply_well_known() {
+  local gradle="${APP_DIR}/build.gradle"
+  local manifest="${APP_DIR}/src/main/AndroidManifest.xml"
+  local strings="${APP_DIR}/src/main/res/values/strings.xml"
+
+  local pkg="${TEXT_KV['NDJC:PACKAGE_NAME']-}"
+  local label="${TEXT_KV['NDJC:APP_LABEL']-}"
+
+  if [[ -n "${pkg:-}" ]]; then
+    sed -i "s#applicationId 'com.ndjc.app'#applicationId '${pkg}'#g" "$gradle" 2>/dev/null || true
+    sed -i "s#namespace 'com.ndjc.app'#namespace '${pkg}'#g" "$gradle" 2>/dev/null || true
+    sed -i "s#package=\"com.ndjc.app\"#package=\"${pkg}\"#g" "$manifest" 2>/dev/null || true
+    add_change "$gradle"  "NDJC:PACKAGE_NAME" 1 "semantic"
+    add_change "$manifest" "NDJC:PACKAGE_NAME" 1 "semantic"
+  fi
+
+  if [[ -n "${label:-}" && -f "$strings" ]]; then
+    # 兜底把模板默认文案替换为 label（如需可改为替换具体锚点名）
+    sed -i "s#NDJC circle#${label}#g" "$strings" || true
+    sed -i "s#Welcome to NDJC circle!#${label}#g" "$strings" || true
+    add_change "$strings" "NDJC:APP_LABEL" 1 "semantic"
+  fi
+}
+
+# ---------- companions writer (path 相对 APP_DIR；去掉开头的 'app/' 前缀) ----------
+apply_companions() {
+  jq -c '.companions[]? // empty' "$PLAN_JSON" | while read -r item; do
+    rel=$(echo "$item" | jq -r '.path // empty')
+    enc=$(echo "$item" | jq -r '.encoding // "utf8"')
+    content=$(echo "$item" | jq -r '.content // ""')
+    [ -z "$rel" ] && continue
+
+    rel="${rel#app/}"
+    abs="${APP_DIR}/${rel}"
+    mkdir -p "$(dirname "$abs")"
+    if [ "$enc" = "base64" ]; then
+      echo "$content" | base64 -d > "$abs"
+    else
+      printf "%s" "$content" > "$abs"
+    fi
+    resources_written=$((resources_written+1))
+    add_change "$abs" "companion" 1 "resource"
+  done
+}
+
 # ---------- apply all ----------
 apply_all() {
-  local hit any file k v
+  local file k v
+  # 0) 先做“语义替换”和 companions 落地
+  apply_well_known
+  apply_companions
 
   # 1) text
   for file in "${WORK_FILES[@]}"; do
     for k in "${!TEXT_KV[@]}"; do
       v="${TEXT_KV[$k]}"
-      if replace_text_in_file "$file" "$k" "$v"; then
-        : # counted inside
-      else
-        :
-      fi
+      replace_text_in_file "$file" "$k" "$v" || true
     done
   done
 
@@ -297,22 +324,14 @@ apply_all() {
   for file in "${WORK_FILES[@]}"; do
     for k in "${!BLOCK_KV[@]}"; do
       v="${BLOCK_KV[$k]}"
-      if replace_block_in_file "$file" "$k" "$v"; then
-        : 
-      else
-        :
-      fi
+      replace_block_in_file "$file" "$k" "$v" || true
     done
   done
 
   # 3) lists
   for file in "${WORK_FILES[@]}"; do
     for k in "${!LISTS_KV[@]}"; do
-      if replace_list_in_file "$file" "$k"; then
-        : 
-      else
-        :
-      fi
+      replace_list_in_file "$file" "$k" || true
     done
   done
 
@@ -320,21 +339,16 @@ apply_all() {
   for file in "${WORK_FILES[@]}"; do
     for k in "${!IFCOND_KV[@]}"; do
       v="${IFCOND_KV[$k]}"
-      if replace_if_in_file "$file" "$k" "$v"; then
-        : 
-      else
-        :
-      fi
+      replace_if_in_file "$file" "$k" "$v" || true
     done
   done
 }
 
 apply_all || true
 
-# 补充 missing 统计（只统计“完全未命中”的锚点个数）
+# ---------- missing 统计 ----------
 for k in "${!TEXT_KV[@]}";   do grep -RFl -- "${k}" "${APP_DIR}" >/dev/null 2>&1 || missing_text=$((missing_text+1)); done
 for k in "${!BLOCK_KV[@]}";  do
-  # 三类包围式任一命中则认为存在
   if ! grep -RIl -E "(<!-- *BLOCK:${k} *-->|// *BLOCK:${k}|/\* *BLOCK:${k} *\*/)" "${APP_DIR}" >/dev/null 2>&1; then
     missing_block=$((missing_block+1))
   fi
@@ -350,7 +364,7 @@ replaced_total=$((replaced_text+replaced_block+replaced_list+replaced_if))
 
 mkdir -p "$REQ_DIR"
 
-# 03_apply_result.json （与之前结构兼容：只汇总计数）
+# 03_apply_result.json：统计结果
 cat > "$APPLY_JSON" <<JSON
 {
   "replaced_total": ${replaced_total},
