@@ -1,0 +1,111 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "牛太郎餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "zh",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/example/ntcanteen/model/Menu.java",
+      "content": "data class Menu(val id: Int, val name: String, val description: String, val price: Double, val image: String)\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntcanteen/dao/MenuDao.java",
+      "content": "interface MenuDao {\n    suspend fun insert(menu: Menu)\n    suspend fun update(menu: Menu)\n    suspend fun delete(id: Int)\n    suspend fun getAll(): List<Menu>\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntcanteen/ui/MenuActivity.java",
+      "content": "class MenuActivity : AppCompatActivity() {\n    private lateinit var menuDao: MenuDao\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_menu)\n\n        menuDao = MenuDaoImpl(this)\n    }\n\n    fun uploadMenu() {\n        // 上传菜品逻辑\n    }\n\n    fun editMenu() {\n        // 编辑菜品逻辑\n    }\n\n    fun setPrice() {\n        // 设定价格逻辑\n    }\n\n    fun like() {\n        // 点赞逻辑\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntcanteen/ui/MenuAdapter.java",
+      "content": "class MenuAdapter(private val menuList: List<Menu>) : RecyclerView.Adapter<MenuAdapter.ViewHolder>() {\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {\n        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_menu, parent, false))\n    }\n\n    override fun onBindViewHolder(holder: ViewHolder, position: Int) {\n        holder.bind(menuList[position])\n    }\n\n    override fun getItemCount(): Int {\n        return menuList.size\n    }\n\n    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {\n        fun bind(menu: Menu) {\n            // 绑定菜品数据\n        }\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntcanteen/ui/MenuFragment.java",
+      "content": "class MenuFragment : Fragment() {\n    private lateinit var menuAdapter: MenuAdapter\n\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\n        return inflater.inflate(R.layout.fragment_menu, container, false)\n    }\n\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\n        super.onViewCreated(view, savedInstanceState)\n        menuAdapter = MenuAdapter(MenuDaoImpl(this).getAll())\n        recyclerView.adapter = menuAdapter\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntcanteen/ui/MenuFragment.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <androidx.recyclerview.widget.RecyclerView\n        android:id=\"@+id/recyclerView\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntcanteen/ui/MenuActivity.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <EditText\n        android:id=\"@+id/name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"名称\"/>\n    <EditText\n        android:id=\"@+id/description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"描述\"/>\n    <EditText\n        android:id=\"@+id/price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"价格\"/>\n    <Button\n        android:id=\"@+id/upload\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntcanteen/ui/MenuAdapter.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n    <ImageView\n        android:id=\"@+id/image\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <TextView\n        android:id=\"@+id/name\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <TextView\n        android:id=\"@+id/description\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <TextView\n        android:id=\"@+id/price\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/like\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    }
+  ],
+  "resources": {}
+}
