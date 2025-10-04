@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "牛太郎餐厅 - 美味的介绍菜品",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "zh-Hans"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.CAMERA",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.READ_EXTERNAL_STORAGE"
+    ],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/example/ntcanteen/MainActivity.kt",
+      "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.bumptech.glide.Glide\nimport com.example.ntcanteen.R\nimport java.io.File\nimport java.io.IOException\nimport java.util.UUID\nimport kotlin.random.Random\n\nclass MainActivity : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        imageView = findViewById(R.id.imageView)\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            uploadPhoto()\n        }\n    }\n\n    private fun uploadPhoto() {\n        val photoFile = File(getExternalFilesDir(null), UUID.randomUUID().toString() + \".jpg\")\n        try {\n            val bitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(MediaStore.Images.Media.EXTERNAL_CONTENT_URI))\n            val outputStream = FileOutputStream(photoFile)\n            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)\n            outputStream.close()\n            Glide.with(this).load(photoFile).into(imageView)\n            Toast.makeText(this, \"图片上传成功\", Toast.LENGTH_SHORT).show()\n        } catch (e: IOException) {\n            Toast.makeText(this, \"图片上传失败\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntcanteen/Menu.kt",
+      "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.bumptech.glide.Glide\nimport com.example.ntcanteen.R\n\nclass Menu : AppCompatActivity() {\n    private lateinit var imageView: ImageView\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_menu)\n\n        imageView = findViewById(R.id.imageView)\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            editMenu()\n        }\n    }\n\n    private fun editMenu() {\n        val price = editText.text.toString().toDouble()\n        val comment = \"${price}元\"\n        Toast.makeText(this, \"菜品价格设置为:${comment}\", Toast.LENGTH_SHORT).show()\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/ntcanteen/Comment.kt",
+      "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.ntcanteen.R\n\nclass Comment : AppCompatActivity() {\n    private lateinit var editText: EditText\n    private lateinit var button: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment)\n\n        editText = findViewById(R.id.editText)\n        button = findViewById(R.id.button)\n\n        button.setOnClickListener {\n            likeComment()\n        }\n    }\n\n    private fun likeComment() {\n        val comment = editText.text.toString()\n        val likeCount = Random.nextInt(1, 100)\n        Toast.makeText(this, \"评论点赞数:${likeCount}\", Toast.LENGTH_SHORT).show()\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".MainActivity\">\n    <ImageView\n        android:id=\"@+id/imageView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\" />\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_menu.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".Menu\">\n    <ImageView\n        android:id=\"@+id/imageView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"编辑价格\" />\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_comment.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".Comment\">\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\" />\n</LinearLayout>",
+      "encoding": "utf8"
+    }
+  ]
+}
