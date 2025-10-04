@@ -1,0 +1,272 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "NDJC core",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "NDJC core",
+      "NDJC:HOME_TITLE": "Hello core",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Start core"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": []
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": []
+    },
+    "manifest": {
+      "permissions": []
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/MainActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.View\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport android.widget.TextView\\nimport androidx.appcompat.app.AppCompatActivity\\n\\nclass MainActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_main)\\n\\n        val button: Button = findViewById(R.id.button)\\n        button.setOnClickListener {\\n            val intent = Intent(this, UploadActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/UploadActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.View\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport android.widget.TextView\\nimport androidx.appcompat.app.AppCompatActivity\\nimport androidx.core.content.ContextCompat\\nimport com.bumptech.glide.Glide\\n\\nclass UploadActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_upload)\\n\\n        val button: Button = findViewById(R.id.button)\\n        button.setOnClickListener {\\n            val intent = Intent(this, EditActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/EditActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.View\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport android.widget.TextView\\nimport androidx.appcompat.app.AppCompatActivity\\nimport androidx.core.content.ContextCompat\\nimport com.bumptech.glide.Glide\\n\\nclass EditActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_edit)\\n\\n        val button: Button = findViewById(R.id.button)\\n        button.setOnClickListener {\\n            val intent = Intent(this, CommentActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/CommentActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.View\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport android.widget.TextView\\nimport androidx.appcompat.app.AppCompatActivity\\nimport androidx.core.content.ContextCompat\\nimport com.bumptech.glide.Glide\\n\\nclass CommentActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_comment)\\n\\n        val button: Button = findViewById(R.id.button)\\n        button.setOnClickListener {\\n            val intent = Intent(this, LikeActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/LikeActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.View\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport android.widget.TextView\\nimport androidx.appcompat.app.AppCompatActivity\\nimport androidx.core.content.ContextCompat\\nimport com.bumptech.glide.Glide\\n\\nclass LikeActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_like)\\n\\n        val button: Button = findViewById(R.id.button)\\n        button.setOnClickListener {\\n            val intent = Intent(this, MainActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/model/Menu.kt",
+      "content": "data class Menu(\n    val name: String,\n    val description: String,\n    val price: Double,\n    val photo: String\n)\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/repository/MenuRepository.kt",
+      "content": "import android.content.Context\\nimport android.util.Log\\nimport androidx.lifecycle.LiveData\\nimport androidx.lifecycle.MutableLiveData\\nimport androidx.lifecycle.ViewModel\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass MenuRepository(private val context: Context) : ViewModel() {\\n    private val menuList = MutableLiveData<List<Menu>>()\\n\\n    fun getMenus(): LiveData<List<Menu>> {\\n        return menuList\\n    }\\n\\n    fun addMenu(menu: Menu) {\\n        menuList.value = menuList.value?.plus(menu)\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/dao/MenuDao.kt",
+      "content": "import androidx.room.Dao\nimport androidx.room.Insert\nimport androidx.room.Query\nimport com.example.牛太郎餐厅.model.Menu\n\n@Dao\ninterface MenuDao {\n    @Insert\n    suspend fun insertMenu(menu: Menu)\n\n    @Query(\"SELECT * FROM menu\")\n    suspend fun getMenus(): List<Menu>\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/entity/MenuEntity.kt",
+      "content": "import androidx.room.Entity\nimport androidx.room.PrimaryKey\nimport com.example.牛太郎餐厅.model.Menu\n\n@Entity(tableName = \"menu\")\ndata class MenuEntity(\n    @PrimaryKey(autoGenerate = true)\n    val id: Int,\n    val name: String,\n    val description: String,\n    val price: Double,\n    val photo: String\n)\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/database/MenuDatabase.kt",
+      "content": "import androidx.room.Database\\nimport androidx.room.Room\\nimport androidx.room.RoomDatabase\\nimport com.example.牛太郎餐厅.dao.MenuDao\\nimport com.example.牛太郎餐厅.entity.MenuEntity\\n\\n@Database(entities = [MenuEntity::class], version = 1)\\nabstract class MenuDatabase : RoomDatabase() {\\n    abstract fun menuDao(): MenuDao\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/service/MenuService.kt",
+      "content": "import android.content.Context\\nimport android.util.Log\\nimport androidx.lifecycle.LiveData\\nimport androidx.lifecycle.MutableLiveData\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass MenuService(private val context: Context) {\\n    private val menuRepository = MenuRepository(context)\\n\\n    fun getMenus(): LiveData<List<Menu>> {\\n        return menuRepository.getMenus()\\n    }\\n\\n    fun addMenu(menu: Menu) {\\n        menuRepository.addMenu(menu)\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/adapter/MenuAdapter.kt",
+      "content": "import android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.ImageView\\nimport android.widget.TextView\\nimport androidx.recyclerview.widget.RecyclerView\\nimport com.bumptech.glide.Glide\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass MenuAdapter(private val menuList: List<Menu>) : RecyclerView.Adapter<MenuAdapter.ViewHolder>() {\\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {\\n        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.menu_item, parent, false))\\n    }\\n\\n    override fun onBindViewHolder(holder: ViewHolder, position: Int) {\\n        val menu = menuList[position]\\n        holder.nameTextView.text = menu.name\\n        holder.descriptionTextView.text = menu.description\\n        holder.priceTextView.text = \\\"¥${menu.price}\\\"n        Glide.with(holder.itemView.context).load(menu.photo).into(holder.photoImageView)\\n    }\\n\\n    override fun getItemCount(): Int {\\n        return menuList.size\\n    }\\n\\n    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {\\n        val nameTextView: TextView = itemView.findViewById(R.id.name_text_view)\\n        val descriptionTextView: TextView = itemView.findViewById(R.id.description_text_view)\\n        val priceTextView: TextView = itemView.findViewById(R.id.price_text_view)\\n        val photoImageView: ImageView = itemView.findViewById(R.id.photo_image_view)\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/MenuFragment.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.TextView\\nimport androidx.fragment.app.Fragment\\nimport androidx.recyclerview.widget.LinearLayoutManager\\nimport androidx.recyclerview.widget.RecyclerView\\nimport com.example.牛太郎餐厅.adapter.MenuAdapter\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass MenuFragment : Fragment() {\\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\\n        val view = inflater.inflate(R.layout.fragment_menu, container, false)\\n\\n        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)\\n        recyclerView.layoutManager = LinearLayoutManager(context)\\n        recyclerView.adapter = MenuAdapter(getMenus())\\n\\n        val addButton = view.findViewById<Button>(R.id.add_button)\\n        addButton.setOnClickListener {\\n            val intent = Intent(context, UploadActivity::class.java)\\n            startActivity(intent)\\n        }\\n\\n        return view\\n    }\\n\\n    private fun getMenus(): List<Menu> {\\n        return MenuService(context).getMenus().value ?: emptyList()\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/EditFragment.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport androidx.fragment.app.Fragment\\nimport com.bumptech.glide.Glide\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass EditFragment : Fragment() {\\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\\n        val view = inflater.inflate(R.layout.fragment_edit, container, false)\\n\\n        val nameEditText = view.findViewById<EditText>(R.id.name_edit_text)\\n        val descriptionEditText = view.findViewById<EditText>(R.id.description_edit_text)\\n        val priceEditText = view.findViewById<EditText>(R.id.price_edit_text)\\n        val photoImageView = view.findViewById<ImageView>(R.id.photo_image_view)\\n\\n        val button = view.findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = Menu(nameEditText.text.toString(), descriptionEditText.text.toString(), priceEditText.text.toString().toDouble(), photoImageView.drawable.toString())\\n            MenuService(context).addMenu(menu)\\n            val intent = Intent(context, MainActivity::class.java)\\n            startActivity(intent)\\n        }\\n\\n        return view\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/CommentFragment.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport androidx.fragment.app.Fragment\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass CommentFragment : Fragment() {\\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\\n        val view = inflater.inflate(R.layout.fragment_comment, container, false)\\n\\n        val commentEditText = view.findViewById<EditText>(R.id.comment_edit_text)\\n        val button = view.findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = MenuService(context).getMenus().value ?: emptyList()\\n            val comment = commentEditText.text.toString()\\n            // TODO: add comment to menu\\n        }\\n\\n        return view\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/LikeFragment.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport androidx.fragment.app.Fragment\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass LikeFragment : Fragment() {\\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\\n        val view = inflater.inflate(R.layout.fragment_like, container, false)\\n\\n        val button = view.findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = MenuService(context).getMenus().value ?: emptyList()\\n            // TODO: like menu\\n        }\\n\\n        return view\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/UploadFragment.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport androidx.fragment.app.Fragment\\nimport com.bumptech.glide.Glide\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass UploadFragment : Fragment() {\\n    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {\\n        val view = inflater.inflate(R.layout.fragment_upload, container, false)\\n\\n        val nameEditText = view.findViewById<EditText>(R.id.name_edit_text)\\n        val descriptionEditText = view.findViewById<EditText>(R.id.description_edit_text)\\n        val priceEditText = view.findViewById<EditText>(R.id.price_edit_text)\\n        val photoImageView = view.findViewById<ImageView>(R.id.photo_image_view)\\n\\n        val button = view.findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = Menu(nameEditText.text.toString(), descriptionEditText.text.toString(), priceEditText.text.toString().toDouble(), photoImageView.drawable.toString())\\n            MenuService(context).addMenu(menu)\\n            val intent = Intent(context, MainActivity::class.java)\\n            startActivity(intent)\\n        }\\n\\n        return view\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/MainActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport androidx.fragment.app.Fragment\\nimport androidx.fragment.app.FragmentManager\\nimport androidx.fragment.app.FragmentTransaction\\nimport com.example.牛太郎餐厅.fragment.MenuFragment\\nimport com.example.牛太郎餐厅.fragment.EditFragment\\nimport com.example.牛太郎餐厅.fragment.CommentFragment\\nimport com.example.牛太郎餐厅.fragment.LikeFragment\\nimport com.example.牛太郎餐厅.fragment.UploadFragment\\n\\nclass MainActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_main)\\n\\n        val fragmentManager = supportFragmentManager\\n        val fragmentTransaction = fragmentManager.beginTransaction()\\n\\n        val menuFragment = MenuFragment()\\n        fragmentTransaction.add(R.id.fragment_container, menuFragment)\\n        fragmentTransaction.commit()\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/UploadActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport androidx.fragment.app.Fragment\\nimport com.bumptech.glide.Glide\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass UploadActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_upload)\\n\\n        val nameEditText = findViewById<EditText>(R.id.name_edit_text)\\n        val descriptionEditText = findViewById<EditText>(R.id.description_edit_text)\\n        val priceEditText = findViewById<EditText>(R.id.price_edit_text)\\n        val photoImageView = findViewById<ImageView>(R.id.photo_image_view)\\n\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = Menu(nameEditText.text.toString(), descriptionEditText.text.toString(), priceEditText.text.toString().toDouble(), photoImageView.drawable.toString())\\n            MenuService(context).addMenu(menu)\\n            val intent = Intent(this, MainActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/EditActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport androidx.fragment.app.Fragment\\nimport com.bumptech.glide.Glide\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass EditActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_edit)\\n\\n        val nameEditText = findViewById<EditText>(R.id.name_edit_text)\\n        val descriptionEditText = findViewById<EditText>(R.id.description_edit_text)\\n        val priceEditText = findViewById<EditText>(R.id.price_edit_text)\\n        val photoImageView = findViewById<ImageView>(R.id.photo_image_view)\\n\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = Menu(nameEditText.text.toString(), descriptionEditText.text.toString(), priceEditText.text.toString().toDouble(), photoImageView.drawable.toString())\\n            MenuService(context).addMenu(menu)\\n            val intent = Intent(this, MainActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/CommentActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport androidx.fragment.app.Fragment\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass CommentActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_comment)\\n\\n        val commentEditText = findViewById<EditText>(R.id.comment_edit_text)\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = MenuService(context).getMenus().value ?: emptyList()\\n            val comment = commentEditText.text.toString()\\n            // TODO: add comment to menu\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/LikeActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport androidx.fragment.app.Fragment\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass LikeActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_like)\\n\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = MenuService(context).getMenus().value ?: emptyList()\\n            // TODO: like menu\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/MainActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport androidx.fragment.app.Fragment\\nimport androidx.fragment.app.FragmentManager\\nimport androidx.fragment.app.FragmentTransaction\\nimport com.example.牛太郎餐厅.fragment.MenuFragment\\nimport com.example.牛太郎餐厅.fragment.EditFragment\\nimport com.example.牛太郎餐厅.fragment.CommentFragment\\nimport com.example.牛太郎餐厅.fragment.LikeFragment\\nimport com.example.牛太郎餐厅.fragment.UploadFragment\\n\\nclass MainActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_main)\\n\\n        val fragmentManager = supportFragmentManager\\n        val fragmentTransaction = fragmentManager.beginTransaction()\\n\\n        val menuFragment = MenuFragment()\\n        fragmentTransaction.add(R.id.fragment_container, menuFragment)\\n        fragmentTransaction.commit()\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/UploadActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport androidx.fragment.app.Fragment\\nimport com.bumptech.glide.Glide\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass UploadActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_upload)\\n\\n        val nameEditText = findViewById<EditText>(R.id.name_edit_text)\\n        val descriptionEditText = findViewById<EditText>(R.id.description_edit_text)\\n        val priceEditText = findViewById<EditText>(R.id.price_edit_text)\\n        val photoImageView = findViewById<ImageView>(R.id.photo_image_view)\\n\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = Menu(nameEditText.text.toString(), descriptionEditText.text.toString(), priceEditText.text.toString().toDouble(), photoImageView.drawable.toString())\\n            MenuService(context).addMenu(menu)\\n            val intent = Intent(this, MainActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/EditActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport androidx.fragment.app.Fragment\\nimport com.bumptech.glide.Glide\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass EditActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_edit)\\n\\n        val nameEditText = findViewById<EditText>(R.id.name_edit_text)\\n        val descriptionEditText = findViewById<EditText>(R.id.description_edit_text)\\n        val priceEditText = findViewById<EditText>(R.id.price_edit_text)\\n        val photoImageView = findViewById<ImageView>(R.id.photo_image_view)\\n\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = Menu(nameEditText.text.toString(), descriptionEditText.text.toString(), priceEditText.text.toString().toDouble(), photoImageView.drawable.toString())\\n            MenuService(context).addMenu(menu)\\n            val intent = Intent(this, MainActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/CommentActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport androidx.fragment.app.Fragment\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass CommentActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_comment)\\n\\n        val commentEditText = findViewById<EditText>(R.id.comment_edit_text)\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = MenuService(context).getMenus().value ?: emptyList()\\n            val comment = commentEditText.text.toString()\\n            // TODO: add comment to menu\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/LikeActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport androidx.fragment.app.Fragment\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass LikeActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_like)\\n\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = MenuService(context).getMenus().value ?: emptyList()\\n            // TODO: like menu\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/MainActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport androidx.fragment.app.Fragment\\nimport androidx.fragment.app.FragmentManager\\nimport androidx.fragment.app.FragmentTransaction\\nimport com.example.牛太郎餐厅.fragment.MenuFragment\\nimport com.example.牛太郎餐厅.fragment.EditFragment\\nimport com.example.牛太郎餐厅.fragment.CommentFragment\\nimport com.example.牛太郎餐厅.fragment.LikeFragment\\nimport com.example.牛太郎餐厅.fragment.UploadFragment\\n\\nclass MainActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_main)\\n\\n        val fragmentManager = supportFragmentManager\\n        val fragmentTransaction = fragmentManager.beginTransaction()\\n\\n        val menuFragment = MenuFragment()\\n        fragmentTransaction.add(R.id.fragment_container, menuFragment)\\n        fragmentTransaction.commit()\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/UploadActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport androidx.fragment.app.Fragment\\nimport com.bumptech.glide.Glide\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass UploadActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_upload)\\n\\n        val nameEditText = findViewById<EditText>(R.id.name_edit_text)\\n        val descriptionEditText = findViewById<EditText>(R.id.description_edit_text)\\n        val priceEditText = findViewById<EditText>(R.id.price_edit_text)\\n        val photoImageView = findViewById<ImageView>(R.id.photo_image_view)\\n\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = Menu(nameEditText.text.toString(), descriptionEditText.text.toString(), priceEditText.text.toString().toDouble(), photoImageView.drawable.toString())\\n            MenuService(context).addMenu(menu)\\n            val intent = Intent(this, MainActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/EditActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport androidx.fragment.app.Fragment\\nimport com.bumptech.glide.Glide\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass EditActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_edit)\\n\\n        val nameEditText = findViewById<EditText>(R.id.name_edit_text)\\n        val descriptionEditText = findViewById<EditText>(R.id.description_edit_text)\\n        val priceEditText = findViewById<EditText>(R.id.price_edit_text)\\n        val photoImageView = findViewById<ImageView>(R.id.photo_image_view)\\n\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = Menu(nameEditText.text.toString(), descriptionEditText.text.toString(), priceEditText.text.toString().toDouble(), photoImageView.drawable.toString())\\n            MenuService(context).addMenu(menu)\\n            val intent = Intent(this, MainActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/CommentActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport androidx.fragment.app.Fragment\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass CommentActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_comment)\\n\\n        val commentEditText = findViewById<EditText>(R.id.comment_edit_text)\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = MenuService(context).getMenus().value ?: emptyList()\\n            val comment = commentEditText.text.toString()\\n            // TODO: add comment to menu\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/LikeActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport androidx.fragment.app.Fragment\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass LikeActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_like)\\n\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = MenuService(context).getMenus().value ?: emptyList()\\n            // TODO: like menu\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/MainActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport androidx.fragment.app.Fragment\\nimport androidx.fragment.app.FragmentManager\\nimport androidx.fragment.app.FragmentTransaction\\nimport com.example.牛太郎餐厅.fragment.MenuFragment\\nimport com.example.牛太郎餐厅.fragment.EditFragment\\nimport com.example.牛太郎餐厅.fragment.CommentFragment\\nimport com.example.牛太郎餐厅.fragment.LikeFragment\\nimport com.example.牛太郎餐厅.fragment.UploadFragment\\n\\nclass MainActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_main)\\n\\n        val fragmentManager = supportFragmentManager\\n        val fragmentTransaction = fragmentManager.beginTransaction()\\n\\n        val menuFragment = MenuFragment()\\n        fragmentTransaction.add(R.id.fragment_container, menuFragment)\\n        fragmentTransaction.commit()\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/UploadActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport androidx.fragment.app.Fragment\\nimport com.bumptech.glide.Glide\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass UploadActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_upload)\\n\\n        val nameEditText = findViewById<EditText>(R.id.name_edit_text)\\n        val descriptionEditText = findViewById<EditText>(R.id.description_edit_text)\\n        val priceEditText = findViewById<EditText>(R.id.price_edit_text)\\n        val photoImageView = findViewById<ImageView>(R.id.photo_image_view)\\n\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = Menu(nameEditText.text.toString(), descriptionEditText.text.toString(), priceEditText.text.toString().toDouble(), photoImageView.drawable.toString())\\n            MenuService(context).addMenu(menu)\\n            val intent = Intent(this, MainActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/EditActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport android.widget.ImageView\\nimport androidx.fragment.app.Fragment\\nimport com.bumptech.glide.Glide\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass EditActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_edit)\\n\\n        val nameEditText = findViewById<EditText>(R.id.name_edit_text)\\n        val descriptionEditText = findViewById<EditText>(R.id.description_edit_text)\\n        val priceEditText = findViewById<EditText>(R.id.price_edit_text)\\n        val photoImageView = findViewById<ImageView>(R.id.photo_image_view)\\n\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = Menu(nameEditText.text.toString(), descriptionEditText.text.toString(), priceEditText.text.toString().toDouble(), photoImageView.drawable.toString())\\n            MenuService(context).addMenu(menu)\\n            val intent = Intent(this, MainActivity::class.java)\\n            startActivity(intent)\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/CommentActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport android.widget.EditText\\nimport androidx.fragment.app.Fragment\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass CommentActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_comment)\\n\\n        val commentEditText = findViewById<EditText>(R.id.comment_edit_text)\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = MenuService(context).getMenus().value ?: emptyList()\\n            val comment = commentEditText.text.toString()\\n            // TODO: add comment to menu\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/牛太郎餐厅/fragment/LikeActivity.kt",
+      "content": "import android.os.Bundle\\nimport android.view.LayoutInflater\\nimport android.view.View\\nimport android.view.ViewGroup\\nimport android.widget.Button\\nimport androidx.fragment.app.Fragment\\nimport com.example.牛太郎餐厅.model.Menu\\n\\nclass LikeActivity : AppCompatActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContentView(R.layout.activity_like)\\n\\n        val button = findViewById<Button>(R.id.button)\\n        button.setOnClickListener {\\n            val menu = MenuService(context).getMenus().value ?: emptyList()\\n            // TODO: like menu\\n        }\\n    }\\n}\\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    }
+  ],
+  "resources": {}
+}
