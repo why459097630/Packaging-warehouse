@@ -1,172 +1,378 @@
 #!/usr/bin/env bash
-# scripts/ndjc-materialize.sh
-# Apply NDJC plan onto template app tree, with safe Kotlin rename and manifest fixes.
-# Usage (from workflow):
-#   PLAN_JSON, APPLY_JSON, APP_DIR, RUN_ID come from env
-#   scripts/ndjc-materialize.sh "${APP_DIR}" "${RUN_ID}"
-
+# NDJC: materialize anchors from plan → apply into template app
+# Usage: bash scripts/ndjc-materialize.sh <APP_DIR> <RUN_ID>
+# Inputs:
+#   requests/<RUN_ID>/02_plan.json
+# Outputs:
+#   requests/<RUN_ID>/02_plan.sanitized.json
+#   requests/<RUN_ID>/03_apply_result.json
+#   build-logs/materialize.log, anchors.txt, modified-files.txt
 set -euo pipefail
 
-# -------- inputs --------
-APP_DIR_ARG="${1:-}"
-RUN_ID_ARG="${2:-}"
-APP_DIR="${APP_DIR_ARG:-${APP_DIR:-templates/circle-basic/app}}"
-RUN_ID="${RUN_ID_ARG:-${RUN_ID:-ndjc-local-run}}"
-PLAN_JSON="${PLAN_JSON:-requests/${RUN_ID}/02_plan.json}"
-APPLY_JSON="${APPLY_JSON:-requests/${RUN_ID}/03_apply_result.json}"
-REQ_DIR="$(dirname "${PLAN_JSON}")"
+APP_DIR="${1:-app}"
+RUN_ID="${2:-${RUN_ID:-}}"
 
-# -------- logs --------
-LOG_DIR="build-logs"
-mkdir -p "${LOG_DIR}" "${REQ_DIR}"
-LOG_FILE="${LOG_DIR}/materialize.log"
-: > "${LOG_FILE}"  # truncate
+if [ -z "${RUN_ID:-}" ]; then
+  echo "::error::RUN_ID missing (pass as 2nd arg or set env RUN_ID)"
+  exit 1
+fi
+REQ_DIR="requests/${RUN_ID}"
+PLAN_JSON="${PLAN_JSON:-${REQ_DIR}/02_plan.json}"
+PLAN_JSON_SAN="${REQ_DIR}/02_plan.sanitized.json"
+APPLY_JSON="${APPLY_JSON:-${REQ_DIR}/03_apply_result.json}"
+SUMMARY_TXT="${REQ_DIR}/actions-summary.txt"
+
+mkdir -p "${REQ_DIR}" build-logs
+LOG_FILE="build-logs/materialize.log"
+: > "${LOG_FILE}"
 
 log() { printf '%s %s\n' "[$(date +%H:%M:%S)]" "$*" | tee -a "${LOG_FILE}"; }
+ts_utc() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+escape_sed() { printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'; }
 
-log "{ \"renamed\": 0, \"pkgfixed\": 0 }"
 log "env: PLAN_JSON=${PLAN_JSON}"
-log "env: APPLY_JSON=${APPLY_JSON}"
 log "env: APP_DIR=${APP_DIR}"
 log "env: RUN_ID=${RUN_ID}"
 
-# -------- helpers --------
-# safe_git_mv <src> <dst>  (fall back to mv if git mv fails)
-safe_git_mv() {
-  local src="$1" dst="$2"
-  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    git mv -f "$src" "$dst" 2>/dev/null || mv -f "$src" "$dst"
-  else
-    mv -f "$src" "$dst"
-  fi
-}
+# ---------- 0) sanitize plan（调用 TS 单文件） ----------
+log "::group::Sanitize plan"
+npx -y tsx lib/ndjc/sanitize/index.ts --plan="${PLAN_JSON}"
+log "::endgroup::"
 
-# -------- 0) guard: app dir must exist --------
-if [[ ! -d "${APP_DIR}" ]]; then
-  echo "::error ::APP_DIR not found: ${APP_DIR}"
-  log "APP_DIR missing: ${APP_DIR}"
+if [ ! -f "${PLAN_JSON_SAN}" ]; then
+  echo "::error::Sanitized plan not found: ${PLAN_JSON_SAN}"
   exit 1
 fi
 
-# -------- 1) Kotlin rename (.java -> .kt) --------
-echo "::group::Kotlin rename (java -> .kt)"
-log "::group::Kotlin rename (java -> .kt)"
-kotlin_renamed=0
+# ---------- 1) 读取 sanitized plan 到 bash 变量 ----------
+read_plan() {
+  python - "$PLAN_JSON_SAN" <<'PY'
+import json,sys
+p = sys.argv[1]
+with open(p,'r',encoding='utf-8') as f:
+    plan = json.load(f)
 
-# 收集所有 .java，再筛 Kotlin-like 关键字（空输入安全）
-mapfile -t JAVA_FILES < <(find "${APP_DIR}" -type f -name "*.java" 2>/dev/null || true)
-if (( ${#JAVA_FILES[@]} > 0 )); then
-  for jf in "${JAVA_FILES[@]}"; do
-    # Kotlin-like token：val/var/fun/object/companion/sealed/data/@Composable
-    if grep -Eq -- '@Composable|(^|[[:space:]])(val|var|fun|object|companion|sealed|data)[[:space:]]' "$jf" 2>/dev/null; then
-      kt="${jf%.java}.kt"
-      safe_git_mv "$jf" "$kt"
-      ((kotlin_renamed++)) || true
-      log "renamed: ${jf} -> ${kt}"
-    fi
-  done
-fi
+meta = plan.get('meta',{})
+text = plan.get('text',{}) or {}
+block = plan.get('block',{}) or {}
+lists = plan.get('lists',{}) or {}
+iff   = plan.get('if',{})   or {}
+hooks = plan.get('hooks',{}) or {}
 
-log "kotlin_renamed=${kotlin_renamed}"
-echo "::endgroup::"
-log "::endgroup::"
+def sh_kv_map(name, d):
+    out = [f'declare -gA {name}=(']
+    for k,v in d.items():
+        k = str(k); v = '' if v is None else str(v)
+        v = v.replace('\n','\\n')
+        out.append(f'["{k}"]="{v}"')
+    out.append(')')
+    return ' '.join(out)
 
-# -------- 2) AndroidManifest: remove package attribute (AGP8+) --------
-echo "::group::Fix AndroidManifest (remove package attr)"
-log "::group::Fix AndroidManifest (remove package attr)"
-pkgfixed=0
+def to_list_map(name, d):
+    # encode list map as declare -A with \x1f join
+    out = [f'declare -gA {name}=(']
+    for k,v in d.items():
+        if isinstance(v,list):
+            items = [str(x) for x in v]
+        elif v is None:
+            items = []
+        else:
+            items = [str(v)]
+        joined = "\x1f".join(items).replace('\n','\\n')
+        out.append(f'["{k}"]="{joined}"')
+    out.append(')')
+    return ' '.join(out)
 
-# 主 manifest 路径
-MF="${APP_DIR}/src/main/AndroidManifest.xml"
-if [[ -f "${MF}" ]]; then
-  if grep -Eq '<manifest[^>]*\spackage=' "${MF}"; then
-    # 安全替换：只移除 manifest 起始标签上的 package 属性
-    tmp="$(mktemp)"
-    sed -E 's/(<manifest[^>]*?)\s+package="[^"]*"/\1/g' "${MF}" > "${tmp}"
-    mv -f "${tmp}" "${MF}"
-    ((pkgfixed++)) || true
-    log "package attribute removed in: ${MF}"
-  else
-    log "no package attribute found in: ${MF}"
+print(sh_kv_map('TEXT_KV', text))
+print(sh_kv_map('BLOCK_KV', block))
+print(to_list_map('LISTS_KV', lists))
+print(sh_kv_map('IFCOND_KV', iff))
+print(to_list_map('HOOKS_KV', hooks))
+PY
+}
+
+eval "$(read_plan)"
+
+# --------- hardening: ensure assoc arrays ----------
+ensure_assoc() {
+  local name="$1"
+  if ! declare -p "$name" >/dev/null 2>&1; then
+    eval "declare -gA $name=()"
+  elif ! declare -p "$name" 2>/dev/null | grep -q 'declare \-A'; then
+    eval "unset $name; declare -gA $name=()"
   fi
-else
-  log "manifest not found: ${MF}"
-fi
+}
+ensure_assoc TEXT_KV
+ensure_assoc BLOCK_KV
+ensure_assoc LISTS_KV
+ensure_assoc IFCOND_KV
+ensure_assoc HOOKS_KV
 
-log "package_fixed=${pkgfixed}"
-echo "::endgroup::"
-log "::endgroup::"
+get_list_items() {
+  local raw="${LISTS_KV[$1]-}"
+  [ -z "$raw" ] && return 0
+  python - "$raw" <<'PY'
+import sys
+print("\n".join(sys.argv[1].split("\x1f")))
+PY
+}
+get_hook_body() {
+  local raw="${HOOKS_KV[$1]-}"
+  [ -z "$raw" ] && return 0
+  python - "$raw" <<'PY'
+import sys
+print("\n".join(sys.argv[1].split("\x1f")))
+PY
+}
 
-# -------- 3) Normalize Kotlin imports / whitespace (空输入友好) --------
-echo "::group::Normalize Kotlin imports"
-log "::group::Normalize Kotlin imports"
+# ---------- counters ----------
+replaced_text=0
+replaced_block=0
+replaced_list=0
+replaced_if=0
+hooks_applied=0
+missing_text=0
+missing_block=0
+missing_list=0
+missing_if=0
+missing_hook=0
 
-# 收集 *.kt 文件；无文件时不报错
-mapfile -t KT_FILES < <(find "${APP_DIR}" -type f -name "*.kt" 2>/dev/null || true)
-if (( ${#KT_FILES[@]} > 0 )); then
-  for kf in "${KT_FILES[@]}"; do
-    # 仅做轻量整理：去行尾空格、折叠多余空行（不改变业务含义）
-    # 行尾空白
-    sed -i -E 's/[[:space:]]+$//' "${kf}"
-    # 连续 3+ 空行折叠为 1 行（两次确保收敛）
-    sed -i -E ':a;N;$!ba;s/\n{3,}/\n\n/g' "${kf}"
+# ---------- file selection ----------
+mapfile -t WORK_FILES < <(find "$APP_DIR" -type f \( \
+  -name "*.xml" -o -name "*.kt" -o -name "*.kts" -o -name "*.gradle" -o \
+  -name "*.pro" -o -name "AndroidManifest.xml" -o -name "*.txt" \
+  \) | LC_ALL=C sort)
+
+# ---------- replacers ----------
+replace_text_in_file() {
+  local file="$1" key="$2" val="$3"
+  local before count
+  before=$(grep -o -n -F "$key" "$file" | wc -l | tr -d ' ')
+  [ "$before" -eq 0 ] && return 1
+  local vv; vv="$(escape_sed "$val")"
+  sed -i "s/${key}/${vv}/g" "$file"
+  local after
+  after=$(grep -o -n -F "$key" "$file" | wc -l | tr -d ' ')
+  count=$((before-after)); [ "$count" -lt 0 ] && count=0
+  if [ "$count" -gt 0 ]; then
+    replaced_text=$((replaced_text+count))
+  fi
+  return 0
+}
+
+replace_block_in_file() {
+  local file="$1" name="$2" body="$3"
+  local cnt=0
+  # xml
+  if perl -0777 -ne 'exit 1 unless /<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*END_BLOCK\s*-->/s' "$file"; then
+    perl -0777 -i -pe 's/<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*END_BLOCK\s*-->/<!-- BLOCK:'"$name"' -->\n'"$body"'\n<!-- END_BLOCK -->/s' "$file"
+    cnt=$((cnt+1))
+  fi
+  # //
+  if perl -0777 -ne 'exit 1 unless /\/\/\s*BLOCK:'"$name"'.*?\/\/\s*END_BLOCK/s' "$file"; then
+    perl -0777 -i -pe 's/\/\/\s*BLOCK:'"$name"'.*?\/\/\s*END_BLOCK/\/\/ BLOCK:'"$name"'\n'"$body"'\n\/\/ END_BLOCK/s' "$file"
+    cnt=$((cnt+1))
+  fi
+  # /* */
+  if perl -0777 -ne 'exit 1 unless /\/\*\s*BLOCK:'"$name"'\s*\*\/.*?\/\*\s*END_BLOCK\s*\*\//s' "$file"; then
+    perl -0777 -i -pe 's/\/\*\s*BLOCK:'"$name"'\s*\*\/.*?\/\*\s*END_BLOCK\s*\*\//\/\* BLOCK:'"$name"' \*\/\n'"$body"'\n\/\* END_BLOCK \*\//s' "$file"
+    cnt=$((cnt+1))
+  fi
+  if [ "$cnt" -gt 0 ]; then
+    replaced_block=$((replaced_block+cnt)); return 0
+  fi
+  return 1
+}
+
+replace_list_in_file() {
+  local file="$1" name="$2"
+  local items; items="$(get_list_items "$name" || true)"
+  [ -z "$items" ] && return 1
+  if ! perl -0777 -ne 'exit 1 unless /LIST:'"$name"'.*?END_LIST/s' "$file"; then
+    return 1
+  fi
+  local tmpl
+  tmpl="$(perl -0777 -ne 'if (/LIST:'"$name"'\s*(.*)\s*END_LIST/s) { print($1) }' "$file")"
+  [ -z "$tmpl" ] && return 1
+
+  local rendered=""
+  while IFS= read -r it; do
+    rendered+=$(python - <<PY
+import sys
+tmpl = """$tmpl"""
+print(tmpl.replace("\${ITEM}", """$it"""))
+PY
+)
+    rendered+=$'\n'
+  done <<<"$items"
+
+  perl -0777 -i -pe 's/LIST:'"$name"'.*?END_LIST/LIST:'"$name"'\n'"$rendered"'END_LIST/s' "$file"
+  replaced_list=$((replaced_list+1))
+  return 0
+}
+
+replace_if_in_file() {
+  local file="$1" name="$2" cond="$3"
+  local truthy=0
+  case "${cond,,}" in
+    ""|"false"|"0"|"no"|"off") truthy=0;;
+    *) truthy=1;;
+  esac
+  local hit=0
+  # xml
+  if perl -0777 -ne 'exit 1 unless /<!--\s*IF:'"$name"'\s*-->.*?<!--\s*END_IF\s*-->/s' "$file"; then
+    hit=1
+    if [ "$truthy" -eq 1 ]; then
+      perl -0777 -i -pe 's/<!--\s*IF:'"$name"'\s*-->(.*?)<!--\s*END_IF\s*-->/\1/s' "$file"
+    else
+      perl -0777 -i -pe 's/<!--\s*IF:'"$name"'\s*-->.*?<!--\s*END_IF\s*-->/<!-- IF:'"$name"' -->\n<!-- END_IF -->/s' "$file"
+    fi
+  fi
+  # //
+  if perl -0777 -ne 'exit 1 unless /\/\/\s*IF:'"$name"'.*?\/\/\s*END_IF/s' "$file"; then
+    hit=1
+    if [ "$truthy" -eq 1 ]; then
+      perl -0777 -i -pe 's/\/\/\s*IF:'"$name"'(.*?)\/\/\s*END_IF/\1/s' "$file"
+    else
+      perl -0777 -i -pe 's/\/\/\s*IF:'"$name"'.*?\/\/\s*END_IF/\/\/ IF:'"$name"'\n\/\/ END_IF/s' "$file"
+    fi
+  fi
+  # /* */
+  if perl -0777 -ne 'exit 1 unless /\/\*\s*IF:'"$name"'\s*\*\/.*?\/\*\s*END_IF\s*\*\//s' "$file"; then
+    hit=1
+    if [ "$truthy" -eq 1 ]; then
+      perl -0777 -i -pe 's/\/\*\s*IF:'"$name"'\s*\*\/(.*?)\/\*\s*END_IF\s*\*\//\1/s' "$file"
+    else
+      perl -0777 -i -pe 's/\/\*\s*IF:'"$name"'\s*\*\/.*?\/\*\s*END_IF\s*\*\//\/\* IF:'"$name"' \*\/\n\/\* END_IF \*\//s' "$file"
+    fi
+  fi
+  if [ "$hit" -eq 1 ]; then
+    replaced_if=$((replaced_if+1)); return 0
+  fi
+  return 1
+}
+
+replace_hook_in_file() {
+  local file="$1" name="$2" body="$3"
+  local cnt=0
+  # xml
+  if perl -0777 -ne 'exit 1 unless /<!--\s*HOOK:'"$name"'\s*-->.*?<!--\s*END_HOOK\s*-->/s' "$file"; then
+    perl -0777 -i -pe 's/<!--\s*HOOK:'"$name"'\s*-->.*?<!--\s*END_HOOK\s*-->/<!-- HOOK:'"$name"' -->\n'"$body"'\n<!-- END_HOOK -->/s' "$file"
+    cnt=$((cnt+1))
+  fi
+  # //
+  if perl -0777 -ne 'exit 1 unless /\/\/\s*HOOK:'"$name"'.*?\/\/\s*END_HOOK/s' "$file"; then
+    perl -0777 -i -pe 's/\/\/\s*HOOK:'"$name"'.*?\/\/\s*END_HOOK/\/\/ HOOK:'"$name"'\n'"$body"'\n\/\/ END_HOOK/s' "$file"
+    cnt=$((cnt+1))
+  fi
+  # /* */
+  if perl -0777 -ne 'exit 1 unless /\/\*\s*HOOK:'"$name"'\s*\*\/.*?\/\*\s*END_HOOK\s*\*\//s' "$file"; then
+    perl -0777 -i -pe 's/\/\*\s*HOOK:'"$name"'\s*\*\/.*?\/\*\s*END_HOOK\s*\*\//\/\* HOOK:'"$name"' \*\/\n'"$body"'\n\/\* END_HOOK \*\//s' "$file"
+    cnt=$((cnt+1))
+  fi
+  if [ "$cnt" -gt 0 ]; then
+    hooks_applied=$((hooks_applied+cnt)); return 0
+  fi
+  return 1
+}
+
+# ---------- 2) 应用全部 ----------
+apply_all() {
+  local file k v
+
+  # text
+  for file in "${WORK_FILES[@]}"; do
+    for k in "${!TEXT_KV[@]}"; do
+      v="${TEXT_KV[$k]}"
+      replace_text_in_file "$file" "$k" "$v" || true
+    done
   done
-  log "normalized ${#KT_FILES[@]} Kotlin files"
-else
-  log "no Kotlin files found under ${APP_DIR}; skip normalization"
-fi
 
-echo "::endgroup::"
-log "::endgroup::"
+  # blocks
+  for file in "${WORK_FILES[@]}"; do
+    for k in "${!BLOCK_KV[@]}"; do
+      v="${BLOCK_KV[$k]}"
+      replace_block_in_file "$file" "$k" "$v" || true
+    done
+  done
 
-# -------- 4) (可选) 生成锚点索引，便于排查 --------
-ANCHORS_TXT="${LOG_DIR}/anchors.txt"
+  # lists
+  for file in "${WORK_FILES[@]}"; do
+    for k in "${!LISTS_KV[@]}"; do
+      replace_list_in_file "$file" "$k" || true
+    done
+  done
+
+  # if
+  for file in "${WORK_FILES[@]}"; do
+    for k in "${!IFCOND_KV[@]}"; do
+      v="${IFCOND_KV[$k]}"
+      replace_if_in_file "$file" "$k" "$v" || true
+    done
+  done
+
+  # hooks（包括 KOTLIN_IMPORTS / KOTLIN_TOPLEVEL 等）
+  for file in "${WORK_FILES[@]}"; do
+    for k in "${!HOOKS_KV[@]}"; do
+      v="$(get_hook_body "$k" || true)"
+      [ -z "$v" ] && continue
+      replace_hook_in_file "$file" "$k" "$v" || true
+    done
+  done
+}
+
+apply_all || true
+
+# ---------- 3) 统计与产出 ----------
+for k in "${!TEXT_KV[@]}";   do grep -RFl -- "${k}" "${APP_DIR}" >/dev/null 2>&1 || true; done
+for k in "${!BLOCK_KV[@]}";  do
+  if ! grep -RIl -E "(<!-- *BLOCK:${k} *-->|// *BLOCK:${k}|/\* *BLOCK:${k} *\*/)" "${APP_DIR}" >/dev/null 2>&1; then
+    missing_block=$((missing_block+1))
+  fi
+done
+for k in "${!LISTS_KV[@]}";  do grep -RIl "LIST:${k}" "${APP_DIR}" >/dev/null 2>&1 || true; done
+for k in "${!IFCOND_KV[@]}"; do
+  if ! grep -RIl -E "(<!-- *IF:${k} *-->|// *IF:${k}|/\* *IF:${k} *\*/)" "${APP_DIR}" >/dev/null 2>&1; then
+    missing_if=$((missing_if+1))
+  fi
+done
+
+replaced_total=$((replaced_text+replaced_block+replaced_list+replaced_if+hooks_applied))
+
+cat > "${APPLY_JSON}" <<JSON
 {
-  echo "${APP_DIR}/build.gradle:"
-  grep -nE 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}/build.gradle" 2>/dev/null || true
-  echo
+  "replaced_total": ${replaced_total},
+  "replaced_text": ${replaced_text},
+  "replaced_block": ${replaced_block},
+  "replaced_list": ${replaced_list},
+  "replaced_if": ${replaced_if},
+  "hooks_applied": ${hooks_applied},
+  "missing_text": ${missing_text},
+  "missing_block": ${missing_block},
+  "missing_list": ${missing_list},
+  "missing_if": ${missing_if},
+  "generated_at": "$(ts_utc)"
+}
+JSON
+
+{
+  echo "branch=${GITHUB_REF_NAME:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo main)}"
+  echo "variant=unknown"
+  echo "apk="
+  echo "classes="
+  echo "missing_text=${missing_text}"
+  echo "missing_block=${missing_block}"
+  echo "ts=$(ts_utc)"
+} > "${SUMMARY_TXT}"
+
+# 诊断产物
+ANCHORS_TXT="build-logs/anchors.txt"
+{
   grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/null || true
 } > "${ANCHORS_TXT}" || true
 
-# -------- 5) 写入 apply_result（供外部追踪） --------
-# 尽量从 plan 中提取 app 名/包名；没有 jq 时用保底写法
-APP_NAME="(unknown)"
-PKG_NAME="(unknown)"
-if command -v jq >/dev/null 2>&1 && [[ -f "${PLAN_JSON}" ]]; then
-  APP_NAME="$(jq -r '.meta.appName // .meta.appTitle // empty' "${PLAN_JSON}" || true)"
-  PKG_NAME="$(jq -r '.meta.packageId // .gradle.applicationId // empty' "${PLAN_JSON}" || true)"
-  [[ -z "${APP_NAME}" ]] && APP_NAME="(unknown)"
-  [[ -z "${PKG_NAME}" ]] && PKG_NAME="(unknown)"
-fi
+MODIFIED_TXT="build-logs/modified-files.txt"
+git diff --name-only | sed 's/^/git: /' > "${MODIFIED_TXT}" || true
 
-cat > "${APPLY_JSON}" <<EOF
-{
-  "runId": "${RUN_ID}",
-  "status": "pre-ci",
-  "template": "$(basename "$(dirname "${APP_DIR}")")",
-  "appTitle": "${APP_NAME}",
-  "packageName": "${PKG_NAME}",
-  "note": "Apply result will be finalized in CI pipeline.",
-  "changes": [],
-  "warnings": []
-}
-EOF
-git add -A "${APPLY_JSON}" 2>/dev/null || true
-
-# -------- 6) 输出修改文件清单 --------
-MODIFIED_TXT="${LOG_DIR}/modified-files.txt"
-git diff --name-only | sed 's/^/requests: /' > "${MODIFIED_TXT}" || true
-# 再列出工作区内（未加入 git 的）本地更改
-find "${APP_DIR}" -type f -name "*.kt" -o -name "*.xml" -o -name "*.gradle" 2>/dev/null | sed 's/^/templates: /' >> "${MODIFIED_TXT}" || true
-
-# -------- 7) 汇总/计数回显（供上游 step 提示用） --------
-log "{ \"renamed\": ${kotlin_renamed}, \"pkgfixed\": ${pkgfixed} }"
-echo "autofix: kotlin_renamed=${kotlin_renamed}  package_fixed=${pkgfixed}"
-echo "NDJC materialize: total=$(wc -l < "${MODIFIED_TXT}" | tr -d ' ') text=0 block=0 list=0 if=0" | tee -a "${LOG_FILE}"
-
-# 对缺失锚点计数（可留空，保兼容之前工作流的 notice）
-missing_text=0; missing_block=0; missing_list=0; missing_if=0
-echo "missing: text=${missing_text} block=${missing_block} list=${missing_list} if=${missing_if}" | tee -a "${LOG_FILE}"
-
-# 成功退出
-exit 0
+echo "NDJC materialize: total=${replaced_total} text=${replaced_text} block=${replaced_block} list=${replaced_list} if=${replaced_if} hooks=${hooks_applied}" | tee -a "${LOG_FILE}"
+echo "done."
