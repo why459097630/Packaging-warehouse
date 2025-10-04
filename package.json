@@ -1,0 +1,23 @@
+{
+  "name": "packaging-warehouse",
+  "private": true,
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "packageManager": "pnpm@10.6.2",
+  "scripts": {
+    "ndjc:lint-plan": "tsx lib/ndjc/guard/plan_linter.ts",
+    "ndjc:sanitize": "tsx lib/ndjc/sanitize/index.ts",
+    "ndjc:generator": "tsx lib/ndjc/generator.ts",
+    "ndjc:typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^2.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.27",
+    "tsx": "^4.19.1",
+    "typescript": "^5.4.5"
+  }
+}
