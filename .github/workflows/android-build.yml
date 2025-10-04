@@ -9,6 +9,9 @@ permissions:
 
 env:
   TEMPLATE_DEFAULT: circle-basic
+  NDJC_FAIL_CLOSE: "true"
+  NDJC_STRICT_MODE: "true"
+  NDJC_ALLOW_COMPANION_CODE: "false"
 
 jobs:
   build:
@@ -20,16 +23,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node 18 (for linter/sanitizer)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
       - name: Resolve inputs → env & summary
         id: resolve
         shell: bash
         run: |
           set -euo pipefail
-
           RUN_ID="${{ github.event.client_payload.runId || '' }}"
           TEMPLATE="${{ github.event.client_payload.template || '' }}"
           [ -n "$TEMPLATE" ] || TEMPLATE="${TEMPLATE_DEFAULT}"
-
           if [ -z "$RUN_ID" ]; then
             RUN_ID="ndjc-$(date -u +%Y-%m-%dT%H-%M%SZ)-${GITHUB_RUN_ID}"
           fi
@@ -54,13 +60,13 @@ jobs:
             echo "### NDJC build inputs"
             echo "- **Run ID:** \`${RUN_ID}\`"
             echo "- **Run branch:** \`${RUN_BRANCH}\`"
-            echo "- **Template:** \`${TEMPLATE}\` — **APP_DIR:** \`${APP_DIR}\`"
+            echo "- **Template:** \`${TEMPLATE}\`"
+            echo "- **APP_DIR:** \`${APP_DIR}\`"
             echo "- **TEMPLATE_ROOT:** \`${TEMPLATE_ROOT}\`"
-            echo "- **Requests (will be generated):** \`requests/${RUN_ID}\`"
             echo "- **Expect plan at:** \`${REQ_DIR}/02_plan.json\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Checkout run branch
+      - name: Checkout run branch (prefer)
         id: checkout_run
         shell: bash
         run: |
@@ -72,7 +78,6 @@ jobs:
             echo "has_run_branch=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_run_branch=false" >> "$GITHUB_OUTPUT"
-            echo "Run branch '${RB}' not found; fallback to main for locating plan."
           fi
 
       - name: Checkout main (fallback for requests)
@@ -83,40 +88,35 @@ jobs:
           git fetch origin main --depth=50
           git checkout main
 
-      - name: Locate 02_plan.json (prefer run branch, fallback to main)
+      - name: Locate 02_plan.json
         id: locate_plan
         shell: bash
         run: |
           set -euo pipefail
           PLAN_PATH="${PLAN_JSON}"
-          found_at=""
-          if [ -f "${PLAN_PATH}" ]; then
-            found_at="$(git rev-parse --abbrev-ref HEAD)"
-          else
-            HEAD_B="$(git rev-parse --abbrev-ref HEAD)"
-            if [ "${HEAD_B}" != "main" ]; then
-              git checkout -q main
-              if [ -f "${PLAN_PATH}" ]; then
-                found_at="main"
-              fi
-            fi
-          fi
-
-          if [ -z "${found_at}" ]; then
-            echo "::error::Plan JSON NOT found at ${PLAN_PATH}."
+          if [ ! -f "${PLAN_PATH}" ]; then
+            echo "::error::Plan JSON NOT found at ${PLAN_PATH}"
             exit 1
           fi
+          echo "PLAN_BRANCH=$(git rev-parse --abbrev-ref HEAD)" >> "$GITHUB_ENV"
+          echo "- **Found 02_plan.json at:** \`${PLAN_PATH}\`" >> "$GITHUB_STEP_SUMMARY"
 
-          echo "PLAN_BRANCH=${found_at}" >> "$GITHUB_ENV"
-          echo "- **Found 02_plan.json at:** \`${PLAN_PATH}\` *(from ${found_at})*" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Make ndjc-materialize.sh executable
+      # ---------- 硬校验（Linter） ----------
+      - name: Lint plan (hard checks)
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x scripts/ndjc-materialize.sh
+          npx -y tsx lib/ndjc/guard/plan_linter.ts --plan="${PLAN_JSON}" || rc=$?
+          if [ "${rc:-0}" = "2" ]; then
+            echo "::error::Plan linter found critical violations."
+            exit 2
+          fi
 
-      - name: NDJC | Materialize (apply plan → template)
+      - name: Make ndjc-materialize.sh executable
+        shell: bash
+        run: chmod +x scripts/ndjc-materialize.sh
+
+      - name: NDJC | Materialize (sanitize + apply plan → template)
         shell: bash
         env:
           PLAN_JSON: ${{ env.PLAN_JSON }}
@@ -128,18 +128,7 @@ jobs:
           set -euo pipefail
           scripts/ndjc-materialize.sh "${APP_DIR}" "${RUN_ID}"
 
-      - name: Show modified files after materialize
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "Diff after materialize (expect changes under ${APP_DIR})"
-          git status --porcelain
-          git diff --name-only | sed 's/^/ - /'
-          # 保存一份到诊断包
-          mkdir -p build-logs
-          git diff --name-only > build-logs/modified-files.txt || true
-
-      - name: Anchor scan (warn if anchors remain)
+      - name: Anchor scan (notice only)
         shell: bash
         run: |
           set -euo pipefail
@@ -159,6 +148,7 @@ jobs:
             exit 1
           fi
 
+      # ---------- Build ----------
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -171,19 +161,12 @@ jobs:
       - name: Build (debug) with root wrapper
         shell: bash
         run: |
-          set -o pipefail
-          if [[ ! -f "./gradlew" ]]; then
-            echo "::error ::gradlew not found at repository root"; exit 1;
-          fi
+          set -euo pipefail
           chmod +x ./gradlew || true
-          # 把控制台输出保存到诊断包
-          mkdir -p build-logs
-          ./gradlew -p "${TEMPLATE_ROOT}" --no-daemon --stacktrace :app:assembleDebug | tee build-logs/gradle-build.log
-          exit ${PIPESTATUS[0]}
+          ./gradlew -p "${TEMPLATE_ROOT}" --no-daemon --stacktrace :app:assembleDebug
 
-      # -------------- 产出与诊断（失败也上传） --------------
+      # ---------- Artifacts ----------
       - name: Upload APK artifacts
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ndjc-apk-${{ env.RUN_ID }}
@@ -192,12 +175,13 @@ jobs:
           if-no-files-found: warn
 
       - name: NDJC | Upload logs
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ndjc-diag-${{ env.RUN_ID }}
           path: |
-            build-logs/**
+            build-logs/**/*
             requests/${{ env.RUN_ID }}/02_plan.json
+            requests/${{ env.RUN_ID }}/02_plan.sanitized.json
+            requests/${{ env.RUN_ID }}/plan-violations.json
             requests/${{ env.RUN_ID }}/03_apply_result.json
           if-no-files-found: warn
