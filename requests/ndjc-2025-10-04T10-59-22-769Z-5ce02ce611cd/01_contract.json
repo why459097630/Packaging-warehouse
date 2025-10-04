@@ -1,0 +1,135 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "牛太郎餐厅 - 美味的介绍菜品",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "zh-Hans",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh-Hans",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/example/niutao/CameraActivity.kt",
+      "content": "// CameraActivity.kt\nimport android.content.Intent\nimport android.net.Uri\nimport android.os.Bundle\nimport android.provider.MediaStore\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport com.example.niutao.UploadActivity\n\nclass CameraActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_camera)\n\n        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)\n        startActivityForResult(cameraIntent, 1)\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == RESULT_OK) {\n            val photoUri = data?.data\n            val photoPath = photoUri?.path\n            // 上传照片\n            val uploadIntent = Intent(this, UploadActivity::class.java)\n            uploadIntent.putExtra(\"photoPath\", photoPath)\n            startActivity(uploadIntent)\n        }\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/UploadActivity.kt",
+      "content": "// UploadActivity.kt\nimport android.content.Intent\nimport android.net.Uri\nimport android.os.Bundle\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport com.example.niutao.EditActivity\n\nclass UploadActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_upload)\n\n        val photoPath = intent.getStringExtra(\"photoPath\")\n        // 上传照片\n        val uploadIntent = Intent(this, EditActivity::class.java)\n        uploadIntent.putExtra(\"photoPath\", photoPath)\n        startActivity(uploadIntent)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/EditActivity.kt",
+      "content": "// EditActivity.kt\nimport android.content.Intent\nimport android.os.Bundle\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport com.example.niutao.CommentActivity\n\nclass EditActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_edit)\n\n        val photoPath = intent.getStringExtra(\"photoPath\")\n        // 编辑文字介绍\n        val editIntent = Intent(this, CommentActivity::class.java)\n        editIntent.putExtra(\"photoPath\", photoPath)\n        startActivity(editIntent)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/CommentActivity.kt",
+      "content": "// CommentActivity.kt\nimport android.content.Intent\nimport android.os.Bundle\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport com.example.niutao.PriceActivity\n\nclass CommentActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment)\n\n        val photoPath = intent.getStringExtra(\"photoPath\")\n        // 设定价格\n        val commentIntent = Intent(this, PriceActivity::class.java)\n        commentIntent.putExtra(\"photoPath\", photoPath)\n        startActivity(commentIntent)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/PriceActivity.kt",
+      "content": "// PriceActivity.kt\nimport android.content.Intent\nimport android.os.Bundle\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\n\nclass PriceActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_price)\n\n        val photoPath = intent.getStringExtra(\"photoPath\")\n        // 设定价格\n        Toast.makeText(this, \"价格设定成功\", Toast.LENGTH_SHORT).show()\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/MainActivity.kt",
+      "content": "// MainActivity.kt\nimport android.content.Intent\nimport android.os.Bundle\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\n\nclass MainActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        val mainIntent = Intent(this, CameraActivity::class.java)\n        startActivity(mainIntent)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_camera.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".CameraActivity\">\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_upload.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".UploadActivity\">\n    <TextView\n        android:id=\"@+id/textView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_edit.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".EditActivity\">\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"请输入文字介绍\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_comment.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".CommentActivity\">\n    <TextView\n        android:id=\"@+id/textView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_price.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".PriceActivity\">\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"请输入价格\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".MainActivity\">\n    <Button\n        android:id=\"@+id/button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传菜品\"/>\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    }
+  ],
+  "resources": {}
+}
