@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "牛太郎餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "zh-Hans"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh-Hans"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/example/niutao/canteen/MainActivity.kt",
+      "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.ImageView\nimport android.widget.TextView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.canteen.R\nimport com.example.niutao.canteen.model.Dish\nimport com.example.niutao.canteen.util.FileUtil\nimport com.example.niutao.canteen.util.PhotoUtil\nimport com.example.niutao.canteen.util.TextUtil\n\nclass MainActivity : AppCompatActivity() {\n    private lateinit var dish: Dish\n    private lateinit var photo: ImageView\n    private lateinit var title: TextView\n    private lateinit var price: TextView\n    private lateinit var comment: TextView\n    private lateinit var like: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        photo = findViewById(R.id.photo)\n        title = findViewById(R.id.title)\n        price = findViewById(R.id.price)\n        comment = findViewById(R.id.comment)\n        like = findViewById(R.id.like)\n\n        // 上传照片\n        photo.setOnClickListener {\n            PhotoUtil.uploadPhoto(this, object : PhotoUtil.OnPhotoCallback {\n                override fun onPhotoTaken(photo: Bitmap) {\n                    // 上传照片\n                    FileUtil.uploadFile(photo, \"photo\")\n                }\n            })\n        }\n\n        // 编辑文字介绍\n        title.setOnClickListener {\n            TextUtil.editText(this, \"title\")\n        }\n\n        // 设定价格\n        price.setOnClickListener {\n            TextUtil.editText(this, \"price\")\n        }\n\n        // 评论点赞\n        like.setOnClickListener {\n            // 评论点赞逻辑\n        }\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/canteen/Dish.kt",
+      "content": "data class Dish(\n    val id: Int,\n    val name: String,\n    val photo: String,\n    val price: String,\n    val comment: String\n)\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/canteen/model/Dish.kt",
+      "content": "data class Dish(\n    val id: Int,\n    val name: String,\n    val photo: String,\n    val price: String,\n    val comment: String\n)\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/canteen/util/FileUtil.kt",
+      "content": "object FileUtil {\n    fun uploadFile(file: File, fileName: String) {\n        // 上传文件逻辑\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/canteen/util/PhotoUtil.kt",
+      "content": "object PhotoUtil {\n    fun uploadPhoto(context: Context, callback: OnPhotoCallback) {\n        // 上传照片逻辑\n    }\n    interface OnPhotoCallback {\n        fun onPhotoTaken(photo: Bitmap)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/canteen/util/TextUtil.kt",
+      "content": "object TextUtil {\n    fun editText(context: Context, editTextId: String) {\n        // 编辑文字逻辑\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <ImageView\n        android:id=\"@+id/photo\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <TextView\n        android:id=\"@+id/title\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <TextView\n        android:id=\"@+id/price\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <TextView\n        android:id=\"@+id/comment\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n    <Button\n        android:id=\"@+id/like\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\" />\n</LinearLayout>\n",
+      "encoding": "utf8",
+      "kind": "xml"
+    }
+  ],
+  "resources": {}
+}
