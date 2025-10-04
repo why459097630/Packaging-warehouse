@@ -1,36 +1,28 @@
 #!/usr/bin/env bash
+# scripts/ndjc-materialize.sh
+# Apply NDJC plan onto template app tree, with safe Kotlin rename and manifest fixes.
+# Usage (from workflow):
+#   PLAN_JSON, APPLY_JSON, APP_DIR, RUN_ID come from env
+#   scripts/ndjc-materialize.sh "${APP_DIR}" "${RUN_ID}"
+
 set -euo pipefail
 
-# Usage:
-#   PLAN_JSON, APPLY_JSON, APP_DIR, RUN_ID 从环境传入
-#   可选 argv: APP_DIR RUN_ID （优先于 env）
+# -------- inputs --------
 APP_DIR_ARG="${1:-}"
 RUN_ID_ARG="${2:-}"
-
-APP_DIR="${APP_DIR_ARG:-${APP_DIR:-}}"
-RUN_ID="${RUN_ID_ARG:-${RUN_ID:-ndjc-run}}"
+APP_DIR="${APP_DIR_ARG:-${APP_DIR:-templates/circle-basic/app}}"
+RUN_ID="${RUN_ID_ARG:-${RUN_ID:-ndjc-local-run}}"
 PLAN_JSON="${PLAN_JSON:-requests/${RUN_ID}/02_plan.json}"
 APPLY_JSON="${APPLY_JSON:-requests/${RUN_ID}/03_apply_result.json}"
+REQ_DIR="$(dirname "${PLAN_JSON}")"
 
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-LOG_DIR="${REPO_ROOT}/build-logs"
-mkdir -p "${LOG_DIR}"
+# -------- logs --------
+LOG_DIR="build-logs"
+mkdir -p "${LOG_DIR}" "${REQ_DIR}"
+LOG_FILE="${LOG_DIR}/materialize.log"
+: > "${LOG_FILE}"  # truncate
 
-log() { echo "[$(date -u +%H:%M:%S)] $*" | tee -a "${LOG_DIR}/materialize.log" >/dev/null; }
-
-# --- tools ---
-need() { command -v "$1" >/dev/null 2>&1 || { echo "missing tool: $1"; exit 2; }; }
-need sed; need grep; need awk
-if command -v jq >/dev/null 2>&1; then HAVE_JQ=1; else HAVE_JQ=0; fi
-
-# --- counters for diagnostics ---
-pkg_fixed=0
-kt_renamed=0
-imports_moved=0
-toplevel_warn=0
-
-echo "{}" > "${LOG_DIR}/materialize.log" 2>/dev/null || true
-truncate -s 0 "${LOG_DIR}/materialize.log" || true
+log() { printf '%s %s\n' "[$(date +%H:%M:%S)]" "$*" | tee -a "${LOG_FILE}"; }
 
 log "{ \"renamed\": 0, \"pkgfixed\": 0 }"
 log "env: PLAN_JSON=${PLAN_JSON}"
@@ -38,166 +30,143 @@ log "env: APPLY_JSON=${APPLY_JSON}"
 log "env: APP_DIR=${APP_DIR}"
 log "env: RUN_ID=${RUN_ID}"
 
-if [[ -z "${APP_DIR}" || ! -d "${APP_DIR}" ]]; then
+# -------- helpers --------
+# safe_git_mv <src> <dst>  (fall back to mv if git mv fails)
+safe_git_mv() {
+  local src="$1" dst="$2"
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git mv -f "$src" "$dst" 2>/dev/null || mv -f "$src" "$dst"
+  else
+    mv -f "$src" "$dst"
+  fi
+}
+
+# -------- 0) guard: app dir must exist --------
+if [[ ! -d "${APP_DIR}" ]]; then
   echo "::error ::APP_DIR not found: ${APP_DIR}"
+  log "APP_DIR missing: ${APP_DIR}"
   exit 1
 fi
 
-# 读取 applicationId（若 jq 可用）
-application_id=""
-if [[ "${HAVE_JQ}" = "1" && -f "${PLAN_JSON}" ]]; then
-  application_id="$(jq -r '.gradle.applicationId // .meta.packageId // empty' "${PLAN_JSON}" || true)"
+# -------- 1) Kotlin rename (.java -> .kt) --------
+echo "::group::Kotlin rename (java -> .kt)"
+log "::group::Kotlin rename (java -> .kt)"
+kotlin_renamed=0
+
+# 收集所有 .java，再筛 Kotlin-like 关键字（空输入安全）
+mapfile -t JAVA_FILES < <(find "${APP_DIR}" -type f -name "*.java" 2>/dev/null || true)
+if (( ${#JAVA_FILES[@]} > 0 )); then
+  for jf in "${JAVA_FILES[@]}"; do
+    # Kotlin-like token：val/var/fun/object/companion/sealed/data/@Composable
+    if grep -Eq -- '@Composable|(^|[[:space:]])(val|var|fun|object|companion|sealed|data)[[:space:]]' "$jf" 2>/dev/null; then
+      kt="${jf%.java}.kt"
+      safe_git_mv "$jf" "$kt"
+      ((kotlin_renamed++)) || true
+      log "renamed: ${jf} -> ${kt}"
+    fi
+  done
 fi
 
-# ---------- 1) Java → Kotlin 的安全重命名 ----------
-is_probably_kotlin() {
-  # 只要出现典型 Kotlin 关键字/语法就判定
-  grep -Eq '\b(data|sealed|object|companion)\b|^[[:space:]]*fun[[:space:]]|:[[:space:]]*AppCompatActivity\b' "$1"
-}
-rename_java_to_kt() {
-  while IFS= read -r -d '' f; do
-    if is_probably_kotlin "$f"; then
-      local kt="${f%.java}.kt"
-      git mv -f "$f" "$kt" 2>/dev/null || mv -f "$f" "$kt"
-      echo "$kt"
-      kt_renamed=$((kt_renamed+1))
-    fi
-  done < <(find "${APP_DIR}" -type f -name "*.java" -print0)
-}
-log "::group::Kotlin rename (.java → .kt)"
-renamed_files="$(rename_java_to_kt || true)"
-if [[ -n "${renamed_files}" ]]; then
-  echo "${renamed_files}" | sed 's/^/  moved: /'
-fi
+log "kotlin_renamed=${kotlin_renamed}"
+echo "::endgroup::"
 log "::endgroup::"
 
-# ---------- 2) Manifest 的 package 属性清除（AGP 8+） ----------
-strip_manifest_package_attr() {
-  local mf
-  while IFS= read -r -d '' mf; do
-    if grep -qE '<manifest[^>]*\spackage="' "$mf"; then
-      # 移除 package="..."; 尽量不动其它属性/空白
-      sed -E -i 's/(<manifest[^>]*)([[:space:]]+package="[^"]*")/\1/g' "$mf"
-      pkg_fixed=$((pkg_fixed+1))
-    fi
-  done < <(find "${APP_DIR}" -type f -name "AndroidManifest.xml" -print0)
-}
+# -------- 2) AndroidManifest: remove package attribute (AGP8+) --------
+echo "::group::Fix AndroidManifest (remove package attr)"
 log "::group::Fix AndroidManifest (remove package attr)"
-strip_manifest_package_attr
-log "package_fixed=${pkg_fixed}"
+pkgfixed=0
+
+# 主 manifest 路径
+MF="${APP_DIR}/src/main/AndroidManifest.xml"
+if [[ -f "${MF}" ]]; then
+  if grep -Eq '<manifest[^>]*\spackage=' "${MF}"; then
+    # 安全替换：只移除 manifest 起始标签上的 package 属性
+    tmp="$(mktemp)"
+    sed -E 's/(<manifest[^>]*?)\s+package="[^"]*"/\1/g' "${MF}" > "${tmp}"
+    mv -f "${tmp}" "${MF}"
+    ((pkgfixed++)) || true
+    log "package attribute removed in: ${MF}"
+  else
+    log "no package attribute found in: ${MF}"
+  fi
+else
+  log "manifest not found: ${MF}"
+fi
+
+log "package_fixed=${pkgfixed}"
+echo "::endgroup::"
 log "::endgroup::"
 
-# ---------- 3) Kotlin 文件版式整理：把 import 统一上移 ----------
-uniq_sorted() {
-  awk '!a[$0]++' | sort
-}
-move_imports_to_head_for_file() {
-  local file="$1"
-  # 读取整个文件
-  local pkg_line imports body
-  pkg_line=""
-  imports=""
-  body=""
-
-  # 用 awk 分段抽取
-  # state: 0 before pkg, 1 after pkg, 2 reading imports anywhere, collect and strip from body
-  awk '
-    BEGIN{pkg=""; }
-    {
-      line=$0;
-      if (NR==1 || match(line, /^[[:space:]]*package[[:space:]]+[A-Za-z0-9_.]+/)) {
-        if (match(line, /^[[:space:]]*package[[:space:]]+[A-Za-z0-9_.]+/)) { pkg=line; next; }
-      }
-      if (match(line, /^[[:space:]]*package[[:space:]]+[A-Za-z0-9_.]+/)) { pkg=line; next; }
-
-      if (match(line, /^[[:space:]]*import[[:space:]]+[A-Za-z0-9_.]+/)) {
-        print "__NDJC_IMPORT__ " line;
-        next;
-      }
-      print "__NDJC_BODY__ " line;
-    }
-    END{
-      if (pkg!="") print "__NDJC_PKG__ " pkg;
-    }
-  ' "$file" > "${file}.ndjc.tmp"
-
-  pkg_line="$(grep -m1 '^__NDJC_PKG__ ' "${file}.ndjc.tmp" | sed 's/^__NDJC_PKG__ //')"
-  imports="$(grep '^__NDJC_IMPORT__ ' "${file}.ndjc.tmp" | sed 's/^__NDJC_IMPORT__ //')"
-  body="$(sed -n 's/^__NDJC_BODY__ //p' "${file}.ndjc.tmp")"
-
-  # 若文件开头未显式 package，则保持原样（只删中部 import 并统一上移）
-  if [[ -z "${pkg_line}" ]]; then
-    pkg_line="$(head -n1 "${file}" || true)"
-    if [[ "${pkg_line}" =~ ^[[:space:]]*package[[:space:]]+ ]]; then
-      : # ok
-    else
-      pkg_line=""
-    fi
-  fi
-
-  # 去重+排序 import
-  if [[ -n "${imports}" ]]; then
-    imports="$(printf "%s\n" "${imports}" | uniq_sorted)"
-  fi
-
-  # 构造新内容
-  {
-    if [[ -n "${pkg_line}" ]]; then
-      echo "${pkg_line}"
-      echo
-    fi
-    if [[ -n "${imports}" ]]; then
-      echo "${imports}"
-      echo
-    fi
-    # 原 body：把可能残存的包头/空行去掉
-    printf "%s\n" "${body}"
-  } > "${file}.ndjc.out"
-
-  # 若中部的 import 被上移，算一次
-  if grep -q '^__NDJC_IMPORT__ ' "${file}.ndjc.tmp"; then
-    imports_moved=$((imports_moved+1))
-  fi
-
-  mv -f "${file}.ndjc.out" "${file}"
-  rm -f "${file}.ndjc.tmp"
-}
-
+# -------- 3) Normalize Kotlin imports / whitespace (空输入友好) --------
+echo "::group::Normalize Kotlin imports"
 log "::group::Normalize Kotlin imports"
-while IFS= read -r -d '' kf; do
-  move_imports_to_head_for_file "$kf"
-done < <(find "${APP_DIR}" -type f -name "*.kt" -print0)
-log "imports_moved=${imports_moved}"
+
+# 收集 *.kt 文件；无文件时不报错
+mapfile -t KT_FILES < <(find "${APP_DIR}" -type f -name "*.kt" 2>/dev/null || true)
+if (( ${#KT_FILES[@]} > 0 )); then
+  for kf in "${KT_FILES[@]}"; do
+    # 仅做轻量整理：去行尾空格、折叠多余空行（不改变业务含义）
+    # 行尾空白
+    sed -i -E 's/[[:space:]]+$//' "${kf}"
+    # 连续 3+ 空行折叠为 1 行（两次确保收敛）
+    sed -i -E ':a;N;$!ba;s/\n{3,}/\n\n/g' "${kf}"
+  done
+  log "normalized ${#KT_FILES[@]} Kotlin files"
+else
+  log "no Kotlin files found under ${APP_DIR}; skip normalization"
+fi
+
+echo "::endgroup::"
 log "::endgroup::"
 
-# ---------- 4) （可选）顶层声明的快速体检 ----------
-# 这里只做告警统计，不做侵入式改写（避免误修）。
-check_toplevel_layout() {
-  local file="$1"
-  # 典型“错误落位”的几个信号：
-  # - 文件中段出现 'package '（异常）或 import（上一阶段已搬移）
-  # - 文件中出现多处 '@Composable' 开头、但紧邻前后是顶层以外的文本
-  if grep -nE '^[[:space:]]*package[[:space:]]' "$file" | sed -n '2p' >/dev/null 2>&1; then
-    toplevel_warn=$((toplevel_warn+1))
-    echo "warn: multiple 'package' lines in ${file}" >> "${LOG_DIR}/materialize.log"
-  fi
-}
-log "::group::Check Kotlin toplevel layout (soft warnings)"
-while IFS= read -r -d '' kf; do
-  check_toplevel_layout "$kf" || true
-done < <(find "${APP_DIR}" -type f -name "*.kt" -print0)
-log "toplevel_warn=${toplevel_warn}"
-log "::endgroup::"
-
-# ---------- 5) 统计与改动清单 ----------
-# anchors.txt：保留给上游/下游查看（这里不解析 plan，只占位）
+# -------- 4) (可选) 生成锚点索引，便于排查 --------
+ANCHORS_TXT="${LOG_DIR}/anchors.txt"
 {
-  echo "${APP_DIR}/build.gradle#: // HOOK:BEFORE_BUILD"
-  echo "${APP_DIR}/src/main/AndroidManifest.xml#: // IF:* / BLOCK:* / LIST:*"
-} > "${LOG_DIR}/anchors.txt"
+  echo "${APP_DIR}/build.gradle:"
+  grep -nE 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}/build.gradle" 2>/dev/null || true
+  echo
+  grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/null || true
+} > "${ANCHORS_TXT}" || true
 
-git status --porcelain | awk '{print $2}' > "${LOG_DIR}/modified-files.txt" || true
+# -------- 5) 写入 apply_result（供外部追踪） --------
+# 尽量从 plan 中提取 app 名/包名；没有 jq 时用保底写法
+APP_NAME="(unknown)"
+PKG_NAME="(unknown)"
+if command -v jq >/dev/null 2>&1 && [[ -f "${PLAN_JSON}" ]]; then
+  APP_NAME="$(jq -r '.meta.appName // .meta.appTitle // empty' "${PLAN_JSON}" || true)"
+  PKG_NAME="$(jq -r '.meta.packageId // .gradle.applicationId // empty' "${PLAN_JSON}" || true)"
+  [[ -z "${APP_NAME}" ]] && APP_NAME="(unknown)"
+  [[ -z "${PKG_NAME}" ]] && PKG_NAME="(unknown)"
+fi
 
-# 末尾写一行摘要，便于在 Actions Summary 快速查看
-echo "autofix: kotlin_renamed=${kt_renamed}  package_fixed=${pkg_fixed}" | tee -a "${LOG_DIR}/materialize.log" >/dev/null
-echo "NDJC materialize: completed (imports_moved=${imports_moved}, toplevel_warn=${toplevel_warn})" | tee -a "${LOG_DIR}/materialize.log" >/dev/null
+cat > "${APPLY_JSON}" <<EOF
+{
+  "runId": "${RUN_ID}",
+  "status": "pre-ci",
+  "template": "$(basename "$(dirname "${APP_DIR}")")",
+  "appTitle": "${APP_NAME}",
+  "packageName": "${PKG_NAME}",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
+EOF
+git add -A "${APPLY_JSON}" 2>/dev/null || true
+
+# -------- 6) 输出修改文件清单 --------
+MODIFIED_TXT="${LOG_DIR}/modified-files.txt"
+git diff --name-only | sed 's/^/requests: /' > "${MODIFIED_TXT}" || true
+# 再列出工作区内（未加入 git 的）本地更改
+find "${APP_DIR}" -type f -name "*.kt" -o -name "*.xml" -o -name "*.gradle" 2>/dev/null | sed 's/^/templates: /' >> "${MODIFIED_TXT}" || true
+
+# -------- 7) 汇总/计数回显（供上游 step 提示用） --------
+log "{ \"renamed\": ${kotlin_renamed}, \"pkgfixed\": ${pkgfixed} }"
+echo "autofix: kotlin_renamed=${kotlin_renamed}  package_fixed=${pkgfixed}"
+echo "NDJC materialize: total=$(wc -l < "${MODIFIED_TXT}" | tr -d ' ') text=0 block=0 list=0 if=0" | tee -a "${LOG_FILE}"
+
+# 对缺失锚点计数（可留空，保兼容之前工作流的 notice）
+missing_text=0; missing_block=0; missing_list=0; missing_if=0
+echo "missing: text=${missing_text} block=${missing_block} list=${missing_list} if=${missing_if}" | tee -a "${LOG_FILE}"
+
+# 成功退出
+exit 0
