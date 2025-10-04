@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "牛太郎餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "zh"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/UploadActivity.kt",
+      "content": "import android.content.Intent\nimport android.net.Uri\nimport android.os.Bundle\nimport android.provider.MediaStore\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.google.android.gms.tasks.OnFailureListener\nimport com.google.android.gms.tasks.OnSuccessListener\nimport com.google.firebase.storage.FirebaseStorage\nimport com.google.firebase.storage.StorageReference\nimport com.google.firebase.storage.UploadTask\n\nclass UploadActivity : AppCompatActivity() {\n    private lateinit var storage: FirebaseStorage\n    private lateinit var storageReference: StorageReference\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_upload)\n\n        storage = FirebaseStorage.getInstance()\n        storageReference = storage.reference\n\n        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n        startActivityForResult(intent, 100)\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n\n        if (requestCode == 100 && resultCode == RESULT_OK && data != null) {\n            val uri = data.data\n            val file = File(uri!!.path)\n            val uploadTask = storageReference.child(\"images/${file.name}\").putFile(uri)\n\n            uploadTask.addOnFailureListener { e ->\n                Toast.makeText(this, \"上传失败\", Toast.LENGTH_SHORT).show()\n            }.addOnSuccessListener { taskSnapshot ->\n                Toast.makeText(this, \"上传成功\", Toast.LENGTH_SHORT).show()\n            }\n        }\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/EditActivity.kt",
+      "content": "import android.os.Bundle\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.google.android.gms.tasks.OnFailureListener\nimport com.google.android.gms.tasks.OnSuccessListener\nimport com.google.firebase.firestore.FirebaseFirestore\n\nclass EditActivity : AppCompatActivity() {\n    private lateinit var db: FirebaseFirestore\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_edit)\n\n        db = FirebaseFirestore.getInstance()\n\n        val intent = Intent(this, UploadActivity::class.java)\n        startActivity(intent)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/SettingActivity.kt",
+      "content": "import android.os.Bundle\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.google.android.gms.tasks.OnFailureListener\nimport com.google.android.gms.tasks.OnSuccessListener\nimport com.google.firebase.firestore.FirebaseFirestore\n\nclass SettingActivity : AppCompatActivity() {\n    private lateinit var db: FirebaseFirestore\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_setting)\n\n        db = FirebaseFirestore.getInstance()\n\n        val intent = Intent(this, EditActivity::class.java)\n        startActivity(intent)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/CommentActivity.kt",
+      "content": "import android.os.Bundle\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.google.android.gms.tasks.OnFailureListener\nimport com.google.android.gms.tasks.OnSuccessListener\nimport com.google.firebase.firestore.FirebaseFirestore\n\nclass CommentActivity : AppCompatActivity() {\n    private lateinit var db: FirebaseFirestore\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_comment)\n\n        db = FirebaseFirestore.getInstance()\n\n        val intent = Intent(this, SettingActivity::class.java)\n        startActivity(intent)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ReviewActivity.kt",
+      "content": "import android.os.Bundle\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.google.android.gms.tasks.OnFailureListener\nimport com.google.android.gms.tasks.OnSuccessListener\nimport com.google.firebase.firestore.FirebaseFirestore\n\nclass ReviewActivity : AppCompatActivity() {\n    private lateinit var db: FirebaseFirestore\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_review)\n\n        db = FirebaseFirestore.getInstance()\n\n        val intent = Intent(this, CommentActivity::class.java)\n        startActivity(intent)\n    }\n}\n",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    }
+  ],
+  "resources": {}
+}
