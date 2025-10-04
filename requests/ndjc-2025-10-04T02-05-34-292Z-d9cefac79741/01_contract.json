@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.niutao.restaurant",
+    "mode": "B"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.niutao.restaurant",
+      "NDJC:APP_LABEL": "牛太郎餐厅",
+      "NDJC:HOME_TITLE": "牛太郎餐厅 - 美味的介绍菜品",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "res": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.niutao.restaurant",
+      "resConfigs": [
+        "zh",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "patches": {
+    "gradle": {
+      "resConfigs": [
+        "zh",
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "manifest": {
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/model/Menu.java",
+      "content": "data class Menu(val id: Int, val name: String, val price: Double, val description: String, val image: String)",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/dao/MenuDao.java",
+      "content": "interface MenuDao { fun getMenu(id: Int): Menu? }",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/MenuActivity.java",
+      "content": "class MenuActivity : AppCompatActivity() { override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState) setContentView(R.layout.activity_menu) } }",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.java",
+      "content": "class MenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_menu, container, false) } }",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/MenuFragment.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\">\n\t<ImageView android:id=\"@+id/image\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:src=\"@drawable/image\" />\n\t<TextView android:id=\"@+id/name\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/name\" />\n\t<TextView android:id=\"@+id/price\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/price\" />\n\t<Button android:id=\"@+id/edit\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/edit\" />\n</LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/EditMenuFragment.java",
+      "content": "class EditMenuFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_edit_menu, container, false) } }",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/EditMenuFragment.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\">\n\t<EditText android:id=\"@+id/name\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:hint=\"@string/name\" />\n\t<EditText android:id=\"@+id/price\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:hint=\"@string/price\" />\n\t<EditText android:id=\"@+id/description\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:hint=\"@string/description\" />\n\t<Button android:id=\"@+id/save\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/save\" />\n</LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/CommentFragment.java",
+      "content": "class CommentFragment : Fragment() { override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? { return inflater.inflate(R.layout.fragment_comment, container, false) } }",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/CommentFragment.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\">\n\t<EditText android:id=\"@+id/comment\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:hint=\"@string/comment\" />\n\t<Button android:id=\"@+id/send\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/send\" />\n\t<ListView android:id=\"@+id/comments\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" />\n</LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/CommentAdapter.java",
+      "content": "class CommentAdapter(private val context: Context, private val comments: List<Comment>) : BaseAdapter() { override fun getCount(): Int { return comments.size } override fun getItem(position: Int): Any { return comments[position] } override fun getView(position: Int, convertView: View?, parent: ViewGroup): View { val view = LayoutInflater.from(context).inflate(R.layout.item_comment, parent, false) val comment = comments[position] view.findViewById<TextView>(R.id.name).text = comment.name view.findViewById<TextView>(R.id.comment).text = comment.comment view.findViewById<Button>(R.id.like).setOnClickListener { likeComment(comment.id) } return view } }",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/CommentAdapter.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"wrap_content\">\n\t<TextView android:id=\"@+id/name\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/name\" />\n\t<TextView android:id=\"@+id/comment\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/comment\" />\n\t<Button android:id=\"@+id/like\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/like\" />\n</LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/CommentAdapter.java",
+      "content": "fun likeComment(id: Int) { // like comment logic }",
+      "encoding": "utf8",
+      "kind": "kotlin"
+    },
+    {
+      "path": "app/src/main/java/com/niutao/restaurant/ui/fragment/CommentAdapter.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"wrap_content\">\n\t<TextView android:id=\"@+id/name\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/name\" />\n\t<TextView android:id=\"@+id/comment\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/comment\" />\n\t<Button android:id=\"@+id/like\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/like\" />\n</LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    }
+  ],
+  "resources": {}
+}
