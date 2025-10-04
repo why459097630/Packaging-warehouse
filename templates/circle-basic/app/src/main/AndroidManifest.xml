@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="NDJC:PACKAGE_NAME">  <!-- ← 原: com.ndjc.app -->
+<!-- 注意：包名/命名空间请在 Gradle 的 android { namespace = "…" } 中配置，这里不要再写 package 属性 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- ===== Permissions（条件锚点）===== -->
 
-    <!-- IF:PERMISSION.CAMERA -->
+    <!-- IF:PERMISSION_CAMERA -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- ENDIF -->
+    <!-- END_IF -->
 
-    <!-- IF:PERMISSION.MEDIA -->
+    <!-- IF:PERMISSION_MEDIA -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <!-- ENDIF -->
+    <!-- END_IF -->
 
-    <!-- IF:PERMISSION.NOTIFICATION -->
+    <!-- IF:PERMISSION_NOTIFICATION -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- ENDIF -->
+    <!-- END_IF -->
 
-    <!-- IF:PERMISSION.LOCATION -->
+    <!-- IF:PERMISSION_LOCATION -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <!-- ENDIF -->
+    <!-- END_IF -->
 
-    <!-- IF:PERMISSION.CONTACTS -->
+    <!-- IF:PERMISSION_CONTACTS -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <!-- ENDIF -->
+    <!-- END_IF -->
 
-    <!-- IF:PERMISSION.SCHEDULE_EXACT_ALARM -->
+    <!-- IF:PERMISSION_SCHEDULE_EXACT_ALARM -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <!-- ENDIF -->
+    <!-- END_IF -->
 
     <!-- ===== Application ===== -->
     <application
@@ -51,7 +51,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-        <!-- ENDIF -->
+        <!-- END_IF -->
 
         <activity
             android:name=".MainActivity"
@@ -59,15 +59,15 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <!-- 如需深链，可在模板中增加 LIST:DEEPLINK_PATTERNS 区块 -->
+                <!-- LIST:DEEPLINK_PATTERNS（如需） -->
             </intent-filter>
         </activity>
 
-        <!-- IF:INTENT.SHARE -->
+        <!-- IF:INTENT_SHARE -->
         <activity
             android:name=".ShareProxyActivity"
             android:exported="true" />
-        <!-- ENDIF -->
+        <!-- END_IF -->
 
     </application>
 </manifest>
