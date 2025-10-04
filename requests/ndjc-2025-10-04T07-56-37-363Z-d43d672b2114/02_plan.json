@@ -1,0 +1,75 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "欢迎光临牛太郎餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "zh",
+      "en"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.CAMERA"
+    ],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\"> <Button android:id=\"@+id/upload_button\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"Upload\" /> </LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_upload.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\"> <ImageView android:id=\"@+id/image_view\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" /> <Button android:id=\"@+id/upload_button\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"Upload\" /> </LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_edit.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\"> <EditText android:id=\"@+id/name_edit_text\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:hint=\"Name\" /> <EditText android:id=\"@+id/description_edit_text\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:hint=\"Description\" /> <EditText android:id=\"@+id/price_edit_text\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:hint=\"Price\" /> <Button android:id=\"@+id/save_button\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"Save\" /> </LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_comment.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\"> <EditText android:id=\"@+id/comment_edit_text\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:hint=\"Comment\" /> <Button android:id=\"@+id/save_button\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"Save\" /> <Button android:id=\"@+id/like_button\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"Like\" /> </LinearLayout>",
+      "encoding": "utf8",
+      "kind": "xml"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<resources><string name=\"app_name\">牛太郎餐厅</string><string name=\"upload_button_text\">Upload</string><string name=\"save_button_text\">Save</string><string name=\"like_button_text\">Like</string></resources>",
+      "encoding": "utf8",
+      "kind": "xml"
+    }
+  ]
+}
