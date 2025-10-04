@@ -1,0 +1,7 @@
+requests/ndjc-2025-10-04T11-50-02-935Z-2744c533b46f/03_apply_result.json
+requests/ndjc-2025-10-04T11-50-02-935Z-2744c533b46f/actions-summary.txt
+scripts/ndjc-materialize.sh
+templates/circle-basic/app/build.gradle
+templates/circle-basic/app/src/main/java/com/ndjc/app/App.kt
+templates/circle-basic/app/src/main/java/com/ndjc/app/MainActivity.kt
+templates/circle-basic/app/src/main/res/values/strings.xml

@@ -1,0 +1,57 @@
+templates/circle-basic/app/build.gradle:4:    // HOOK:BEFORE_BUILD
+templates/circle-basic/app/build.gradle:5:    // BLOCK:DEPENDENCY_SNIPPETS
+templates/circle-basic/app/build.gradle:13:    compileSdk 34                                    // NDJC:COMPILE_SDK
+templates/circle-basic/app/build.gradle:17:        minSdk 24                                    // NDJC:MIN_SDK
+templates/circle-basic/app/build.gradle:18:        targetSdk 34                                 // NDJC:TARGET_SDK
+templates/circle-basic/app/build.gradle:19:        versionCode 1                                // NDJC:VERSION_CODE
+templates/circle-basic/app/build.gradle:20:        versionName '1.0.0'                          // NDJC:VERSION_NAME
+templates/circle-basic/app/build.gradle:22:        buildConfigField "String",  "NDJC_RUN_ID",   "\"\""      // NDJC:BUILD_META_RUNID / NDJC:RUN_ID
+templates/circle-basic/app/build.gradle:23:        buildConfigField "String",  "NDJC_LOG_LEVEL","\"info\""  // NDJC:LOG_LEVEL
+templates/circle-basic/app/build.gradle:24:        buildConfigField "boolean", "NDJC_DEBUG_LOG","false"     // NDJC:DEBUG_LOG_ENABLED
+templates/circle-basic/app/build.gradle:26:        // --- NDJC:RES_CONFIGS 动态启用（保持锚点，可被 generator 替换为 "en,zh-rCN" 这类串） ---
+templates/circle-basic/app/build.gradle:27:        def ndjcResConfigs = "NDJC:RES_CONFIGS"
+templates/circle-basic/app/build.gradle:28:        if (ndjcResConfigs && ndjcResConfigs != "NDJC:RES_CONFIGS") {
+templates/circle-basic/app/build.gradle:46:            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' /* NDJC:PROGUARD_EXTRA */
+templates/circle-basic/app/build.gradle:55:    // LIST:ABI_SPLITS
+templates/circle-basic/app/build.gradle:56:    // NDJC:USE_APP_BUNDLE
+templates/circle-basic/app/build.gradle:59:        // LIST:PACKAGING_RULES
+templates/circle-basic/app/build.gradle:117:    // IF:PERMISSION.NOTIFICATION
+templates/circle-basic/app/build.gradle:124:// HOOK:AFTER_BUILD
+templates/circle-basic/app/proguard-rules.pro:6:# LIST:PROGUARD_EXTRA
+templates/circle-basic/app/src/main/java/com/ndjc/app/MainActivity.kt:16:    // HOOK:AFTER_INSTALL  // 首次启动时可注入（生成或变更后仅一次性逻辑）
+templates/circle-basic/app/src/main/java/com/ndjc/app/MainActivity.kt:26:    // BLOCK:DEBUG_PANEL
+templates/circle-basic/app/src/main/java/com/ndjc/app/MainActivity.kt:30:    // BLOCK:BUILD_SUMMARY
+templates/circle-basic/app/src/main/java/com/ndjc/app/feature/feed/ui/FeedItem.kt:20:            // BLOCK:FEED_ITEM_BADGES
+templates/circle-basic/app/src/main/java/com/ndjc/app/feature/feed/ui/FeedItem.kt:30:            // BLOCK:SPONSORED_CARD
+templates/circle-basic/app/src/main/java/com/ndjc/app/feature/feed/FeedScreen.kt:48:        // BLOCK:FEED_ITEM_BADGES
+templates/circle-basic/app/src/main/java/com/ndjc/app/feature/feed/FeedScreen.kt:55:      // BLOCK:EMPTY_STATE
+templates/circle-basic/app/src/main/java/com/ndjc/app/feature/post/PostEditorScreen.kt:19:    // HOOK:POST_EDITOR_SIDE_EFFECTS
+templates/circle-basic/app/src/main/java/com/ndjc/app/feature/post/PostEditorScreen.kt:40:            // BLOCK:POST_EDITOR_TOAST
+templates/circle-basic/app/src/main/java/com/ndjc/app/feature/detail/PostDetailScreen.kt:45:      // HOOK:DETAIL_FAB
+templates/circle-basic/app/src/main/java/com/ndjc/app/feature/common/EmptyState.kt:13:    // BLOCK:EMPTY_STATE
+templates/circle-basic/app/src/main/java/com/ndjc/app/App.kt:8:        // 这里可插 HOOK:AFTER_INSTALL 类似的初始化逻辑（如需一次性任务可加标记）
+templates/circle-basic/app/src/main/java/com/ndjc/app/navigation/NavGraph.kt:12:  // LIST:ROUTES
+templates/circle-basic/app/src/main/java/com/ndjc/app/navigation/NavGraph.kt:20:  // BLOCK:NAV_TRANSITIONS
+templates/circle-basic/app/src/main/java/com/ndjc/app/navigation/NavGraph.kt:26:    // BLOCK:ROUTE_HOME
+templates/circle-basic/app/src/main/java/com/ndjc/app/navigation/NavGraph.kt:35:    // BLOCK:ROUTE_DETAIL
+templates/circle-basic/app/src/main/java/com/ndjc/app/navigation/NavGraph.kt:45:    // BLOCK:ROUTE_POST
+templates/circle-basic/app/src/main/res/values/plurals.xml:2:    <!-- BLOCK:STRINGS_EXTRA -->
+templates/circle-basic/app/src/main/res/values/themes.xml:3:        <!-- 夜间策略：由 NDJC:DARK_MODE 影响（Auto/On/Off，可由生成器调整AppCompatDelegate） -->
+templates/circle-basic/app/src/main/res/values/themes.xml:5:        <!-- BLOCK:THEME_COLORS -->
+templates/circle-basic/app/src/main/res/values/themes.xml:12:        <!-- BLOCK:TYPOSCALE_OVERRIDES -->
+templates/circle-basic/app/src/main/res/values/themes.xml:13:        <!-- 可注入 fontFamily（NDJC:FONT_FAMILY_PRIMARY/SECONDARY）与 Display/Body 尺寸覆写 -->
+templates/circle-basic/app/src/main/res/values/strings.xml:20:    <string name="ndjc_run_id"></string>          <!-- NDJC:RUN_ID -->
+templates/circle-basic/app/src/main/res/values/strings.xml:21:    <string name="ndjc_log_level">info</string>   <!-- NDJC:LOG_LEVEL -->
+templates/circle-basic/app/src/main/res/values/strings.xml:23:    <!-- BLOCK:STRINGS_EXTRA -->
+templates/circle-basic/app/src/main/res/values/strings.xml:24:    <!-- 追加的复数/后续条目（如使用 LIST:PLURAL_STRINGS 可在此注入） -->
+templates/circle-basic/app/src/main/res/drawable/app_icon.xml:2:<!-- NDJC:APP_ICON 占位。生成器可用同名文件覆盖以替换应用图标 -->
+templates/circle-basic/app/src/main/AndroidManifest.xml:7:    <!-- IF:PERMISSION_CAMERA -->
+templates/circle-basic/app/src/main/AndroidManifest.xml:11:    <!-- IF:PERMISSION_MEDIA -->
+templates/circle-basic/app/src/main/AndroidManifest.xml:15:    <!-- IF:PERMISSION_NOTIFICATION -->
+templates/circle-basic/app/src/main/AndroidManifest.xml:19:    <!-- IF:PERMISSION_LOCATION -->
+templates/circle-basic/app/src/main/AndroidManifest.xml:23:    <!-- IF:PERMISSION_CONTACTS -->
+templates/circle-basic/app/src/main/AndroidManifest.xml:27:    <!-- IF:PERMISSION_SCHEDULE_EXACT_ALARM -->
+templates/circle-basic/app/src/main/AndroidManifest.xml:40:        <!-- BLOCK:SPLASH_CONTENT -->
+templates/circle-basic/app/src/main/AndroidManifest.xml:44:        <!-- IF:FILE_PROVIDER -->
+templates/circle-basic/app/src/main/AndroidManifest.xml:62:                <!-- LIST:DEEPLINK_PATTERNS（如需） -->
+templates/circle-basic/app/src/main/AndroidManifest.xml:66:        <!-- IF:INTENT_SHARE -->

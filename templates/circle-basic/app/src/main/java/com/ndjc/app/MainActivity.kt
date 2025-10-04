@@ -1,4 +1,4 @@
-package com.ndjc.app // NDJC:PACKAGE_NAME
+package com.ndjc.app // com.ndjc.demo.core
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

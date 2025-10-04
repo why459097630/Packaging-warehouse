@@ -1,0 +1,6 @@
+[11:50:21] env: PLAN_JSON=requests/ndjc-2025-10-04T11-50-02-935Z-2744c533b46f/02_plan.json
+[11:50:21] env: APP_DIR=templates/circle-basic/app
+[11:50:21] env: RUN_ID=ndjc-2025-10-04T11-50-02-935Z-2744c533b46f
+[11:50:21] ::group::Sanitize plan
+[11:50:26] ::endgroup::
+NDJC materialize: total=7 text=7 block=0 list=0 if=0 hooks=0

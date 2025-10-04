@@ -1,0 +1,9 @@
+ M requests/ndjc-2025-10-04T11-50-02-935Z-2744c533b46f/03_apply_result.json
+ M requests/ndjc-2025-10-04T11-50-02-935Z-2744c533b46f/actions-summary.txt
+ M scripts/ndjc-materialize.sh
+ M templates/circle-basic/app/build.gradle
+ M templates/circle-basic/app/src/main/java/com/ndjc/app/App.kt
+ M templates/circle-basic/app/src/main/java/com/ndjc/app/MainActivity.kt
+ M templates/circle-basic/app/src/main/res/values/strings.xml
+?? build-logs/
+?? requests/ndjc-2025-10-04T11-50-02-935Z-2744c533b46f/02_plan.sanitized.json

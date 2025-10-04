@@ -2,9 +2,9 @@
 <resources>
 
     <!-- 由生成器替换的文本锚点 -->
-    <string name="app_name">NDJC:APP_LABEL</string>                <!-- ← 原: NDJC Circle -->
-    <string name="home_title">NDJC:HOME_TITLE</string>             <!-- ← 原: Hello NDJC -->
-    <string name="primary_button">NDJC:PRIMARY_BUTTON_TEXT</string><!-- ← 原: Start -->
+    <string name="app_name">牛太郎餐厅</string>                <!-- ← 原: NDJC Circle -->
+    <string name="home_title">牛太郎餐厅-介绍菜品</string>             <!-- ← 原: Hello NDJC -->
+    <string name="primary_button">上传菜品</string><!-- ← 原: Start -->
 
     <!-- Feed/Detail/Post -->
     <string name="feed_like">Like</string>
