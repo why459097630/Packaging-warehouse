@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "牛太郎餐厅 - 美食推荐",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {
+    "HOOK:KOTLIN_TOPLEVEL": [
+      "// MainActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport com.example.niutao.model.Menu\nimport com.example.niutao.util.FileUtil\nimport java.io.File\n\nclass MainActivity : AppCompatActivity() {\n    private lateinit var menuEditText: EditText\n    private lateinit var priceEditText: EditText\n    private lateinit var photoImageView: ImageView\n    private lateinit var uploadButton: Button\n    private lateinit var saveButton: Button\n    private lateinit var reviewButton: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        menuEditText = findViewById(R.id.menuEditText)\n        priceEditText = findViewById(R.id.priceEditText)\n        photoImageView = findViewById(R.id.photoImageView)\n        uploadButton = findViewById(R.id.uploadButton)\n        saveButton = findViewById(R.id.saveButton)\n        reviewButton = findViewById(R.id.reviewButton)\n\n        uploadButton.setOnClickListener {\n            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n            startActivityForResult(intent, 1)\n        }\n\n        saveButton.setOnClickListener {\n            val menu = Menu(menuEditText.text.toString(), priceEditText.text.toString(), photoImageView.drawable)\n            FileUtil.saveMenu(menu, this)\n            Toast.makeText(this, \"菜品保存成功\", Toast.LENGTH_SHORT).show()\n        }\n\n        reviewButton.setOnClickListener {\n            val intent = Intent(this, ReviewActivity::class.java)\n            startActivity(intent)\n        }\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == Activity.RESULT_OK && data != null) {\n            val selectedImage = data.data\n            photoImageView.setImageURI(selectedImage)\n        }\n    }\n}\n",
+      "// Menu.kt\nimport android.graphics.drawable.Drawable\nimport java.io.Serializable\n\ndata class Menu(val name: String, val price: String, val photo: Drawable) : Serializable\n",
+      "// FileUtil.kt\nimport java.io.File\nimport java.io.Serializable\n\nobject FileUtil {\n    fun saveMenu(menu: Menu, context: Context) {\n        val file = File(context.cacheDir, \"menu.json\")\n        val gson = Gson()\n        val json = gson.toJson(menu)\n        file.writeText(json)\n    }\n}\n",
+      "// ReviewActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.TextView\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport com.example.niutao.model.Menu\n\nclass ReviewActivity : AppCompatActivity() {\n    private lateinit var reviewEditText: EditText\n    private lateinit var saveButton: Button\n    private lateinit var reviewTextView: TextView\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_review)\n\n        reviewEditText = findViewById(R.id.reviewEditText)\n        saveButton = findViewById(R.id.saveButton)\n        reviewTextView = findViewById(R.id.reviewTextView)\n\n        saveButton.setOnClickListener {\n            val review = reviewEditText.text.toString()\n            val menu = intent.getSerializableExtra(\"menu\") as Menu\n            menu.review = review\n            FileUtil.saveMenu(menu, this)\n            Toast.makeText(this, \"评论保存成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}\n",
+      "// Menu.kt\nimport android.graphics.drawable.Drawable\nimport java.io.Serializable\n\ndata class Menu(val name: String, val price: String, val photo: Drawable, var review: String) : Serializable\n"
+    ]
+  },
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "zh-CN"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.CAMERA",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/example/niutao/MainActivity.kt",
+      "content": "// MainActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport com.example.niutao.model.Menu\nimport com.example.niutao.util.FileUtil\nimport java.io.File\n\nclass MainActivity : AppCompatActivity() {\n    private lateinit var menuEditText: EditText\n    private lateinit var priceEditText: EditText\n    private lateinit var photoImageView: ImageView\n    private lateinit var uploadButton: Button\n    private lateinit var saveButton: Button\n    private lateinit var reviewButton: Button\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n\n        menuEditText = findViewById(R.id.menuEditText)\n        priceEditText = findViewById(R.id.priceEditText)\n        photoImageView = findViewById(R.id.photoImageView)\n        uploadButton = findViewById(R.id.uploadButton)\n        saveButton = findViewById(R.id.saveButton)\n        reviewButton = findViewById(R.id.reviewButton)\n\n        uploadButton.setOnClickListener {\n            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n            startActivityForResult(intent, 1)\n        }\n\n        saveButton.setOnClickListener {\n            val menu = Menu(menuEditText.text.toString(), priceEditText.text.toString(), photoImageView.drawable)\n            FileUtil.saveMenu(menu, this)\n            Toast.makeText(this, \"菜品保存成功\", Toast.LENGTH_SHORT).show()\n        }\n\n        reviewButton.setOnClickListener {\n            val intent = Intent(this, ReviewActivity::class.java)\n            startActivity(intent)\n        }\n    }\n\n    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {\n        super.onActivityResult(requestCode, resultCode, data)\n        if (requestCode == 1 && resultCode == Activity.RESULT_OK && data != null) {\n            val selectedImage = data.data\n            photoImageView.setImageURI(selectedImage)\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/Menu.kt",
+      "content": "// Menu.kt\nimport android.graphics.drawable.Drawable\nimport java.io.Serializable\n\ndata class Menu(val name: String, val price: String, val photo: Drawable) : Serializable\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/FileUtil.kt",
+      "content": "// FileUtil.kt\nimport java.io.File\nimport java.io.Serializable\n\nobject FileUtil {\n    fun saveMenu(menu: Menu, context: Context) {\n        val file = File(context.cacheDir, \"menu.json\")\n        val gson = Gson()\n        val json = gson.toJson(menu)\n        file.writeText(json)\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/ReviewActivity.kt",
+      "content": "// ReviewActivity.kt\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.TextView\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport com.example.niutao.model.Menu\n\nclass ReviewActivity : AppCompatActivity() {\n    private lateinit var reviewEditText: EditText\n    private lateinit var saveButton: Button\n    private lateinit var reviewTextView: TextView\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_review)\n\n        reviewEditText = findViewById(R.id.reviewEditText)\n        saveButton = findViewById(R.id.saveButton)\n        reviewTextView = findViewById(R.id.reviewTextView)\n\n        saveButton.setOnClickListener {\n            val review = reviewEditText.text.toString()\n            val menu = intent.getSerializableExtra(\"menu\") as Menu\n            menu.review = review\n            FileUtil.saveMenu(menu, this)\n            Toast.makeText(this, \"评论保存成功\", Toast.LENGTH_SHORT).show()\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/model/Menu.kt",
+      "content": "// Menu.kt\nimport android.graphics.drawable.Drawable\nimport java.io.Serializable\n\ndata class Menu(val name: String, val price: String, val photo: Drawable, var review: String) : Serializable\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <EditText\n        android:id=\"@+id/menuEditText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"菜品名称\"/>\n\n    <EditText\n        android:id=\"@+id/priceEditText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"价格\"/>\n\n    <ImageView\n        android:id=\"@+id/photoImageView\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"/>\n\n    <Button\n        android:id=\"@+id/uploadButton\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\"/>\n\n    <Button\n        android:id=\"@+id/saveButton\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"保存\"/>\n\n    <Button\n        android:id=\"@+id/reviewButton\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"评论\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_review.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:orientation=\"vertical\">\n\n    <EditText\n        android:id=\"@+id/reviewEditText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"评论\"/>\n\n    <Button\n        android:id=\"@+id/saveButton\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"保存\"/>\n\n    <TextView\n        android:id=\"@+id/reviewTextView\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n\n</LinearLayout>\n",
+      "encoding": "utf8"
+    }
+  ]
+}
