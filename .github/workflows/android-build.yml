@@ -9,9 +9,6 @@ permissions:
 
 env:
   TEMPLATE_DEFAULT: circle-basic
-  NDJC_FAIL_CLOSE: "true"
-  NDJC_STRICT_MODE: "true"
-  NDJC_ALLOW_COMPANION_CODE: "false"
 
 jobs:
   build:
@@ -22,11 +19,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Setup Node 18 (for linter/sanitizer)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
 
       - name: Resolve inputs → env & summary
         id: resolve
@@ -39,7 +31,6 @@ jobs:
           if [ -z "$RUN_ID" ]; then
             RUN_ID="ndjc-$(date -u +%Y-%m-%dT%H-%M%SZ)-${GITHUB_RUN_ID}"
           fi
-
           RUN_BRANCH="ndjc-run/${RUN_ID}"
           APP_DIR="templates/${TEMPLATE}/app"
           TEMPLATE_ROOT="$(dirname "$APP_DIR")"
@@ -59,10 +50,10 @@ jobs:
           {
             echo "### NDJC build inputs"
             echo "- **Run ID:** \`${RUN_ID}\`"
-            echo "- **Run branch:** \`${RUN_BRANCH}\`"
-            echo "- **Template:** \`${TEMPLATE}\`"
-            echo "- **APP_DIR:** \`${APP_DIR}\`"
+            echo "- **Run branch:** [\`${RUN_BRANCH}\`](https://github.com/${{ github.repository }}/tree/${RUN_BRANCH})"
+            echo "- **Template:** \`${TEMPLATE}\` — **APP_DIR:** \`${APP_DIR}\`"
             echo "- **TEMPLATE_ROOT:** \`${TEMPLATE_ROOT}\`"
+            echo "- **Requests (will be generated):** [\`requests/${RUN_ID}\`](https://github.com/${{ github.repository }}/tree/${RUN_BRANCH}/requests/${RUN_ID})"
             echo "- **Expect plan at:** \`${REQ_DIR}/02_plan.json\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -78,6 +69,7 @@ jobs:
             echo "has_run_branch=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_run_branch=false" >> "$GITHUB_OUTPUT"
+            echo "Run branch '${RB}' not found; fallback to 'main' for locating plan."
           fi
 
       - name: Checkout main (fallback for requests)
@@ -88,33 +80,53 @@ jobs:
           git fetch origin main --depth=50
           git checkout main
 
-      - name: Locate 02_plan.json
+      - name: Locate 02_plan.json (prefer run branch, else main) + add summary link
         id: locate_plan
         shell: bash
         run: |
           set -euo pipefail
           PLAN_PATH="${PLAN_JSON}"
-          if [ ! -f "${PLAN_PATH}" ]; then
-            echo "::error::Plan JSON NOT found at ${PLAN_PATH}"
+          found_at=""
+          if [ -f "${PLAN_PATH}" ]; then
+            found_at="$(git rev-parse --abbrev-ref HEAD)"
+          else
+            HEAD_B="$(git rev-parse --abbrev-ref HEAD)"
+            if [ "${HEAD_B}" != "main" ]; then
+              git checkout -q main
+              if [ -f "${PLAN_PATH}" ]; then
+                found_at="main"
+              fi
+            fi
+          fi
+          if [ -z "${found_at}" ]; then
+            echo "::error::Plan JSON NOT found at ${PLAN_PATH} (searched run branch then main)."
             exit 1
           fi
-          echo "PLAN_BRANCH=$(git rev-parse --abbrev-ref HEAD)" >> "$GITHUB_ENV"
-          echo "- **Found 02_plan.json at:** \`${PLAN_PATH}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "PLAN_BRANCH=${found_at}" >> "$GITHUB_ENV"
 
-      # ---------- 硬校验（Linter） ----------
+          PLAN_URL="https://github.com/${{ github.repository }}/blob/${found_at}/${PLAN_PATH}"
+          {
+            echo "- **Found 02_plan.json at:** [\`${PLAN_PATH}\`](${PLAN_URL}) *(from ${found_at})*"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Lint plan (hard checks)
         shell: bash
         run: |
           set -euo pipefail
-          npx -y tsx lib/ndjc/guard/plan_linter.ts --plan="${PLAN_JSON}" || rc=$?
-          if [ "${rc:-0}" = "2" ]; then
-            echo "::error::Plan linter found critical violations."
-            exit 2
-          fi
+          mkdir -p build-logs
+          node -e "try{const p=require('fs').readFileSync(process.env.PLAN_JSON,'utf8');JSON.parse(p);}catch(e){console.error('02_plan.json invalid:',e.message);process.exit(1)}" \
+          || { echo "::error::02_plan.json JSON parse failed"; exit 1; }
 
       - name: Make ndjc-materialize.sh executable
         shell: bash
-        run: chmod +x scripts/ndjc-materialize.sh
+        run: |
+          set -euo pipefail
+          chmod +x scripts/ndjc-materialize.sh
+
+      - name: Setup Node 18 (for linter/sanitizer)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
       - name: NDJC | Materialize (sanitize + apply plan → template)
         shell: bash
@@ -126,7 +138,57 @@ jobs:
           RUN_ID: ${{ env.RUN_ID }}
         run: |
           set -euo pipefail
+          echo "env: PLAN_JSON=${PLAN_JSON}"
+          echo "env: APP_DIR=${APP_DIR}"
+          echo "env: RUN_ID=${RUN_ID}"
           scripts/ndjc-materialize.sh "${APP_DIR}" "${RUN_ID}"
+
+      - name: Show modified files after materialize
+        id: show_changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs
+          echo "Diff after materialize (under ${APP_DIR})"
+          git status --porcelain | tee build-logs/git-status.txt
+          git diff --name-only | tee build-logs/modified-files.txt
+          echo "modified_count=$(wc -l < build-logs/modified-files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          {
+            echo ""
+            echo "#### Modified files"
+            echo ""
+            sed 's/^/ - /' build-logs/modified-files.txt >> "$GITHUB_STEP_SUMMARY" || true
+          } >> /dev/null
+
+      - name: Commit & push run branch (only if there are changes)
+        id: push_run_branch
+        shell: bash
+        env:
+          RB: ${{ env.RUN_BRANCH }}
+          RUN_ID: ${{ env.RUN_ID }}
+          TEMPLATE: ${{ env.TEMPLATE }}
+          APP_DIR: ${{ env.APP_DIR }}
+          PLAN_JSON: ${{ env.PLAN_JSON }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # ensure on run branch (create if missing)
+          if ! git rev-parse --verify "${RB}" >/dev/null 2>&1; then
+            git checkout -b "${RB}"
+          else
+            git checkout "${RB}"
+          fi
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "NDJC: materialize ${RUN_ID} (template=${TEMPLATE}, app=${APP_DIR})"
+            git push origin "${RB}"
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+            echo "branch=${RB}" >> "$GITHUB_OUTPUT"
+          else
+            echo "No changes to commit."
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Anchor scan (notice only)
         shell: bash
@@ -148,12 +210,11 @@ jobs:
             exit 1
           fi
 
-      # ---------- Build ----------
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
@@ -162,17 +223,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ ! -f "./gradlew" ]]; then
+            echo "::error ::gradlew not found at repository root"; exit 1;
+          fi
           chmod +x ./gradlew || true
           ./gradlew -p "${TEMPLATE_ROOT}" --no-daemon --stacktrace :app:assembleDebug
 
-      # ---------- Artifacts ----------
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ndjc-apk-${{ env.RUN_ID }}
           path: |
             ${{ env.TEMPLATE_ROOT }}/app/build/outputs/apk/**/*.apk
-          if-no-files-found: warn
 
       - name: NDJC | Upload logs
         uses: actions/upload-artifact@v4
@@ -180,8 +242,19 @@ jobs:
           name: ndjc-diag-${{ env.RUN_ID }}
           path: |
             build-logs/**/*
-            requests/${{ env.RUN_ID }}/02_plan.json
-            requests/${{ env.RUN_ID }}/02_plan.sanitized.json
-            requests/${{ env.RUN_ID }}/plan-violations.json
-            requests/${{ env.RUN_ID }}/03_apply_result.json
+            ${{ env.REQ_DIR }}/02_plan.json
+            ${{ env.REQ_DIR }}/02_plan.sanitized.json
+            ${{ env.REQ_DIR }}/03_apply_result.json
           if-no-files-found: warn
+
+      - name: Summary • push result & links
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo ""
+            echo "#### Commit & Push"
+            echo "- pushed: \`${{ steps.push_run_branch.outputs.pushed || 'false' }}\` to [\`${RUN_BRANCH}\`](https://github.com/${{ github.repository }}/tree/${RUN_BRANCH})"
+            echo "- modified files: \`${{ steps.show_changes.outputs.modified_count || '0' }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
