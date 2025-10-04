@@ -1,10 +1,13 @@
 {
-  "runId": "ndjc-2025-10-04T13-45-41-512Z-011cc3cde3d6",
-  "status": "pre-ci",
-  "template": "circle-basic",
-  "appTitle": "牛太郎餐厅",
-  "packageName": "com.ndjc.demo.core",
-  "note": "Apply result will be finalized in CI pipeline.",
-  "changes": [],
-  "warnings": []
+  "replaced_total": 0,
+  "replaced_text": 0,
+  "replaced_block": 0,
+  "replaced_list": 0,
+  "replaced_if": 0,
+  "hooks_applied": 0,
+  "missing_text": 0,
+  "missing_block": 0,
+  "missing_list": 0,
+  "missing_if": 0,
+  "generated_at": "2025-10-04T13:46:11Z"
 }
