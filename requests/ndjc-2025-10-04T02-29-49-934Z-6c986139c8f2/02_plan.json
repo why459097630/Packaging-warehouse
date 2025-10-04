@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "text": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "牛太郎餐厅",
+    "NDJC:HOME_TITLE": "牛太郎餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传菜品"
+  },
+  "block": {
+    "BLOCK:ROUTE_HOME": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "if": {},
+  "resources": {},
+  "hooks": {},
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "zh-CN"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.CAMERA",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.READ_EXTERNAL_STORAGE"
+    ],
+    "compileSdk": null,
+    "minSdk": null,
+    "targetSdk": null,
+    "dependencies": [],
+    "proguardExtra": []
+  },
+  "companions": [
+    {
+      "path": "app/src/main/java/com/example/niutao/MenuActivity.kt",
+      "content": "import android.os.Bundle\nimport android.view.View\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nimport com.example.niutao.R\nimport com.example.niutao.databinding.ActivityMenuBinding\n\nclass MenuActivity : AppCompatActivity() {\n    private lateinit var binding: ActivityMenuBinding\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        binding = ActivityMenuBinding.inflate(layoutInflater)\n        setContentView(binding.root)\n\n        binding.uploadButton.setOnClickListener {\n            // 上传照片逻辑\n        }\n\n        binding.editText.setOnClickListener {\n            // 编辑文字介绍逻辑\n        }\n\n        binding.priceButton.setOnClickListener {\n            // 设定价格逻辑\n        }\n\n        binding.likeButton.setOnClickListener {\n            // 评论点赞逻辑\n        }\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/MenuModel.kt",
+      "content": "data class MenuModel(\n    val id: Int,\n    val name: String,\n    val description: String,\n    val price: Double,\n    val image: String,\n    val likes: Int\n)\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/example/niutao/MenuRepository.kt",
+      "content": "class MenuRepository {\n    fun getMenu(): List<MenuModel> {\n        // 从数据库或网络获取菜品数据\n        return listOf(MenuModel(1, \"牛肉盖浇饭\", \"牛肉盖浇饭的介绍\", 15.99, \"image1.jpg\", 10))\n    }\n}\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/activity_menu.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n    <EditText\n        android:id=\"@+id/editText\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"请输入菜品介绍\" />\n    <Button\n        android:id=\"@+id/uploadButton\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"上传照片\" />\n    <Button\n        android:id=\"@+id/priceButton\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"设定价格\" />\n    <Button\n        android:id=\"@+id/likeButton\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"点赞\" />\n</LinearLayout>\n",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "content": "<resources>\n    <string name=\"app_name\">牛太郎餐厅</string>\n    <string name=\"home_title\">牛太郎餐厅</string>\n    <string name=\"main_button_text\">上传菜品</string>\n</resources>\n",
+      "encoding": "utf8"
+    }
+  ]
+}
