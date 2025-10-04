@@ -1,130 +1,240 @@
 /**
- * NDJC Sanitizer (single-file)
- * 对 02_plan.json 做“注入前的消毒与归位”：
- * - 剥离所有片段中的 package
- * - 抽取 import → 去重 → 合并进 HOOK:KOTLIN_IMPORTS
- * - 若 BLOCK 中夹带 import/顶层声明：抽取到对应 HOOK（或标记 skipped）
- * - 输出：02_plan.sanitized.json（供后续 materialize 注入）
+ * Sanitizer：把 plan 归位到顶层五类锚点 + 白名单过滤 + 统计
+ * - 输入：02_plan.json（或任意路径）
+ * - 输出：02_plan.sanitized.json；若 NDJC_SANITIZE_OVERWRITE=1 则同时覆盖 02_plan.json
+ * - 环境变量：
+ *    PLAN_JSON         指定输入文件（默认 requests/<RUN_ID>/02_plan.json）
+ *    RUN_ID            用于默认路径
+ *    REGISTRY_FILE     指定锚点注册表（默认 lib/ndjc/anchors/registry.circle-basic.json）
+ *    NDJC_SANITIZE_OVERWRITE=1  覆盖原 02_plan.json
  */
 
-import fs from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
 
-type Dict<T = any> = Record<string, T>;
+type Registry = {
+  template: string;
+  text: string[];
+  block: string[];
+  list: string[];
+  if: string[];
+  hook: string[];
+  resources?: string[];
+  aliases?: Record<string, string>;
+};
 
-interface NdjcPlanV1 {
-  meta: { runId?: string; template: string; appName: string; packageId: string; mode?: "A" | "B" };
-  text?: Dict<string>;
-  block?: Dict<string>;
-  lists?: Dict<string[]>;
-  if?: Dict<boolean | string | number>;
-  resources?: Dict<string>;
-  hooks?: Dict<string[] | string>;
-  gradle?: any;
-  companions?: { path: string; content: string; encoding?: "utf8" | "base64" }[];
-}
+type Plan = any;
 
-function readJson<T = any>(p: string): T {
-  return JSON.parse(fs.readFileSync(p, "utf8"));
+function arr<T>(x: T | T[] | undefined | null): T[] {
+  if (x == null) return [];
+  return Array.isArray(x) ? x : [x];
 }
-function writeJson(p: string, obj: any) {
-  fs.mkdirSync(path.dirname(p), { recursive: true });
-  fs.writeFileSync(p, JSON.stringify(obj, null, 2), "utf8");
+function uniq<T>(xs: T[]): T[] {
+  return Array.from(new Set(xs));
 }
-
-function splitLines(x: string | string[]): string[] {
-  if (Array.isArray(x)) return x.flatMap(s => String(s).split(/\r?\n/));
-  return String(x || "").split(/\r?\n/);
-}
-function stripPackage(src: string): string {
-  return src.replace(/^\s*package\s+[\w.]+\s*[\r\n]/gm, "");
-}
-function extractImports(src: string): { body: string; imports: string[] } {
-  const imps: string[] = [];
-  const body = src
-    .split(/\r?\n/)
-    .filter(line => {
-      const m = line.match(/^\s*import\s+([\w.]+\.*[\w*]*)\s*$/);
-      if (m) { imps.push(line.trim()); return false; }
-      return true;
-    })
-    .join("\n");
-  return { body, imports: imps };
-}
-function uniqSorted(arr: string[]): string[] {
-  return Array.from(new Set(arr)).sort((a, b) => a.localeCompare(b));
-}
-function hasTopLevelDecl(src: string): boolean {
-  return /^\s*(?:@Composable\s+)?fun\s|\bclass\s|\bobject\s|\binterface\s|\bdata\s+class\s|\btypealias\s|\bconst\s+val\s|\b(val|var)\s+\w+\s*[:=]/m.test(src);
+function isObj(x: any): x is Record<string, any> {
+  return x && typeof x === "object" && !Array.isArray(x);
 }
 
-function sanitize(plan: NdjcPlanV1) {
-  const hooks: Dict<string[]> = {};
-  const existingHooks = plan.hooks || {};
-  // seed existing hooks (normalize to array)
-  for (const [k, v] of Object.entries(existingHooks)) {
-    hooks[k] = Array.isArray(v) ? v.flatMap(splitLines) : splitLines(v);
+async function loadJson(p: string) {
+  const txt = await fs.readFile(p, "utf8");
+  return JSON.parse(txt);
+}
+
+async function saveJson(p: string, obj: any) {
+  await fs.mkdir(path.dirname(p), { recursive: true });
+  await fs.writeFile(p, JSON.stringify(obj, null, 2), "utf8");
+}
+
+async function loadRegistry(): Promise<Registry | null> {
+  const root = process.cwd();
+  const hint =
+    process.env.REGISTRY_FILE ||
+    path.join(root, "lib/ndjc/anchors/registry.circle-basic.json");
+  try {
+    const j = await loadJson(hint);
+    return j as Registry;
+  } catch {
+    return null;
   }
-  const importsBucket = hooks["HOOK:KOTLIN_IMPORTS"] || [];
+}
 
-  const blockOut: Dict<string> = {};
-  for (const [k, v] of Object.entries(plan.block || {})) {
-    let src = String(v || "");
-    src = stripPackage(src);
-    const { body, imports } = extractImports(src);
-    if (imports.length) importsBucket.push(...imports);
+function liftV1Grouped(plan: Plan) {
+  // 支持两种输入：
+  //  a) v1 分组：plan.anchors.{text,block,list,if,hook}
+  //  b) 扁平：plan.anchors / plan.blocks / plan.lists / plan.conditions / plan.hooks
+  const out = {
+    template_key: plan.template_key || plan.template || "circle-basic",
+    anchors: {} as Record<string, string>,
+    blocks: {} as Record<string, string>,
+    lists: {} as Record<string, string[]>,
+    conditions: {} as Record<string, boolean>,
+    hooks: {} as Record<string, string>,
+    resources: plan.resources || {},
+    companions: plan.companions || [],
+    gradle: plan.gradle || {},
+    meta: plan.meta || plan.metadata || {}
+  };
 
-    // 如果 BLOCK 中仍包含“看起来是顶层声明”的内容，尽量移到 TOPLEVEL，否则保留
-    if (hasTopLevelDecl(body)) {
-      hooks["HOOK:KOTLIN_TOPLEVEL"] = (hooks["HOOK:KOTLIN_TOPLEVEL"] || []).concat(body);
-      blockOut[k] = ""; // 留空，由生成器/脚本判定是否跳过
-    } else {
-      blockOut[k] = body;
+  // 扁平已有的先拷贝
+  if (isObj(plan.anchors)) {
+    for (const [k, v] of Object.entries(plan.anchors)) {
+      if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+        out.anchors[k] = String(v);
+      }
     }
   }
-
-  // 顶层 hook 消毒：剥 package、提取 import → 移入 imports
-  if (hooks["HOOK:KOTLIN_TOPLEVEL"]) {
-    const topSrc = hooks["HOOK:KOTLIN_TOPLEVEL"].join("\n");
-    const stripped = stripPackage(topSrc);
-    const { body, imports } = extractImports(stripped);
-    hooks["HOOK:KOTLIN_TOPLEVEL"] = body.split(/\r?\n/);
-    if (imports.length) importsBucket.push(...imports);
+  if (isObj(plan.blocks)) {
+    for (const [k, v] of Object.entries(plan.blocks)) out.blocks[k] = String(v ?? "");
+  }
+  if (isObj(plan.lists)) {
+    for (const [k, v] of Object.entries(plan.lists)) {
+      const arrv = Array.isArray(v) ? v.map(String).filter(Boolean) : [String(v ?? "")].filter(Boolean);
+      if (arrv.length) out.lists[k] = arrv;
+    }
+  }
+  if (isObj(plan.conditions)) {
+    for (const [k, v] of Object.entries(plan.conditions)) out.conditions[k] = !!v;
+  }
+  if (isObj(plan.hooks)) {
+    for (const [k, v] of Object.entries(plan.hooks)) out.hooks[k] = String(v ?? "");
   }
 
-  // imports 去重排序
-  hooks["HOOK:KOTLIN_IMPORTS"] = uniqSorted(importsBucket);
+  // v1 分组归位
+  const g = (plan.anchorsGrouped || plan.anchors || {}) as any;
+  if (isObj(g.text)) {
+    for (const [k, v] of Object.entries(g.text)) out.anchors[k] = String(v ?? "");
+  }
+  if (isObj(g.block)) {
+    for (const [k, v] of Object.entries(g.block)) out.blocks[k] = String(v ?? "");
+  }
+  if (isObj(g.list)) {
+    for (const [k, v] of Object.entries(g.list)) {
+      const arrv = Array.isArray(v) ? v.map(String).filter(Boolean) : [String(v ?? "")].filter(Boolean);
+      if (arrv.length) out.lists[k] = arrv;
+    }
+  }
+  if (isObj(g.if)) {
+    for (const [k, v] of Object.entries(g.if)) out.conditions[k] = !!v;
+  }
+  if (isObj(g.hook)) {
+    for (const [k, v] of Object.entries(g.hook)) out.hooks[k] = String(v ?? "");
+  }
 
-  const sanitized: NdjcPlanV1 = {
-    ...plan,
-    block: blockOut,
-    hooks,
+  // gradle.applicationId → NDJC:PACKAGE_NAME 兜底
+  const appId =
+    out.gradle?.applicationId ||
+    plan.gradle?.applicationId ||
+    out.meta?.packageId ||
+    plan.meta?.packageId ||
+    plan.metadata?.packageId;
+  if (appId && !out.anchors["NDJC:PACKAGE_NAME"]) {
+    out.anchors["NDJC:PACKAGE_NAME"] = String(appId);
+  }
+
+  // 常用兜底
+  if (!out.lists["LIST:ROUTES"]) out.lists["LIST:ROUTES"] = ["home"];
+  if (!out.anchors["NDJC:PRIMARY_BUTTON_TEXT"]) out.anchors["NDJC:PRIMARY_BUTTON_TEXT"] = "Start";
+
+  return out;
+}
+
+function applyRegistryWhitelist(
+  flat: ReturnType<typeof liftV1Grouped>,
+  reg: Registry | null
+) {
+  if (!reg) {
+    return {
+      sanitized: flat,
+      dropped: { anchors: 0, blocks: 0, lists: 0, conditions: 0, hooks: 0 }
+    };
+  }
+  const keep = <T extends string>(m: Record<string, any>, allow: T[]) => {
+    const out: Record<string, any> = {};
+    let drop = 0;
+    for (const [k, v] of Object.entries(m)) {
+      if (allow.includes(k)) out[k] = v;
+      else drop++;
+    }
+    return { out, drop };
   };
-  return sanitized;
+
+  const a = keep(flat.anchors, reg.text);
+  const b = keep(flat.blocks, reg.block);
+  // list 允许“列表名匹配”，不校验每个元素
+  const l = keep(flat.lists, reg.list);
+  const c = keep(flat.conditions, reg.if);
+  const h = keep(flat.hooks, reg.hook);
+
+  return {
+    sanitized: {
+      ...flat,
+      anchors: a.out,
+      blocks: b.out,
+      lists: l.out,
+      conditions: c.out,
+      hooks: h.out
+    },
+    dropped: {
+      anchors: a.drop,
+      blocks: b.drop,
+      lists: l.drop,
+      conditions: c.drop,
+      hooks: h.drop
+    }
+  };
 }
 
-function main() {
-  const planPath =
-    process.argv.find(a => a.startsWith("--plan="))?.split("=")[1] ||
+export async function sanitizePlanFile() {
+  const runId = process.env.RUN_ID;
+  const inPath =
     process.env.PLAN_JSON ||
-    process.argv[2];
+    (runId ? path.join("requests", runId, "02_plan.json") : "");
+  if (!inPath) {
+    throw new Error("PLAN_JSON or RUN_ID required");
+  }
+  const reg = await loadRegistry();
 
-  if (!planPath) {
-    console.error("usage: node sanitize/index.ts --plan=requests/<runId>/02_plan.json");
-    process.exit(1);
+  const plan = await loadJson(inPath);
+  const flat = liftV1Grouped(plan);
+  const { sanitized, dropped } = applyRegistryWhitelist(flat, reg);
+
+  const outPath = inPath.replace(/02_plan\.json$/, "02_plan.sanitized.json");
+  await saveJson(outPath, sanitized);
+
+  const overwrite = (process.env.NDJC_SANITIZE_OVERWRITE || "0").trim() === "1";
+  if (overwrite) {
+    await saveJson(inPath, sanitized);
   }
 
-  const plan: NdjcPlanV1 = readJson(planPath);
-  const sanitized = sanitize(plan);
+  // 统计打印（供 CI grep）
+  const counts = {
+    anchors: Object.keys(sanitized.anchors || {}).length,
+    blocks: Object.keys(sanitized.blocks || {}).length,
+    lists: Object.keys(sanitized.lists || {}).length,
+    conditions: Object.keys(sanitized.conditions || {}).length,
+    hooks: Object.keys(sanitized.hooks || {}).length
+  };
+  console.log(
+    `NDJC sanitize: anchors=${counts.anchors} blocks=${counts.blocks} lists=${counts.lists} if=${counts.conditions} hooks=${counts.hooks} dropped=${JSON.stringify(
+      dropped
+    )}`
+  );
 
-  const outPath = path.join(path.dirname(planPath), "02_plan.sanitized.json");
-  writeJson(outPath, sanitized);
+  // 空计划可选择直接失败
+  const allEmpty =
+    counts.anchors + counts.blocks + counts.lists + counts.conditions + counts.hooks === 0;
+  if (allEmpty && (process.env.NDJC_SANITIZE_FAIL_ON_EMPTY || "0") === "1") {
+    throw new Error("Sanitized plan is empty (no anchors/blocks/lists/conditions/hooks).");
+  }
 
-  console.log(`[NDJC][Sanitizer] in=${planPath} out=${outPath} hooks(imports)=${(sanitized.hooks?.["HOOK:KOTLIN_IMPORTS"] as string[] | undefined)?.length || 0}`);
-
-  process.exit(0);
+  return { inPath, outPath, counts, dropped };
 }
 
+// 允许作为脚本运行：node dist/lib/ndjc/sanitize/index.js
 if (require.main === module) {
-  main();
+  sanitizePlanFile().catch((e) => {
+    console.error(e?.stack || e?.message || String(e));
+    process.exit(1);
+  });
 }
