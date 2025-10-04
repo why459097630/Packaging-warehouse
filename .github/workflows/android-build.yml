@@ -1,4 +1,4 @@
-name: Android Build (NDJC • single-tree)
+name: Android Build (NDJC • workspace-app)
 
 on:
   repository_dispatch:
@@ -8,6 +8,7 @@ permissions:
   contents: write
 
 env:
+  # 默认模板，可由 client_payload.template 覆盖
   TEMPLATE_DEFAULT: circle-basic
 
 jobs:
@@ -25,39 +26,54 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          # ---------- 解析输入 ----------
           RUN_ID="${{ github.event.client_payload.runId || '' }}"
-          TEMPLATE="${{ github.event.client_payload.template || '' }}"
-          [ -n "$TEMPLATE" ] || TEMPLATE="${TEMPLATE_DEFAULT}"
+          TEMPLATE_IN="${{ github.event.client_payload.template || '' }}"
+          [ -n "$TEMPLATE_IN" ] || TEMPLATE_IN="${TEMPLATE_DEFAULT}"
+
           if [ -z "$RUN_ID" ]; then
-            RUN_ID="ndjc-$(date -u +%Y-%m-%dT%H-%M%SZ)-${GITHUB_RUN_ID}"
+            RUN_ID="ndjc-$(date -u +%Y-%m-%dT%H-%M-%SZ)-${GITHUB_RUN_ID}"
           fi
+
           RUN_BRANCH="ndjc-run/${RUN_ID}"
-          APP_DIR="templates/${TEMPLATE}/app"
-          TEMPLATE_ROOT="$(dirname "$APP_DIR")"
+          TEMPLATE="${TEMPLATE_IN}"
           REQ_DIR="requests/${RUN_ID}"
 
+          # 关键：工作区构建目录一律放在仓库根的 app/
+          APP_DIR="app"
+          # 计划/应用结果文件
+          PLAN_JSON="${REQ_DIR}/02_plan.json"
+          PLAN_JSON_SAN="${REQ_DIR}/02_plan.sanitized.json"
+          APPLY_JSON="${REQ_DIR}/03_apply_result.json"
+
+          # ---------- 输出到环境 ----------
           {
             echo "RUN_ID=${RUN_ID}"
             echo "RUN_BRANCH=${RUN_BRANCH}"
             echo "TEMPLATE=${TEMPLATE}"
-            echo "APP_DIR=${APP_DIR}"
-            echo "TEMPLATE_ROOT=${TEMPLATE_ROOT}"
             echo "REQ_DIR=${REQ_DIR}"
-            echo "PLAN_JSON=${REQ_DIR}/02_plan.json"
-            echo "APPLY_JSON=${REQ_DIR}/03_apply_result.json"
+            echo "APP_DIR=${APP_DIR}"
+            echo "PLAN_JSON=${PLAN_JSON}"
+            echo "PLAN_JSON_SAN=${PLAN_JSON_SAN}"
+            echo "APPLY_JSON=${APPLY_JSON}"
+            # 生成器工作根（让 generator 把模板拷到 <repo>/app）
+            echo "NDJC_WORKDIR=${GITHUB_WORKSPACE}"
           } >> "$GITHUB_ENV"
 
+          # ---------- 构建摘要（可点击） ----------
           {
             echo "### NDJC build inputs"
             echo "- **Run ID:** \`${RUN_ID}\`"
             echo "- **Run branch:** [\`${RUN_BRANCH}\`](https://github.com/${{ github.repository }}/tree/${RUN_BRANCH})"
-            echo "- **Template:** \`${TEMPLATE}\` — **APP_DIR:** \`${APP_DIR}\`"
-            echo "- **TEMPLATE_ROOT:** \`${TEMPLATE_ROOT}\`"
-            echo "- **Requests (will be generated):** [\`requests/${RUN_ID}\`](https://github.com/${{ github.repository }}/tree/${RUN_BRANCH}/requests/${RUN_ID})"
-            echo "- **Expect plan at:** \`${REQ_DIR}/02_plan.json\`"
+            echo "- **Template:** \`${TEMPLATE}\`"
+            echo "- **Workspace app:** \`./app\`"
+            echo "- **Requests dir:** [\`${REQ_DIR}\`](https://github.com/${{ github.repository }}/tree/${RUN_BRANCH}/${REQ_DIR})"
+            echo "- **Expect plan at:** [\`${PLAN_JSON}\`](https://github.com/${{ github.repository }}/blob/${RUN_BRANCH}/${PLAN_JSON})"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Checkout run branch (prefer)
+      # ---------- 优先使用 run 分支（若不存在则退回 main 读取 plan） ----------
+      - name: Checkout run branch (if exists)
         id: checkout_run
         shell: bash
         run: |
@@ -69,10 +85,10 @@ jobs:
             echo "has_run_branch=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_run_branch=false" >> "$GITHUB_OUTPUT"
-            echo "Run branch '${RB}' not found; fallback to 'main' for locating plan."
+            echo "Run branch '${RB}' not found; will fallback to 'main' for locating plan."
           fi
 
-      - name: Checkout main (fallback for requests)
+      - name: Fallback to main to locate plan
         if: steps.checkout_run.outputs.has_run_branch == 'false'
         shell: bash
         run: |
@@ -80,42 +96,57 @@ jobs:
           git fetch origin main --depth=50
           git checkout main
 
-      - name: Locate 02_plan.json (prefer run branch, else main) + add summary link
+      - name: Locate 02_plan.json (prefer run branch, fallback to main)
         id: locate_plan
         shell: bash
         run: |
           set -euo pipefail
-          PLAN_PATH="${PLAN_JSON}"
-          found_at=""
-          if [ -f "${PLAN_PATH}" ]; then
+          if [ -f "${PLAN_JSON}" ]; then
             found_at="$(git rev-parse --abbrev-ref HEAD)"
           else
-            HEAD_B="$(git rev-parse --abbrev-ref HEAD)"
-            if [ "${HEAD_B}" != "main" ]; then
+            if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
               git checkout -q main
-              if [ -f "${PLAN_PATH}" ]; then
-                found_at="main"
-              fi
+            fi
+            if [ -f "${PLAN_JSON}" ]; then
+              found_at="main"
+            else
+              echo "::error::Plan JSON NOT found at ${PLAN_JSON} (searched run branch then main)."
+              exit 1
             fi
           fi
-          if [ -z "${found_at}" ]; then
-            echo "::error::Plan JSON NOT found at ${PLAN_PATH} (searched run branch then main)."
-            exit 1
-          fi
           echo "PLAN_BRANCH=${found_at}" >> "$GITHUB_ENV"
+          echo "- **Found 02_plan.json at:** \`${PLAN_JSON}\` *(from ${found_at})*" >> "$GITHUB_STEP_SUMMARY"
 
-          PLAN_URL="https://github.com/${{ github.repository }}/blob/${found_at}/${PLAN_PATH}"
-          {
-            echo "- **Found 02_plan.json at:** [\`${PLAN_PATH}\`](${PLAN_URL}) *(from ${found_at})*"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Lint plan (hard checks)
+      # ---------- 准备工作区 app/（把模板拷到仓库根） ----------
+      - name: Prepare workspace app (copy template → ./app)
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p build-logs
-          node -e "try{const p=require('fs').readFileSync(process.env.PLAN_JSON,'utf8');JSON.parse(p);}catch(e){console.error('02_plan.json invalid:',e.message);process.exit(1)}" \
-          || { echo "::error::02_plan.json JSON parse failed"; exit 1; }
+          rm -rf app
+          mkdir -p app
+
+          # 将模板 app 拷到根 app/
+          if [ -d "templates/${TEMPLATE}/app" ]; then
+            cp -a "templates/${TEMPLATE}/app/." ./app/
+          else
+            echo "::error::templates/${TEMPLATE}/app not found"
+            exit 1
+          fi
+
+          # settings.gradle(.kts) 同步到根（供 Gradle 识别 :app）
+          if [ -f "templates/${TEMPLATE}/settings.gradle.kts" ]; then
+            cp -a "templates/${TEMPLATE}/settings.gradle.kts" ./settings.gradle.kts
+            rm -f ./settings.gradle || true
+          elif [ -f "templates/${TEMPLATE}/settings.gradle" ]; then
+            cp -a "templates/${TEMPLATE}/settings.gradle" ./settings.gradle
+            rm -f ./settings.gradle.kts || true
+          fi
+
+          # 可选：同步模板的 gradle.properties
+          [ -f "templates/${TEMPLATE}/gradle.properties" ] && cp -a "templates/${TEMPLATE}/gradle.properties" ./ || true
+
+          echo "NDJC_WORKDIR=${GITHUB_WORKSPACE}" >> "$GITHUB_ENV"
+          echo "APP_DIR=app" >> "$GITHUB_ENV"
 
       - name: Make ndjc-materialize.sh executable
         shell: bash
@@ -123,138 +154,107 @@ jobs:
           set -euo pipefail
           chmod +x scripts/ndjc-materialize.sh
 
-      - name: Setup Node 18 (for linter/sanitizer)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: NDJC | Materialize (sanitize + apply plan → template)
+      - name: NDJC | Materialize (sanitize + apply plan → workspace app)
         shell: bash
         env:
           PLAN_JSON: ${{ env.PLAN_JSON }}
+          PLAN_JSON_SAN: ${{ env.PLAN_JSON_SAN }}
           APPLY_JSON: ${{ env.APPLY_JSON }}
           APP_DIR: ${{ env.APP_DIR }}
           REQ_DIR: ${{ env.REQ_DIR }}
           RUN_ID: ${{ env.RUN_ID }}
+          NDJC_WORKDIR: ${{ env.NDJC_WORKDIR }}
         run: |
           set -euo pipefail
-          echo "env: PLAN_JSON=${PLAN_JSON}"
-          echo "env: APP_DIR=${APP_DIR}"
-          echo "env: RUN_ID=${RUN_ID}"
+          echo "PLAN_JSON=${PLAN_JSON}"
+          echo "PLAN_JSON_SAN=${PLAN_JSON_SAN}"
+          echo "APPLY_JSON=${APPLY_JSON}"
+          echo "APP_DIR=${APP_DIR}"
+          echo "NDJC_WORKDIR=${NDJC_WORKDIR}"
+
+          # 执行物化（脚本内按 APP_DIR/NDJC_WORKDIR 工作）
           scripts/ndjc-materialize.sh "${APP_DIR}" "${RUN_ID}"
 
+          # 快速查看计划（原始 & 消毒后）
+          echo "---- 02_plan.json (first 120 lines) ----"
+          sed -n '1,120p' "${PLAN_JSON}" || true
+          echo "---- 02_plan.sanitized.json (first 120 lines) ----"
+          sed -n '1,120p' "${PLAN_JSON_SAN}" || true
+
       - name: Show modified files after materialize
-        id: show_changes
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p build-logs
-          echo "Diff after materialize (under ${APP_DIR})"
-          git status --porcelain | tee build-logs/git-status.txt
-          git diff --name-only | tee build-logs/modified-files.txt
-          echo "modified_count=$(wc -l < build-logs/modified-files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
-          {
-            echo ""
-            echo "#### Modified files"
-            echo ""
-            sed 's/^/ - /' build-logs/modified-files.txt >> "$GITHUB_STEP_SUMMARY" || true
-          } >> /dev/null
+          echo "Diff after materialize (app/ should have changes):"
+          git add -N app || true
+          git status --porcelain
+          git diff --name-only | sed 's/^/ - /' || true
+          # 生成一个清单文件便于下载
+          git diff --name-only > modified-files.txt || true
 
-      - name: Commit & push run branch (only if there are changes)
-        id: push_run_branch
+      # （可选）若需要将结果留痕到运行分支，打开以下步骤
+      - name: Commit & push to run branch (optional)
+        if: steps.checkout_run.outputs.has_run_branch == 'true'
         shell: bash
-        env:
-          RB: ${{ env.RUN_BRANCH }}
-          RUN_ID: ${{ env.RUN_ID }}
-          TEMPLATE: ${{ env.TEMPLATE }}
-          APP_DIR: ${{ env.APP_DIR }}
-          PLAN_JSON: ${{ env.PLAN_JSON }}
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
+          git add app "${REQ_DIR}" modified-files.txt || true
+          git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # ensure on run branch (create if missing)
-          if ! git rev-parse --verify "${RB}" >/dev/null 2>&1; then
-            git checkout -b "${RB}"
-          else
-            git checkout "${RB}"
-          fi
-          if [ -n "$(git status --porcelain)" ]; then
-            git add -A
-            git commit -m "NDJC: materialize ${RUN_ID} (template=${TEMPLATE}, app=${APP_DIR})"
-            git push origin "${RB}"
-            echo "pushed=true" >> "$GITHUB_OUTPUT"
-            echo "branch=${RB}" >> "$GITHUB_OUTPUT"
-          else
-            echo "No changes to commit."
-            echo "pushed=false" >> "$GITHUB_OUTPUT"
-          fi
+          git commit -m "NDJC materialize ${RUN_ID}" || echo "nothing to commit"
+          git push origin "${RUN_BRANCH}" || true
 
-      - name: Anchor scan (notice only)
+      # ---------- 构建前守卫 ----------
+      - name: Guards (root settings & app module)
         shell: bash
         run: |
           set -euo pipefail
-          hits=$(grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" | wc -l || true)
-          echo "::notice ::anchor_hits=${hits}"
-
-      - name: Guards (template root & app module)
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ ! -f "${TEMPLATE_ROOT}/settings.gradle" && ! -f "${TEMPLATE_ROOT}/settings.gradle.kts" ]]; then
-            echo "::error ::settings.gradle(.kts) not found under TEMPLATE_ROOT=${TEMPLATE_ROOT}"
+          if [[ ! -f "./settings.gradle" && ! -f "./settings.gradle.kts" ]]; then
+            echo "::error::settings.gradle(.kts) not found at repository root"
             exit 1
           fi
-          if [[ ! -f "${APP_DIR}/build.gradle" && ! -f "${APP_DIR}/build.gradle.kts" ]]; then
-            echo "::error ::build.gradle(.kts) not found under APP_DIR=${APP_DIR}"
+          if [[ ! -f "app/build.gradle" && ! -f "app/build.gradle.kts" ]]; then
+            echo "::error::build.gradle(.kts) not found under app/"
             exit 1
           fi
 
+      # ---------- 构建 ----------
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Build (debug) with root wrapper
+      - name: Build (debug)
         shell: bash
         run: |
           set -euo pipefail
-          if [[ ! -f "./gradlew" ]]; then
-            echo "::error ::gradlew not found at repository root"; exit 1;
-          fi
           chmod +x ./gradlew || true
-          ./gradlew -p "${TEMPLATE_ROOT}" --no-daemon --stacktrace :app:assembleDebug
+          ./gradlew --no-daemon --stacktrace :app:assembleDebug
 
+      # ---------- 产物上传（失败也上传诊断） ----------
       - name: Upload APK artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ndjc-apk-${{ env.RUN_ID }}
           path: |
-            ${{ env.TEMPLATE_ROOT }}/app/build/outputs/apk/**/*.apk
+            app/build/outputs/apk/**/*.apk
+          if-no-files-found: warn
 
-      - name: NDJC | Upload logs
+      - name: NDJC | Upload logs & plan
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ndjc-diag-${{ env.RUN_ID }}
           path: |
+            modified-files.txt
+            requests/${{ env.RUN_ID }}/01_*.json
+            requests/${{ env.RUN_ID }}/02_plan.json
+            requests/${{ env.RUN_ID }}/02_plan.sanitized.json
+            requests/${{ env.RUN_ID }}/03_apply_result.json
             build-logs/**/*
-            ${{ env.REQ_DIR }}/02_plan.json
-            ${{ env.REQ_DIR }}/02_plan.sanitized.json
-            ${{ env.REQ_DIR }}/03_apply_result.json
           if-no-files-found: warn
-
-      - name: Summary • push result & links
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          {
-            echo ""
-            echo "#### Commit & Push"
-            echo "- pushed: \`${{ steps.push_run_branch.outputs.pushed || 'false' }}\` to [\`${RUN_BRANCH}\`](https://github.com/${{ github.repository }}/tree/${RUN_BRANCH})"
-            echo "- modified files: \`${{ steps.show_changes.outputs.modified_count || '0' }}\`"
-          } >> "$GITHUB_STEP_SUMMARY"
