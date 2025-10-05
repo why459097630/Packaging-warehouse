@@ -10,24 +10,28 @@ import com.ndjc.app.feature.post.PostEditorScreen
 
 object Routes {
   // LIST:ROUTES
+  // ${ITEM}
+  // END_LIST
+
   const val Home = "home"
   const val Detail = "detail/{id}"
   const val Post = "post"
 }
 
 @Composable
-fun NavGraph(nav: NavHostController) {
+fun NavGraph(navController: NavHostController) {
+
   // BLOCK:NAV_TRANSITIONS
-  // 这里可注入过渡动画/AnimatedNavHost 包装
+  // 这里可注入过渡动画/AnimatedNavHost 包裹
   // END_BLOCK
 
-  NavHost(navController = nav, startDestination = Routes.Home) {
+  NavHost(navController = navController, startDestination = Routes.Home) {
 
     // BLOCK:ROUTE_HOME
     composable(Routes.Home) {
       FeedScreen(
-        onPostClick = { id -> nav.navigate("detail/$id") },   // 多个参数：打开详情
-        onCreatePost = { nav.navigate(Routes.Post) }          // 多个参数：去发布页
+        onPostClick = { id -> navController.navigate("detail/$id") },
+        onCreatePost = { navController.navigate(Routes.Post) }
       )
     }
     // END_BLOCK
@@ -37,7 +41,7 @@ fun NavGraph(nav: NavHostController) {
       val id = backStack.arguments?.getString("id") ?: "0"
       PostDetailScreen(
         id = id,
-        onBack = { nav.popBackStack() }
+        onBack = { navController.popBackStack() }
       )
     }
     // END_BLOCK
@@ -45,7 +49,7 @@ fun NavGraph(nav: NavHostController) {
     // BLOCK:ROUTE_POST
     composable(Routes.Post) {
       PostEditorScreen(
-        onBack = { nav.popBackStack() }
+        onBack = { navController.popBackStack() }
       )
     }
     // END_BLOCK
