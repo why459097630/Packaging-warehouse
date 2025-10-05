@@ -1,4 +1,4 @@
-package com.ndjc.app // NDJC:PACKAGE_NAME
+package com.ndjc.app  // NDJC:PACKAGE_NAME
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -13,7 +13,9 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    // HOOK:AFTER_INSTALL  // 首次启动时可注入（生成或变更后仅一次性逻辑）
+    // HOOK:AFTER_INSTALL
+    // END_HOOK
+
     setContent { NDJCApp() }
   }
 }
@@ -23,8 +25,24 @@ fun NDJCApp() {
   val nav = rememberNavController()
 
   MaterialTheme {
+
+    // BLOCK:HOME_HEADER
+    // END_BLOCK
+
+    // BLOCK:HOME_ACTIONS
+    // END_BLOCK
+
+    // BLOCK:HOME_BODY
+    // END_BLOCK
+
+    // BLOCK:EMPTY_STATE
+    // END_BLOCK
+
+    // BLOCK:ERROR_STATE
+    // END_BLOCK
+
     // BLOCK:DEBUG_PANEL
-    // 可注入-调试开关/环境信息（如网络 Host、用户态等）
+    // 可注入·调试开关/环境信息（如网络 Host、用户态等）
     // END_BLOCK
 
     // BLOCK:BUILD_SUMMARY
