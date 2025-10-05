@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 基础可替换文本锚点 -->
+    <string name="app_name">王小部崏</string>
+    <string name="home_title">帮小部崏</string>
+    <string name="primary_button">开始</string>
+
+    <!-- 运行标识/日志级别（可用于调试展示或 BuildConfig 读值） -->
+    <string name="ndjc_run_id">1</string>
+    <string name="ndjc_log_level">DEBUG</string>
+    <string name="ndjc_debug_log_enabled">true</string>
+    <string name="ndjc_theme_name">牛太郎餐厅</string>
+
+    <!-- 示例文案（可保留默认值，不影响替换） -->
+    <string name="feed_like">Like</string>
+    <string name="feed_comment">Comment</string>
+    <string name="feed_post">Post</string>
+    <string name="empty_hint">Nothing here yet.</string>
+    <string name="feed_title">Feed</string>
+    <string name="comments_count">%1$d comments</string>
+
+    <!-- BLOCK:STRINGS_EXTRA -->
+    <!-- 额外字符串注入占位 -->
+    <!-- END_BLOCK -->
+
+</resources>
