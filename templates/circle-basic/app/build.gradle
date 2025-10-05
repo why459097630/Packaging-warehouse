@@ -2,48 +2,47 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     // HOOK:BEFORE_BUILD
+    // END_HOOK
     // BLOCK:DEPENDENCY_SNIPPETS
     // END_BLOCK
 }
 
-def kotlinAlignVersion = "1.9.24" // 与 Compose Compiler 1.5.14 配套
+def kotlinAlignVersion = "1.9.24" // 与 Compose Compiler 1.5.14 匹配
 
 android {
-    namespace 'com.ndjc.app'                         // NDJC:PACKAGE_NAME
-    compileSdk 34                                    // NDJC:COMPILE_SDK
+    namespace "NDJC:PACKAGE_NAME"            // ← NDJC:PACKAGE_NAME
+    compileSdk 34                            // NDJC:COMPILE_SDK（如需可扩展为文本锚点）
 
     defaultConfig {
-        applicationId 'com.ndjc.app'                 // NDJC:PACKAGE_NAME
-        minSdk 24                                    // NDJC:MIN_SDK
-        targetSdk 34                                 // NDJC:TARGET_SDK
-        versionCode 1                                // NDJC:VERSION_CODE
-        versionName '1.0.0'                          // NDJC:VERSION_NAME
+        applicationId "NDJC:PACKAGE_NAME"    // ← NDJC:PACKAGE_NAME
+        minSdk 24                            // NDJC:MIN_SDK
+        targetSdk 34                         // NDJC:TARGET_SDK
+        versionCode 1                        // NDJC:VERSION_CODE
+        versionName "1.0.0"                  // NDJC:VERSION_NAME
 
-        buildConfigField "String",  "NDJC_RUN_ID",   "\"\""      // NDJC:BUILD_META_RUNID / NDJC:RUN_ID
-        buildConfigField "String",  "NDJC_LOG_LEVEL","\"info\""  // NDJC:LOG_LEVEL
-        buildConfigField "boolean", "NDJC_DEBUG_LOG","false"     // NDJC:DEBUG_LOG_ENABLED
+        buildConfigField "String",  "NDJC_RUN_ID",          "\"NDJC:RUN_ID\""            // NDJC:RUN_ID
+        buildConfigField "String",  "NDJC_LOG_LEVEL",       "\"NDJC:LOG_LEVEL\""         // NDJC:LOG_LEVEL
+        buildConfigField "boolean", "NDJC_DEBUG_LOG",       false                        // NDJC:DEBUG_LOG_ENABLED（如需布尔替换可改脚本）
+    }
 
-        // --- NDJC:RES_CONFIGS 动态启用（保持锚点，可被 generator 替换为 "en,zh-rCN" 这类串） ---
-        def ndjcResConfigs = "NDJC:RES_CONFIGS"
-        if (ndjcResConfigs && ndjcResConfigs != "NDJC:RES_CONFIGS") {
-            // 允许逗号或空白分隔；自动 trim；空项过滤
-            def parts = ndjcResConfigs.split(/[,\s]+/).collect { it.trim() }.findAll { it }
-            if (!parts.isEmpty()) {
-                // 等价于：resConfigs "en","zh-rCN",...
-                resConfigs(*parts)
-            }
-        }
-        // -----------------------------------------------------------------------------
+    // LIST:ABI_SPLITS
+    // ${ITEM}
+    // END_LIST
 
-        vectorDrawables { useSupportLibrary = true }
+    packagingOptions {
+        // LIST:PACKAGING_RULES
+        // ${ITEM}
+        // END_LIST
     }
 
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
-            // 基础规则；额外规则通过注释锚点安全插入（未替换不影响语法）
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' /* NDJC:PROGUARD_EXTRA */
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // LIST:PROGUARD_EXTRA
+            // ${ITEM}
+            // END_LIST
             signingConfig signingConfigs.debug
         }
         debug {
@@ -52,38 +51,27 @@ android {
         }
     }
 
-    // LIST:ABI_SPLITS
-    // NDJC:USE_APP_BUNDLE
-
-    packagingOptions {
-        // LIST:PACKAGING_RULES
-    }
-
     buildFeatures {
         compose true
         buildConfig true
     }
 
-    // 与 Kotlin 1.9.24 配套
-    composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
 
-    // 统一到 Java 17（与 Kotlin 配置一致）
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
         coreLibraryDesugaringEnabled true
     }
+
     kotlinOptions {
         jvmTarget = "17"
         freeCompilerArgs += [
             "-Xjvm-default=all",
-            // 为使用 M3 顶栏等实验 API 开白名单（解决编译告警/错误）
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+            // 可按需追加 Compose/Material 实验开关
         ]
-        // 可选：CI 临时跳过 Kotlin/Compose 版本校验
-        if (project.hasProperty("ndjcSuppressComposeKotlinCheck") && project.property("ndjcSuppressComposeKotlinCheck") == "true") {
-            freeCompilerArgs += ["-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"]
-        }
     }
 }
 
@@ -91,7 +79,6 @@ kotlin {
     jvmToolchain(17)
 }
 
-// 统一对齐 Kotlin 运行时依赖，避免三方库引入旧版 1.9.10 等
 configurations.all {
     resolutionStrategy.eachDependency { details ->
         if (details.requested.group == "org.jetbrains.kotlin") {
@@ -108,17 +95,34 @@ dependencies {
     implementation "androidx.activity:activity-compose:1.9.2"
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.ui:ui-tooling-preview"
-    implementation "androidx.compose.material3:material3"       // 走 BOM
+    implementation "androidx.compose.material3:material3"
     implementation "androidx.navigation:navigation-compose:2.8.0"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
     implementation "androidx.core:core-ktx:1.13.1"
-    implementation "com.google.android.material:material:1.12.0" // XML 主题资源
-
-    // IF:PERMISSION.NOTIFICATION
-    // ENDIF
+    implementation "com.google.android.material:material:1.12.0"
 
     debugImplementation "androidx.compose.ui:ui-tooling"
     debugImplementation "androidx.compose.ui:ui-test-manifest"
 }
 
+/* 可选：把转场或广告位等构建期摘要放到这里 */
+ // BLOCK:BUILD_SUMMARY
+ // END_BLOCK
+
+ // BLOCK:HEADER_AD_SLOT
+ // END_BLOCK
+
 // HOOK:AFTER_BUILD
+// END_HOOK
+
+// HOOK:PRE_INJECT
+// END_HOOK
+
+// HOOK:POST_INJECT
+// END_HOOK
+
+// HOOK:PRE_COMMIT
+// END_HOOK
+
+// HOOK:AFTER_INSTALL
+// END_HOOK
