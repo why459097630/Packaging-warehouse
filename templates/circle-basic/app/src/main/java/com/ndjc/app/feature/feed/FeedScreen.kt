@@ -20,7 +20,7 @@ import com.ndjc.app.feature.common.TopBar
 @Composable
 fun FeedScreen(
   onPostClick: (String) -> Unit,
-  onCreatePost: () -> Unit = {}
+  onCreatePost: () -> Unit
 ) {
   val posts = remember { SeedRepository.posts() }
 
@@ -38,7 +38,7 @@ fun FeedScreen(
     ) {
       items(posts) { p ->
         ListItem(
-          headlineContent = { Text(text = p.content) },         // ✅ 显示 text 参数
+          headlineContent = { Text(text = p.content) },   // ✅ 显示 text 参数
           supportingContent = {
             Text(text = stringResource(R.string.comments_count, p.comments.size))
           },
@@ -46,14 +46,14 @@ fun FeedScreen(
         )
 
         // BLOCK:FEED_ITEM_BADGES
-        // 可注入：在列表行底部渲染角标/打点信息
+        // 可注入：置顶/官方/新帖 等徽章
         // END_BLOCK
 
         Divider()
       }
 
       // BLOCK:EMPTY_STATE
-      // 可注入：当 posts 为空时渲染的空状态组件
+      // 可注入：当无数据时显示的占位 UI
       // END_BLOCK
     }
   }
