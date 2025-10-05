@@ -1,0 +1,50 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "牛太郎餐厅",
+    "packageId": "com.niutao.restaurant",
+    "mode": "A"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.niutao.restaurant",
+      "NDJC:APP_LABEL": "王天都尼室",
+      "NDJC:HOME_TITLE": "尼室表示",
+      "NDJC:PRIMARY_BUTTON_TEXT": "导入尼室"
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "<!-- xml or kotlin snippet -->",
+      "BLOCK:MENU_ITEM": "<!-- xml or kotlin snippet -->"
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "menu",
+        "upload",
+        "edit",
+        "comment"
+      ]
+    },
+    "if": {
+      "IF:PERMISSION.UPLOAD": true,
+      "IF:PERMISSION.EDIT": true,
+      "IF:PERMISSION.COMMENT": true
+    },
+    "hook": {
+      "HOOK:BEFORE_BUILD": "// gradle snippet"
+    },
+    "gradle": {
+      "applicationId": "com.niutao.restaurant",
+      "resConfigs": [
+        "en",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": []
+}
