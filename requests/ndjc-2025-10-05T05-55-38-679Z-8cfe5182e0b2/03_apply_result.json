@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-05T05-55-38-679Z-8cfe5182e0b2",
+  "status": "pre-ci",
+  "template": "circle-basic",
+  "appTitle": "牛太郎餐厅",
+  "packageName": "com.niutao.restaurant",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
