@@ -22,7 +22,7 @@ android {
 
         buildConfigField "String",  "NDJC_RUN_ID",          "\"NDJC:RUN_ID\""            // NDJC:RUN_ID
         buildConfigField "String",  "NDJC_LOG_LEVEL",       "\"NDJC:LOG_LEVEL\""         // NDJC:LOG_LEVEL
-        buildConfigField "boolean", "NDJC_DEBUG_LOG",       false                        // NDJC:DEBUG_LOG_ENABLED（如需布尔替换可改脚本）
+        buildConfigField "boolean", "NDJC_DEBUG_LOG",       "NDJC:DEBUG_LOG_ENABLED"     // NDJC:DEBUG_LOG_ENABLED（如需布尔替换可改脚本）
     }
 
     // LIST:ABI_SPLITS
