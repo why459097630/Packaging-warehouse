@@ -1,0 +1,10 @@
+<resources>
+    <!-- BLOCK:STRINGS_EXTRA -->
+    <!-- 在此注入复数字符串，例如：
+    <plurals name="comments_count">
+        <item quantity="one">%d comment</item>
+        <item quantity="other">%d comments</item>
+    </plurals>
+    -->
+    <!-- END_BLOCK -->
+</resources>
