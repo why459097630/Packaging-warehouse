@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.ndjc.app.ui.screens  // NDJC:PACKAGE_NAME
 
 import androidx.compose.material3.*
@@ -31,11 +33,11 @@ fun HomeScreen(
     // END_BLOCK
 
     // BLOCK:EMPTY_STATE
-    // 在空数据时展示的占位 UI
+    // 当空数据时展示的占位 UI
     // END_BLOCK
 
     // BLOCK:ERROR_STATE
-    // 在错误时展示的占位 UI
+    // 当错误时展示的占位 UI
     // END_BLOCK
 
     // LIST:POST_FIELDS
