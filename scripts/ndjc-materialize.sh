@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 # NDJC: materialize anchors from plan → apply into template app
 # Usage: bash scripts/ndjc-materialize.sh <APP_DIR> <RUN_ID>
+#
 # Inputs:
-#   requests/<RUN_ID>/02_plan.json
+#   requests/<RUN_ID>/02_plan.json             (or $PLAN_JSON)
 # Outputs:
-#   requests/<RUN_ID>/02_plan.sanitized.json
+#   requests/<RUN_ID>/02_plan.sanitized.json   (02_plan.json → sanitize)
 #   requests/<RUN_ID>/03_apply_result.json
 #   build-logs/materialize.log, anchors.before.txt, anchors.after.txt, modified-files.txt
+#
+# 方案A要点：
+# - 先调用 TS 的 sanitizer（它可做最小校验/透传）
+# - 本脚本读取 sanitized plan 时 **同时兼容**
+#   1) 新：meta/text/block/lists/if/hooks
+#   2) 旧：anchors/blocks/lists/conditions/hooks （anchors 为 NDJC 文本锚点）
 set -euo pipefail
 
 APP_DIR="${1:-app}"
@@ -27,70 +34,80 @@ mkdir -p "${REQ_DIR}" build-logs
 LOG_FILE="build-logs/materialize.log"
 : > "${LOG_FILE}"
 
-log() { printf '%s %s\n' "[$(date +%H:%M:%S)]" "$*" | tee -a "${LOG_FILE}"; }
-ts_utc() { date -u +%Y-%m-%dT%H:%M:%SZ; }
-escape_sed() { printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'; }
+log()       { printf '%s %s\n' "[$(date +%H:%M:%S)]" "$*" | tee -a "${LOG_FILE}"; }
+ts_utc()    { date -u +%Y-%m-%dT%H:%M:%SZ; }
+escape_sed(){ printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'; }
 
 log "env: PLAN_JSON=${PLAN_JSON}"
+log "env: PLAN_JSON_SAN=${PLAN_JSON_SAN}"
+log "env: APPLY_JSON=${APPLY_JSON}"
 log "env: APP_DIR=${APP_DIR}"
 log "env: RUN_ID=${RUN_ID}"
 
-# ---------- 0) sanitize plan（调用 TS 单文件，兼容两种入参方式） ----------
+# -------- 0) Sanitize（调用 TS 单文件；其中可做最小校验/透传） --------
 log "::group::Sanitize plan"
-set +e
-# 方式 A：你现有的 --plan= 调用（应由 CLI 自行写出 02_plan.sanitized.json）
-npx -y tsx lib/ndjc/sanitize/index.ts --plan="${PLAN_JSON}"
-rcA=$?
-
-# 若没产出，再尝试方式 B：显式输入输出双参
-if [ ! -f "${PLAN_JSON_SAN}" ]; then
-  npx -y tsx lib/ndjc/sanitize/index.ts "${PLAN_JSON}" "${PLAN_JSON_SAN}"
-  rcB=$?
-else
-  rcB=0
-fi
-set -e
+npx -y tsx lib/ndjc/sanitize/index.ts --plan="${PLAN_JSON}" --out="${PLAN_JSON_SAN}" || true
 log "::endgroup::"
 
+# 若 sanitizer 未生成，回退到原始 02_plan.json
 if [ ! -f "${PLAN_JSON_SAN}" ]; then
-  # 兜底：直接复制原 plan
-  cp -f "${PLAN_JSON}" "${PLAN_JSON_SAN}"
-  log "[Sanitizer] fallback: copied ${PLAN_JSON} → ${PLAN_JSON_SAN}"
+  log "sanitized plan not found, fallback to original: ${PLAN_JSON}"
+  PLAN_JSON_SAN="${PLAN_JSON}"
 fi
 
-# ---------- 预扫描：记录 app/ 当前锚点（便于对比） ----------
+# -------- 0.5) 采样记录：worktree 中锚点使用情况（before） --------
 ANCHORS_BEFORE="build-logs/anchors.before.txt"
-{ grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/null || true; } > "${ANCHORS_BEFORE}" || true
-log "anchors before: $(wc -l < "${ANCHORS_BEFORE}" || echo 0)"
+{
+  grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/null || true
+} > "${ANCHORS_BEFORE}" || true
+log "anchors before: $(wc -l < "${ANCHORS_BEFORE}" | tr -d ' ')"
 
-# ---------- 1) 读取 sanitized plan 到 bash 变量 ----------
+# -------- 1) 读取 sanitized plan（兼容两套 schema） --------
 read_plan() {
   python - "$PLAN_JSON_SAN" <<'PY'
 import json,sys
+
 p = sys.argv[1]
 with open(p,'r',encoding='utf-8') as f:
     plan = json.load(f)
 
-meta = plan.get('meta',{})
-text = plan.get('text',{}) or {}
-block = plan.get('block',{}) or {}
-lists = plan.get('lists',{}) or {}
-iff   = plan.get('if',{})   or {}
-hooks = plan.get('hooks',{}) or {}
+# --- 兼容：两套 schema 同时尝试 ---
+meta   = plan.get('meta') or plan.get('metadata') or {}
+text   = plan.get('text') or {}
+block  = plan.get('block') or {}
+lists  = plan.get('lists') or {}
+iff    = plan.get('if') or {}
+hooks  = plan.get('hooks') or {}
 
+# legacy 别名
+if not text and isinstance(plan.get('anchors'), dict):
+    # 旧：anchors = { "NDJC:*": "..." }
+    text = plan['anchors']
+if not block and isinstance(plan.get('blocks'), dict):
+    block = plan['blocks']
+if not lists and isinstance(plan.get('lists'), dict):
+    lists = plan['lists']
+if not iff and isinstance(plan.get('conditions'), dict):
+    iff = plan['conditions']
+# hooks 在新旧里同名，大概率已有；否则置空
+hooks = hooks or {}
+
+# 统一转成 bash 关联数组可读的字符串
 def sh_kv_map(name, d):
     out = [f'declare -gA {name}=(']
-    for k,v in d.items():
-        k = str(k); v = '' if v is None else str(v)
+    for k,v in (d or {}).items():
+        k = str(k)
+        v = '' if v is None else str(v)
         v = v.replace('\n','\\n')
         out.append(f'["{k}"]="{v}"')
     out.append(')')
     return ' '.join(out)
 
 def to_list_map(name, d):
+    # encode list map as declare -A with \x1f joined
     out = [f'declare -gA {name}=(']
-    for k,v in d.items():
-        if isinstance(v,list):
+    for k,v in (d or {}).items():
+        if isinstance(v, list):
             items = [str(x) for x in v]
         elif v is None:
             items = []
@@ -106,12 +123,14 @@ print(sh_kv_map('BLOCK_KV', block))
 print(to_list_map('LISTS_KV', lists))
 print(sh_kv_map('IFCOND_KV', iff))
 print(to_list_map('HOOKS_KV', hooks))
+# 打点信息
+print(f'echo "loaded counts => text:{len(text)} block:{len(block)} lists:{len(lists)} if:{len(iff)} hooks:{len(hooks)}" >> "build-logs/materialize.log"')
 PY
 }
 
 eval "$(read_plan)"
 
-# --------- hardening: ensure assoc arrays ----------
+# -------- 1.5) 保障：若关联数组不存在或被当作普通变量，强制重建 --------
 ensure_assoc() {
   local name="$1"
   if ! declare -p "$name" >/dev/null 2>&1; then
@@ -143,7 +162,13 @@ print("\n".join(sys.argv[1].split("\x1f")))
 PY
 }
 
-# ---------- counters ----------
+# -------- 2) 准备要处理的文件集合 --------
+mapfile -t WORK_FILES < <(find "$APP_DIR" -type f \( \
+  -name "*.xml" -o -name "*.kt" -o -name "*.kts" -o -name "*.gradle" -o \
+  -name "*.pro" -o -name "AndroidManifest.xml" -o -name "*.txt" \
+  \) | LC_ALL=C sort)
+
+# -------- 3) 具体替换实现 --------
 replaced_text=0
 replaced_block=0
 replaced_list=0
@@ -154,24 +179,14 @@ missing_block=0
 missing_list=0
 missing_if=0
 
-# ---------- file selection ----------
-mapfile -t WORK_FILES < <(find "$APP_DIR" -type f \( \
-  -name "*.xml" -o -name "*.kt" -o -name "*.kts" -o -name "*.gradle" -o \
-  -name "*.pro" -o -name "AndroidManifest.xml" -o -name "*.txt" \
-  \) | LC_ALL=C sort)
-
-# ---------- replacers ----------
 replace_text_in_file() {
   local file="$1" key="$2" val="$3"
-  local before count
-  before=$(grep -o -n -F "$key" "$file" | wc -l | tr -d ' ' || true)
-  [ -z "$before" ] && before=0
+  local before after count vv
+  before=$(grep -o -n -F "$key" "$file" | wc -l | tr -d ' ')
   [ "$before" -eq 0 ] && return 1
-  local vv; vv="$(escape_sed "$val")"
+  vv="$(escape_sed "$val")"
   sed -i "s/${key}/${vv}/g" "$file"
-  local after
-  after=$(grep -o -n -F "$key" "$file" | wc -l | tr -d ' ' || true)
-  [ -z "$after" ] && after=0
+  after=$(grep -o -n -F "$key" "$file" | wc -l | tr -d ' ')
   count=$((before-after)); [ "$count" -lt 0 ] && count=0
   if [ "$count" -gt 0 ]; then
     replaced_text=$((replaced_text+count))
@@ -182,24 +197,22 @@ replace_text_in_file() {
 replace_block_in_file() {
   local file="$1" name="$2" body="$3"
   local cnt=0
-  # xml
+  # xml 注释块
   if perl -0777 -ne 'exit 1 unless /<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*END_BLOCK\s*-->/s' "$file"; then
     perl -0777 -i -pe 's/<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*END_BLOCK\s*-->/<!-- BLOCK:'"$name"' -->\n'"$body"'\n<!-- END_BLOCK -->/s' "$file"
     cnt=$((cnt+1))
   fi
-  # //
+  # 单行 // 注释块
   if perl -0777 -ne 'exit 1 unless /\/\/\s*BLOCK:'"$name"'.*?\/\/\s*END_BLOCK/s' "$file"; then
     perl -0777 -i -pe 's/\/\/\s*BLOCK:'"$name"'.*?\/\/\s*END_BLOCK/\/\/ BLOCK:'"$name"'\n'"$body"'\n\/\/ END_BLOCK/s' "$file"
     cnt=$((cnt+1))
   fi
-  # /* */
+  # 多行 /* */ 注释块
   if perl -0777 -ne 'exit 1 unless /\/\*\s*BLOCK:'"$name"'\s*\*\/.*?\/\*\s*END_BLOCK\s*\*\//s' "$file"; then
     perl -0777 -i -pe 's/\/\*\s*BLOCK:'"$name"'\s*\*\/.*?\/\*\s*END_BLOCK\s*\*\//\/\* BLOCK:'"$name"' \*\/\n'"$body"'\n\/\* END_BLOCK \*\//s' "$file"
     cnt=$((cnt+1))
   fi
-  if [ "$cnt" -gt 0 ]; then
-    replaced_block=$((replaced_block+cnt)); return 0
-  fi
+  [ "$cnt" -gt 0 ] && { replaced_block=$((replaced_block+cnt)); return 0; }
   return 1
 }
 
@@ -265,39 +278,35 @@ replace_if_in_file() {
       perl -0777 -i -pe 's/\/\*\s*IF:'"$name"'\s*\*\/.*?\/\*\s*END_IF\s*\*\//\/\* IF:'"$name"' \*\/\n\/\* END_IF \*\//s' "$file"
     fi
   fi
-  if [ "$hit" -eq 1 ]; then
-    replaced_if=$((replaced_if+1)); return 0
-  fi
+  [ "$hit" -eq 1 ] && { replaced_if=$((replaced_if+1)); return 0; }
   return 1
 }
 
 replace_hook_in_file() {
   local file="$1" name="$2" body="$3"
   local cnt=0
-  # xml block
+  # xml
   if perl -0777 -ne 'exit 1 unless /<!--\s*HOOK:'"$name"'\s*-->.*?<!--\s*END_HOOK\s*-->/s' "$file"; then
     perl -0777 -i -pe 's/<!--\s*HOOK:'"$name"'\s*-->.*?<!--\s*END_HOOK\s*-->/<!-- HOOK:'"$name"' -->\n'"$body"'\n<!-- END_HOOK -->/s' "$file"
     cnt=$((cnt+1))
   fi
-  # // block
+  # //
   if perl -0777 -ne 'exit 1 unless /\/\/\s*HOOK:'"$name"'.*?\/\/\s*END_HOOK/s' "$file"; then
     perl -0777 -i -pe 's/\/\/\s*HOOK:'"$name"'.*?\/\/\s*END_HOOK/\/\/ HOOK:'"$name"'\n'"$body"'\n\/\/ END_HOOK/s' "$file"
     cnt=$((cnt+1))
   fi
-  # /* */ block
+  # /* */
   if perl -0777 -ne 'exit 1 unless /\/\*\s*HOOK:'"$name"'\s*\*\/.*?\/\*\s*END_HOOK\s*\*\//s' "$file"; then
     perl -0777 -i -pe 's/\/\*\s*HOOK:'"$name"'\s*\*\/.*?\/\*\s*END_HOOK\s*\*\//\/\* HOOK:'"$name"' \*\/\n'"$body"'\n\/\* END_HOOK \*\//s' "$file"
     cnt=$((cnt+1))
   fi
-  if [ "$cnt" -gt 0 ]; then
-    hooks_applied=$((hooks_applied+cnt)); return 0
-  fi
+  [ "$cnt" -gt 0 ] && { hooks_applied=$((hooks_applied+cnt)); return 0; }
   return 1
 }
 
-# ---------- 2) 应用全部（注意去前缀） ----------
+# -------- 4) 应用全部替换 --------
 apply_all() {
-  local file k v name
+  local file k v
 
   # text
   for file in "${WORK_FILES[@]}"; do
@@ -307,69 +316,50 @@ apply_all() {
     done
   done
 
-  # blocks（去掉前缀 BLOCK:）
+  # blocks
   for file in "${WORK_FILES[@]}"; do
     for k in "${!BLOCK_KV[@]}"; do
       v="${BLOCK_KV[$k]}"
-      name="${k#BLOCK:}"
-      replace_block_in_file "$file" "$name" "$v" || true
+      replace_block_in_file "$file" "$k" "$v" || true
     done
   done
 
-  # lists（去掉前缀 LIST:）
+  # lists
   for file in "${WORK_FILES[@]}"; do
     for k in "${!LISTS_KV[@]}"; do
-      name="${k#LIST:}"
-      replace_list_in_file "$file" "$name" || true
+      replace_list_in_file "$file" "$k" || true
     done
   done
 
-  # if（去掉前缀 IF:）
+  # if
   for file in "${WORK_FILES[@]}"; do
     for k in "${!IFCOND_KV[@]}"; do
       v="${IFCOND_KV[$k]}"
-      name="${k#IF:}"
-      replace_if_in_file "$file" "$name" "$v" || true
+      replace_if_in_file "$file" "$k" "$v" || true
     done
   done
 
-  # hooks（去掉前缀 HOOK:）
+  # hooks
   for file in "${WORK_FILES[@]}"; do
     for k in "${!HOOKS_KV[@]}"; do
       v="$(get_hook_body "$k" || true)"
       [ -z "$v" ] && continue
-      name="${k#HOOK:}"
-      replace_hook_in_file "$file" "$name" "$v" || true
+      replace_hook_in_file "$file" "$k" "$v" || true
     done
   done
 }
 
 apply_all || true
 
-# ---------- 3) 统计与产出 ----------
-# text：若完全找不到该文本锚点字符串，计入 missing_text
-for k in "${!TEXT_KV[@]}"; do
-  if ! grep -RFl -- "${k}" "${APP_DIR}" >/dev/null 2>&1; then
-    missing_text=$((missing_text+1))
-  fi
-done
-
-# block/list/if：匹配时也需要用去前缀的名称
-for k in "${!BLOCK_KV[@]}"; do
-  name="${k#BLOCK:}"
-  if ! grep -RIl -E "(<!-- *BLOCK:${name} *-->|// *BLOCK:${name}|/\* *BLOCK:${name} *\*/)" "${APP_DIR}" >/dev/null 2>&1; then
+# -------- 5) 统计 + 产物 --------
+# 缺失统计（只对 block/if 进行显式缺失计数；text/list 若需要也可加）
+for k in "${!BLOCK_KV[@]}";  do
+  if ! grep -RIl -E "(<!-- *BLOCK:${k} *-->|// *BLOCK:${k}|/\* *BLOCK:${k} *\*/)" "${APP_DIR}" >/dev/null 2>&1; then
     missing_block=$((missing_block+1))
   fi
 done
-
-for k in "${!LISTS_KV[@]}"; do
-  name="${k#LIST:}"
-  grep -RIl "LIST:${name}" "${APP_DIR}" >/dev/null 2>&1 || missing_list=$((missing_list+1))
-done
-
 for k in "${!IFCOND_KV[@]}"; do
-  name="${k#IF:}"
-  if ! grep -RIl -E "(<!-- *IF:${name} *-->|// *IF:${name}|/\* *IF:${name} *\*/)" "${APP_DIR}" >/dev/null 2>&1; then
+  if ! grep -RIl -E "(<!-- *IF:${k} *-->|// *IF:${k}|/\* *IF:${k} *\*/)" "${APP_DIR}" >/dev/null 2>&1; then
     missing_if=$((missing_if+1))
   fi
 done
@@ -397,15 +387,16 @@ JSON
   echo "variant=unknown"
   echo "apk="
   echo "classes="
-  echo "missing_text=${missing_text}"
-  echo "missing_block=${missing_block}"
   echo "ts=$(ts_utc)"
 } > "${SUMMARY_TXT}"
 
-# 诊断产物（改动与锚点 after）
+# after 采样
 ANCHORS_AFTER="build-logs/anchors.after.txt"
-{ grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/null || true; } > "${ANCHORS_AFTER}" || true
+{
+  grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/null || true
+} > "${ANCHORS_AFTER}" || true
 
+# modified files（若 workspace 下有 git，可看到改动）
 MODIFIED_TXT="build-logs/modified-files.txt"
 git diff --name-only | sed 's/^/git: /' > "${MODIFIED_TXT}" || true
 
