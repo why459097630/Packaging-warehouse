@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.ndjc.app.feature.feed.FeedScreen
+import com.ndjc.app.ui.screens.HomeScreen
 import com.ndjc.app.feature.detail.PostDetailScreen
 import com.ndjc.app.feature.post.PostEditorScreen
 
@@ -29,8 +29,8 @@ fun NavGraph(navController: NavHostController) {
 
     // BLOCK:ROUTE_HOME
     composable(Routes.Home) {
-      FeedScreen(
-        onPostClick = { id -> navController.navigate("detail/$id") },
+      HomeScreen(
+        onOpenDetail = { id -> navController.navigate("detail/$id") },
         onCreatePost = { navController.navigate(Routes.Post) }
       )
     }
