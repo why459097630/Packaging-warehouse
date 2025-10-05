@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 由生成器替换的文本锚点 -->
+    <string name="app_name">NDJC:APP_LABEL</string>                <!-- ← 原: NDJC Circle -->
+    <string name="home_title">NDJC:HOME_TITLE</string>             <!-- ← 原: Hello NDJC -->
+    <string name="primary_button">NDJC:PRIMARY_BUTTON_TEXT</string><!-- ← 原: Start -->
+
+    <!-- Feed/Detail/Post -->
+    <string name="feed_like">Like</string>
+    <string name="feed_comment">Comment</string>
+    <string name="feed_post">Post</string>
+    <string name="empty_hint">Nothing here yet.</string>
+
+    <!-- 与 TopBar/FeedScreen 联动 -->
+    <string name="feed_title">Feed</string>
+    <string name="comments_count">%1$d comments</string>
+
+    <!-- 运行时配置（会回写到 BuildConfig） -->
+    <string name="ndjc_run_id"></string>          <!-- NDJC:RUN_ID -->
+    <string name="ndjc_log_level">info</string>   <!-- NDJC:LOG_LEVEL -->
+
+    <!-- BLOCK:STRINGS_EXTRA -->
+    <!-- 追加的复数/后续条目（如使用 LIST:PLURAL_STRINGS 可在此注入） -->
+    <!-- END_BLOCK -->
+
+</resources>
