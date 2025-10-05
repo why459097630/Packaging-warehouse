@@ -4,4 +4,5 @@
 -dontwarn androidx.compose.**
 
 # LIST:PROGUARD_EXTRA
-# 例：-keep class com.example.lib.** { *; }
+# ${ITEM}
+# END_LIST
