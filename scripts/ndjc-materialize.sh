@@ -66,32 +66,40 @@ p = sys.argv[1]
 with open(p,'r',encoding='utf-8') as f:
     plan = json.load(f)
 
+# 兼容字段（anchors/blocks/list(s)/if/conditions/hooks）
 text  = plan.get('anchors')   or plan.get('text')        or {}
 block = plan.get('blocks')    or plan.get('block')       or {}
 lists = plan.get('lists')     or plan.get('list')        or {}
 iff   = plan.get('if')        or plan.get('conditions')  or {}
 hooks = plan.get('hooks')     or plan.get('hook')        or {}
 
+def esc(v: str) -> str:
+    # 给 bash 关联数组安全转义：双引号、美元符、换行
+    return v.replace('"', '\\"').replace('$', '\\$').replace('\n', '\\n')
+
 def sh_kv_map(name, d):
     out = [f'declare -gA {name}=(']
     for k,v in d.items():
-        k = str(k); v = '' if v is None else str(v)
-        v = v.replace('\n','\\n')
-        out.append(f'["{k}"]="{v}"')
+        k = str(k)
+        v = '' if v is None else str(v)
+        out.append(f'["{esc(k)}"]="{esc(v)}"')
     out.append(')')
     return ' '.join(out)
 
 def to_list_map(name, d):
+    # 把 list 展平成分隔符连接，供 bash 再拆
+    SEP = "\x1f"
     out = [f'declare -gA {name}=(']
     for k,v in d.items():
-        if isinstance(v,list):
+        k = str(k)
+        if isinstance(v, list):
             items = [str(x) for x in v]
         elif v is None:
             items = []
         else:
             items = [str(v)]
-        joined = "\x1f".join(items).replace('\n','\\n')
-        out.append(f'["{k}"]="{joined}"')
+        joined = SEP.join(items)
+        out.append(f'["{esc(k)}"]="{esc(joined)}"')
     out.append(')')
     return ' '.join(out)
 
