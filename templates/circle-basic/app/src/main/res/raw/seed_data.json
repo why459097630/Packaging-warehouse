@@ -14,5 +14,22 @@
     "content": "Compose + M3 ready.",
     "likes": 5,
     "comments": []
+  },
+  {
+    "id": "3",
+    "author": "David",
+    "content": "First build complete. Time to inject routes 🚀",
+    "likes": 7,
+    "comments": [
+      { "author": "Eve", "content": "Ship it!" },
+      { "author": "Frank", "content": "Looks good." }
+    ]
+  },
+  {
+    "id": "4",
+    "author": "Grace",
+    "content": "Dark theme toggle coming next.",
+    "likes": 2,
+    "comments": []
   }
 ]
