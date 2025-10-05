@@ -66,11 +66,11 @@ p = sys.argv[1]
 with open(p,'r',encoding='utf-8') as f:
     plan = json.load(f)
 
-text = plan.get('text',{}) or {}
-block = plan.get('block',{}) or {}
-lists = plan.get('lists',{}) or {}
-iff   = plan.get('if',{})   or {}
-hooks = plan.get('hooks',{}) or {}
+text  = plan.get('anchors')   or plan.get('text')        or {}
+block = plan.get('blocks')    or plan.get('block')       or {}
+lists = plan.get('lists')     or plan.get('list')        or {}
+iff   = plan.get('if')        or plan.get('conditions')  or {}
+hooks = plan.get('hooks')     or plan.get('hook')        or {}
 
 def sh_kv_map(name, d):
     out = [f'declare -gA {name}=(']
