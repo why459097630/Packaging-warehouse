@@ -1,31 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 注意：包名/命名空间请在 Gradle 的 android { namespace = "…" } 中配置，这里不要再写 package 属性 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<!-- 备注：包名/命名空间在 Gradle 的 android { namespace = "…" } 中配置，这里仍需写 package 属性以便编译 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="NDJC:PACKAGE_NAME">
 
-    <!-- ===== Permissions（条件锚点）===== -->
+    <!-- ===== Permissions（条件锚点） ===== -->
 
-    <!-- IF:PERMISSION_CAMERA -->
+    <!-- IF:PERMISSION.CAMERA -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- END_IF -->
 
-    <!-- IF:PERMISSION_MEDIA -->
+    <!-- IF:PERMISSION.MEDIA -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <!-- END_IF -->
 
-    <!-- IF:PERMISSION_NOTIFICATION -->
+    <!-- IF:PERMISSION.NOTIFICATION -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- END_IF -->
 
-    <!-- IF:PERMISSION_LOCATION -->
+    <!-- IF:PERMISSION.LOCATION -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- END_IF -->
 
-    <!-- IF:PERMISSION_CONTACTS -->
+    <!-- IF:PERMISSION.CONTACTS -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <!-- END_IF -->
 
-    <!-- IF:PERMISSION_SCHEDULE_EXACT_ALARM -->
+    <!-- IF:PERMISSION.SCHEDULE_EXACT_ALARM -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- END_IF -->
+
+    <!-- IF:PERMISSION.CLIPBOARD -->
+    <uses-permission android:name="android.permission.READ_CLIPBOARD_IN_BACKGROUND" />
     <!-- END_IF -->
 
     <!-- ===== Application ===== -->
@@ -37,14 +42,19 @@
         android:supportsRtl="true"
         android:theme="@style/NDJCTheme">
 
+        <!-- IF:NETWORK.CLEAR_TEXT -->
+        <!-- 将在条件为真时保留 usesCleartextTraffic；为假时裁剪掉 -->
+        <meta-data android:name="ndjc.placeholder" android:value="true"/>
+        <!-- END_IF -->
+
         <!-- BLOCK:SPLASH_CONTENT -->
-        <!-- 可注入 Splash 占位 Activity/Theme 片段 -->
+        <!-- 可注入 Splash 相关 Activity/Theme 片段 -->
         <!-- END_BLOCK -->
 
         <!-- IF:FILE_PROVIDER -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:authorities="NDJC:PACKAGE_NAME.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -59,15 +69,25 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <!-- LIST:DEEPLINK_PATTERNS（如需） -->
             </intent-filter>
+
+            <!-- LIST:DEEPLINK_PATTERNS -->
+            <!-- 例：<intent-filter>…<data android:scheme="${ITEM}" /></intent-filter>（请按需要复制完整 intent-filter） -->
+            <!-- END_LIST -->
         </activity>
 
-        <!-- IF:INTENT_SHARE -->
+        <!-- IF:INTENT.SHARE -->
         <activity
             android:name=".ShareProxyActivity"
-            android:exported="true" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
         <!-- END_IF -->
 
     </application>
+
 </manifest>
