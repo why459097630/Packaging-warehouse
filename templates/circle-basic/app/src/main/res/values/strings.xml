@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- 由生成器替换的文本锚点 -->
-    <string name="app_name">NDJC:APP_LABEL</string>                <!-- ← 原: NDJC Circle -->
-    <string name="home_title">NDJC:HOME_TITLE</string>             <!-- ← 原: Hello NDJC -->
-    <string name="primary_button">NDJC:PRIMARY_BUTTON_TEXT</string><!-- ← 原: Start -->
+    <!-- 基础可替换文本锚点 -->
+    <string name="app_name">NDJC:APP_LABEL</string>
+    <string name="home_title">NDJC:HOME_TITLE</string>
+    <string name="primary_button">NDJC:PRIMARY_BUTTON_TEXT</string>
 
-    <!-- Feed/Detail/Post -->
+    <!-- 运行标识/日志级别（可用于调试展示或 BuildConfig 读值） -->
+    <string name="ndjc_run_id">NDJC:RUN_ID</string>
+    <string name="ndjc_log_level">NDJC:LOG_LEVEL</string>
+    <string name="ndjc_debug_log_enabled">NDJC:DEBUG_LOG_ENABLED</string>
+    <string name="ndjc_theme_name">NDJC:THEME_NAME</string>
+
+    <!-- 示例文案（可保留默认值，不影响替换） -->
     <string name="feed_like">Like</string>
     <string name="feed_comment">Comment</string>
     <string name="feed_post">Post</string>
     <string name="empty_hint">Nothing here yet.</string>
-
-    <!-- 与 TopBar/FeedScreen 联动 -->
     <string name="feed_title">Feed</string>
     <string name="comments_count">%1$d comments</string>
 
-    <!-- 运行时配置（会回写到 BuildConfig） -->
-    <string name="ndjc_run_id"></string>          <!-- NDJC:RUN_ID -->
-    <string name="ndjc_log_level">info</string>   <!-- NDJC:LOG_LEVEL -->
-
     <!-- BLOCK:STRINGS_EXTRA -->
-    <!-- 追加的复数/后续条目（如使用 LIST:PLURAL_STRINGS 可在此注入） -->
+    <!-- 额外字符串注入占位 -->
     <!-- END_BLOCK -->
 
 </resources>
