@@ -1,4 +1,4 @@
-package com.ndjc.app.navigation
+package com.ndjc.app.navigation  // 固定源码包名
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -9,49 +9,47 @@ import com.ndjc.app.feature.detail.PostDetailScreen
 import com.ndjc.app.feature.post.PostEditorScreen
 
 object Routes {
-  // LIST:ROUTES
-  // ${ITEM}
-  // END_LIST
+    // LIST:ROUTES
+    // ${ITEM}
+    // END_LIST
 
-  const val Home = "home"
-  const val Detail = "detail/{id}"
-  const val Post = "post"
+    const val Home = "home"
+    const val Detail = "detail/{id}"
+    const val Post = "post"
 }
 
 @Composable
 fun NavGraph(navController: NavHostController) {
-
-  // BLOCK:NAV_TRANSITIONS
-  // 这里可注入过渡动画/AnimatedNavHost 包裹
-  // END_BLOCK
-
-  NavHost(navController = navController, startDestination = Routes.Home) {
-
-    // BLOCK:ROUTE_HOME
-    composable(Routes.Home) {
-      HomeScreen(
-        onOpenDetail = { id -> navController.navigate("detail/$id") },
-        onCreatePost = { navController.navigate(Routes.Post) }
-      )
-    }
+    // BLOCK:NAV_TRANSITIONS
+    // 这里可以交换为 AnimatedNavHost 等
     // END_BLOCK
 
-    // BLOCK:ROUTE_DETAIL
-    composable("detail/{id}") { backStack ->
-      val id = backStack.arguments?.getString("id") ?: "0"
-      PostDetailScreen(
-        id = id,
-        onBack = { navController.popBackStack() }
-      )
-    }
-    // END_BLOCK
+    NavHost(navController = navController, startDestination = Routes.Home) {
+        // BLOCK:ROUTE_HOME
+        composable(Routes.Home) {
+            HomeScreen(
+                onOpenDetail = { id -> navController.navigate("detail/$id") },
+                onCreatePost = { navController.navigate(Routes.Post) }
+            )
+        }
+        // END_BLOCK
 
-    // BLOCK:ROUTE_POST
-    composable(Routes.Post) {
-      PostEditorScreen(
-        onBack = { navController.popBackStack() }
-      )
+        // BLOCK:ROUTE_DETAIL
+        composable("detail/{id}") { backStack ->
+            val id = backStack.arguments?.getString("id") ?: "0"
+            PostDetailScreen(
+                id = id,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        // END_BLOCK
+
+        // BLOCK:ROUTE_POST
+        composable(Routes.Post) {
+            PostEditorScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        // END_BLOCK
     }
-    // END_BLOCK
-  }
 }
