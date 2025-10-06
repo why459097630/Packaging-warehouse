@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 备注：包名/命名空间在 Gradle 的 android { namespace = "…" } 中配置，这里仍需写 package 属性以便编译 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="NDJC:PACKAGE_NAME">
+<!--
+  说明：
+  - Android 8+ 的 AGP 会以 Gradle 的 android { namespace = "…" } 作为 R 的包名。
+  - 因此这里 **不再** 写 package 属性，以免产生 “Setting the namespace via the package attribute… is ignored” 警告，
+    以及由此导致的 R 未生成/引用不到的问题。
+  - 其余锚点（IF / LIST / BLOCK / NDJC:…）保持不变，供物化脚本替换。
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- ===== Permissions（条件锚点） ===== -->
 
@@ -43,7 +48,7 @@
         android:theme="@style/NDJCTheme">
 
         <!-- IF:NETWORK.CLEAR_TEXT -->
-        <!-- 将在条件为真时保留 usesCleartextTraffic；为假时裁剪掉 -->
+        <!-- 如需明文 HTTP，可在条件为真时由生成器注入 usesCleartextTraffic 或相关片段 -->
         <meta-data android:name="ndjc.placeholder" android:value="true"/>
         <!-- END_IF -->
 
