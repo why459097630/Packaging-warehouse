@@ -1,4 +1,4 @@
-plugins {
+plugins { 
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     // HOOK:BEFORE_BUILD
@@ -35,11 +35,14 @@ def _DEBUG_ENABLED = ndjcToken(_DEBUG_TOKEN) ? _DEBUG_BOOL() : _DEBUG_TOKEN
 // --- end resolver ---
 
 android {
-    namespace "NDJC:PACKAGE_NAME"            // ← NDJC:PACKAGE_NAME
+    // 固定 R 的归属，避免因包名变动导致 R 对不上
+    namespace "com.ndjc.app"
+
     compileSdk 34                            // NDJC:COMPILE_SDK（如需可扩展为文本锚点）
 
     defaultConfig {
-        applicationId "NDJC:PACKAGE_NAME"    // ← NDJC:PACKAGE_NAME
+        // 仅 applicationId 走锚点，满足定制包名
+        applicationId "NDJC:PACKAGE_NAME"
         minSdk 24                            // NDJC:MIN_SDK
         targetSdk 34                         // NDJC:TARGET_SDK
         versionCode 1                        // NDJC:VERSION_CODE
