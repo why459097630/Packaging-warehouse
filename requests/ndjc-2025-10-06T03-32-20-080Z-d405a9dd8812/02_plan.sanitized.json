@@ -1,0 +1,54 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.mississippi.restaurant",
+    "NDJC:APP_LABEL": "美美尼室",
+    "NDJC:HOME_TITLE": "美美尼室管理",
+    "NDJC:PRIMARY_BUTTON_TEXT": "开始"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "<!-- xml or kotlin snippet -->",
+    "BLOCK:MENU_ITEM": "<!-- xml or kotlin snippet -->",
+    "BLOCK:UPLOAD_PHOTO": "<!-- xml or kotlin snippet -->",
+    "BLOCK:EDIT_DESCRIPTION": "<!-- xml or kotlin snippet -->",
+    "BLOCK:SET_PRICE": "<!-- xml or kotlin snippet -->",
+    "BLOCK:COMMENT": "<!-- xml or kotlin snippet -->",
+    "BLOCK:LIKE": "<!-- xml or kotlin snippet -->"
+  },
+  "lists": {
+    "LIST:MENU_ITEMS": [
+      "[object Object]"
+    ],
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "conditions": {
+    "IF:UPLOAD_PHOTO": true,
+    "IF:EDIT_DESCRIPTION": true,
+    "IF:SET_PRICE": true,
+    "IF:COMMENT": true,
+    "IF:LIKE": true
+  },
+  "hooks": {
+    "HOOK:BEFORE_BUILD": "// gradle snippet"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.mississippi.restaurant",
+    "resConfigs": [
+      "en",
+      "zh-rCN"
+    ],
+    "permissions": [
+      "android.permission.POST_NOTIFICATIONS"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "密西西比餐厅",
+    "packageId": "com.mississippi.restaurant",
+    "mode": "A"
+  }
+}
