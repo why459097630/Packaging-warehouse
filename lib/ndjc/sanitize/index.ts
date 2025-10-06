@@ -185,6 +185,25 @@ function applyRegistryWhitelist(
   };
 }
 
+/** 额外安全过滤：仅允许 TEXT 锚点使用 NDJC: 前缀，防止把源码里的 `R.` 等符号替空 */
+function filterDangerousTextKeys(
+  sanitized: ReturnType<typeof liftV1Grouped>
+) {
+  const anchors = sanitized.anchors || {};
+  const kept: Record<string, string> = {};
+  let droppedDanger = 0;
+
+  for (const [k, v] of Object.entries(anchors)) {
+    // 仅保留 NDJC: 前缀（模板中的文本锚点均为该前缀）
+    if (k.startsWith("NDJC:")) {
+      kept[k] = v;
+    } else {
+      droppedDanger++;
+    }
+  }
+  return { ...sanitized, anchors: kept, droppedDanger };
+}
+
 export async function sanitizePlanFile() {
   const runId = process.env.RUN_ID;
   const inPath =
@@ -197,28 +216,31 @@ export async function sanitizePlanFile() {
 
   const plan = await loadJson(inPath);
   const flat = liftV1Grouped(plan);
-  const { sanitized, dropped } = applyRegistryWhitelist(flat, reg);
+  const { sanitized: whitelisted, dropped } = applyRegistryWhitelist(flat, reg);
+
+  // 关键新增：对 TEXT 锚点做 NDJC: 白名单过滤，屏蔽危险键（如 R. / R.string）
+  const afterSafe = filterDangerousTextKeys(whitelisted);
 
   const outPath = inPath.replace(/02_plan\.json$/, "02_plan.sanitized.json");
-  await saveJson(outPath, sanitized);
+  await saveJson(outPath, afterSafe);
 
   const overwrite = (process.env.NDJC_SANITIZE_OVERWRITE || "0").trim() === "1";
   if (overwrite) {
-    await saveJson(inPath, sanitized);
+    await saveJson(inPath, afterSafe);
   }
 
   // 统计打印（供 CI grep）
   const counts = {
-    anchors: Object.keys(sanitized.anchors || {}).length,
-    blocks: Object.keys(sanitized.blocks || {}).length,
-    lists: Object.keys(sanitized.lists || {}).length,
-    conditions: Object.keys(sanitized.conditions || {}).length,
-    hooks: Object.keys(sanitized.hooks || {}).length
+    anchors: Object.keys(afterSafe.anchors || {}).length,
+    blocks: Object.keys(afterSafe.blocks || {}).length,
+    lists: Object.keys(afterSafe.lists || {}).length,
+    conditions: Object.keys(afterSafe.conditions || {}).length,
+    hooks: Object.keys(afterSafe.hooks || {}).length
   };
   console.log(
     `NDJC sanitize: anchors=${counts.anchors} blocks=${counts.blocks} lists=${counts.lists} if=${counts.conditions} hooks=${counts.hooks} dropped=${JSON.stringify(
       dropped
-    )}`
+    )} dropped_danger_text=${afterSafe.droppedDanger || 0}`
   );
 
   // 空计划可选择直接失败
@@ -228,7 +250,7 @@ export async function sanitizePlanFile() {
     throw new Error("Sanitized plan is empty (no anchors/blocks/lists/conditions/hooks).");
   }
 
-  return { inPath, outPath, counts, dropped };
+  return { inPath, outPath, counts, dropped, droppedDanger: afterSafe.droppedDanger || 0 };
 }
 
 // 允许作为脚本运行：node dist/lib/ndjc/sanitize/index.js
