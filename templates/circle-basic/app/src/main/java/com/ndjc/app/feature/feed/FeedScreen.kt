@@ -10,8 +10,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource      // ✅ 补上
-import com.ndjc.app.R                            // ✅ 补上
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp  // ✅ 补上 dp
+
+import com.ndjc.app.R            // ✅ 补上
 import com.ndjc.app.data.SeedRepository
 import com.ndjc.app.feature.common.TopBar
 
@@ -36,7 +38,7 @@ fun FeedScreen(
         ) {
             items(posts) { p ->
                 ListItem(
-                    headlineContent = { Text(text = p.content) },   // ✅ 显式 text 参数
+                    headlineContent = { Text(text = p.content) },        // ✅ 显式 text 参数
                     supportingContent = {
                         Text(text = stringResource(R.string.comments_count, p.comments.size))
                     },
@@ -44,7 +46,7 @@ fun FeedScreen(
                 )
 
                 // BLOCK:FEED_ITEM_BADGES
-                // 可注入：为每行显示角标/扩展信息
+                // 可注入：为每条云标/标签/评分徽章
                 // END_BLOCK
 
                 Divider()
