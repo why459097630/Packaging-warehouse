@@ -9,20 +9,46 @@ plugins {
 
 def kotlinAlignVersion = "1.9.24" // 与 Compose Compiler 1.5.14 匹配
 
+// --- NDJC tokens fallback resolver (keeps anchors working) ---
+def ndjcToken = { String token -> token != null && token.startsWith("NDJC:") }  // 是否仍是占位符
+
+// String: RUN_ID
+def _RUN_ID_TOKEN = "NDJC:RUN_ID"
+def _RUN_ID = ndjcToken(_RUN_ID_TOKEN)
+        ? (findProperty("NDJC_RUN_ID") ?: System.getenv("NDJC_RUN_ID") ?: "local-run")
+        : _RUN_ID_TOKEN
+
+// String: LOG_LEVEL
+def _LOG_LEVEL_TOKEN = "NDJC:LOG_LEVEL"
+def _LOG_LEVEL = ndjcToken(_LOG_LEVEL_TOKEN)
+        ? (findProperty("NDJC_LOG_LEVEL") ?: System.getenv("NDJC_LOG_LEVEL") ?: "INFO")
+        : _LOG_LEVEL_TOKEN
+
+// Boolean: DEBUG_LOG_ENABLED（支持 1/true/yes/y）
+def _DEBUG_TOKEN = "NDJC:DEBUG_LOG_ENABLED"
+def _DEBUG_BOOL = {
+    def v = (findProperty("NDJC_DEBUG_LOG_ENABLED") ?: System.getenv("NDJC_DEBUG_LOG_ENABLED") ?: "false")
+            .toString().trim().toLowerCase()
+    return (v in ["1","true","yes","y"])
+}
+def _DEBUG_ENABLED = ndjcToken(_DEBUG_TOKEN) ? _DEBUG_BOOL() : _DEBUG_TOKEN
+// --- end resolver ---
+
 android {
-    namespace "com.ndjc.app"                 // ← 原: NDJC:PACKAGE_NAME
+    namespace "NDJC:PACKAGE_NAME"            // ← NDJC:PACKAGE_NAME
     compileSdk 34                            // NDJC:COMPILE_SDK（如需可扩展为文本锚点）
 
     defaultConfig {
-        applicationId "com.ndjc.app"         // ← 原: NDJC:PACKAGE_NAME
+        applicationId "NDJC:PACKAGE_NAME"    // ← NDJC:PACKAGE_NAME
         minSdk 24                            // NDJC:MIN_SDK
         targetSdk 34                         // NDJC:TARGET_SDK
         versionCode 1                        // NDJC:VERSION_CODE
         versionName "1.0.0"                  // NDJC:VERSION_NAME
 
-        buildConfigField "String",  "NDJC_RUN_ID",    "\"NDJC:RUN_ID\""        // NDJC:RUN_ID
-        buildConfigField "String",  "NDJC_LOG_LEVEL", "\"NDJC:LOG_LEVEL\""     // NDJC:LOG_LEVEL
-        buildConfigField "boolean", "NDJC_DEBUG_LOG", "NDJC:DEBUG_LOG_ENABLED" // NDJC:DEBUG_LOG_ENABLED（如需布尔替换可改脚本）
+        // --- 使用兜底后的值；字符串要带引号，布尔不带引号 ---
+        buildConfigField "String",  "NDJC_RUN_ID",     "\"${_RUN_ID}\""
+        buildConfigField "String",  "NDJC_LOG_LEVEL",  "\"${_LOG_LEVEL}\""
+        buildConfigField "boolean", "NDJC_DEBUG_LOG",  "${_DEBUG_ENABLED}"
     }
 
     // LIST:ABI_SPLITS
