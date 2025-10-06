@@ -1,1 +1,7 @@
-created by api; mode=online(llama-3.1-8b-instant)
+branch=main
+variant=unknown
+apk=
+classes=
+missing_text=4
+missing_block=7
+ts=2025-10-06T08:11:16Z
