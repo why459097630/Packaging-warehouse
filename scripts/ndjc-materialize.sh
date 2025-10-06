@@ -25,7 +25,7 @@ fi
 
 REQ_DIR="requests/${RUN_ID}"
 PLAN_JSON="${PLAN_JSON:-${REQ_DIR}/02_plan.json}"
-PLAN_JSON_SAN="${REQ_DIR}/02_plan.sanitized.json"
+PLAN_JSON_SAN="${REQ_DIR}/02_plan.sanitized.json}"
 APPLY_JSON="${APPLY_JSON:-${REQ_DIR}/03_apply_result.json}"
 SUMMARY_TXT="${REQ_DIR}/actions-summary.txt"
 
@@ -312,7 +312,7 @@ apply_all() {
       # try name variants
       while IFS= read -r nm; do
         replace_block_in_file_any "$file" "$nm" "$v" && { log "compat.used: BLOCK name '${k}'→'${nm}' on $file"; break; }
-      done < <(variants_for "$k")
+      done < <(variants_for "$k"))
     done
   done
 
@@ -321,7 +321,7 @@ apply_all() {
     for k in "${!LISTS_KV[@]}"; do
       while IFS= read -r nm; do
         replace_list_in_file_any "$file" "$nm" && { log "compat.used: LIST name '${k}'→'${nm}' on $file"; break; }
-      done < <(variants_for "$k")
+      done < <(variants_for "$k"))
     done
   done
 
@@ -331,7 +331,7 @@ apply_all() {
       v="${IFCOND_KV[$k]}"
       while IFS= read -r nm; do
         replace_if_in_file_any "$file" "$nm" "$v" && { log "compat.used: IF name '${k}'→'${nm}' on $file"; break; }
-      done < <(variants_for "$k")
+      done < <(variants_for "$k"))
     done
   done
 
@@ -341,11 +341,20 @@ apply_all() {
       v="$(get_hook_body "$k" || true)"; [ -z "$v" ] && continue
       while IFS= read -r nm; do
         replace_hook_in_file_any "$file" "$nm" "$v" && { log "compat.used: HOOK name '${k}'→'${nm}' on $file"; break; }
-      done < <(variants_for "$k")
+      done < <(variants_for "$k"))
     done
   done
 }
 apply_all || true
+
+# ---------------- Kotlin fixups: normalize broken R.<space>xxx ----------------
+log "::group::Kotlin fixups (R.<space>xxx → R.xxx)"
+mapfile -t KT_FILES < <(find "$APP_DIR" -type f -name "*.kt" | LC_ALL=C sort)
+for f in "${KT_FILES[@]}"; do
+  # 把 R. string / R.  id / R.  color 等恢复为 R.string / R.id / R.color
+  perl -0777 -i -pe 's/\bR\.\s+([A-Za-z_][A-Za-z0-9_]*)/R\.$1/g' "$f"
+done
+log "::endgroup::"
 
 # ---------------- 3) stats & output ----------------
 ANCHORS_AFTER="build-logs/anchors.after.txt"
