@@ -24,8 +24,9 @@ if [ -z "${RUN_ID:-}" ]; then
 fi
 
 REQ_DIR="requests/${RUN_ID}"
+# ⬇️ 关键改动 1：PLAN_JSON 仍支持外部覆盖；PLAN_JSON_SAN 从 PLAN_JSON 推导，避免路径不一致
 PLAN_JSON="${PLAN_JSON:-${REQ_DIR}/02_plan.json}"
-PLAN_JSON_SAN="${REQ_DIR}/02_plan.sanitized.json}"
+PLAN_JSON_SAN="${PLAN_JSON/02_plan.json/02_plan.sanitized.json}"
 APPLY_JSON="${APPLY_JSON:-${REQ_DIR}/03_apply_result.json}"
 SUMMARY_TXT="${REQ_DIR}/actions-summary.txt"
 
@@ -46,8 +47,20 @@ log "env: RUN_ID=${RUN_ID}"
 
 # ---------------- 0) sanitize plan ----------------
 log "::group::Sanitize plan"
-npx -y tsx lib/ndjc/sanitize/index.ts --plan="${PLAN_JSON}"
+# ⬇️ 关键改动 2：将 PLAN_JSON/RUN_ID 显式传入；保持默认不覆盖原 plan
+env PLAN_JSON="${PLAN_JSON}" RUN_ID="${RUN_ID}" NDJC_SANITIZE_OVERWRITE=0 \
+  npx -y tsx lib/ndjc/sanitize/index.ts
 log "::endgroup::"
+
+# 兜底：若按推导的 PLAN_JSON_SAN 不存在，再尝试同名替换（防止非标准文件名）
+if [ ! -f "${PLAN_JSON_SAN}" ]; then
+  alt="${PLAN_JSON%.json}.sanitized.json"
+  if [ -f "${alt}" ]; then
+    PLAN_JSON_SAN="${alt}"
+    log "compat.used: fallback PLAN_JSON_SAN → ${PLAN_JSON_SAN}"
+  fi
+fi
+
 [ -f "${PLAN_JSON_SAN}" ] || { echo "::error::Sanitized plan not found: ${PLAN_JSON_SAN}"; exit 1; }
 
 # ---------------- 1) read plan (with aliases) ----------------
@@ -312,7 +325,7 @@ apply_all() {
       # try name variants
       while IFS= read -r nm; do
         replace_block_in_file_any "$file" "$nm" "$v" && { log "compat.used: BLOCK name '${k}'→'${nm}' on $file"; break; }
-      done < <(variants_for "$k"))
+      done < <(variants_for "$k")
     done
   done
 
@@ -321,7 +334,7 @@ apply_all() {
     for k in "${!LISTS_KV[@]}"; do
       while IFS= read -r nm; do
         replace_list_in_file_any "$file" "$nm" && { log "compat.used: LIST name '${k}'→'${nm}' on $file"; break; }
-      done < <(variants_for "$k"))
+      done < <(variants_for "$k")
     done
   done
 
@@ -331,7 +344,7 @@ apply_all() {
       v="${IFCOND_KV[$k]}"
       while IFS= read -r nm; do
         replace_if_in_file_any "$file" "$nm" "$v" && { log "compat.used: IF name '${k}'→'${nm}' on $file"; break; }
-      done < <(variants_for "$k"))
+      done < <(variants_for "$k")
     done
   done
 
@@ -341,20 +354,11 @@ apply_all() {
       v="$(get_hook_body "$k" || true)"; [ -z "$v" ] && continue
       while IFS= read -r nm; do
         replace_hook_in_file_any "$file" "$nm" "$v" && { log "compat.used: HOOK name '${k}'→'${nm}' on $file"; break; }
-      done < <(variants_for "$k"))
+      done < <(variants_for "$k")
     done
   done
 }
 apply_all || true
-
-# ---------------- Kotlin fixups: normalize broken R.<space>xxx ----------------
-log "::group::Kotlin fixups (R.<space>xxx → R.xxx)"
-mapfile -t KT_FILES < <(find "$APP_DIR" -type f -name "*.kt" | LC_ALL=C sort)
-for f in "${KT_FILES[@]}"; do
-  # 把 R. string / R.  id / R.  color 等恢复为 R.string / R.id / R.color
-  perl -0777 -i -pe 's/\bR\.\s+([A-Za-z_][A-Za-z0-9_]*)/R\.$1/g' "$f"
-done
-log "::endgroup::"
 
 # ---------------- 3) stats & output ----------------
 ANCHORS_AFTER="build-logs/anchors.after.txt"
