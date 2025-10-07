@@ -1,10 +1,16 @@
 package com.ndjc.app // NDJC:PACKAGE_NAME
 
 import android.app.Application
+import com.ndjc.app.data.AppCtx
 
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
-        // 这里可插 HOOK:AFTER_INSTALL 类似的初始化逻辑（如需一次性任务可加标记）
+
+        // 将 Application 上下文注入到全局容器，供仓库/工具类获取资源等
+        AppCtx.app = this
+
+        // HOOK:AFTER_INSTALL
+        // END_HOOK
     }
 }
