@@ -5,12 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -19,9 +14,8 @@ import com.ndjc.app.R
 
 /**
  * 通用的 Feed 列表项。
- *
  * 为了不与具体数据模型耦合（避免额外 import/类型依赖导致编译失败），这里用基础字段而不是 Post 类型。
- * 这样即使当前项目暂未引用该组件，文件也能独立通过编译；后续若需要，可在调用处自行包装。
+ * 这样即使当前项目暂未引用该组件，文件也能独立通过编译；后续若需要，可在调用处自适配包装。
  */
 @Composable
 fun FeedItem(
@@ -42,7 +36,12 @@ fun FeedItem(
                 AssistChip(
                     onClick = { onClick() },
                     label = {
-                        Text(text = stringResource(id = R.string.comments_count, commentsCount))
+                        Text(
+                            text = stringResource(
+                                id = R.string.comments_count,
+                                commentsCount
+                            )
+                        )
                     },
                     colors = AssistChipDefaults.assistChipColors()
                 )
