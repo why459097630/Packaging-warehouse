@@ -5,9 +5,10 @@ import com.ndjc.app.data.model.Comment
 import com.ndjc.app.data.model.Post
 
 /**
- * 运行时优先读取 res/raw/seed_posts.json；
- * 若不存在则回退到 res/raw/seed_data.json；
- * 都不存在/解析失败则使用 fallback 内置示例。
+ * 数据来源优先级：
+ * 1) res/raw/seed_posts.json（新标准）
+ * 2) res/raw/seed_data.json（兼容旧命名）
+ * 若都不存在/解析失败则使用 fallback 内置示例。
  */
 object SeedRepository {
     private var cached: List<Post>? = null
@@ -16,26 +17,24 @@ object SeedRepository {
 
     fun postById(id: String): Post? = posts().find { it.id == id }
 
-    // ✅ 改为“块函数体”，允许在 try 中使用 return
     private fun loadFromRawOrFallback(): List<Post> {
         return try {
-            val app = AcpCtx.app ?: return fallback()
+            val app = AppCtx.app ?: return fallback()
             val res = app.resources
             val pkg = app.packageName
 
-            // 先找 seed_posts（新标准），找不到再回退 seed_data（兼容旧命名）
+            // 先找 seed_posts（新标准），找不到再回退到 seed_data（兼容旧命名）
             val idPosts = res.getIdentifier("seed_posts", "raw", pkg)
-            val idData  = res.getIdentifier("seed_data",  "raw", pkg)
-            val rawId   = when {
+            val idData = res.getIdentifier("seed_data", "raw", pkg)
+            val rawId = when {
                 idPosts != 0 -> idPosts
-                idData  != 0 -> idData
-                else         -> 0
+                idData != 0 -> idData
+                else -> 0
             }
 
             if (rawId == 0) return fallback()
 
             val json = res.openRawResource(rawId).use { it.readBytes().toString(Charsets.UTF_8) }
-
             parse(json)
         } catch (_: Throwable) {
             fallback()
@@ -48,10 +47,10 @@ object SeedRepository {
         for (i in 0 until arr.length()) {
             val o = arr.optJSONObject(i) ?: continue
 
-            val id       = o.optString("id", (i + 1).toString())
-            val author   = o.optString("author", "User")
-            val content  = o.optString("content", "")
-            val likes    = o.optInt("likes", 0)
+            val id = o.optString("id", (i + 1).toString())
+            val author = o.optString("author", "User")
+            val content = o.optString("content", "")
+            val likes = o.optInt("likes", 0)
 
             val comments = buildList {
                 val ca = o.optJSONArray("comments") ?: JSONArray()
@@ -72,13 +71,7 @@ object SeedRepository {
     )
 }
 
-/** Application 上下文（保持你现有写法） */
-object AcpCtx { @Volatile internal var app: android.app.Application? = null }
-
-/** 在 Application 注入（Manifest 里把 application 声明成 android:name=".data.App"） */
-class App : android.app.Application() {
-    override fun onCreate() {
-        super.onCreate()
-        AcpCtx.app = this
-    }
+/** Application 上下文（保持轻量无引库） */
+object AppCtx {
+    @Volatile internal var app: android.app.Application? = null
 }
