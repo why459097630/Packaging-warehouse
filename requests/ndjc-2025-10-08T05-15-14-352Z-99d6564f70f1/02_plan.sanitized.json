@@ -1,0 +1,87 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.dtxcanteen",
+    "NDJC:APP_LABEL": "體东邮家",
+    "NDJC:HOME_TITLE": "體东邮家一为家",
+    "NDJC:PRIMARY_BUTTON_TEXT": "开始",
+    "NDJC:THEME_NAME": "default",
+    "NDJC:RUN_ID": "1",
+    "NDJC:LOG_LEVEL": "debug",
+    "NDJC:DEBUG_LOG_ENABLED": "true"
+  },
+  "blocks": {
+    "HOME_HEADER": "<!-- xml or kotlin snippet -->",
+    "HOME_BODY": "<!-- xml or kotlin snippet -->",
+    "HOME_ACTIONS": "<!-- xml or kotlin snippet -->",
+    "THEME_COLORS": "{\"primaryColor\":\"#007bff\",\"secondaryColor\":\"#6c757d\"}",
+    "TYPOCASE_OVERRIDES": "{\"text\":\"uppercase\"}",
+    "STRINGS_EXTRA": "{\"hello\":\"Hello World\"}",
+    "ROUTE_HOME": "/home",
+    "ROUTE_DETAIL": "/detail",
+    "ROUTE_POST": "/post",
+    "NAV_TRANSITIONS": "{\"duration\":500,\"interpolator\":\"accelerate_decelerate\"}",
+    "SPLASH_CONTENT": "<!-- xml or kotlin snippet -->",
+    "EMPTY_STATE": "<!-- xml or kotlin snippet -->",
+    "ERROR_STATE": "<!-- xml or kotlin snippet -->",
+    "DEPENDENCY_SNIPPETS": "<!-- xml or kotlin snippet -->",
+    "DEBUG_PANEL": "<!-- xml or kotlin snippet -->",
+    "BUILD_SUMMARY": "<!-- xml or kotlin snippet -->",
+    "HEADER_AD_SLOT": "<!-- xml or kotlin snippet -->",
+    "FEED_ITEM_BADGES": "<!-- xml or kotlin snippet -->",
+    "USER_PROFILE_CARD": "<!-- xml or kotlin snippet -->",
+    "SPONSORED_CARD": "<!-- xml or kotlin snippet -->",
+    "PROFILE_SECTION": "<!-- xml or kotlin snippet -->",
+    "SETTINGS_SECTION": "<!-- xml or kotlin snippet -->"
+  },
+  "lists": {
+    "ROUTES": [
+      "/home",
+      "/detail",
+      "/post"
+    ],
+    "POST_FIELDS": [
+      "title",
+      "content",
+      "price"
+    ],
+    "COMMENT_FIELDS": [
+      "content",
+      "likes"
+    ]
+  },
+  "conditions": {
+    "PERMISSION.CAMERA": true,
+    "PERMISSION.MEDIA": true,
+    "PERMISSION.NOTIFICATION": true,
+    "PERMISSION.LOCATION": false,
+    "PERMISSION.CONTACTS": false,
+    "PERMISSION.SCHEDULE_EXACT_ALARM": false,
+    "PERMISSION.CLIPBOARD": false,
+    "NETWORK.CLEAR_TEXT": true,
+    "FILE_PROVIDER": true,
+    "INTENT.SHARE": true
+  },
+  "hooks": {
+    "BEFORE_BUILD": "// gradle snippet",
+    "AFTER_BUILD": "// gradle snippet",
+    "PRE_INJECT": "// gradle snippet",
+    "POST_INJECT": "// gradle snippet",
+    "PRE_COMMIT": "// gradle snippet",
+    "AFTER_INSTALL": "// gradle snippet"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.example.dtxcanteen",
+    "resConfigs": [],
+    "permissions": []
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxcanteen",
+    "mode": "A"
+  },
+  "droppedDanger": 0
+}
