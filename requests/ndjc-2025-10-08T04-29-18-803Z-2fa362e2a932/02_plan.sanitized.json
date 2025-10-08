@@ -1,0 +1,31 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.mississippi.restaurant",
+    "NDJC:APP_LABEL": "密西西比餐厅",
+    "NDJC:HOME_TITLE": "密西西比餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start"
+  },
+  "blocks": {},
+  "lists": {
+    "ROUTES": [
+      "home"
+    ]
+  },
+  "conditions": {},
+  "hooks": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.mississippi.restaurant",
+    "resConfigs": [],
+    "permissions": []
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "密西西比餐厅",
+    "packageId": "com.mississippi.restaurant",
+    "mode": "A"
+  },
+  "droppedDanger": 0
+}
