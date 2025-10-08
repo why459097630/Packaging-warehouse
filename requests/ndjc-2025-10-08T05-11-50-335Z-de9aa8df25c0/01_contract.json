@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxcanteen",
+    "mode": "A"
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.dtxcanteen",
+      "NDJC:APP_LABEL": "體东邮家",
+      "NDJC:HOME_TITLE": "體东邮家一为家",
+      "NDJC:PRIMARY_BUTTON_TEXT": "开始",
+      "NDJC:THEME_NAME": "default",
+      "NDJC:RUN_ID": "1",
+      "NDJC:LOG_LEVEL": "debug",
+      "NDJC:DEBUG_LOG_ENABLED": "true"
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "<!-- xml or kotlin snippet -->",
+      "BLOCK:HOME_BODY": "<!-- xml or kotlin snippet -->",
+      "BLOCK:HOME_ACTIONS": "<!-- xml or kotlin snippet -->",
+      "BLOCK:THEME_COLORS": "{\"primaryColor\":\"#007bff\",\"secondaryColor\":\"#6c757d\"}",
+      "BLOCK:TYPOCASE_OVERRIDES": "{\"text\":\"uppercase\"}",
+      "BLOCK:STRINGS_EXTRA": "{\"hello\":\"Hello World\"}",
+      "BLOCK:ROUTE_HOME": "/home",
+      "BLOCK:ROUTE_DETAIL": "/detail",
+      "BLOCK:ROUTE_POST": "/post",
+      "BLOCK:NAV_TRANSITIONS": "{\"duration\":500,\"interpolator\":\"accelerate_decelerate\"}",
+      "BLOCK:SPLASH_CONTENT": "<!-- xml or kotlin snippet -->",
+      "BLOCK:EMPTY_STATE": "<!-- xml or kotlin snippet -->",
+      "BLOCK:ERROR_STATE": "<!-- xml or kotlin snippet -->",
+      "BLOCK:DEPENDENCY_SNIPPETS": "<!-- xml or kotlin snippet -->",
+      "BLOCK:DEBUG_PANEL": "<!-- xml or kotlin snippet -->",
+      "BLOCK:BUILD_SUMMARY": "<!-- xml or kotlin snippet -->",
+      "BLOCK:HEADER_AD_SLOT": "<!-- xml or kotlin snippet -->",
+      "BLOCK:FEED_ITEM_BADGES": "<!-- xml or kotlin snippet -->",
+      "BLOCK:USER_PROFILE_CARD": "<!-- xml or kotlin snippet -->",
+      "BLOCK:SPONSORED_CARD": "<!-- xml or kotlin snippet -->",
+      "BLOCK:PROFILE_SECTION": "<!-- xml or kotlin snippet -->",
+      "BLOCK:SETTINGS_SECTION": "<!-- xml or kotlin snippet -->"
+    },
+    "list": {
+      "LIST:PROGUARD_EXTRA": [],
+      "LIST:PACKAGING_RULES": [],
+      "LIST:ROUTES": [
+        "/home",
+        "/detail",
+        "/post"
+      ],
+      "LIST:POST_FIELDS": [
+        "title",
+        "content",
+        "price"
+      ],
+      "LIST:COMMENT_FIELDS": [
+        "content",
+        "likes"
+      ],
+      "LIST:ABI_SPLITS": [],
+      "LIST:PLURAL_STRINGS": [],
+      "LIST:COMPONENT_STYLES": [],
+      "LIST:REMOTE_FLAGS": [],
+      "LIST:DEEPLINK_PATTERNS": []
+    },
+    "if": {
+      "IF:PERMISSION.CAMERA": true,
+      "IF:PERMISSION.MEDIA": true,
+      "IF:PERMISSION.NOTIFICATION": true,
+      "IF:PERMISSION.LOCATION": false,
+      "IF:PERMISSION.CONTACTS": false,
+      "IF:PERMISSION.SCHEDULE_EXACT_ALARM": false,
+      "IF:PERMISSION.CLIPBOARD": false,
+      "IF:NETWORK.CLEAR_TEXT": true,
+      "IF:FILE_PROVIDER": true,
+      "IF:INTENT.SHARE": true
+    },
+    "hook": {
+      "HOOK:BEFORE_BUILD": "// gradle snippet",
+      "HOOK:AFTER_BUILD": "// gradle snippet",
+      "HOOK:PRE_INJECT": "// gradle snippet",
+      "HOOK:POST_INJECT": "// gradle snippet",
+      "HOOK:PRE_COMMIT": "// gradle snippet",
+      "HOOK:AFTER_INSTALL": "// gradle snippet"
+    },
+    "resources": {
+      "RES:drawable/app_icon.xml": "<!-- xml snippet -->",
+      "RES:drawable/empty_illustration.xml": "<!-- xml snippet -->",
+      "RES:drawable/avatar_placeholder.xml": "<!-- xml snippet -->",
+      "RES:drawable/brand_cover.xml": "<!-- xml snippet -->",
+      "RES:drawable/ic_stat_notify.xml": "<!-- xml snippet -->",
+      "RES:font/primary.xml": "<!-- xml snippet -->",
+      "RES:font/secondary.xml": "<!-- xml snippet -->",
+      "RES:raw/theme_colors.json": "{\"primaryColor\":\"#007bff\",\"secondaryColor\":\"#6c757d\"}",
+      "RES:raw/seed_data.json": "{\"data\":[{\"title\":\"Hello World\",\"content\":\"This is a test post\",\"price\":10.99}]}",
+      "RES:string/app_name": "德州餐厅",
+      "RES:string/app_description": "这是一个德州餐厅的介绍菜品的安卓app"
+    }
+  },
+  "files": []
+}
