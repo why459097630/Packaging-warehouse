@@ -1,5 +1,10 @@
 /**
- * Sanitizer：把 plan 归位到顶层五类锚点 + 白名单过滤 + 统计
+ * Sanitizer：把 plan 归位到顶层五类锚点 + 归一化键名 + 白名单过滤 + 统计
+ * - 关键改动：
+ *   1) blocks/lists/conditions/hooks 的键名统一去掉前缀（BLOCK:/LIST:/IF:/HOOK:）
+ *   2) 白名单匹配也做相同的归一化，兼容 registry 里带前缀的写法与 aliases
+ *   3) lists 的条目若是对象/数组，统一 JSON.stringify，避免 "[object object]"
+ *
  * - 输入：02_plan.json（或任意路径）
  * - 输出：02_plan.sanitized.json；若 NDJC_SANITIZE_OVERWRITE=1 则同时覆盖 02_plan.json
  * - 环境变量：
@@ -46,6 +51,33 @@ async function saveJson(p: string, obj: any) {
   await fs.writeFile(p, JSON.stringify(obj, null, 2), "utf8");
 }
 
+/** 去掉锚点类型前缀 */
+function stripPrefix(kind: "block" | "list" | "if" | "hook", key: string): string {
+  switch (kind) {
+    case "block":
+      return key.replace(/^BLOCK:/i, "");
+    case "list":
+      return key.replace(/^LIST:/i, "");
+    case "if":
+      return key.replace(/^IF:/i, "");
+    case "hook":
+      return key.replace(/^HOOK:/i, "");
+  }
+}
+
+/** 将注册表允许项做去前缀归一化 */
+function normalizeAllow(kind: "block" | "list" | "if" | "hook", xs: string[]): string[] {
+  return uniq(xs.map((k) => stripPrefix(kind, k)));
+}
+
+/** 解析 aliases 目标，例如 "LIST:ROUTES" -> { kind:'list', name:'ROUTES' } */
+function parseAliasedTarget(s: string): { kind: "block" | "list" | "if" | "hook" | null; name: string } {
+  const m = s.match(/^(BLOCK|LIST|IF|HOOK):(.+)$/i);
+  if (!m) return { kind: null, name: s };
+  const kind = m[1].toLowerCase() as "block" | "list" | "if" | "hook";
+  return { kind, name: m[2] };
+}
+
 async function loadRegistry(): Promise<Registry | null> {
   const root = process.cwd();
   const hint =
@@ -56,6 +88,18 @@ async function loadRegistry(): Promise<Registry | null> {
     return j as Registry;
   } catch {
     return null;
+  }
+}
+
+/** 列表项统一转字符串：字符串/数字/布尔转 String；对象/数组 JSON.stringify */
+function toStringItem(x: any): string {
+  if (x == null) return "";
+  const t = typeof x;
+  if (t === "string" || t === "number" || t === "boolean") return String(x);
+  try {
+    return JSON.stringify(x);
+  } catch {
+    return String(x);
   }
 }
 
@@ -76,7 +120,7 @@ function liftV1Grouped(plan: Plan) {
     meta: plan.meta || plan.metadata || {}
   };
 
-  // 扁平已有的先拷贝
+  // 扁平已有的先拷贝 —— 并去前缀归一化
   if (isObj(plan.anchors)) {
     for (const [k, v] of Object.entries(plan.anchors)) {
       if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
@@ -85,40 +129,46 @@ function liftV1Grouped(plan: Plan) {
     }
   }
   if (isObj(plan.blocks)) {
-    for (const [k, v] of Object.entries(plan.blocks)) out.blocks[k] = String(v ?? "");
+    for (const [k, v] of Object.entries(plan.blocks)) {
+      out.blocks[stripPrefix("block", k)] = String(v ?? "");
+    }
   }
   if (isObj(plan.lists)) {
     for (const [k, v] of Object.entries(plan.lists)) {
-      const arrv = Array.isArray(v) ? v.map(String).filter(Boolean) : [String(v ?? "")].filter(Boolean);
-      if (arrv.length) out.lists[k] = arrv;
+      const items = Array.isArray(v) ? v.map(toStringItem).filter(Boolean) : [toStringItem(v)].filter(Boolean);
+      if (items.length) out.lists[stripPrefix("list", k)] = items;
     }
   }
   if (isObj(plan.conditions)) {
-    for (const [k, v] of Object.entries(plan.conditions)) out.conditions[k] = !!v;
+    for (const [k, v] of Object.entries(plan.conditions)) {
+      out.conditions[stripPrefix("if", k)] = !!v;
+    }
   }
   if (isObj(plan.hooks)) {
-    for (const [k, v] of Object.entries(plan.hooks)) out.hooks[k] = String(v ?? "");
+    for (const [k, v] of Object.entries(plan.hooks)) {
+      out.hooks[stripPrefix("hook", k)] = String(v ?? "");
+    }
   }
 
-  // v1 分组归位
+  // v1 分组归位 —— 并去前缀归一化
   const g = (plan.anchorsGrouped || plan.anchors || {}) as any;
   if (isObj(g.text)) {
     for (const [k, v] of Object.entries(g.text)) out.anchors[k] = String(v ?? "");
   }
   if (isObj(g.block)) {
-    for (const [k, v] of Object.entries(g.block)) out.blocks[k] = String(v ?? "");
+    for (const [k, v] of Object.entries(g.block)) out.blocks[stripPrefix("block", k)] = String(v ?? "");
   }
   if (isObj(g.list)) {
     for (const [k, v] of Object.entries(g.list)) {
-      const arrv = Array.isArray(v) ? v.map(String).filter(Boolean) : [String(v ?? "")].filter(Boolean);
-      if (arrv.length) out.lists[k] = arrv;
+      const items = Array.isArray(v) ? v.map(toStringItem).filter(Boolean) : [toStringItem(v)].filter(Boolean);
+      if (items.length) out.lists[stripPrefix("list", k)] = items;
     }
   }
   if (isObj(g.if)) {
-    for (const [k, v] of Object.entries(g.if)) out.conditions[k] = !!v;
+    for (const [k, v] of Object.entries(g.if)) out.conditions[stripPrefix("if", k)] = !!v;
   }
   if (isObj(g.hook)) {
-    for (const [k, v] of Object.entries(g.hook)) out.hooks[k] = String(v ?? "");
+    for (const [k, v] of Object.entries(g.hook)) out.hooks[stripPrefix("hook", k)] = String(v ?? "");
   }
 
   // gradle.applicationId → NDJC:PACKAGE_NAME 兜底
@@ -133,10 +183,53 @@ function liftV1Grouped(plan: Plan) {
   }
 
   // 常用兜底
-  if (!out.lists["LIST:ROUTES"]) out.lists["LIST:ROUTES"] = ["home"];
+  if (!out.lists["ROUTES"]) out.lists["ROUTES"] = ["home"];
   if (!out.anchors["NDJC:PRIMARY_BUTTON_TEXT"]) out.anchors["NDJC:PRIMARY_BUTTON_TEXT"] = "Start";
 
   return out;
+}
+
+function expandWhitelistWithAliases(reg: Registry) {
+  const allow = {
+    text: [...(reg.text || [])], // 文本锚点不去前缀（NDJC:）
+    block: normalizeAllow("block", reg.block || []),
+    list: normalizeAllow("list", reg.list || []),
+    if: normalizeAllow("if", reg.if || []),
+    hook: normalizeAllow("hook", reg.hook || [])
+  };
+
+  // 处理 aliases：将别名加入对应类别的允许表（去前缀）
+  if (reg.aliases) {
+    for (const [alias, target] of Object.entries(reg.aliases)) {
+      const { kind, name } = parseAliasedTarget(target);
+      if (!kind) continue;
+      const n = stripPrefix(kind, name);
+      switch (kind) {
+        case "block":
+          allow.block.push(stripPrefix("block", alias));
+          allow.block.push(n);
+          break;
+        case "list":
+          allow.list.push(stripPrefix("list", alias));
+          allow.list.push(n);
+          break;
+        case "if":
+          allow.if.push(stripPrefix("if", alias));
+          allow.if.push(n);
+          break;
+        case "hook":
+          allow.hook.push(stripPrefix("hook", alias));
+          allow.hook.push(n);
+          break;
+      }
+    }
+    allow.block = uniq(allow.block);
+    allow.list = uniq(allow.list);
+    allow.if = uniq(allow.if);
+    allow.hook = uniq(allow.hook);
+  }
+
+  return allow;
 }
 
 function applyRegistryWhitelist(
@@ -149,22 +242,23 @@ function applyRegistryWhitelist(
       dropped: { anchors: 0, blocks: 0, lists: 0, conditions: 0, hooks: 0 }
     };
   }
-  const keep = <T extends string>(m: Record<string, any>, allow: T[]) => {
+  const allow = expandWhitelistWithAliases(reg);
+
+  const keep = <T extends string>(m: Record<string, any>, allowList: T[]) => {
     const out: Record<string, any> = {};
     let drop = 0;
     for (const [k, v] of Object.entries(m)) {
-      if (allow.includes(k)) out[k] = v;
+      if (allowList.includes(k)) out[k] = v;
       else drop++;
     }
     return { out, drop };
   };
 
-  const a = keep(flat.anchors, reg.text);
-  const b = keep(flat.blocks, reg.block);
-  // list 允许“列表名匹配”，不校验每个元素
-  const l = keep(flat.lists, reg.list);
-  const c = keep(flat.conditions, reg.if);
-  const h = keep(flat.hooks, reg.hook);
+  const a = keep(flat.anchors, allow.text);               // NDJC:* 文本锚点按原样比对
+  const b = keep(flat.blocks, allow.block);               // 已归一化后的键名与归一化白名单比对
+  const l = keep(flat.lists, allow.list);
+  const c = keep(flat.conditions, allow.if);
+  const h = keep(flat.hooks, allow.hook);
 
   return {
     sanitized: {
@@ -218,7 +312,7 @@ export async function sanitizePlanFile() {
   const flat = liftV1Grouped(plan);
   const { sanitized: whitelisted, dropped } = applyRegistryWhitelist(flat, reg);
 
-  // 关键新增：对 TEXT 锚点做 NDJC: 白名单过滤，屏蔽危险键（如 R. / R.string）
+  // 对 TEXT 锚点做 NDJC: 白名单过滤，屏蔽危险键（如 R. / R.string）
   const afterSafe = filterDangerousTextKeys(whitelisted);
 
   const outPath = inPath.replace(/02_plan\.json$/, "02_plan.sanitized.json");
