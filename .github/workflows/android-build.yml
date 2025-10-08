@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 env:
-  # 默认模板，可由 client_payload.template 覆盖
+  # 默认模板；可被 client_payload.template 覆盖
   TEMPLATE_DEFAULT: circle-basic
 
 jobs:
@@ -40,8 +40,9 @@ jobs:
           TEMPLATE="${TEMPLATE_IN}"
           REQ_DIR="requests/${RUN_ID}"
 
-          # 关键：工作区构建目录一律放在仓库根的 app/
+          # 工作区构建目录固定在仓库根的 app/
           APP_DIR="app"
+
           # 计划/应用结果文件
           PLAN_JSON="${REQ_DIR}/02_plan.json"
           PLAN_JSON_SAN="${REQ_DIR}/02_plan.sanitized.json"
