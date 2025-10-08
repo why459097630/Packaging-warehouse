@@ -1,0 +1,118 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.dtxcanteen",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "菜品介绍",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "德州风格",
+    "NDJC:RUN_ID": "1",
+    "NDJC:LOG_LEVEL": "DEBUG",
+    "NDJC:DEBUG_LOG_ENABLED": "true"
+  },
+  "blocks": {
+    "HOME_HEADER": "<!-- xml or kotlin snippet -->",
+    "HOME_BODY": "<!-- xml or kotlin snippet -->",
+    "HOME_ACTIONS": "<!-- xml or kotlin snippet -->",
+    "THEME_COLORS": "{\"primary\":\"#FF69B4\",\"secondary\":\"#FFFFFF\"}",
+    "TYPOCASE_OVERRIDES": "{\"text\":\"Arial\",\"font_size\":16}",
+    "STRINGS_EXTRA": "{\"hello\":\"欢迎光临\"}",
+    "ROUTE_HOME": "{\"path\":\"/home\",\"name\":\"首页\"}",
+    "ROUTE_DETAIL": "{\"path\":\"/detail\",\"name\":\"菜品详情\"}",
+    "ROUTE_POST": "{\"path\":\"/post\",\"name\":\"上传照片\"}",
+    "NAV_TRANSITIONS": "{\"transition\":\"slide\"}",
+    "SPLASH_CONTENT": "{\"image\":\"splash_screen.png\",\"text\":\"德州餐厅\"}",
+    "EMPTY_STATE": "{\"image\":\"empty_state.png\",\"text\":\"暂无数据\"}",
+    "ERROR_STATE": "{\"image\":\"error_state.png\",\"text\":\"出错了\"}",
+    "DEPENDENCY_SNIPPETS": "{\"snippet\":\"// gradle snippet\"}",
+    "DEBUG_PANEL": "{\"panel\":\"debug_panel.xml\"}",
+    "BUILD_SUMMARY": "{\"summary\":\"build summary\"}",
+    "HEADER_AD_SLOT": "{\"ad_unit_id\":\"ca-app-pub-3940256099942544/2934735716\"}",
+    "FEED_ITEM_BADGES": "{\"badge\":\"new\"}",
+    "USER_PROFILE_CARD": "{\"name\":\"用户名称\",\"image\":\"user_image.png\"}",
+    "SPONSORED_CARD": "{\"name\":\"赞助商名称\",\"image\":\"sponsored_image.png\"}",
+    "PROFILE_SECTION": "{\"section\":\"profile_section.xml\"}",
+    "SETTINGS_SECTION": "{\"section\":\"settings_section.xml\"}"
+  },
+  "lists": {
+    "ROUTES": [
+      "/home",
+      "/detail",
+      "/post"
+    ],
+    "POST_FIELDS": [
+      "title",
+      "description",
+      "price"
+    ],
+    "COMMENT_FIELDS": [
+      "content",
+      "rating"
+    ]
+  },
+  "conditions": {
+    "PERMISSION.CAMERA": true,
+    "PERMISSION.MEDIA": true,
+    "PERMISSION.NOTIFICATION": true,
+    "PERMISSION.LOCATION": false,
+    "PERMISSION.CONTACTS": false,
+    "PERMISSION.SCHEDULE_EXACT_ALARM": false,
+    "PERMISSION.CLIPBOARD": false,
+    "NETWORK.CLEAR_TEXT": true,
+    "FILE_PROVIDER": true,
+    "INTENT.SHARE": true
+  },
+  "hooks": {
+    "BEFORE_BUILD": "// gradle snippet",
+    "AFTER_BUILD": "// gradle snippet",
+    "PRE_INJECT": "// kotlin snippet",
+    "POST_INJECT": "// kotlin snippet",
+    "PRE_COMMIT": "// git snippet",
+    "AFTER_INSTALL": "// install snippet"
+  },
+  "resources": {},
+  "companions": [
+    {
+      "path": "app/src/main/res/drawable/splash_screen.png",
+      "content": "splash screen image",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/drawable/empty_state.png",
+      "content": "empty state image",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/drawable/error_state.png",
+      "content": "error state image",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/debug_panel.xml",
+      "content": "debug panel layout",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/profile_section.xml",
+      "content": "profile section layout",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/res/layout/settings_section.xml",
+      "content": "settings section layout",
+      "encoding": "utf8"
+    }
+  ],
+  "gradle": {
+    "applicationId": "com.example.dtxcanteen",
+    "resConfigs": [],
+    "permissions": []
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxcanteen",
+    "mode": "B"
+  },
+  "droppedDanger": 0
+}

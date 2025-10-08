@@ -1,0 +1,11 @@
+{
+  "primary": "#6750A4",
+  "onPrimary": "#FFFFFF",
+  "secondary": "#625B71",
+  "onSecondary": "#FFFFFF",
+  "tertiary": "#7D5260",
+  "background": "#FFFBFE",
+  "onBackground": "#1C1B1F",
+  "surface": "#FFFBFE",
+  "onSurface": "#1C1B1F"
+}

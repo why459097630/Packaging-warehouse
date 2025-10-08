@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- BLOCK:THEME_COLORS -->
+{"primary":"#FF69B4","secondary":"#FFFFFF"}
+<!-- END_BLOCK -->
+
+    <!-- BLOCK:TYPOCASE_OVERRIDES -->
+{"text":"Arial","font_size":16}
+<!-- END_BLOCK -->
+
+</resources>
