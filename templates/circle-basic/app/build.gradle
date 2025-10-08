@@ -1,10 +1,9 @@
+// HOOK:BEFORE_BUILD
+// END_HOOK
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    // HOOK:BEFORE_BUILD
-    // END_HOOK
-    // BLOCK:DEPENDENCY_SNIPPETS
-    // END_BLOCK
 }
 
 def kotlinAlignVersion = "1.9.24" // 与 Compose Compiler 1.5.14 匹配
@@ -136,6 +135,9 @@ dependencies {
 
     debugImplementation "androidx.compose.ui:ui-tooling"
     debugImplementation "androidx.compose.ui:ui-test-manifest"
+
+    // BLOCK:DEPENDENCY_SNIPPETS
+    // END_BLOCK
 }
 
 /* 可选：把转场或广告位等构建期摘要放到这里 */
