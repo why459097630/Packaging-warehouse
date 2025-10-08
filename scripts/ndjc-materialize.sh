@@ -24,11 +24,11 @@ if [ -z "${RUN_ID:-}" ]; then
 fi
 
 REQ_DIR="requests/${RUN_ID}"
-# ⬇️ 关键改动 1：PLAN_JSON 仍支持外部覆盖；PLAN_JSON_SAN 从 PLAN_JSON 推导，避免路径不一致
+# 关键：PLAN_JSON_SAN 从 PLAN_JSON 推导，保证路径一致
 PLAN_JSON="${PLAN_JSON:-${REQ_DIR}/02_plan.json}"
 PLAN_JSON_SAN="${PLAN_JSON/02_plan.json/02_plan.sanitized.json}"
 APPLY_JSON="${APPLY_JSON:-${REQ_DIR}/03_apply_result.json}"
-SUMMARY_TXT="${REQ_DIR}/actions-summary.txt}"
+SUMMARY_TXT="${REQ_DIR}/actions-summary.txt"
 
 mkdir -p "${REQ_DIR}" build-logs
 LOG_FILE="build-logs/materialize.log"; : > "${LOG_FILE}"
@@ -47,7 +47,6 @@ log "env: RUN_ID=${RUN_ID}"
 
 # ---------------- 0) sanitize plan ----------------
 log "::group::Sanitize plan"
-# ⬇️ 关键改动 2：将 PLAN_JSON/RUN_ID 显式传入；保持默认不覆盖原 plan
 env PLAN_JSON="${PLAN_JSON}" RUN_ID="${RUN_ID}" NDJC_SANITIZE_OVERWRITE=0 \
   npx -y tsx lib/ndjc/sanitize/index.ts
 log "::endgroup::"
@@ -118,7 +117,6 @@ variants_for() {
   local key="$1"
   local alt1="${key//./_}"
   local alt2="${key//_/.}"
-  # alias mapping e.g. ROUTES -> LIST:ROUTES handled by call site
   printf "%s\n%s\n%s\n" "$key" "$alt1" "$alt2" | awk '!x[$0]++'
 }
 
@@ -154,6 +152,35 @@ PY
   printf "%s" "$rendered"
 }
 
+# ---------------- 注入前护栏：根据目标文件类型，注释掉疑似 JSON/HTML 的非代码片段 ----------------
+looks_like_json(){ [[ "$1" =~ ^[[:space:]]*[\{\[] ]]; }
+looks_like_html(){ [[ "$1" == *"<!--"* ]]; }
+is_code_for_kotlin_gradle(){
+  # 朴素判定：出现 'fun '、'val '、'var '、'import '、'class '、'dependencies' 等关键词之一
+  [[ "$1" =~ (^|[[:space:]])(fun|val|var|import|class|object|when|if|dependencies|plugins)[[:space:]] ]]
+}
+comment_for_kg(){ sed 's/^/\/\/ /'; }  # 逐行 // 注释，避免 /* */ 中断
+prepare_body_for_file(){
+  # $1=file, $2=body
+  local file="$1"; shift
+  local body="$*"
+  local ext="${file##*.}"
+  if [[ "$ext" == "kt" || "$ext" == "kts" || "$file" == *".gradle" ]]; then
+    if looks_like_json "$body" || looks_like_html "$body"; then
+      log "compat.used: commented-out non-code block for $file"
+      printf '%s\n' "$body" | comment_for_kg
+      return 0
+    fi
+    if ! is_code_for_kotlin_gradle "$body"; then
+      # 保守处理：不明显像代码也注释，避免炸编译
+      log "compat.used: body not detected as kotlin/gradle code → commented for $file"
+      printf '%s\n' "$body" | comment_for_kg
+      return 0
+    fi
+  fi
+  printf '%s' "$body"
+}
+
 # ---------------- counters ----------------
 replaced_text=0 replaced_block=0 replaced_list=0 replaced_if=0 hooks_applied=0
 missing_text=0 missing_block=0 missing_list=0 missing_if=0 missing_hook=0
@@ -180,7 +207,7 @@ exists_list_any() {
 }
 exists_if_any() {
   local name="$1"
-  grep -RIl -E "(<!-- *IF:${name} *-->.*?<!-- *${re_end_if} *-->|// *IF:${name}.*?// *${re_end_if}|/\* *IF:${name} *\*/.*?/\\* *${re_end_if} *\*/)" -z "${APP_DIR}" 2>/devnull | grep -q .
+  grep -RIl -E "(<!-- *IF:${name} *-->.*?<!-- *${re_end_if} *-->|// *IF:${name}.*?// *${re_end_if}|/\* *IF:${name} *\*/.*?/\\* *${re_end_if} *\*/)" -z "${APP_DIR}" 2>/dev/null | grep -q .
 }
 exists_hook_any() {
   local name="$1"
@@ -201,7 +228,7 @@ import sys; print("\n".join(sys.argv[1].split("\x1f")))
 PY
 }
 
-# ---------------- replacers (compat: try variants) ----------------
+# ---------------- replacers (compat + guard) ----------------
 replace_text_in_file() {
   local file="$1" key="$2" val="$3"
   local hits; hits="$(grep -n -F "$key" "$file" || true)"
@@ -225,6 +252,8 @@ replace_text_in_file() {
 
 replace_block_in_file_any() {
   local file="$1" name="$2" body="$3" cnt=0
+  body="$(prepare_body_for_file "$file" "$body")"
+
   # XML
   if perl -0777 -ne 'exit 1 unless /<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*'"$re_end_block"'\s*-->/s' "$file"; then
     perl -0777 -i -pe 's/<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*'"$re_end_block"'\s*-->/<!-- BLOCK:'"$name"' -->\n'"$body"'\n<!-- END_BLOCK -->/s' "$file"; cnt=$((cnt+1))
@@ -290,6 +319,8 @@ replace_if_in_file_any() {
 
 replace_hook_in_file_any() {
   local file="$1" name="$2" body="$3" cnt=0
+  body="$(prepare_body_for_file "$file" "$body")"
+
   # XML
   if perl -0777 -ne 'exit 1 unless /<!--\s*HOOK:'"$name"'\s*-->.*?<!--\s*'"$re_end_hook"'\s*-->/s' "$file"; then
     perl -0777 -i -pe 's/<!--\s*HOOK:'"$name"'\s*-->.*?<!--\s*'"$re_end_hook"'\s*-->/<!-- HOOK:'"$name"' -->\n'"$body"'\n<!-- END_HOOK -->/s' "$file"; cnt=$((cnt+1))
@@ -308,7 +339,7 @@ replace_hook_in_file_any() {
 
 # ---------------- 2) apply all ----------------
 apply_all() {
-  local file k v nm var
+  local file k v nm
 
   # TEXT
   for file in "${WORK_FILES[@]}"; do
@@ -322,7 +353,6 @@ apply_all() {
   for file in "${WORK_FILES[@]}"; do
     for k in "${!BLOCK_KV[@]}"; do
       v="${BLOCK_KV[$k]}"
-      # try name variants
       while IFS= read -r nm; do
         replace_block_in_file_any "$file" "$nm" "$v" && { log "compat.used: BLOCK name '${k}'→'${nm}' on $file"; break; }
       done < <(variants_for "$k")
