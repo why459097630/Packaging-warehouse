@@ -4,6 +4,7 @@
  *   1) blocks/lists/conditions/hooks 的键名统一去掉前缀（BLOCK:/LIST:/IF:/HOOK:）
  *   2) 白名单匹配也做相同的归一化，兼容 registry 里带前缀的写法与 aliases
  *   3) lists 的条目若是对象/数组，统一 JSON.stringify，避免 "[object object]"
+ *   4) 统一占位：把仅包含 HTML 注释（如 <!-- … -->）的片段改为 "// no-op"；剥离 ``` 代码围栏
  *
  * - 输入：02_plan.json（或任意路径）
  * - 输出：02_plan.sanitized.json；若 NDJC_SANITIZE_OVERWRITE=1 则同时覆盖 02_plan.json
@@ -78,6 +79,34 @@ function parseAliasedTarget(s: string): { kind: "block" | "list" | "if" | "hook"
   return { kind, name: m[2] };
 }
 
+/**
+ * 统一代码片段占位：
+ * - 剥离 ```xxx … ``` 代码围栏，仅保留内部内容
+ * - 仅包含 HTML 注释（<!-- ... -->）的片段，统一替换为 "// no-op"
+ * - 统一换行为 '\n' 并 trim
+ * - 返回空串则视为无效（调用方会过滤）
+ */
+function normalizeSnippet(v: any): string {
+  let s = String(v ?? "");
+  // 统一换行
+  s = s.replace(/\r\n?/g, "\n");
+
+  // 剥离 ```kotlin / ```gradle / ``` 等代码围栏
+  const fence = s.match(/^\s*```[a-zA-Z0-9_-]*\s*([\s\S]*?)\s*```\s*$/m);
+  if (fence) {
+    s = fence[1];
+  }
+
+  s = s.trim();
+  if (!s) return "";
+
+  // 若整段仅为 HTML 注释（避免把它写进 .gradle/.kt 等），改为可兼容的 no-op
+  if (/^<!--[\s\S]*?-->$/.test(s)) {
+    return "// no-op";
+  }
+  return s;
+}
+
 async function loadRegistry(): Promise<Registry | null> {
   const root = process.cwd();
   const hint =
@@ -130,12 +159,14 @@ function liftV1Grouped(plan: Plan) {
   }
   if (isObj(plan.blocks)) {
     for (const [k, v] of Object.entries(plan.blocks)) {
-      out.blocks[stripPrefix("block", k)] = String(v ?? "");
+      const val = normalizeSnippet(v);
+      if (val) out.blocks[stripPrefix("block", k)] = val;
     }
   }
   if (isObj(plan.lists)) {
     for (const [k, v] of Object.entries(plan.lists)) {
-      const items = Array.isArray(v) ? v.map(toStringItem).filter(Boolean) : [toStringItem(v)].filter(Boolean);
+      const itemsRaw = Array.isArray(v) ? v.map(toStringItem) : [toStringItem(v)];
+      const items = itemsRaw.map(normalizeSnippet).filter(Boolean);
       if (items.length) out.lists[stripPrefix("list", k)] = items;
     }
   }
@@ -146,7 +177,8 @@ function liftV1Grouped(plan: Plan) {
   }
   if (isObj(plan.hooks)) {
     for (const [k, v] of Object.entries(plan.hooks)) {
-      out.hooks[stripPrefix("hook", k)] = String(v ?? "");
+      const val = normalizeSnippet(v);
+      if (val) out.hooks[stripPrefix("hook", k)] = val;
     }
   }
 
@@ -156,11 +188,15 @@ function liftV1Grouped(plan: Plan) {
     for (const [k, v] of Object.entries(g.text)) out.anchors[k] = String(v ?? "");
   }
   if (isObj(g.block)) {
-    for (const [k, v] of Object.entries(g.block)) out.blocks[stripPrefix("block", k)] = String(v ?? "");
+    for (const [k, v] of Object.entries(g.block)) {
+      const val = normalizeSnippet(v);
+      if (val) out.blocks[stripPrefix("block", k)] = val;
+    }
   }
   if (isObj(g.list)) {
     for (const [k, v] of Object.entries(g.list)) {
-      const items = Array.isArray(v) ? v.map(toStringItem).filter(Boolean) : [toStringItem(v)].filter(Boolean);
+      const itemsRaw = Array.isArray(v) ? v.map(toStringItem) : [toStringItem(v)];
+      const items = itemsRaw.map(normalizeSnippet).filter(Boolean);
       if (items.length) out.lists[stripPrefix("list", k)] = items;
     }
   }
@@ -168,7 +204,10 @@ function liftV1Grouped(plan: Plan) {
     for (const [k, v] of Object.entries(g.if)) out.conditions[stripPrefix("if", k)] = !!v;
   }
   if (isObj(g.hook)) {
-    for (const [k, v] of Object.entries(g.hook)) out.hooks[stripPrefix("hook", k)] = String(v ?? "");
+    for (const [k, v] of Object.entries(g.hook)) {
+      const val = normalizeSnippet(v);
+      if (val) out.hooks[stripPrefix("hook", k)] = val;
+    }
   }
 
   // gradle.applicationId → NDJC:PACKAGE_NAME 兜底
@@ -334,7 +373,7 @@ export async function sanitizePlanFile() {
   console.log(
     `NDJC sanitize: anchors=${counts.anchors} blocks=${counts.blocks} lists=${counts.lists} if=${counts.conditions} hooks=${counts.hooks} dropped=${JSON.stringify(
       dropped
-    )} dropped_danger_text=${afterSafe.droppedDanger || 0}`
+    )} dropped_danger_text=${(afterSafe as any).droppedDanger || 0}`
   );
 
   // 空计划可选择直接失败
@@ -344,7 +383,7 @@ export async function sanitizePlanFile() {
     throw new Error("Sanitized plan is empty (no anchors/blocks/lists/conditions/hooks).");
   }
 
-  return { inPath, outPath, counts, dropped, droppedDanger: afterSafe.droppedDanger || 0 };
+  return { inPath, outPath, counts, dropped, droppedDanger: (afterSafe as any).droppedDanger || 0 };
 }
 
 // 允许作为脚本运行：node dist/lib/ndjc/sanitize/index.js
