@@ -28,7 +28,7 @@ REQ_DIR="requests/${RUN_ID}"
 PLAN_JSON="${PLAN_JSON:-${REQ_DIR}/02_plan.json}"
 PLAN_JSON_SAN="${PLAN_JSON/02_plan.json/02_plan.sanitized.json}"
 APPLY_JSON="${APPLY_JSON:-${REQ_DIR}/03_apply_result.json}"
-SUMMARY_TXT="${REQ_DIR}/actions-summary.txt"
+SUMMARY_TXT="${REQ_DIR}/actions-summary.txt}"
 
 mkdir -p "${REQ_DIR}" build-logs
 LOG_FILE="build-logs/materialize.log"; : > "${LOG_FILE}"
@@ -180,7 +180,7 @@ exists_list_any() {
 }
 exists_if_any() {
   local name="$1"
-  grep -RIl -E "(<!-- *IF:${name} *-->.*?<!-- *${re_end_if} *-->|// *IF:${name}.*?// *${re_end_if}|/\* *IF:${name} *\*/.*?/\\* *${re_end_if} *\*/)" -z "${APP_DIR}" 2>/dev/null | grep -q .
+  grep -RIl -E "(<!-- *IF:${name} *-->.*?<!-- *${re_end_if} *-->|// *IF:${name}.*?// *${re_end_if}|/\* *IF:${name} *\*/.*?/\\* *${re_end_if} *\*/)" -z "${APP_DIR}" 2>/devnull | grep -q .
 }
 exists_hook_any() {
   local name="$1"
