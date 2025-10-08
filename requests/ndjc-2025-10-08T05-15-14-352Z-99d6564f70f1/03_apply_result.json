@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-08T05-15-14-352Z-99d6564f70f1",
+  "status": "pre-ci",
+  "template": "circle-basic",
+  "appTitle": "德州餐厅",
+  "packageName": "com.example.dtxcanteen",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
