@@ -24,7 +24,6 @@ if [ -z "${RUN_ID:-}" ]; then
 fi
 
 REQ_DIR="requests/${RUN_ID}"
-# 关键：PLAN_JSON_SAN 从 PLAN_JSON 推导，保证路径一致
 PLAN_JSON="${PLAN_JSON:-${REQ_DIR}/02_plan.json}"
 PLAN_JSON_SAN="${PLAN_JSON/02_plan.json/02_plan.sanitized.json}"
 APPLY_JSON="${APPLY_JSON:-${REQ_DIR}/03_apply_result.json}"
@@ -39,19 +38,66 @@ log() { printf '%s %s\n' "[$(date +%H:%M:%S)]" "$*" | tee -a "${LOG_FILE}"; }
 ts_utc() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 escape_sed() { printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'; }
 
+# -------- Resolve registry path (fail-fast if missing) --------
+resolve_registry() {
+  local cand=""
+  # Respect explicit env first
+  if [ -n "${REGISTRY_FILE:-}" ]; then
+    cand="$REGISTRY_FILE"
+  elif [ -n "${NDJC_REGISTRY_FILE:-}" ]; then
+    cand="$NDJC_REGISTRY_FILE"
+  fi
+
+  # If not provided or not found, try common locations
+  if [ -z "$cand" ] || [ ! -f "$cand" ]; then
+    local ws="${GITHUB_WORKSPACE:-$PWD}"
+    local gitroot="$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")"
+
+    # Candidates ordered by likelihood
+    for p in \
+      "$ws/niandongjicheng/lib/ndjc/anchors/registry.circle-basic.json" \
+      "$gitroot/niandongjicheng/lib/ndjc/anchors/registry.circle-basic.json" \
+      "$ws/lib/ndjc/anchors/registry.circle-basic.json" \
+      "$gitroot/lib/ndjc/anchors/registry.circle-basic.json"
+    do
+      if [ -f "$p" ]; then cand="$p"; break; fi
+    done
+  fi
+
+  if [ -z "$cand" ] || [ ! -f "$cand" ]; then
+    echo "::error::Registry file not found. Please set REGISTRY_FILE or NDJC_REGISTRY_FILE to niandongjicheng/lib/ndjc/anchors/registry.circle-basic.json"
+    exit 1
+  fi
+  REGISTRY_FILE="$cand"
+  export REGISTRY_FILE
+}
+
+resolve_registry
+
 log "env: PLAN_JSON=${PLAN_JSON}"
 log "env: PLAN_JSON_SAN=${PLAN_JSON_SAN}"
 log "env: APPLY_JSON=${APPLY_JSON}"
 log "env: APP_DIR=${APP_DIR}"
 log "env: RUN_ID=${RUN_ID}"
+log "env: REGISTRY_FILE=${REGISTRY_FILE}"
+log "env: NDJC_SANITIZE_FAIL_ON_EMPTY=${NDJC_SANITIZE_FAIL_ON_EMPTY:-0}"
+
+# Basic presence check for plan
+if [ ! -f "${PLAN_JSON}" ]; then
+  echo "::error::Plan file not found: ${PLAN_JSON}"
+  exit 1
+fi
 
 # ---------------- 0) sanitize plan ----------------
 log "::group::Sanitize plan"
+# Force using resolved registry; allow caller to flip fail-on-empty
 env PLAN_JSON="${PLAN_JSON}" RUN_ID="${RUN_ID}" NDJC_SANITIZE_OVERWRITE=0 \
+  REGISTRY_FILE="${REGISTRY_FILE}" \
+  NDJC_SANITIZE_FAIL_ON_EMPTY="${NDJC_SANITIZE_FAIL_ON_EMPTY:-0}" \
   npx -y tsx lib/ndjc/sanitize/index.ts
 log "::endgroup::"
 
-# 兜底：若按推导的 PLAN_JSON_SAN 不存在，再尝试同名替换（防止非标准文件名）
+# Fallback: if derived name not present, try *.sanitized.json next to PLAN_JSON
 if [ ! -f "${PLAN_JSON_SAN}" ]; then
   alt="${PLAN_JSON%.json}.sanitized.json"
   if [ -f "${alt}" ]; then
@@ -59,8 +105,10 @@ if [ ! -f "${PLAN_JSON_SAN}" ]; then
     log "compat.used: fallback PLAN_JSON_SAN → ${PLAN_JSON_SAN}"
   fi
 fi
-
-[ -f "${PLAN_JSON_SAN}" ] || { echo "::error::Sanitized plan not found: ${PLAN_JSON_SAN}"; exit 1; }
+if [ ! -f "${PLAN_JSON_SAN}" ]; then
+  echo "::error::Sanitized plan not found: ${PLAN_JSON_SAN}"
+  exit 1
+fi
 
 # ---------------- 1) read plan (with aliases) ----------------
 read_plan() {
@@ -128,7 +176,6 @@ re_end_hook='(END_HOOK|ENDHOOK)'
 
 # Item token variants for LIST
 render_items() {
-  # $1=tmpl, $2=items(sep by \n)
   local tmpl="$1"; local items="$2"; local rendered=""
   local token=""
   if grep -q '\${ITEM}' <<<"$tmpl"; then token='\${ITEM}'
@@ -152,30 +199,25 @@ PY
   printf "%s" "$rendered"
 }
 
-# ---------------- 注入前护栏：根据目标文件类型，注释掉疑似 JSON/HTML 的非代码片段 ----------------
+# ---------------- Pre-injection guard for Kotlin/Gradle ----------------
 looks_like_json(){ [[ "$1" =~ ^[[:space:]]*[\{\[] ]]; }
 looks_like_html(){ [[ "$1" == *"<!--"* ]]; }
 is_code_for_kotlin_gradle(){
-  # 朴素判定：出现 'fun '、'val '、'var '、'import '、'class '、'dependencies' 等关键词之一
   [[ "$1" =~ (^|[[:space:]])(fun|val|var|import|class|object|when|if|dependencies|plugins)[[:space:]] ]]
 }
-comment_for_kg(){ sed 's/^/\/\/ /'; }  # 逐行 // 注释，避免 /* */ 中断
+comment_for_kg(){ sed 's/^/\/\/ /'; }
 prepare_body_for_file(){
-  # $1=file, $2=body
   local file="$1"; shift
   local body="$*"
   local ext="${file##*.}"
   if [[ "$ext" == "kt" || "$ext" == "kts" || "$file" == *".gradle" ]]; then
     if looks_like_json "$body" || looks_like_html "$body"; then
       log "compat.used: commented-out non-code block for $file"
-      printf '%s\n' "$body" | comment_for_kg
-      return 0
+      printf '%s\n' "$body" | comment_for_kg; return 0
     fi
     if ! is_code_for_kotlin_gradle "$body"; then
-      # 保守处理：不明显像代码也注释，避免炸编译
       log "compat.used: body not detected as kotlin/gradle code → commented for $file"
-      printf '%s\n' "$body" | comment_for_kg
-      return 0
+      printf '%s\n' "$body" | comment_for_kg; return 0
     fi
   fi
   printf '%s' "$body"
@@ -190,6 +232,7 @@ mapfile -t WORK_FILES < <(find "$APP_DIR" -type f \( -name "*.xml" -o -name "*.k
 
 # ---------------- anchors snapshot (before) ----------------
 ANCHORS_BEFORE="build-logs/anchors.before.txt"
+{ grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/tmp || true; } > /dev/null 2>&1 || true
 { grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/null || true; } > "${ANCHORS_BEFORE}" || true
 before_total=$(wc -l <"${ANCHORS_BEFORE}" || echo 0)
 log "anchors before: ${before_total}"
@@ -253,16 +296,12 @@ replace_text_in_file() {
 replace_block_in_file_any() {
   local file="$1" name="$2" body="$3" cnt=0
   body="$(prepare_body_for_file "$file" "$body")"
-
-  # XML
   if perl -0777 -ne 'exit 1 unless /<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*'"$re_end_block"'\s*-->/s' "$file"; then
     perl -0777 -i -pe 's/<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*'"$re_end_block"'\s*-->/<!-- BLOCK:'"$name"' -->\n'"$body"'\n<!-- END_BLOCK -->/s' "$file"; cnt=$((cnt+1))
   fi
-  # // line
   if perl -0777 -ne 'exit 1 unless /\/\/\s*BLOCK:'"$name"'.*?\/\/\s*'"$re_end_block"'/s' "$file"; then
     perl -0777 -i -pe 's/\/\/\s*BLOCK:'"$name"'.*?\/\/\s*'"$re_end_block"'/\/\/ BLOCK:'"$name"'\n'"$body"'\n\/\/ END_BLOCK/s' "$file"; cnt=$((cnt+1))
   fi
-  # /* */
   if perl -0777 -ne 'exit 1 unless /\/\*\s*BLOCK:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_block"'\s*\*\//s' "$file"; then
     perl -0777 -i -pe 's/\/\*\s*BLOCK:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_block"'\s*\*\//\/\* BLOCK:'"$name"' \*\/\n'"$body"'\n\/\* END_BLOCK \*\//s' "$file"; cnt=$((cnt+1))
   fi
@@ -286,7 +325,6 @@ replace_if_in_file_any() {
   local file="$1" name="$2" cond="$3"
   local truthy=0; case "${cond,,}" in ""|"false"|"0"|"no"|"off") truthy=0 ;; *) truthy=1 ;; esac
   local hit=0
-  # XML
   if perl -0777 -ne 'exit 1 unless /<!--\s*IF:'"$name"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
@@ -295,7 +333,6 @@ replace_if_in_file_any() {
       perl -0777 -i -pe 's/<!--\s*IF:'"$name"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/<!-- IF:'"$name"' -->\n<!-- END_IF -->/s' "$file"
     fi
   fi
-  # // line
   if perl -0777 -ne 'exit 1 unless /\/\/\s*IF:'"$name"'.*?\/\/\s*'"$re_end_if"'/s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
@@ -304,7 +341,6 @@ replace_if_in_file_any() {
       perl -0777 -i -pe 's/\/\/\s*IF:'"$name"'.*?\/\/\s*'"$re_end_if"'/\/\/ IF:'"$name"'\n\/\/ END_IF/s' "$file"
     fi
   fi
-  # /* */
   if perl -0777 -ne 'exit 1 unless /\/\*\s*IF:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
@@ -320,16 +356,12 @@ replace_if_in_file_any() {
 replace_hook_in_file_any() {
   local file="$1" name="$2" body="$3" cnt=0
   body="$(prepare_body_for_file "$file" "$body")"
-
-  # XML
   if perl -0777 -ne 'exit 1 unless /<!--\s*HOOK:'"$name"'\s*-->.*?<!--\s*'"$re_end_hook"'\s*-->/s' "$file"; then
     perl -0777 -i -pe 's/<!--\s*HOOK:'"$name"'\s*-->.*?<!--\s*'"$re_end_hook"'\s*-->/<!-- HOOK:'"$name"' -->\n'"$body"'\n<!-- END_HOOK -->/s' "$file"; cnt=$((cnt+1))
   fi
-  # // line
   if perl -0777 -ne 'exit 1 unless /\/\/\s*HOOK:'"$name"'.*?\/\/\s*'"$re_end_hook"'/s' "$file"; then
     perl -0777 -i -pe 's/\/\/\s*HOOK:'"$name"'.*?\/\/\s*'"$re_end_hook"'/\/\/ HOOK:'"$name"'\n'"$body"'\n\/\/ END_HOOK/s' "$file"; cnt=$((cnt+1))
   fi
-  # /* */
   if perl -0777 -ne 'exit 1 unless /\/\*\s*HOOK:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//s' "$file"; then
     perl -0777 -i -pe 's/\/\*\s*HOOK:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//\/\* HOOK:'"$name"' \*\/\n'"$body"'\n\/\* END_HOOK \*\//s' "$file"; cnt=$((cnt+1))
   fi
@@ -400,7 +432,7 @@ note_missing() { echo -e "$1\t$2\t$3" >> "${MISSING_LIST}"; }
 for k in "${!TEXT_KV[@]}"; do
   exists_text "$k" || { missing_text=$((missing_text+1)); note_missing "TEXT" "$k" "NOT_FOUND"; }
 done
-# BLOCK missing (check any variant)
+# BLOCK missing
 for k in "${!BLOCK_KV[@]}"; do
   found=0; while IFS= read -r nm; do exists_block_any "$nm" && { found=1; break; }; done < <(variants_for "$k")
   [ "$found" -eq 1 ] || { missing_block=$((missing_block+1)); note_missing "BLOCK" "$k" "NOT_FOUND"; }
