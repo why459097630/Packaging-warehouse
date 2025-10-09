@@ -15,29 +15,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1) Checkout current repo (Packaging-warehouse)
       - name: Checkout (Packaging-warehouse)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 2) Resolve inputs and print clickable summary
       - name: Resolve inputs → env & summary
         id: resolve
         shell: bash
         run: |
           set -euo pipefail
+
           RUN_ID="${{ github.event.client_payload.runId || '' }}"
           TEMPLATE_IN="${{ github.event.client_payload.template || '' }}"
           [ -n "$TEMPLATE_IN" ] || TEMPLATE_IN="${TEMPLATE_DEFAULT}"
           if [ -z "$RUN_ID" ]; then
             RUN_ID="ndjc-$(date -u +%Y-%m-%dT%H-%M-%SZ)-${GITHUB_RUN_ID}"
           fi
+
           RUN_BRANCH="ndjc-run/${RUN_ID}"
           TEMPLATE="${TEMPLATE_IN}"
           REQ_DIR="requests/${RUN_ID}"
+
           APP_DIR="app"
+
           PLAN_JSON="${REQ_DIR}/02_plan.json"
           PLAN_JSON_SAN="${REQ_DIR}/02_plan.sanitized.json"
           APPLY_JSON="${REQ_DIR}/03_apply_result.json"
+
           {
             echo "RUN_ID=${RUN_ID}"
             echo "RUN_BRANCH=${RUN_BRANCH}"
@@ -48,17 +55,20 @@ jobs:
             echo "PLAN_JSON_SAN=${PLAN_JSON_SAN}"
             echo "APPLY_JSON=${APPLY_JSON}"
             echo "NDJC_WORKDIR=${GITHUB_WORKSPACE}"
+            echo "REPO_URL=https://github.com/${{ github.repository }}"
           } >> "$GITHUB_ENV"
+
           {
             echo "### NDJC build inputs"
             echo "- **Run ID:** \`${RUN_ID}\`"
-            echo "- **Run branch:** \`${RUN_BRANCH}\`"
+            echo "- **Run branch:** [\`${RUN_BRANCH}\`](${REPO_URL}/tree/${RUN_BRANCH})"
             echo "- **Template:** \`${TEMPLATE}\`"
             echo "- **Workspace app:** \`./app\`"
-            echo "- **Requests dir:** \`${REQ_DIR}\`"
-            echo "- **Expect plan at:** \`${PLAN_JSON}\`"
+            echo "- **Requests dir:** [\`${REQ_DIR}\`](${REPO_URL}/tree/${RUN_BRANCH}/${REQ_DIR})"
+            echo "- **Expect plan at:** [\`${PLAN_JSON}\`](${REPO_URL}/blob/${RUN_BRANCH}/${PLAN_JSON})"
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # 3) Prefer run branch (if exists), otherwise main
       - name: Checkout run branch (if exists)
         id: checkout_run
         shell: bash
@@ -81,7 +91,7 @@ jobs:
           git fetch origin main --depth=50
           git checkout main
 
-      - name: Locate 02_plan.json (prefer run branch)
+      - name: Locate 02_plan.json (prefer run branch, fallback to main)
         id: locate_plan
         shell: bash
         run: |
@@ -89,26 +99,32 @@ jobs:
           if [ -f "${PLAN_JSON}" ]; then
             found_at="$(git rev-parse --abbrev-ref HEAD)"
           else
-            if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then git checkout -q main; fi
+            if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
+              git checkout -q main
+            fi
             if [ -f "${PLAN_JSON}" ]; then
               found_at="main"
             else
-              echo "::error::Plan JSON NOT found at ${PLAN_JSON}"
-              exit 1
+              echo "::error::Plan JSON NOT found at ${PLAN_JSON}"; exit 1
             fi
           fi
           echo "PLAN_BRANCH=${found_at}" >> "$GITHUB_ENV"
+          echo "- **Found 02_plan.json at:** \`${PLAN_JSON}\` *(from ${found_at})*" >> "$GITHUB_STEP_SUMMARY"
 
+      # 4) Prepare workspace app/ from template
       - name: Prepare workspace app (copy template → ./app)
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf app && mkdir -p app
+          rm -rf app
+          mkdir -p app
+
           if [ -d "templates/${TEMPLATE}/app" ]; then
             cp -a "templates/${TEMPLATE}/app/." ./app/
           else
             echo "::error::templates/${TEMPLATE}/app not found"; exit 1
           fi
+
           if [ -f "templates/${TEMPLATE}/settings.gradle.kts" ]; then
             cp -a "templates/${TEMPLATE}/settings.gradle.kts" ./settings.gradle.kts
             rm -f ./settings.gradle || true
@@ -116,7 +132,9 @@ jobs:
             cp -a "templates/${TEMPLATE}/settings.gradle" ./settings.gradle
             rm -f ./settings.gradle.kts || true
           fi
+
           [ -f "templates/${TEMPLATE}/gradle.properties" ] && cp -a "templates/${TEMPLATE}/gradle.properties" ./ || true
+
           echo "NDJC_WORKDIR=${GITHUB_WORKSPACE}" >> "$GITHUB_ENV"
           echo "APP_DIR=app" >> "$GITHUB_ENV"
 
@@ -124,7 +142,7 @@ jobs:
         shell: bash
         run: chmod +x scripts/ndjc-materialize.sh
 
-      # 关键：把前端仓库（含注册表与 orchestrator）拉到工作区
+      # 5) Checkout frontend repo to fetch registry/orchestrator
       - name: Checkout frontend repo (niandongjicheng)
         uses: actions/checkout@v4
         with:
@@ -133,6 +151,7 @@ jobs:
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # 6) Sanitize + Apply plan (pass correct registry path)
       - name: NDJC | Materialize (sanitize + apply plan → workspace app)
         shell: bash
         env:
@@ -143,18 +162,27 @@ jobs:
           REQ_DIR: ${{ env.REQ_DIR }}
           RUN_ID: ${{ env.RUN_ID }}
           NDJC_WORKDIR: ${{ env.NDJC_WORKDIR }}
-          # 向脚本/清洗器显式传入注册表路径（前端仓库内）
           REGISTRY_FILE: ${{ github.workspace }}/niandongjicheng/lib/ndjc/anchors/registry.circle-basic.json
           NDJC_REGISTRY_FILE: ${{ github.workspace }}/niandongjicheng/lib/ndjc/anchors/registry.circle-basic.json
           NDJC_SANITIZE_FAIL_ON_EMPTY: "0"
         run: |
           set -euo pipefail
-          echo "Using registry: $REGISTRY_FILE"
+          echo "PLAN_JSON=${PLAN_JSON}"
+          echo "PLAN_JSON_SAN=${PLAN_JSON_SAN}"
+          echo "APPLY_JSON=${APPLY_JSON}"
+          echo "APP_DIR=${APP_DIR}"
+          echo "NDJC_WORKDIR=${NDJC_WORKDIR}"
+          echo "REGISTRY_FILE=${REGISTRY_FILE}"
           test -f "$REGISTRY_FILE" || { echo "::error::Registry not found at $REGISTRY_FILE"; exit 1; }
-          scripts/ndjc-materialize.sh "${APP_DIR}" "${RUN_ID}"
-          echo "---- 02_plan.json (first 120) ----"; sed -n '1,120p' "${PLAN_JSON}" || true
-          echo "---- 02_plan.sanitized.json (first 120) ----"; sed -n '1,120p' "${PLAN_JSON_SAN}" || true
 
+          scripts/ndjc-materialize.sh "${APP_DIR}" "${RUN_ID}"
+
+          echo "---- 02_plan.json (first 120) ----"
+          sed -n '1,120p' "${PLAN_JSON}" || true
+          echo "---- 02_plan.sanitized.json (first 120) ----"
+          sed -n '1,120p' "${PLAN_JSON_SAN}" || true
+
+      # 7) Show diff produced by materialize
       - name: Show modified files after materialize
         shell: bash
         run: |
@@ -164,6 +192,7 @@ jobs:
           git diff --name-only | sed 's/^/ - /' || true
           git diff --name-only > modified-files.txt || true
 
+      # 8) Optionally commit artifacts into run branch
       - name: Commit & push to run branch (optional)
         if: steps.checkout_run.outputs.has_run_branch == 'true'
         shell: bash
@@ -175,13 +204,15 @@ jobs:
           git commit -m "NDJC materialize ${RUN_ID}" || echo "nothing to commit"
           git push origin "${RUN_BRANCH}" || true
 
+      # 9) Pre-build guards
       - name: Guards (root settings & app module)
         shell: bash
         run: |
           set -euo pipefail
-          [[ -f "./settings.gradle" || -f "./settings.gradle.kts" ]] || { echo "::error::settings.gradle(.kts) missing"; exit 1; }
-          [[ -f "app/build.gradle" || -f "app/build.gradle.kts" ]] || { echo "::error::app/build.gradle(.kts) missing"; exit 1; }
+          [[ -f "./settings.gradle" || -f "./settings.gradle.kts" ]] || { echo "::error::settings.gradle(.kts) not found"; exit 1; }
+          [[ -f "app/build.gradle" || -f "app/build.gradle.kts" ]] || { echo "::error::app/build.gradle(.kts) not found"; exit 1; }
 
+      # 10) Build
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -206,8 +237,10 @@ jobs:
           chmod +x ./gradlew || true
           ./gradlew --no-daemon --stacktrace :app:assembleDebug
 
+      # 11) Upload artifacts (APK + logs) and append clickable links
       - name: Upload APK artifacts
         if: always()
+        id: upload_apk
         uses: actions/upload-artifact@v4
         with:
           name: ndjc-apk-${{ env.RUN_ID }}
@@ -216,6 +249,7 @@ jobs:
 
       - name: NDJC | Upload logs & plan
         if: always()
+        id: upload_diag
         uses: actions/upload-artifact@v4
         with:
           name: ndjc-diag-${{ env.RUN_ID }}
@@ -227,3 +261,16 @@ jobs:
             requests/${{ env.RUN_ID }}/03_apply_result.json
             build-logs/**/*
           if-no-files-found: warn
+
+      - name: Append artifact links to summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Downloads"
+            echo "- **APK artifact:** ${{ steps.upload_apk.outputs.artifact-url || 'See Artifacts panel' }}"
+            echo "- **Logs artifact:** ${{ steps.upload_diag.outputs.artifact-url || 'See Artifacts panel' }}"
+            echo ""
+            echo "> 也可直接浏览仓库内日志（若已提交到运行分支）："
+            echo "> [${{ env.REQ_DIR }}](${{ env.REPO_URL }}/tree/${{ env.RUN_BRANCH }}/${{ env.REQ_DIR }})"
+          } >> "$GITHUB_STEP_SUMMARY"
