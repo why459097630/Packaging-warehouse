@@ -1,0 +1,45 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.mississippi.restaurant",
+    "NDJC:APP_LABEL": "密西西比餐厅",
+    "NDJC:HOME_TITLE": "菜品介绍",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片"
+  },
+  "blocks": {
+    "HOME_HEADER": "<!-- xml or kotlin snippet -->",
+    "MENU_ITEM": "<!-- xml or kotlin snippet -->"
+  },
+  "lists": {
+    "ROUTES": [
+      "home",
+      "uploadPhoto",
+      "editDescription",
+      "setPrice",
+      "commentAndLike"
+    ]
+  },
+  "conditions": {
+    "PERMISSION.UPLOAD_PHOTO": true,
+    "PERMISSION.EDIT_DESCRIPTION": true,
+    "PERMISSION.SET_PRICE": true,
+    "PERMISSION.COMMENT_AND_LIKE": true
+  },
+  "hooks": {
+    "BEFORE_BUILD": "// gradle snippet"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.mississippi.restaurant",
+    "resConfigs": [],
+    "permissions": []
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "密西西比餐厅",
+    "packageId": "com.mississippi.restaurant",
+    "mode": "B"
+  },
+  "droppedDanger": 0
+}
