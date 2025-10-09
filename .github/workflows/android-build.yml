@@ -21,7 +21,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 2) Resolve inputs and print clickable summary
+      # 2) Resolve inputs and print clickable summary (FIX: use local REPO_URL)
       - name: Resolve inputs → env & summary
         id: resolve
         shell: bash
@@ -38,12 +38,14 @@ jobs:
           RUN_BRANCH="ndjc-run/${RUN_ID}"
           TEMPLATE="${TEMPLATE_IN}"
           REQ_DIR="requests/${RUN_ID}"
-
           APP_DIR="app"
 
           PLAN_JSON="${REQ_DIR}/02_plan.json"
           PLAN_JSON_SAN="${REQ_DIR}/02_plan.sanitized.json"
           APPLY_JSON="${REQ_DIR}/03_apply_result.json"
+
+          # Local variable works in THIS step; also export to $GITHUB_ENV for later steps
+          REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
 
           {
             echo "RUN_ID=${RUN_ID}"
@@ -55,7 +57,7 @@ jobs:
             echo "PLAN_JSON_SAN=${PLAN_JSON_SAN}"
             echo "APPLY_JSON=${APPLY_JSON}"
             echo "NDJC_WORKDIR=${GITHUB_WORKSPACE}"
-            echo "REPO_URL=https://github.com/${{ github.repository }}"
+            echo "REPO_URL=${REPO_URL}"
           } >> "$GITHUB_ENV"
 
           {
