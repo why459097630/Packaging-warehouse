@@ -1,0 +1,89 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.mississippi.restaurant",
+    "NDJC:APP_LABEL": "纽约客库",
+    "NDJC:HOME_TITLE": "纽约客库",
+    "NDJC:PRIMARY_BUTTON_TEXT": "输入图片"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "<!-- xml or kotlin snippet -->",
+    "BLOCK:MENU_ITEM": "<!-- xml or kotlin snippet -->",
+    "BLOCK:COMMENT_SECTION": "<!-- xml or kotlin snippet -->"
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home",
+      "menu",
+      "comment"
+    ]
+  },
+  "conditions": {
+    "IF:PERMISSION.UPLOAD_PHOTO": true,
+    "IF:PERMISSION.EDIT_DESCRIPTION": true,
+    "IF:PERMISSION.SET_PRICE": true,
+    "IF:PERMISSION.COMMENT": true
+  },
+  "hooks": {
+    "HOOK:BEFORE_BUILD": "// gradle snippet"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.ndjc.mississippi.restaurant",
+    "resConfigs": [
+      "en",
+      "zh-rCN"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "纽约客库",
+    "packageId": "com.ndjc.mississippi.restaurant",
+    "mode": "B"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.mississippi.restaurant",
+      "NDJC:APP_LABEL": "纽约客库",
+      "NDJC:HOME_TITLE": "纽约客库",
+      "NDJC:PRIMARY_BUTTON_TEXT": "输入图片"
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "<!-- xml or kotlin snippet -->",
+      "BLOCK:MENU_ITEM": "<!-- xml or kotlin snippet -->",
+      "BLOCK:COMMENT_SECTION": "<!-- xml or kotlin snippet -->"
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "menu",
+        "comment"
+      ]
+    },
+    "if": {
+      "IF:PERMISSION.UPLOAD_PHOTO": true,
+      "IF:PERMISSION.EDIT_DESCRIPTION": true,
+      "IF:PERMISSION.SET_PRICE": true,
+      "IF:PERMISSION.COMMENT": true
+    },
+    "hook": {
+      "HOOK:BEFORE_BUILD": "// gradle snippet"
+    },
+    "gradle": {
+      "applicationId": "com.ndjc.mississippi.restaurant",
+      "resConfigs": [
+        "en",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    }
+  }
+}
