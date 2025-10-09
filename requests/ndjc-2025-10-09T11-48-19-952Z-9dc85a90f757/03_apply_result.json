@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-09T11-48-19-952Z-9dc85a90f757",
+  "status": "pre-ci",
+  "template": "circle-basic",
+  "appTitle": "纽约客库",
+  "packageName": "com.ndjc.mississippi.restaurant",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
