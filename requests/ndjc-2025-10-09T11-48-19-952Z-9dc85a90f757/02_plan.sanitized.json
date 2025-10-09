@@ -1,0 +1,50 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.mississippi.restaurant",
+    "NDJC:APP_LABEL": "纽约客库",
+    "NDJC:HOME_TITLE": "纽约客库",
+    "NDJC:PRIMARY_BUTTON_TEXT": "输入图片"
+  },
+  "blocks": {
+    "HOME_HEADER": "<!-- xml or kotlin snippet -->",
+    "MENU_ITEM": "<!-- xml or kotlin snippet -->",
+    "COMMENT_SECTION": "<!-- xml or kotlin snippet -->"
+  },
+  "lists": {
+    "ROUTES": [
+      "home",
+      "menu",
+      "comment"
+    ]
+  },
+  "conditions": {
+    "PERMISSION.UPLOAD_PHOTO": true,
+    "PERMISSION.EDIT_DESCRIPTION": true,
+    "PERMISSION.SET_PRICE": true,
+    "PERMISSION.COMMENT": true
+  },
+  "hooks": {
+    "BEFORE_BUILD": "// gradle snippet"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.ndjc.mississippi.restaurant",
+    "resConfigs": [
+      "en",
+      "zh-rCN"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_FINE_LOCATION"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "纽约客库",
+    "packageId": "com.ndjc.mississippi.restaurant",
+    "mode": "B"
+  },
+  "droppedDanger": 0
+}
