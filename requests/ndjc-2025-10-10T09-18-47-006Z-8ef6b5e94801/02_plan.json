@@ -1,0 +1,186 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "NDJC App",
+    "NDJC:HOME_TITLE": "德州餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "NDJCTheme",
+    "NDJC:RUN_ID": "",
+    "NDJC:LOG_LEVEL": "DEBUG",
+    "NDJC:DEBUG_LOG_ENABLED": "true"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "",
+    "BLOCK:HOME_BODY": "",
+    "BLOCK:HOME_ACTIONS": "",
+    "BLOCK:THEME_COLORS": "",
+    "BLOCK:TYPOCASE_OVERRIDES": "",
+    "BLOCK:STRINGS_EXTRA": "",
+    "BLOCK:ROUTE_HOME": "",
+    "BLOCK:ROUTE_DETAIL": "",
+    "BLOCK:ROUTE_POST": "",
+    "BLOCK:NAV_TRANSITIONS": "",
+    "BLOCK:SPLASH_CONTENT": "",
+    "BLOCK:EMPTY_STATE": "",
+    "BLOCK:ERROR_STATE": "",
+    "BLOCK:DEPENDENCY_SNIPPETS": "",
+    "BLOCK:DEBUG_PANEL": "",
+    "BLOCK:BUILD_SUMMARY": "",
+    "BLOCK:HEADER_AD_SLOT": "",
+    "BLOCK:FEED_ITEM_BADGES": "",
+    "BLOCK:USER_PROFILE_CARD": "",
+    "BLOCK:SPONSORED_CARD": "",
+    "BLOCK:PROFILE_SECTION": "",
+    "BLOCK:SETTINGS_SECTION": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home",
+      "detail",
+      "post"
+    ],
+    "LIST:POST_FIELDS": [
+      "照片",
+      "文字介绍",
+      "价格"
+    ],
+    "LIST:COMMENT_FIELDS": [
+      "评论",
+      "点赞"
+    ]
+  },
+  "conditions": {
+    "IF:PERMISSION.CAMERA": true,
+    "IF:PERMISSION.MEDIA": true,
+    "IF:PERMISSION.NOTIFICATION": false,
+    "IF:PERMISSION.LOCATION": false,
+    "IF:PERMISSION.CONTACTS": false,
+    "IF:PERMISSION.SCHEDULE_EXACT_ALARM": false,
+    "IF:PERMISSION.CLIPBOARD": false,
+    "IF:NETWORK.CLEAR_TEXT": false,
+    "IF:FILE_PROVIDER": true,
+    "IF:INTENT.SHARE": true
+  },
+  "hooks": {
+    "HOOK:BEFORE_BUILD": "",
+    "HOOK:AFTER_BUILD": "",
+    "HOOK:PRE_INJECT": "",
+    "HOOK:POST_INJECT": "",
+    "HOOK:PRE_COMMIT": "",
+    "HOOK:AFTER_INSTALL": ""
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.READ_EXTERNAL_STORAGE"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "NDJC App",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "NDJC App",
+      "NDJC:HOME_TITLE": "德州餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "NDJCTheme",
+      "NDJC:RUN_ID": "",
+      "NDJC:LOG_LEVEL": "DEBUG",
+      "NDJC:DEBUG_LOG_ENABLED": "true"
+    },
+    "block": {
+      "HOME_HEADER": "",
+      "HOME_BODY": "",
+      "HOME_ACTIONS": "",
+      "THEME_COLORS": "",
+      "TYPOCASE_OVERRIDES": "",
+      "STRINGS_EXTRA": "",
+      "ROUTE_HOME": "",
+      "ROUTE_DETAIL": "",
+      "ROUTE_POST": "",
+      "NAV_TRANSITIONS": "",
+      "SPLASH_CONTENT": "",
+      "EMPTY_STATE": "",
+      "ERROR_STATE": "",
+      "DEPENDENCY_SNIPPETS": "",
+      "DEBUG_PANEL": "",
+      "BUILD_SUMMARY": "",
+      "HEADER_AD_SLOT": "",
+      "FEED_ITEM_BADGES": "",
+      "USER_PROFILE_CARD": "",
+      "SPONSORED_CARD": "",
+      "PROFILE_SECTION": "",
+      "SETTINGS_SECTION": ""
+    },
+    "list": {
+      "PROGUARD_EXTRA": [],
+      "PACKAGING_RULES": [],
+      "ROUTES": [
+        "home",
+        "detail",
+        "post"
+      ],
+      "POST_FIELDS": [
+        "照片",
+        "文字介绍",
+        "价格"
+      ],
+      "COMMENT_FIELDS": [
+        "评论",
+        "点赞"
+      ],
+      "ABI_SPLITS": [],
+      "PLURAL_STRINGS": [],
+      "COMPONENT_STYLES": [],
+      "REMOTE_FLAGS": [],
+      "DEEPLINK_PATTERNS": []
+    },
+    "if": {
+      "PERMISSION.CAMERA": true,
+      "PERMISSION.MEDIA": true,
+      "PERMISSION.NOTIFICATION": false,
+      "PERMISSION.LOCATION": false,
+      "PERMISSION.CONTACTS": false,
+      "PERMISSION.SCHEDULE_EXACT_ALARM": false,
+      "PERMISSION.CLIPBOARD": false,
+      "NETWORK.CLEAR_TEXT": false,
+      "FILE_PROVIDER": true,
+      "INTENT.SHARE": true
+    },
+    "hook": {
+      "BEFORE_BUILD": "",
+      "AFTER_BUILD": "",
+      "PRE_INJECT": "",
+      "POST_INJECT": "",
+      "PRE_COMMIT": "",
+      "AFTER_INSTALL": ""
+    },
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ]
+    }
+  }
+}
