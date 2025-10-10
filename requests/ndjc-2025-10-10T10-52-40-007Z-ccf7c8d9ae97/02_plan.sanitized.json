@@ -1,0 +1,106 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "NDJC App",
+    "NDJC:HOME_TITLE": "德州餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "NDJCTheme",
+    "NDJC:RUN_ID": "",
+    "NDJC:LOG_LEVEL": "DEBUG",
+    "NDJC:DEBUG_LOG_ENABLED": "true"
+  },
+  "blocks": {
+    "HOME_HEADER": "",
+    "HOME_BODY": "",
+    "HOME_ACTIONS": "",
+    "THEME_COLORS": "",
+    "TYPOCASE_OVERRIDES": "",
+    "STRINGS_EXTRA": "",
+    "ROUTE_HOME": "",
+    "ROUTE_DETAIL": "",
+    "ROUTE_POST": "",
+    "NAV_TRANSITIONS": "",
+    "SPLASH_CONTENT": "",
+    "EMPTY_STATE": "",
+    "ERROR_STATE": "",
+    "DEPENDENCY_SNIPPETS": "",
+    "DEBUG_PANEL": "",
+    "BUILD_SUMMARY": "",
+    "HEADER_AD_SLOT": "",
+    "FEED_ITEM_BADGES": "",
+    "USER_PROFILE_CARD": "",
+    "SPONSORED_CARD": "",
+    "PROFILE_SECTION": "",
+    "SETTINGS_SECTION": ""
+  },
+  "lists": {
+    "ROUTES": [
+      "home",
+      "detail",
+      "post"
+    ],
+    "POST_FIELDS": [
+      "照片",
+      "文字介绍",
+      "价格"
+    ],
+    "COMMENT_FIELDS": [
+      "评论",
+      "点赞"
+    ]
+  },
+  "conditions": {
+    "PERMISSION.CAMERA": true,
+    "PERMISSION.MEDIA": true,
+    "PERMISSION.NOTIFICATION": false,
+    "PERMISSION.LOCATION": false,
+    "PERMISSION.CONTACTS": false,
+    "PERMISSION.SCHEDULE_EXACT_ALARM": false,
+    "PERMISSION.CLIPBOARD": false,
+    "NETWORK.CLEAR_TEXT": false,
+    "FILE_PROVIDER": true,
+    "INTENT.SHARE": true
+  },
+  "hooks": {
+    "BEFORE_BUILD": "",
+    "AFTER_BUILD": "",
+    "PRE_INJECT": "",
+    "POST_INJECT": "",
+    "PRE_COMMIT": "",
+    "AFTER_INSTALL": ""
+  },
+  "resources": {},
+  "companions": [
+    {
+      "path": "app/src/main/res/layout/activity_main.xml",
+      "content": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".MainActivity\">\n    <TextView\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"Hello World!\"/>\n</LinearLayout>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "app/src/main/java/com/ndjc/demo/core/MainActivity.java",
+      "content": "public class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n    }\n}",
+      "encoding": "utf8"
+    }
+  ],
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.READ_EXTERNAL_STORAGE"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "NDJC App",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "droppedDanger": 0
+}
