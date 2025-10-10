@@ -1,0 +1,186 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "NDJC App",
+    "NDJC:HOME_TITLE": "Home",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start",
+    "NDJC:THEME_NAME": "NDJCTheme",
+    "NDJC:RUN_ID": "TXRestaurant",
+    "NDJC:LOG_LEVEL": "DEBUG",
+    "NDJC:DEBUG_LOG_ENABLED": "true"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "<!-- HOME_HEADER -->",
+    "BLOCK:HOME_BODY": "<!-- HOME_BODY -->",
+    "BLOCK:HOME_ACTIONS": "<!-- HOME_ACTIONS -->",
+    "BLOCK:THEME_COLORS": "{\"primary\":\"#2196F3\",\"secondary\":\"#009688\"}",
+    "BLOCK:TYPOCASE_OVERRIDES": "{\"text\":\"uppercase\",\"button\":\"uppercase\"}",
+    "BLOCK:STRINGS_EXTRA": "{\"title\":\"Restaurant Introduction\",\"description\":\"Welcome to our restaurant\"}",
+    "BLOCK:ROUTE_HOME": "home",
+    "BLOCK:ROUTE_DETAIL": "detail",
+    "BLOCK:ROUTE_POST": "post",
+    "BLOCK:NAV_TRANSITIONS": "{\"enter\":\"slide_in_right\",\"exit\":\"slide_out_left\"}",
+    "BLOCK:SPLASH_CONTENT": "<!-- SPLASH_CONTENT -->",
+    "BLOCK:EMPTY_STATE": "<!-- EMPTY_STATE -->",
+    "BLOCK:ERROR_STATE": "<!-- ERROR_STATE -->",
+    "BLOCK:DEPENDENCY_SNIPPETS": "<!-- DEPENDENCY_SNIPPETS -->",
+    "BLOCK:DEBUG_PANEL": "<!-- DEBUG_PANEL -->",
+    "BLOCK:BUILD_SUMMARY": "<!-- BUILD_SUMMARY -->",
+    "BLOCK:HEADER_AD_SLOT": "<!-- HEADER_AD_SLOT -->",
+    "BLOCK:FEED_ITEM_BADGES": "{\"badge1\":\"New\",\"badge2\":\"Popular\"}",
+    "BLOCK:USER_PROFILE_CARD": "<!-- USER_PROFILE_CARD -->",
+    "BLOCK:SPONSORED_CARD": "<!-- SPONSORED_CARD -->",
+    "BLOCK:PROFILE_SECTION": "<!-- PROFILE_SECTION -->",
+    "BLOCK:SETTINGS_SECTION": "<!-- SETTINGS_SECTION -->"
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home",
+      "detail",
+      "post"
+    ],
+    "LIST:POST_FIELDS": [
+      "title",
+      "description",
+      "price"
+    ],
+    "LIST:COMMENT_FIELDS": [
+      "rating",
+      "comment"
+    ]
+  },
+  "conditions": {
+    "IF:PERMISSION.CAMERA": true,
+    "IF:PERMISSION.MEDIA": true,
+    "IF:PERMISSION.NOTIFICATION": false,
+    "IF:PERMISSION.LOCATION": false,
+    "IF:PERMISSION.CONTACTS": false,
+    "IF:PERMISSION.SCHEDULE_EXACT_ALARM": false,
+    "IF:PERMISSION.CLIPBOARD": false,
+    "IF:NETWORK.CLEAR_TEXT": false,
+    "IF:FILE_PROVIDER": true,
+    "IF:INTENT.SHARE": true
+  },
+  "hooks": {
+    "HOOK:BEFORE_BUILD": "clean project",
+    "HOOK:AFTER_BUILD": "generate APK",
+    "HOOK:PRE_INJECT": "inject dependencies",
+    "HOOK:POST_INJECT": "post-inject tasks",
+    "HOOK:PRE_COMMIT": "lint code",
+    "HOOK:AFTER_INSTALL": "install app"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.READ_EXTERNAL_STORAGE"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "NDJC App",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "NDJC App",
+      "NDJC:HOME_TITLE": "Home",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Start",
+      "NDJC:THEME_NAME": "NDJCTheme",
+      "NDJC:RUN_ID": "TXRestaurant",
+      "NDJC:LOG_LEVEL": "DEBUG",
+      "NDJC:DEBUG_LOG_ENABLED": "true"
+    },
+    "block": {
+      "HOME_HEADER": "<!-- HOME_HEADER -->",
+      "HOME_BODY": "<!-- HOME_BODY -->",
+      "HOME_ACTIONS": "<!-- HOME_ACTIONS -->",
+      "THEME_COLORS": "{\"primary\":\"#2196F3\",\"secondary\":\"#009688\"}",
+      "TYPOCASE_OVERRIDES": "{\"text\":\"uppercase\",\"button\":\"uppercase\"}",
+      "STRINGS_EXTRA": "{\"title\":\"Restaurant Introduction\",\"description\":\"Welcome to our restaurant\"}",
+      "ROUTE_HOME": "home",
+      "ROUTE_DETAIL": "detail",
+      "ROUTE_POST": "post",
+      "NAV_TRANSITIONS": "{\"enter\":\"slide_in_right\",\"exit\":\"slide_out_left\"}",
+      "SPLASH_CONTENT": "<!-- SPLASH_CONTENT -->",
+      "EMPTY_STATE": "<!-- EMPTY_STATE -->",
+      "ERROR_STATE": "<!-- ERROR_STATE -->",
+      "DEPENDENCY_SNIPPETS": "<!-- DEPENDENCY_SNIPPETS -->",
+      "DEBUG_PANEL": "<!-- DEBUG_PANEL -->",
+      "BUILD_SUMMARY": "<!-- BUILD_SUMMARY -->",
+      "HEADER_AD_SLOT": "<!-- HEADER_AD_SLOT -->",
+      "FEED_ITEM_BADGES": "{\"badge1\":\"New\",\"badge2\":\"Popular\"}",
+      "USER_PROFILE_CARD": "<!-- USER_PROFILE_CARD -->",
+      "SPONSORED_CARD": "<!-- SPONSORED_CARD -->",
+      "PROFILE_SECTION": "<!-- PROFILE_SECTION -->",
+      "SETTINGS_SECTION": "<!-- SETTINGS_SECTION -->"
+    },
+    "list": {
+      "PROGUARD_EXTRA": [],
+      "PACKAGING_RULES": [],
+      "ROUTES": [
+        "home",
+        "detail",
+        "post"
+      ],
+      "POST_FIELDS": [
+        "title",
+        "description",
+        "price"
+      ],
+      "COMMENT_FIELDS": [
+        "rating",
+        "comment"
+      ],
+      "ABI_SPLITS": [],
+      "PLURAL_STRINGS": [],
+      "COMPONENT_STYLES": [],
+      "REMOTE_FLAGS": [],
+      "DEEPLINK_PATTERNS": []
+    },
+    "if": {
+      "PERMISSION.CAMERA": true,
+      "PERMISSION.MEDIA": true,
+      "PERMISSION.NOTIFICATION": false,
+      "PERMISSION.LOCATION": false,
+      "PERMISSION.CONTACTS": false,
+      "PERMISSION.SCHEDULE_EXACT_ALARM": false,
+      "PERMISSION.CLIPBOARD": false,
+      "NETWORK.CLEAR_TEXT": false,
+      "FILE_PROVIDER": true,
+      "INTENT.SHARE": true
+    },
+    "hook": {
+      "BEFORE_BUILD": "clean project",
+      "AFTER_BUILD": "generate APK",
+      "PRE_INJECT": "inject dependencies",
+      "POST_INJECT": "post-inject tasks",
+      "PRE_COMMIT": "lint code",
+      "AFTER_INSTALL": "install app"
+    },
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ]
+    }
+  }
+}
