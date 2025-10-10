@@ -1,0 +1,13 @@
+<resources>
+    <style name="NDJCTheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- 夜间策略：由 NDJC:DARK_MODE 影响（Auto/On/Off，可由生成器调整AppCompatDelegate） -->
+
+        <!-- BLOCK:THEME_COLORS -->
+{"primary":"#2196F3","secondary":"#009688"}
+<!-- END_BLOCK -->
+
+        <!-- BLOCK:TYPOSCALE_OVERRIDES -->
+        <!-- 可注入 fontFamily（NDJC:FONT_FAMILY_PRIMARY/SECONDARY）与 Display/Body 尺寸覆写 -->
+        <!-- END_BLOCK -->
+    </style>
+</resources>
