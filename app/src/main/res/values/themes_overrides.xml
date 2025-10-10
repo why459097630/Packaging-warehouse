@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- BLOCK:THEME_COLORS -->
+{"primary":"#2196F3","secondary":"#009688"}
+<!-- END_BLOCK -->
+
+    <!-- BLOCK:TYPOCASE_OVERRIDES -->
+{"text":"uppercase","button":"uppercase"}
+<!-- END_BLOCK -->
+
+</resources>
