@@ -1,10 +1,13 @@
 {
-  "runId": "ndjc-2025-10-11T04-43-56-410Z-a8824b6feb28",
-  "status": "pre-ci",
-  "template": "circle-basic",
-  "appTitle": "NDJC App",
-  "packageName": "com.ndjc.demo.core",
-  "note": "Apply result will be finalized in CI pipeline.",
-  "changes": [],
-  "warnings": []
+  "replaced_total": 62,
+  "replaced_text": 17,
+  "replaced_block": 31,
+  "replaced_list": 4,
+  "replaced_if": 10,
+  "hooks_applied": 0,
+  "missing_text": 22,
+  "missing_block": 14,
+  "missing_list": 2,
+  "missing_if": 11,
+  "generated_at": "2025-10-11T04:45:01Z"
 }
