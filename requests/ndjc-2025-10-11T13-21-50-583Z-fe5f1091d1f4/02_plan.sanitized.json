@@ -1,0 +1,159 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+    "NDJC:APP_LABEL": "NDJC App",
+    "NDJC:HOME_TITLE": "Home",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start",
+    "NDJC:THEME_NAME": "NDJCTheme",
+    "NDJC:RUN_ID": "",
+    "NDJC:LOG_LEVEL": "INFO",
+    "NDJC:DEBUG_LOG_ENABLED": "true",
+    "NDJC:DARK_MODE": "system",
+    "NDJC:FONT_FAMILY_PRIMARY": "sans-serif",
+    "NDJC:FONT_FAMILY_SECONDARY": "sans-serif-medium",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_DURATION_SHORT_MS": "120",
+    "NDJC:ANIM_DURATION_MEDIUM_MS": "240",
+    "NDJC:ANIM_DURATION_LONG_MS": "360",
+    "NDJC:LAYOUT_DENSITY": "normal",
+    "NDJC:DATA_SOURCE": "remote",
+    "NDJC:PAGING_SIZE": "20",
+    "NDJC:OFFLINE_POLICY": "cache-first",
+    "NDJC:METRICS_ENABLED": "true",
+    "NDJC:CRASHLYTICS_ENABLED": "true",
+    "NDJC:EXPERIMENT_BUCKET": "control"
+  },
+  "blocks": {
+    "HOME_HEADER": "",
+    "HOME_BODY": "",
+    "HOME_ACTIONS": "",
+    "THEME_COLORS": "",
+    "TYPOCASE_OVERRIDES": "",
+    "STRINGS_EXTRA": "",
+    "ROUTE_HOME": "",
+    "ROUTE_DETAIL": "",
+    "ROUTE_POST": "",
+    "NAV_TRANSITIONS": "",
+    "SPLASH_CONTENT": "",
+    "EMPTY_STATE": "",
+    "ERROR_STATE": "",
+    "DEPENDENCY_SNIPPETS": "",
+    "DEBUG_PANEL": "",
+    "BUILD_SUMMARY": "",
+    "HEADER_AD_SLOT": "",
+    "FEED_ITEM_BADGES": "",
+    "USER_PROFILE_CARD": "",
+    "SPONSORED_CARD": "",
+    "PROFILE_SECTION": "",
+    "SETTINGS_SECTION": "",
+    "SEARCH_BAR": "",
+    "APP_BAR": "",
+    "FOOTER": "",
+    "ONBOARDING": "",
+    "LOGIN_FORM": "",
+    "REGISTER_FORM": "",
+    "TERMS_SECTION": "",
+    "PRIVACY_SECTION": "",
+    "ABOUT_SECTION": "",
+    "NOTIFICATIONS_PANEL": "",
+    "ANALYTICS_INIT": "",
+    "CRASHLYTICS_INIT": "",
+    "NETWORK_CONFIG": "",
+    "THEME_OVERRIDES": ""
+  },
+  "lists": {
+    "ROUTES": [
+      "home",
+      "detail",
+      "post"
+    ],
+    "POST_FIELDS": [
+      "title",
+      "description",
+      "price"
+    ],
+    "COMMENT_FIELDS": [
+      "content",
+      "rating"
+    ],
+    "DEEPLINK_PATTERNS": [
+      "https://example.com/*"
+    ],
+    "SUPPORTED_LOCALES": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "MENU_ITEMS": [
+      "{\"title\":\"Home\",\"icon\":\"home\"}",
+      "{\"title\":\"Detail\",\"icon\":\"detail\"}",
+      "{\"title\":\"Post\",\"icon\":\"post\"}"
+    ],
+    "FEATURE_FLAGS": [
+      "upload_photo",
+      "edit_description",
+      "set_price",
+      "comment_like"
+    ]
+  },
+  "conditions": {
+    "PERMISSION.CAMERA": true,
+    "PERMISSION.MEDIA": true,
+    "PERMISSION.NOTIFICATION": true,
+    "PERMISSION.LOCATION": false,
+    "PERMISSION.CONTACTS": false,
+    "PERMISSION.SCHEDULE_EXACT_ALARM": false,
+    "PERMISSION.CLIPBOARD": false,
+    "PERMISSION.BLUETOOTH": false,
+    "PERMISSION.NEARBY_WIFI": false,
+    "NETWORK.CLEAR_TEXT": false,
+    "FILE_PROVIDER": true,
+    "INTENT.SHARE": true,
+    "FEATURE.LOGIN": true,
+    "FEATURE.COMMENTS": true,
+    "ANALYTICS.ENABLED": true,
+    "ADS.ENABLED": false
+  },
+  "hooks": {
+    "BEFORE_BUILD": "",
+    "AFTER_BUILD": "",
+    "PRE_INJECT": "",
+    "POST_INJECT": "",
+    "PRE_COMMIT": "",
+    "AFTER_INSTALL": "",
+    "PRE_GRADLE_SYNC": "",
+    "POST_GRADLE_SYNC": ""
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.ndjc.demo.core",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.MEDIA",
+      "android.permission.NOTIFICATION",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.READ_CONTACTS",
+      "android.permission.SCHEDULE_EXACT_ALARM",
+      "android.permission.CLIPBOARD",
+      "android.permission.BLUETOOTH",
+      "android.permission.NEARBY_WIFI",
+      "android.permission.INTERNET",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.READ_EXTERNAL_STORAGE"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "NDJC App",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B"
+  },
+  "droppedDanger": 0
+}
