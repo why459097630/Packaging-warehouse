@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- LIST:REMOTE_FLAGS -->
+    <!--
+    <string-array name="remote_flags">
+        <item>${ITEM}</item>
+    </string-array>
+    -->
+    <!-- END_LIST -->
+
+    <!-- （可选）LIST:COMPONENT_STYLES，如需集中样式名 -->
+    <!--
+    <string-array name="component_styles">
+        <item>${ITEM}</item>
+    </string-array>
+    -->
+    <!-- END_LIST -->
+
+</resources>
