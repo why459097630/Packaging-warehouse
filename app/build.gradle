@@ -1,0 +1,163 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    // HOOK:BEFORE_BUILD
+    // END_HOOK
+
+    // BLOCK:DEPENDENCY_SNIPPETS
+    // END_BLOCK
+}
+
+def kotlinAlignVersion = "1.9.24" // 与 Compose Compiler 1.5.14 匹配
+
+// --- NDJC tokens fallback resolver（保证锚点未命中时也能正常构建） ---
+def ndjcToken = { String token -> token != null && token.startsWith("NDJC:") }  // 是否仍是占位符
+
+// String: RUN_ID
+def _RUN_ID_TOKEN = "NDJC:RUN_ID"
+def _RUN_ID = ndjcToken(_RUN_ID_TOKEN)
+        ? (findProperty("NDJC_RUN_ID") ?: System.getenv("NDJC_RUN_ID") ?: "local-run")
+        : _RUN_ID_TOKEN
+
+// String: LOG_LEVEL
+def _LOG_LEVEL_TOKEN = "NDJC:LOG_LEVEL"
+def _LOG_LEVEL = ndjcToken(_LOG_LEVEL_TOKEN)
+        ? (findProperty("NDJC_LOG_LEVEL") ?: System.getenv("NDJC_LOG_LEVEL") ?: "INFO")
+        : _LOG_LEVEL_TOKEN
+
+// Boolean: DEBUG_LOG_ENABLED（支持 1/true/yes/y）
+def _DEBUG_TOKEN = "NDJC:DEBUG_LOG_ENABLED"
+def _DEBUG_BOOL = {
+    def v = (findProperty("NDJC_DEBUG_LOG_ENABLED") ?: System.getenv("NDJC_DEBUG_LOG_ENABLED") ?: "false")
+            .toString().trim().toLowerCase()
+    return (v in ["1","true","yes","y"])
+}
+def _DEBUG_ENABLED = ndjcToken(_DEBUG_TOKEN) ? _DEBUG_BOOL() : _DEBUG_TOKEN
+
+// Package: PACKAGE_NAME（锚点未注入时的兜底，避免 Manifest 合并报错）
+def _PKG_TOKEN = "com.txrestaurant.menu"
+def _PKG = ndjcToken(_PKG_TOKEN) ? "com.ndjc.app" : _PKG_TOKEN
+// --- end resolver ---
+
+android {
+    // 固定 R 的归属，避免因包名变动导致 R 对不上
+    namespace "com.ndjc.app"
+
+    compileSdk 34
+
+    defaultConfig {
+        // 仅 applicationId 走锚点；未命中时回退到 com.ndjc.app
+        applicationId _PKG
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+
+        // 使用兜底后的值；字符串要带引号，布尔不带引号
+        buildConfigField "String",  "NDJC_RUN_ID",     "\"${_RUN_ID}\""
+        buildConfigField "String",  "NDJC_LOG_LEVEL",  "\"${_LOG_LEVEL}\""
+        buildConfigField "boolean", "NDJC_DEBUG_LOG",  "${_DEBUG_ENABLED}"
+    }
+
+    // LIST:ABI_SPLITS
+    // （按需注入 ABI 拆分）
+    // END_LIST
+
+    packagingOptions {
+        // LIST:PACKAGING_RULES
+        // （按需注入 packaging 规则）
+        // END_LIST
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // LIST:PROGUARD_EXTRA
+            // （按需追加额外的混淆配置）
+            // END_LIST
+            signingConfig signingConfigs.debug
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+
+    buildFeatures {
+        compose true
+        buildConfig true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+        freeCompilerArgs += [
+            "-Xjvm-default=all",
+            // 可按需追加 Compose/Material 实验开关
+        ]
+    }
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == "org.jetbrains.kotlin") {
+            details.useVersion(kotlinAlignVersion)
+            details.because("Align Kotlin stdlib to ${kotlinAlignVersion} for Compose Compiler 1.5.14")
+        }
+    }
+}
+
+dependencies {
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
+
+    // 注意：Groovy 下使用 platform 需写成 implementation(platform(...))
+    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    implementation "androidx.activity:activity-compose:1.9.2"
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.ui:ui-tooling-preview"
+    implementation "androidx.compose.material3:material3"
+    implementation "androidx.navigation:navigation-compose:2.8.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
+    implementation "androidx.core:core-ktx:1.13.1"
+    implementation "com.google.android.material:material:1.12.0"
+
+    debugImplementation "androidx.compose.ui:ui-tooling"
+    debugImplementation "androidx.compose.ui:ui-test-manifest"
+}
+
+/* 可选：把转场或广告位等构建期摘要放到这里 */
+ // BLOCK:BUILD_SUMMARY
+ // END_BLOCK
+
+ // BLOCK:HEADER_AD_SLOT
+ // END_BLOCK
+
+// HOOK:AFTER_BUILD
+// END_HOOK
+
+// HOOK:PRE_INJECT
+// END_HOOK
+
+// HOOK:POST_INJECT
+// END_HOOK
+
+// HOOK:PRE_COMMIT
+// END_HOOK
+
+// HOOK:AFTER_INSTALL
+// END_HOOK
