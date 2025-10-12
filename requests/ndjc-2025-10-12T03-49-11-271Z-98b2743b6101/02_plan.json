@@ -1,0 +1,296 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.texas.restaurant",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "菜品介绍",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "NDJCTheme",
+    "NDJC:RUN_ID": "",
+    "NDJC:LOG_LEVEL": "INFO",
+    "NDJC:DEBUG_LOG_ENABLED": "true",
+    "NDJC:DARK_MODE": "system",
+    "NDJC:FONT_FAMILY_PRIMARY": "sans-serif",
+    "NDJC:FONT_FAMILY_SECONDARY": "sans-serif-medium",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_DURATION_SHORT_MS": "120",
+    "NDJC:ANIM_DURATION_MEDIUM_MS": "240",
+    "NDJC:ANIM_DURATION_LONG_MS": "360",
+    "NDJC:LAYOUT_DENSITY": "normal",
+    "NDJC:DATA_SOURCE": "remote",
+    "NDJC:PAGING_SIZE": "20",
+    "NDJC:OFFLINE_POLICY": "cache-first",
+    "NDJC:METRICS_ENABLED": "true",
+    "NDJC:CRASHLYTICS_ENABLED": "true",
+    "NDJC:EXPERIMENT_BUCKET": "control"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "",
+    "BLOCK:HOME_BODY": "",
+    "BLOCK:HOME_ACTIONS": "",
+    "BLOCK:THEME_COLORS": "",
+    "BLOCK:TYPOCASE_OVERRIDES": "",
+    "BLOCK:STRINGS_EXTRA": "",
+    "BLOCK:ROUTE_HOME": "",
+    "BLOCK:ROUTE_DETAIL": "",
+    "BLOCK:ROUTE_POST": "",
+    "BLOCK:NAV_TRANSITIONS": "",
+    "BLOCK:SPLASH_CONTENT": "",
+    "BLOCK:EMPTY_STATE": "",
+    "BLOCK:ERROR_STATE": "",
+    "BLOCK:DEPENDENCY_SNIPPETS": "",
+    "BLOCK:DEBUG_PANEL": "",
+    "BLOCK:BUILD_SUMMARY": "",
+    "BLOCK:HEADER_AD_SLOT": "",
+    "BLOCK:FEED_ITEM_BADGES": "",
+    "BLOCK:USER_PROFILE_CARD": "",
+    "BLOCK:SPONSORED_CARD": "",
+    "BLOCK:PROFILE_SECTION": "",
+    "BLOCK:SETTINGS_SECTION": "",
+    "BLOCK:SEARCH_BAR": "",
+    "BLOCK:APP_BAR": "",
+    "BLOCK:FOOTER": "",
+    "BLOCK:ONBOARDING": "",
+    "BLOCK:LOGIN_FORM": "",
+    "BLOCK:REGISTER_FORM": "",
+    "BLOCK:TERMS_SECTION": "",
+    "BLOCK:PRIVACY_SECTION": "",
+    "BLOCK:ABOUT_SECTION": "",
+    "BLOCK:NOTIFICATIONS_PANEL": "",
+    "BLOCK:ANALYTICS_INIT": "",
+    "BLOCK:CRASHLYTICS_INIT": "",
+    "BLOCK:NETWORK_CONFIG": "",
+    "BLOCK:THEME_OVERRIDES": "",
+    "BLOCK:UPLOAD_PHOTO": "// __NDJC_PLACEHOLDER_BLOCK__",
+    "BLOCK:EDIT_DESCRIPTION": "// __NDJC_PLACEHOLDER_BLOCK__",
+    "BLOCK:SET_PRICE": "// __NDJC_PLACEHOLDER_BLOCK__",
+    "BLOCK:COMMENT": "// __NDJC_PLACEHOLDER_BLOCK__",
+    "BLOCK:LIKE": "// __NDJC_PLACEHOLDER_BLOCK__"
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home",
+      "detail",
+      "post"
+    ],
+    "LIST:POST_FIELDS": [
+      "photo",
+      "description",
+      "price"
+    ],
+    "LIST:COMMENT_FIELDS": [
+      "content",
+      "likes"
+    ],
+    "LIST:DEEPLINK_PATTERNS": [
+      "https://example.com/*"
+    ],
+    "LIST:SUPPORTED_LOCALES": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "LIST:FEATURE_FLAGS": [
+      "upload_photo",
+      "edit_description",
+      "set_price",
+      "comment",
+      "like"
+    ]
+  },
+  "conditions": {
+    "IF:PERMISSION.CAMERA": true,
+    "IF:PERMISSION.MEDIA": true,
+    "IF:PERMISSION.NOTIFICATION": false,
+    "IF:PERMISSION.LOCATION": false,
+    "IF:PERMISSION.CONTACTS": false,
+    "IF:PERMISSION.SCHEDULE_EXACT_ALARM": false,
+    "IF:PERMISSION.CLIPBOARD": false,
+    "IF:PERMISSION.BLUETOOTH": false,
+    "IF:PERMISSION.NEARBY_WIFI": false,
+    "IF:NETWORK.CLEAR_TEXT": false,
+    "IF:FILE_PROVIDER": false,
+    "IF:INTENT.SHARE": false,
+    "IF:FEATURE.LOGIN": false,
+    "IF:FEATURE.COMMENTS": true,
+    "IF:ANALYTICS.ENABLED": false,
+    "IF:ADS.ENABLED": false
+  },
+  "hooks": {
+    "HOOK:BEFORE_BUILD": "// __NDJC_PLACEHOLDER_HOOK__",
+    "HOOK:AFTER_BUILD": "// __NDJC_PLACEHOLDER_HOOK__",
+    "HOOK:PRE_INJECT": "// __NDJC_PLACEHOLDER_HOOK__",
+    "HOOK:POST_INJECT": "// __NDJC_PLACEHOLDER_HOOK__",
+    "HOOK:PRE_COMMIT": "// __NDJC_PLACEHOLDER_HOOK__",
+    "HOOK:AFTER_INSTALL": "// __NDJC_PLACEHOLDER_HOOK__",
+    "HOOK:PRE_GRADLE_SYNC": "// __NDJC_PLACEHOLDER_HOOK__",
+    "HOOK:POST_GRADLE_SYNC": "// __NDJC_PLACEHOLDER_HOOK__"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.ndjc.texas.restaurant",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.MEDIA"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.ndjc.texas.restaurant",
+    "mode": "B"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.texas.restaurant",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "菜品介绍",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "NDJCTheme",
+      "NDJC:RUN_ID": "",
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:DEBUG_LOG_ENABLED": "true",
+      "NDJC:DARK_MODE": "system",
+      "NDJC:FONT_FAMILY_PRIMARY": "sans-serif",
+      "NDJC:FONT_FAMILY_SECONDARY": "sans-serif-medium",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_DURATION_SHORT_MS": "120",
+      "NDJC:ANIM_DURATION_MEDIUM_MS": "240",
+      "NDJC:ANIM_DURATION_LONG_MS": "360",
+      "NDJC:LAYOUT_DENSITY": "normal",
+      "NDJC:DATA_SOURCE": "remote",
+      "NDJC:PAGING_SIZE": "20",
+      "NDJC:OFFLINE_POLICY": "cache-first",
+      "NDJC:METRICS_ENABLED": "true",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "control"
+    },
+    "block": {
+      "HOME_HEADER": "",
+      "HOME_BODY": "",
+      "HOME_ACTIONS": "",
+      "THEME_COLORS": "",
+      "TYPOCASE_OVERRIDES": "",
+      "STRINGS_EXTRA": "",
+      "ROUTE_HOME": "",
+      "ROUTE_DETAIL": "",
+      "ROUTE_POST": "",
+      "NAV_TRANSITIONS": "",
+      "SPLASH_CONTENT": "",
+      "EMPTY_STATE": "",
+      "ERROR_STATE": "",
+      "DEPENDENCY_SNIPPETS": "",
+      "DEBUG_PANEL": "",
+      "BUILD_SUMMARY": "",
+      "HEADER_AD_SLOT": "",
+      "FEED_ITEM_BADGES": "",
+      "USER_PROFILE_CARD": "",
+      "SPONSORED_CARD": "",
+      "PROFILE_SECTION": "",
+      "SETTINGS_SECTION": "",
+      "SEARCH_BAR": "",
+      "APP_BAR": "",
+      "FOOTER": "",
+      "ONBOARDING": "",
+      "LOGIN_FORM": "",
+      "REGISTER_FORM": "",
+      "TERMS_SECTION": "",
+      "PRIVACY_SECTION": "",
+      "ABOUT_SECTION": "",
+      "NOTIFICATIONS_PANEL": "",
+      "ANALYTICS_INIT": "",
+      "CRASHLYTICS_INIT": "",
+      "NETWORK_CONFIG": "",
+      "THEME_OVERRIDES": "",
+      "UPLOAD_PHOTO": "// __NDJC_PLACEHOLDER_BLOCK__",
+      "EDIT_DESCRIPTION": "// __NDJC_PLACEHOLDER_BLOCK__",
+      "SET_PRICE": "// __NDJC_PLACEHOLDER_BLOCK__",
+      "COMMENT": "// __NDJC_PLACEHOLDER_BLOCK__",
+      "LIKE": "// __NDJC_PLACEHOLDER_BLOCK__"
+    },
+    "list": {
+      "PROGUARD_EXTRA": [],
+      "PACKAGING_RULES": [],
+      "ROUTES": [
+        "home",
+        "detail",
+        "post"
+      ],
+      "POST_FIELDS": [
+        "photo",
+        "description",
+        "price"
+      ],
+      "COMMENT_FIELDS": [
+        "content",
+        "likes"
+      ],
+      "ABI_SPLITS": [],
+      "PLURAL_STRINGS": [],
+      "COMPONENT_STYLES": [],
+      "REMOTE_FLAGS": [],
+      "DEEPLINK_PATTERNS": [
+        "https://example.com/*"
+      ],
+      "SUPPORTED_LOCALES": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "MENU_ITEMS": [],
+      "FEATURE_FLAGS": [
+        "upload_photo",
+        "edit_description",
+        "set_price",
+        "comment",
+        "like"
+      ]
+    },
+    "if": {
+      "PERMISSION.CAMERA": true,
+      "PERMISSION.MEDIA": true,
+      "PERMISSION.NOTIFICATION": false,
+      "PERMISSION.LOCATION": false,
+      "PERMISSION.CONTACTS": false,
+      "PERMISSION.SCHEDULE_EXACT_ALARM": false,
+      "PERMISSION.CLIPBOARD": false,
+      "PERMISSION.BLUETOOTH": false,
+      "PERMISSION.NEARBY_WIFI": false,
+      "NETWORK.CLEAR_TEXT": false,
+      "FILE_PROVIDER": false,
+      "INTENT.SHARE": false,
+      "FEATURE.LOGIN": false,
+      "FEATURE.COMMENTS": true,
+      "ANALYTICS.ENABLED": false,
+      "ADS.ENABLED": false
+    },
+    "hook": {
+      "BEFORE_BUILD": "// __NDJC_PLACEHOLDER_HOOK__",
+      "AFTER_BUILD": "// __NDJC_PLACEHOLDER_HOOK__",
+      "PRE_INJECT": "// __NDJC_PLACEHOLDER_HOOK__",
+      "POST_INJECT": "// __NDJC_PLACEHOLDER_HOOK__",
+      "PRE_COMMIT": "// __NDJC_PLACEHOLDER_HOOK__",
+      "AFTER_INSTALL": "// __NDJC_PLACEHOLDER_HOOK__",
+      "PRE_GRADLE_SYNC": "// __NDJC_PLACEHOLDER_HOOK__",
+      "POST_GRADLE_SYNC": "// __NDJC_PLACEHOLDER_HOOK__"
+    },
+    "gradle": {
+      "applicationId": "com.ndjc.texas.restaurant",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.MEDIA"
+      ]
+    }
+  }
+}
