@@ -1,4 +1,7 @@
-created by api; mode=online(llama-3.1-8b-instant)
-prompt_file=/var/task/lib/ndjc/prompts/contract_v1.en.json
-prompt_sha256=3b84cbcc53b065e93a26bc72cb37cfd98ce3982cb3c909d3d78d57228b8102c5
-prompt_loaded_from_env=null
+branch=main
+variant=unknown
+apk=
+classes=
+missing_text=28
+missing_block=0
+ts=2025-10-12T13:58:33Z
