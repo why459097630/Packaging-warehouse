@@ -1,10 +1,13 @@
 {
-  "runId": "ndjc-2025-10-12T03-49-11-271Z-98b2743b6101",
-  "status": "pre-ci",
-  "template": "circle-basic",
-  "appTitle": "德州餐厅",
-  "packageName": "com.ndjc.texas.restaurant",
-  "note": "Apply result will be finalized in CI pipeline.",
-  "changes": [],
-  "warnings": []
+  "replaced_total": 70,
+  "replaced_text": 17,
+  "replaced_block": 31,
+  "replaced_list": 4,
+  "replaced_if": 10,
+  "hooks_applied": 8,
+  "missing_text": 22,
+  "missing_block": 14,
+  "missing_list": 2,
+  "missing_if": 8,
+  "generated_at": "2025-10-12T03:50:23Z"
 }
