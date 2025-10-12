@@ -1,10 +1,13 @@
 {
-  "runId": "ndjc-2025-10-12T15-37-30-022Z-193ee09c1d2b",
-  "status": "pre-ci",
-  "template": "circle-basic",
-  "appTitle": "德州餐厅",
-  "packageName": "com.dz.canteen",
-  "note": "Apply result will be finalized in CI pipeline.",
-  "changes": [],
-  "warnings": []
+  "replaced_total": 61,
+  "replaced_text": 17,
+  "replaced_block": 31,
+  "replaced_list": 3,
+  "replaced_if": 10,
+  "hooks_applied": 0,
+  "missing_text": 28,
+  "missing_block": 0,
+  "missing_list": 0,
+  "missing_if": 4,
+  "generated_at": "2025-10-12T15:38:18Z"
 }

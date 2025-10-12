@@ -1,0 +1,116 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.dz.canteen",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "菜单",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "CircleBasicTheme",
+    "NDJC:DARK_MODE": "auto",
+    "NDJC:FONT_FAMILY_PRIMARY": "system",
+    "NDJC:FONT_FAMILY_SECONDARY": "system",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "300",
+    "NDJC:LAYOUT_DENSITY": "comfortable",
+    "NDJC:DATA_SOURCE": "local",
+    "NDJC:SEED_ENABLED": "false",
+    "NDJC:FEED_SORT": "latest",
+    "NDJC:PAGING_SIZE": "20",
+    "NDJC:OFFLINE_POLICY": "read_through_cache",
+    "NDJC:PRIVACY_POLICY": "https://www.example.com/privacy",
+    "NDJC:DRAFT_ENABLED": "true",
+    "NDJC:USE_APP_BUNDLE": "true",
+    "NDJC:BUILD_META_RUNID": "1",
+    "NDJC:FEATURE_TOGGLE_MIN": "baseline",
+    "NDJC:DEBUG_LOG_ENABLED": "false",
+    "NDJC:RUN_ID": "1",
+    "NDJC:LOG_LEVEL": "info",
+    "NDJC:METRICS_ENABLED": "false",
+    "NDJC:CRASHLYTICS_ENABLED": "false",
+    "NDJC:EXPERIMENT_BUCKET": "https://www.example.com/experiment"
+  },
+  "blocks": {
+    "HOME_HEADER": "<!-- 菜单标题 -->",
+    "HOME_BODY": "<!-- 菜单内容 -->",
+    "HOME_ACTIONS": "<!-- 菜单操作 -->",
+    "THEME_COLORS": "{ /* 主题颜色 */ }",
+    "TYPOCASE_OVERRIDES": "",
+    "STRINGS_EXTRA": "",
+    "ROUTE_HOME": "home",
+    "ROUTE_DETAIL": "detail/{id}",
+    "ROUTE_POST": "post",
+    "NAV_TRANSITIONS": "",
+    "SPLASH_CONTENT": "",
+    "EMPTY_STATE": "<!-- 空状态 -->",
+    "ERROR_STATE": "<!-- 错误状态 -->",
+    "DEPENDENCY_SNIPPETS": "",
+    "DEBUG_PANEL": "",
+    "BUILD_SUMMARY": "",
+    "HEADER_AD_SLOT": "",
+    "FEED_ITEM_BADGES": "",
+    "USER_PROFILE_CARD": "",
+    "SPONSORED_CARD": "",
+    "PROFILE_SECTION": "",
+    "SETTINGS_SECTION": ""
+  },
+  "lists": {
+    "ROUTES": [
+      "home",
+      "detail/{id}",
+      "post"
+    ],
+    "POST_FIELDS": [
+      "title",
+      "description",
+      "price"
+    ],
+    "COMMENT_FIELDS": [
+      "content",
+      "likes"
+    ]
+  },
+  "conditions": {
+    "PERMISSION.CAMERA": true,
+    "PERMISSION.MEDIA": true,
+    "PERMISSION.NOTIFICATION": false,
+    "PERMISSION.LOCATION": false,
+    "PERMISSION.CONTACTS": false,
+    "PERMISSION.SCHEDULE_EXACT_ALARM": false,
+    "PERMISSION.CLIPBOARD": false,
+    "NETWORK.CLEAR_TEXT": false,
+    "FILE_PROVIDER": true,
+    "INTENT.SHARE": true
+  },
+  "hooks": {
+    "BEFORE_BUILD": "",
+    "AFTER_BUILD": "",
+    "PRE_INJECT": "",
+    "POST_INJECT": "",
+    "PRE_COMMIT": "",
+    "AFTER_INSTALL": ""
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.dz.canteen",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.POST_NOTIFICATIONS"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.dz.canteen",
+    "mode": "B"
+  },
+  "droppedDanger": 0
+}
