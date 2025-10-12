@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-12T07-05-38-243Z-5ea7e2f6de30",
+  "status": "pre-ci",
+  "template": "circle-basic",
+  "appTitle": "NDJC App",
+  "packageName": "com.ndjc.demo.core",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
