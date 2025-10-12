@@ -1,0 +1,230 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.dz.canteen",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "菜单",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "CircleBasicTheme",
+    "NDJC:DARK_MODE": "auto",
+    "NDJC:FONT_FAMILY_PRIMARY": "system",
+    "NDJC:FONT_FAMILY_SECONDARY": "system",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "300",
+    "NDJC:LAYOUT_DENSITY": "comfortable",
+    "NDJC:DATA_SOURCE": "local",
+    "NDJC:SEED_ENABLED": "false",
+    "NDJC:FEED_SORT": "latest",
+    "NDJC:PAGING_SIZE": "20",
+    "NDJC:OFFLINE_POLICY": "read_through_cache",
+    "NDJC:PRIVACY_POLICY": "https://www.example.com/privacy",
+    "NDJC:DRAFT_ENABLED": "true",
+    "NDJC:USE_APP_BUNDLE": "true",
+    "NDJC:BUILD_META_RUNID": "1",
+    "NDJC:FEATURE_TOGGLE_MIN": "baseline",
+    "NDJC:DEBUG_LOG_ENABLED": "false",
+    "NDJC:RUN_ID": "1",
+    "NDJC:LOG_LEVEL": "info",
+    "NDJC:METRICS_ENABLED": "false",
+    "NDJC:CRASHLYTICS_ENABLED": "false",
+    "NDJC:EXPERIMENT_BUCKET": "https://www.example.com/experiment"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "<!-- __HOME_HEADER__ -->",
+    "BLOCK:HOME_BODY": "<!-- __HOME_BODY__ -->",
+    "BLOCK:HOME_ACTIONS": "<!-- __HOME_ACTIONS__ -->",
+    "BLOCK:THEME_COLORS": "{ /* __THEME_COLORS__ */ }",
+    "BLOCK:TYPOCASE_OVERRIDES": "",
+    "BLOCK:STRINGS_EXTRA": "",
+    "BLOCK:ROUTE_HOME": "home",
+    "BLOCK:ROUTE_DETAIL": "detail/{id}",
+    "BLOCK:ROUTE_POST": "post",
+    "BLOCK:NAV_TRANSITIONS": "",
+    "BLOCK:SPLASH_CONTENT": "",
+    "BLOCK:EMPTY_STATE": "<!-- __EMPTY__ -->",
+    "BLOCK:ERROR_STATE": "<!-- __ERROR__ -->",
+    "BLOCK:DEPENDENCY_SNIPPETS": "",
+    "BLOCK:DEBUG_PANEL": "",
+    "BLOCK:BUILD_SUMMARY": "",
+    "BLOCK:HEADER_AD_SLOT": "",
+    "BLOCK:FEED_ITEM_BADGES": "",
+    "BLOCK:USER_PROFILE_CARD": "",
+    "BLOCK:SPONSORED_CARD": "",
+    "BLOCK:PROFILE_SECTION": "",
+    "BLOCK:SETTINGS_SECTION": ""
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home",
+      "detail/{id}",
+      "post"
+    ],
+    "LIST:POST_FIELDS": [
+      "title",
+      "description",
+      "price",
+      "image"
+    ],
+    "LIST:COMMENT_FIELDS": [
+      "content",
+      "rating"
+    ]
+  },
+  "conditions": {
+    "IF:PERMISSION.CAMERA": true,
+    "IF:PERMISSION.MEDIA": true,
+    "IF:PERMISSION.NOTIFICATION": true,
+    "IF:PERMISSION.LOCATION": false,
+    "IF:PERMISSION.CONTACTS": false,
+    "IF:PERMISSION.SCHEDULE_EXACT_ALARM": false,
+    "IF:PERMISSION.CLIPBOARD": false,
+    "IF:NETWORK.CLEAR_TEXT": false,
+    "IF:FILE_PROVIDER": true,
+    "IF:INTENT.SHARE": true
+  },
+  "hooks": {
+    "HOOK:BEFORE_BUILD": "",
+    "HOOK:AFTER_BUILD": "",
+    "HOOK:PRE_INJECT": "",
+    "HOOK:POST_INJECT": "",
+    "HOOK:PRE_COMMIT": "",
+    "HOOK:AFTER_INSTALL": ""
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.dz.canteen",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.INTERNET"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.dz.canteen",
+    "mode": "B"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.dz.canteen",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "菜单",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "CircleBasicTheme",
+      "NDJC:DARK_MODE": "auto",
+      "NDJC:FONT_FAMILY_PRIMARY": "system",
+      "NDJC:FONT_FAMILY_SECONDARY": "system",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "300",
+      "NDJC:LAYOUT_DENSITY": "comfortable",
+      "NDJC:DATA_SOURCE": "local",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "latest",
+      "NDJC:PAGING_SIZE": "20",
+      "NDJC:OFFLINE_POLICY": "read_through_cache",
+      "NDJC:PRIVACY_POLICY": "https://www.example.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META_RUNID": "1",
+      "NDJC:FEATURE_TOGGLE_MIN": "baseline",
+      "NDJC:DEBUG_LOG_ENABLED": "false",
+      "NDJC:RUN_ID": "1",
+      "NDJC:LOG_LEVEL": "info",
+      "NDJC:METRICS_ENABLED": "false",
+      "NDJC:CRASHLYTICS_ENABLED": "false",
+      "NDJC:EXPERIMENT_BUCKET": "https://www.example.com/experiment"
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "<!-- __HOME_HEADER__ -->",
+      "BLOCK:HOME_BODY": "<!-- __HOME_BODY__ -->",
+      "BLOCK:HOME_ACTIONS": "<!-- __HOME_ACTIONS__ -->",
+      "BLOCK:THEME_COLORS": "{ /* __THEME_COLORS__ */ }",
+      "BLOCK:TYPOCASE_OVERRIDES": "",
+      "BLOCK:STRINGS_EXTRA": "",
+      "BLOCK:ROUTE_HOME": "home",
+      "BLOCK:ROUTE_DETAIL": "detail/{id}",
+      "BLOCK:ROUTE_POST": "post",
+      "BLOCK:NAV_TRANSITIONS": "",
+      "BLOCK:SPLASH_CONTENT": "",
+      "BLOCK:EMPTY_STATE": "<!-- __EMPTY__ -->",
+      "BLOCK:ERROR_STATE": "<!-- __ERROR__ -->",
+      "BLOCK:DEPENDENCY_SNIPPETS": "",
+      "BLOCK:DEBUG_PANEL": "",
+      "BLOCK:BUILD_SUMMARY": "",
+      "BLOCK:HEADER_AD_SLOT": "",
+      "BLOCK:FEED_ITEM_BADGES": "",
+      "BLOCK:USER_PROFILE_CARD": "",
+      "BLOCK:SPONSORED_CARD": "",
+      "BLOCK:PROFILE_SECTION": "",
+      "BLOCK:SETTINGS_SECTION": ""
+    },
+    "list": {
+      "LIST:PROGUARD_EXTRA": [],
+      "LIST:PACKAGING_RULES": [],
+      "LIST:ROUTES": [
+        "home",
+        "detail/{id}",
+        "post"
+      ],
+      "LIST:POST_FIELDS": [
+        "title",
+        "description",
+        "price",
+        "image"
+      ],
+      "LIST:COMMENT_FIELDS": [
+        "content",
+        "rating"
+      ],
+      "LIST:ABI_SPLITS": [],
+      "LIST:PLURAL_STRINGS": [],
+      "LIST:COMPONENT_STYLES": [],
+      "LIST:REMOTE_FLAGS": [],
+      "LIST:DEEPLINK_PATTERNS": []
+    },
+    "if": {
+      "IF:PERMISSION.CAMERA": true,
+      "IF:PERMISSION.MEDIA": true,
+      "IF:PERMISSION.NOTIFICATION": true,
+      "IF:PERMISSION.LOCATION": false,
+      "IF:PERMISSION.CONTACTS": false,
+      "IF:PERMISSION.SCHEDULE_EXACT_ALARM": false,
+      "IF:PERMISSION.CLIPBOARD": false,
+      "IF:NETWORK.CLEAR_TEXT": false,
+      "IF:FILE_PROVIDER": true,
+      "IF:INTENT.SHARE": true
+    },
+    "hook": {
+      "HOOK:BEFORE_BUILD": "",
+      "HOOK:AFTER_BUILD": "",
+      "HOOK:PRE_INJECT": "",
+      "HOOK:POST_INJECT": "",
+      "HOOK:PRE_COMMIT": "",
+      "HOOK:AFTER_INSTALL": ""
+    },
+    "gradle": {
+      "applicationId": "com.dz.canteen",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.INTERNET"
+      ]
+    }
+  }
+}
