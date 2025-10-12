@@ -1,0 +1,112 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "张尼室",
+    "packageId": "com.txrestaurant.menu",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "35f87440a81bb62368c228b68e756436326f20ac0738affac603de8926e948db",
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.txrestaurant.menu",
+      "NDJC:APP_LABEL": "张尼室",
+      "NDJC:HOME_TITLE": "张尼室",
+      "NDJC:PRIMARY_BUTTON_TEXT": "起此开始",
+      "NDJC:UPLOAD_PHOTO_HINT": "引用图片请求",
+      "NDJC:EDIT_INTRO_HINT": "给引用请求",
+      "NDJC:SET_PRICE_HINT": "设置产品请求",
+      "NDJC:COMMENT_HINT": "评论请求"
+    },
+    "block": {
+      "NDJC:UPLOAD_PHOTO_CODE": "// 引用图片请求\n// 请求为引用图片请求\n// 请求为引用图片请求",
+      "NDJC:EDIT_INTRO_CODE": "// 给引用请求\n// 请求为给引用请求\n// 请求为给引用请求",
+      "NDJC:SET_PRICE_CODE": "// 设置产品请求\n// 请求为设置产品请求\n// 请求为设置产品请求",
+      "NDJC:COMMENT_CODE": "// 评论请求\n// 请求为评论请求\n// 请求为评论请求"
+    },
+    "list": {
+      "ROUTES": [
+        "home",
+        "upload",
+        "edit",
+        "set_price",
+        "comment"
+      ]
+    },
+    "if": {
+      "NDJC:IS_LOGGED_IN": true
+    },
+    "hook": {
+      "NDJC:UPLOAD_PHOTO_HOOK": "// 引用图片请求\n// 请求为引用图片请求\n// 请求为引用图片请求",
+      "NDJC:EDIT_INTRO_HOOK": "// 给引用请求\n// 请求为给引用请求\n// 请求为给引用请求",
+      "NDJC:SET_PRICE_HOOK": "// 设置产品请求\n// 请求为设置产品请求\n// 请求为设置产品请求",
+      "NDJC:COMMENT_HOOK": "// 评论请求\n// 请求为评论请求\n// 请求为评论请求"
+    },
+    "resources": {
+      "NDJC:UPLOAD_PHOTO": [
+        "photo1.jpg",
+        "photo2.jpg",
+        "photo3.jpg"
+      ],
+      "NDJC:EDIT_INTRO": [
+        "intro1.txt",
+        "intro2.txt",
+        "intro3.txt"
+      ],
+      "NDJC:SET_PRICE": [
+        "price1.txt",
+        "price2.txt",
+        "price3.txt"
+      ],
+      "NDJC:COMMENT": [
+        "comment1.txt",
+        "comment2.txt",
+        "comment3.txt"
+      ]
+    },
+    "gradle": {
+      "applicationId": "com.txrestaurant.menu",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "ok": true,
+        "report": {
+          "filled": {
+            "text": [],
+            "list": [],
+            "gradle": [
+              "applicationId"
+            ]
+          },
+          "missing": []
+        }
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "35f87440a81bb62368c228b68e756436326f20ac0738affac603de8926e948db",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha256": "d94efce50f9e962333a0670fa438946a0278bfdc0bc7bf531a1f7f3754a051d3",
+      "model": "groq"
+    },
+    "rawText": "{\n   \"metadata\": {\n      \"template\": \"circle-basic\",\n      \"appName\": \"\\u5f20\\u5c3c\\u5ba4\",\n      \"packageId\": \"com.txrestaurant.menu\",\n      \"mode\": \"B\"\n   },\n   \"anchors\": {\n      \"text\": {\n         \"NDJC:PACKAGE_NAME\": \"com.txrestaurant.menu\",\n         \"NDJC:APP_LABEL\": \"\\u5f20\\u5c3c\\u5ba4\",\n         \"NDJC:HOME_TITLE\": \"\\u5f20\\u5c3c\\u5ba4\",\n         \"NDJC:PRIMARY_BUTTON_TEXT\": \"\\u8d77\\u6b64\\u5f00\\u59cb\",\n         \"NDJC:UPLOAD_PHOTO_HINT\": \"\\u5f15\\u7528\\u56fe\\u7247\\u8bf7\\u6c42\",\n         \"NDJC:EDIT_INTRO_HINT\": \"\\u7ed9\\u5f15\\u7528\\u8bf7\\u6c42\",\n         \"NDJC:SET_PRICE_HINT\": \"\\u8bbe\\u7f6e\\u4ea7\\u54c1\\u8bf7\\u6c42\",\n         \"NDJC:COMMENT_HINT\": \"\\u8bc4\\u8bba\\u8bf7\\u6c42\"\n      },\n      \"block\": {\n         \"NDJC:UPLOAD_PHOTO_CODE\": \"// \\u5f15\\u7528\\u56fe\\u7247\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u5f15\\u7528\\u56fe\\u7247\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u5f15\\u7528\\u56fe\\u7247\\u8bf7\\u6c42\",\n         \"NDJC:EDIT_INTRO_CODE\": \"// \\u7ed9\\u5f15\\u7528\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u7ed9\\u5f15\\u7528\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u7ed9\\u5f15\\u7528\\u8bf7\\u6c42\",\n         \"NDJC:SET_PRICE_CODE\": \"// \\u8bbe\\u7f6e\\u4ea7\\u54c1\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u8bbe\\u7f6e\\u4ea7\\u54c1\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u8bbe\\u7f6e\\u4ea7\\u54c1\\u8bf7\\u6c42\",\n         \"NDJC:COMMENT_CODE\": \"// \\u8bc4\\u8bba\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u8bc4\\u8bba\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u8bc4\\u8bba\\u8bf7\\u6c42\"\n      },\n      \"list\": {\n         \"ROUTES\": [\n            \"home\",\n            \"upload\",\n            \"edit\",\n            \"set_price\",\n            \"comment\"\n         ]\n      },\n      \"if\": {\n         \"NDJC:IS_LOGGED_IN\": true\n      },\n      \"hook\": {\n         \"NDJC:UPLOAD_PHOTO_HOOK\": \"// \\u5f15\\u7528\\u56fe\\u7247\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u5f15\\u7528\\u56fe\\u7247\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u5f15\\u7528\\u56fe\\u7247\\u8bf7\\u6c42\",\n         \"NDJC:EDIT_INTRO_HOOK\": \"// \\u7ed9\\u5f15\\u7528\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u7ed9\\u5f15\\u7528\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u7ed9\\u5f15\\u7528\\u8bf7\\u6c42\",\n         \"NDJC:SET_PRICE_HOOK\": \"// \\u8bbe\\u7f6e\\u4ea7\\u54c1\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u8bbe\\u7f6e\\u4ea7\\u54c1\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u8bbe\\u7f6e\\u4ea7\\u54c1\\u8bf7\\u6c42\",\n         \"NDJC:COMMENT_HOOK\": \"// \\u8bc4\\u8bba\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u8bc4\\u8bba\\u8bf7\\u6c42\\n// \\u8bf7\\u6c42\\u4e3a\\u8bc4\\u8bba\\u8bf7\\u6c42\"\n      },\n      \"resources\": {\n         \"NDJC:UPLOAD_PHOTO\": [\n            \"photo1.jpg\",\n            \"photo2.jpg\",\n            \"photo3.jpg\"\n         ],\n         \"NDJC:EDIT_INTRO\": [\n            \"intro1.txt\",\n            \"intro2.txt\",\n            \"intro3.txt\"\n         ],\n         \"NDJC:SET_PRICE\": [\n            \"price1.txt\",\n            \"price2.txt\",\n            \"price3.txt\"\n         ],\n         \"NDJC:COMMENT\": [\n            \"comment1.txt\",\n            \"comment2.txt\",\n            \"comment3.txt\"\n         ]\n      },\n      \"gradle\": {\n         \"applicationId\": \"com.txrestaurant.menu\",\n         \"resConfigs\": [\n            \"en\",\n            \"zh-rCN\",\n            \"zh-rTW\"\n         ],\n         \"permissions\": [\n            \"android.permission.INTERNET\",\n            \"android.permission.WRITE_EXTERNAL_STORAGE\"\n         ]\n      }\n   },\n   \"files\": []\n}"
+  }
+}
