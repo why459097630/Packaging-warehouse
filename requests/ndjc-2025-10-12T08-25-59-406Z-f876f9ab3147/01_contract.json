@@ -1,0 +1,81 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "NDJC App",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "a643a9fb8c9525bc694920c0306da32bb8e0770bb6c89c509498f8e95f7d477c",
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "NDJC App",
+      "NDJC:HOME_TITLE": "Home",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Start"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": []
+    }
+  },
+  "files": [],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "ok": true,
+        "report": {
+          "filled": {
+            "text": [
+              "NDJC:PACKAGE_NAME",
+              "NDJC:APP_LABEL",
+              "NDJC:HOME_TITLE",
+              "NDJC:PRIMARY_BUTTON_TEXT",
+              "NDJC:LOG_LEVEL",
+              "NDJC:DEBUG_LOG_ENABLED"
+            ],
+            "list": [
+              "ROUTES",
+              "SUPPORTED_LOCALES",
+              "DEEPLINK_PATTERNS"
+            ],
+            "gradle": [
+              "applicationId",
+              "resConfigs",
+              "permissions"
+            ]
+          },
+          "missing": []
+        }
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "a643a9fb8c9525bc694920c0306da32bb8e0770bb6c89c509498f8e95f7d477c",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha256": "05e950f28891f1273b76e4d3e5b4b43d0b5fadcb535b2619a5b9d8eecf64d45e",
+      "model": "groq"
+    },
+    "synthesized": true,
+    "rawText": "{\"metadata\":{\"template\":\"circle-basic\",\"appName\":\"NDJC App\",\"packageId\":\"com.ndjc.demo.core\",\"mode\":\"B\"},\"anchors\":{\"text\":{\"NDJC:PACKAGE_NAME\":\"com.ndjc.demo.core\",\"NDJC:APP_LABEL\":\"NDJC App\",\"NDJC:HOME_TITLE\":\"Home\",\"NDJC:PRIMARY_BUTTON_TEXT\":\"Start\"},\"block\":{},\"list\":{\"LIST:ROUTES\":[\"home\"]},\"if\":{},\"hook\":{},\"gradle\":{\"applicationId\":\"com.ndjc.demo.core\",\"resConfigs\":[\"en\",\"zh-rCN\",\"zh-rTW\"],\"permissions\":[]}},\"files\":[]}"
+  }
+}
