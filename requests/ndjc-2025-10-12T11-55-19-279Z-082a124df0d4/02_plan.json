@@ -1,0 +1,105 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.txrestaurant.menu",
+    "NDJC:APP_LABEL": "张尼室",
+    "NDJC:HOME_TITLE": "张尼室",
+    "NDJC:PRIMARY_BUTTON_TEXT": "起此开始",
+    "NDJC:UPLOAD_PHOTO_HINT": "引用图片请求",
+    "NDJC:EDIT_INTRO_HINT": "给引用请求",
+    "NDJC:SET_PRICE_HINT": "设置产品请求",
+    "NDJC:COMMENT_HINT": "评论请求"
+  },
+  "blocks": {
+    "NDJC:UPLOAD_PHOTO_CODE": "// 引用图片请求\n// 请求为引用图片请求\n// 请求为引用图片请求",
+    "NDJC:EDIT_INTRO_CODE": "// 给引用请求\n// 请求为给引用请求\n// 请求为给引用请求",
+    "NDJC:SET_PRICE_CODE": "// 设置产品请求\n// 请求为设置产品请求\n// 请求为设置产品请求",
+    "NDJC:COMMENT_CODE": "// 评论请求\n// 请求为评论请求\n// 请求为评论请求"
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home",
+      "upload",
+      "edit",
+      "set_price",
+      "comment"
+    ]
+  },
+  "conditions": {
+    "NDJC:IS_LOGGED_IN": true
+  },
+  "hooks": {
+    "NDJC:UPLOAD_PHOTO_HOOK": "// 引用图片请求\n// 请求为引用图片请求\n// 请求为引用图片请求",
+    "NDJC:EDIT_INTRO_HOOK": "// 给引用请求\n// 请求为给引用请求\n// 请求为给引用请求",
+    "NDJC:SET_PRICE_HOOK": "// 设置产品请求\n// 请求为设置产品请求\n// 请求为设置产品请求",
+    "NDJC:COMMENT_HOOK": "// 评论请求\n// 请求为评论请求\n// 请求为评论请求"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.txrestaurant.menu",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "张尼室",
+    "packageId": "com.txrestaurant.menu",
+    "mode": "B"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.txrestaurant.menu",
+      "NDJC:APP_LABEL": "张尼室",
+      "NDJC:HOME_TITLE": "张尼室",
+      "NDJC:PRIMARY_BUTTON_TEXT": "起此开始",
+      "NDJC:UPLOAD_PHOTO_HINT": "引用图片请求",
+      "NDJC:EDIT_INTRO_HINT": "给引用请求",
+      "NDJC:SET_PRICE_HINT": "设置产品请求",
+      "NDJC:COMMENT_HINT": "评论请求"
+    },
+    "block": {
+      "NDJC:UPLOAD_PHOTO_CODE": "// 引用图片请求\n// 请求为引用图片请求\n// 请求为引用图片请求",
+      "NDJC:EDIT_INTRO_CODE": "// 给引用请求\n// 请求为给引用请求\n// 请求为给引用请求",
+      "NDJC:SET_PRICE_CODE": "// 设置产品请求\n// 请求为设置产品请求\n// 请求为设置产品请求",
+      "NDJC:COMMENT_CODE": "// 评论请求\n// 请求为评论请求\n// 请求为评论请求"
+    },
+    "list": {
+      "ROUTES": [
+        "home",
+        "upload",
+        "edit",
+        "set_price",
+        "comment"
+      ]
+    },
+    "if": {
+      "NDJC:IS_LOGGED_IN": true
+    },
+    "hook": {
+      "NDJC:UPLOAD_PHOTO_HOOK": "// 引用图片请求\n// 请求为引用图片请求\n// 请求为引用图片请求",
+      "NDJC:EDIT_INTRO_HOOK": "// 给引用请求\n// 请求为给引用请求\n// 请求为给引用请求",
+      "NDJC:SET_PRICE_HOOK": "// 设置产品请求\n// 请求为设置产品请求\n// 请求为设置产品请求",
+      "NDJC:COMMENT_HOOK": "// 评论请求\n// 请求为评论请求\n// 请求为评论请求"
+    },
+    "gradle": {
+      "applicationId": "com.txrestaurant.menu",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  }
+}
