@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-12T11-55-19-279Z-082a124df0d4",
+  "status": "pre-ci",
+  "template": "circle-basic",
+  "appTitle": "张尼室",
+  "packageName": "com.txrestaurant.menu",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
