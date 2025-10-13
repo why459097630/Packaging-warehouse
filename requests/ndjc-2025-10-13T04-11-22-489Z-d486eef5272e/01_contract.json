@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "NDJC App",
+    "packageId": "com.ndjc.demo.core",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "6e0dd3aabe3bdd56827f22dcef05bdf99762d8867c59519d761e012ba0ce1a17",
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.core",
+      "NDJC:APP_LABEL": "NDJC App",
+      "NDJC:HOME_TITLE": "Home",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Start"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ]
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.demo.core",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": []
+    }
+  },
+  "files": [],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "error": "[NDJC:groq] HTTP 400 Bad Request - {\"error\":{\"message\":\"Failed to generate JSON. Please adjust your prompt. See 'failed_generation' for more details.\",\"type\":\"invalid_request_error\",\"code\":\"json_validate_failed\",\"failed_generation\":\"max completion tokens reached before generating a valid document\"}}\n"
+      },
+      {
+        "attempt": 1,
+        "error": "[NDJC:groq] HTTP 429 Too Many Requests - {\"error\":{\"message\":\"Rate limit reached for model `llama-3.1-8b-instant` in organization `org_01k2v5pda7e8ttpt7p5m1tm1j4` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Used 4127, Requested 2609. Please try again in 7.36s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n"
+      },
+      {
+        "attempt": 2,
+        "error": "[NDJC:groq] HTTP 429 Too Many Requests - {\"error\":{\"message\":\"Rate limit reached for model `llama-3.1-8b-instant` in organization `org_01k2v5pda7e8ttpt7p5m1tm1j4` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Used 4123, Requested 2609. Please try again in 7.317s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n"
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "6e0dd3aabe3bdd56827f22dcef05bdf99762d8867c59519d761e012ba0ce1a17",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha256": "d94efce50f9e962333a0670fa438946a0278bfdc0bc7bf531a1f7f3754a051d3",
+      "model": "groq"
+    },
+    "synthesized": true,
+    "rawText": "{\"metadata\":{\"template\":\"circle-basic\",\"appName\":\"NDJC App\",\"packageId\":\"com.ndjc.demo.core\",\"mode\":\"B\"},\"anchors\":{\"text\":{\"NDJC:PACKAGE_NAME\":\"com.ndjc.demo.core\",\"NDJC:APP_LABEL\":\"NDJC App\",\"NDJC:HOME_TITLE\":\"Home\",\"NDJC:PRIMARY_BUTTON_TEXT\":\"Start\"},\"block\":{},\"list\":{\"LIST:ROUTES\":[\"home\"]},\"if\":{},\"hook\":{},\"gradle\":{\"applicationId\":\"com.ndjc.demo.core\",\"resConfigs\":[\"en\",\"zh-rCN\",\"zh-rTW\"],\"permissions\":[]}},\"files\":[]}"
+  }
+}
