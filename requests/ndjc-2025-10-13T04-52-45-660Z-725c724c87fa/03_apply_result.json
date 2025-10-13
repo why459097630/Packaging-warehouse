@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-13T04-52-45-660Z-725c724c87fa",
+  "status": "pre-ci",
+  "template": "circle-basic",
+  "appTitle": "张三家客家",
+  "packageName": "com.ndjc.texas.diner",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
