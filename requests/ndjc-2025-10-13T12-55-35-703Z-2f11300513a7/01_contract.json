@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.ndjc.dtxc.menu",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "708ec7906711205fd5c4a96e40b30598993b8cd2298b0dde9459b4685e19ba2a",
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.dtxc.menu",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "菜单",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "CircleBasicTheme",
+      "NDJC:DARK_MODE": "auto",
+      "NDJC:FONT_FAMILY_PRIMARY": "system",
+      "NDJC:FONT_FAMILY_SECONDARY": "system",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "300",
+      "NDJC:LAYOUT_DENSITY": "comfortable",
+      "NDJC:DATA_SOURCE": "local",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "latest",
+      "NDJC:PAGING_SIZE": "20",
+      "NDJC:OFFLINE_POLICY": "read_through_cache",
+      "NDJC:PRIVACY_POLICY": "<NDJC_PLACEHOLDER>",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META_RUNID": "<NDJC_PLACEHOLDER>",
+      "NDJC:FEATURE_TOGGLE_MIN": "baseline",
+      "NDJC:DEBUG_LOG_ENABLED": "false",
+      "NDJC:RUN_ID": "<NDJC_PLACEHOLDER>",
+      "NDJC:LOG_LEVEL": "info",
+      "NDJC:METRICS_ENABLED": "false",
+      "NDJC:CRASHLYTICS_ENABLED": "false",
+      "NDJC:EXPERIMENT_BUCKET": "<NDJC_PLACEHOLDER>"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "detail/{id}",
+        "post"
+      ]
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.dtxc.menu",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.INTERNET"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "ok": true,
+        "report": {
+          "missing": [],
+          "invalid": []
+        }
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "708ec7906711205fd5c4a96e40b30598993b8cd2298b0dde9459b4685e19ba2a",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha256": "d94efce50f9e962333a0670fa438946a0278bfdc0bc7bf531a1f7f3754a051d3",
+      "model": "groq"
+    },
+    "synthesized": false,
+    "rawText": "{\n  \"metadata\": {\n    \"template\": \"circle-basic\",\n    \"appName\": \"德州餐厅\",\n    \"packageId\": \"com.ndjc.dtxc.menu\",\n    \"mode\": \"B\"\n  },\n  \"anchors\": {\n    \"text\": {\n      \"NDJC:PACKAGE_NAME\": \"com.ndjc.dtxc.menu\",\n      \"NDJC:APP_LABEL\": \"德州餐厅\",\n      \"NDJC:HOME_TITLE\": \"菜单\",\n      \"NDJC:PRIMARY_BUTTON_TEXT\": \"上传照片\",\n      \"NDJC:THEME_NAME\": \"CircleBasicTheme\",\n      \"NDJC:DARK_MODE\": \"auto\",\n      \"NDJC:FONT_FAMILY_PRIMARY\": \"system\",\n      \"NDJC:FONT_FAMILY_SECONDARY\": \"system\",\n      \"NDJC:I18N_ENABLED\": \"true\",\n      \"NDJC:ANIM_ENABLED\": \"true\",\n      \"NDJC:ANIM_DURATION_MS\": \"300\",\n      \"NDJC:LAYOUT_DENSITY\": \"comfortable\",\n      \"NDJC:DATA_SOURCE\": \"local\",\n      \"NDJC:SEED_ENABLED\": \"false\",\n      \"NDJC:FEED_SORT\": \"latest\",\n      \"NDJC:PAGING_SIZE\": \"20\",\n      \"NDJC:OFFLINE_POLICY\": \"read_through_cache\",\n      \"NDJC:PRIVACY_POLICY\": \"<NDJC_PLACEHOLDER>\",\n      \"NDJC:DRAFT_ENABLED\": \"true\",\n      \"NDJC:USE_APP_BUNDLE\": \"true\",\n      \"NDJC:BUILD_META_RUNID\": \"<NDJC_PLACEHOLDER>\",\n      \"NDJC:FEATURE_TOGGLE_MIN\": \"baseline\",\n      \"NDJC:DEBUG_LOG_ENABLED\": \"false\",\n      \"NDJC:RUN_ID\": \"<NDJC_PLACEHOLDER>\",\n      \"NDJC:LOG_LEVEL\": \"info\",\n      \"NDJC:METRICS_ENABLED\": \"false\",\n      \"NDJC:CRASHLYTICS_ENABLED\": \"false\",\n      \"NDJC:EXPERIMENT_BUCKET\": \"<NDJC_PLACEHOLDER>\"\n    },\n    \"block\": {},\n    \"list\": {\n      \"LIST:ROUTES\": [\n        \"home\",\n        \"detail/{id}\",\n        \"post\"\n      ]\n    },\n    \"if\": {},\n    \"hook\": {},\n    \"gradle\": {\n      \"applicationId\": \"com.ndjc.dtxc.menu\",\n      \"resConfigs\": [\n        \"en\",\n        \"zh-rCN\",\n        \"zh-rTW\"\n      ],\n      \"permissions\": [\n        \"android.permission.CAMERA\",\n        \"android.permission.WRITE_EXTERNAL_STORAGE\",\n        \"android.permission.READ_EXTERNAL_STORAGE\",\n        \"android.permission.INTERNET\"\n      ]\n    }\n  },\n  \"files\": []\n}"
+  }
+}
