@@ -1,0 +1,139 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.ndjc.demo.restaurant",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "菜单",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "德州风格",
+    "NDJC:DARK_MODE": "false",
+    "NDJC:FONT_FAMILY_PRIMARY": "Arial",
+    "NDJC:FONT_FAMILY_SECONDARY": "Times New Roman",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "500",
+    "NDJC:LAYOUT_DENSITY": "mdpi",
+    "NDJC:DATA_SOURCE": "网络",
+    "NDJC:SEED_ENABLED": "false",
+    "NDJC:FEED_SORT": "时间",
+    "NDJC:PAGING_SIZE": "10",
+    "NDJC:OFFLINE_POLICY": "false",
+    "NDJC:PRIVACY_POLICY": "https://www.example.com/privacy",
+    "NDJC:DRAFT_ENABLED": "true",
+    "NDJC:USE_APP_BUNDLE": "false",
+    "NDJC:BUILD_META_RUNID": "1",
+    "NDJC:FEATURE_TOGGLE_MIN": "1.0",
+    "NDJC:DEBUG_LOG_ENABLED": "true",
+    "NDJC:RUN_ID": "1",
+    "NDJC:LOG_LEVEL": "DEBUG",
+    "NDJC:METRICS_ENABLED": "true",
+    "NDJC:CRASHLYTICS_ENABLED": "true",
+    "NDJC:EXPERIMENT_BUCKET": "https://www.example.com/experiment"
+  },
+  "blocks": {
+    "HOME_HEADER": "@Composable fun HomeHeader() { Text(\"菜单\") }",
+    "HOME_BODY": "@Composable fun HomeBody() { LazyColumn { items = listOf( \"菜品1\", \"菜品2\", \"菜品3\") { item -> Text(item) } } }",
+    "HOME_ACTIONS": "@Composable fun HomeActions() { Button(onClick = { /* 上传照片 */ }) { Text(\"上传照片\") } }",
+    "THEME_COLORS": "val themeColors = mapOf(\"primary\" to Color(0xFF0000), \"secondary\" to Color(0xFF00FF))",
+    "TYPOCASE_OVERRIDES": "val typography = Typography.Default.copy(fontFamily = FontFamily.Serif)",
+    "STRINGS_EXTRA": "val strings = mapOf(\"hello\" to \"world\")",
+    "ROUTE_HOME": "/home",
+    "ROUTE_DETAIL": "/detail",
+    "ROUTE_POST": "/post",
+    "NAV_TRANSITIONS": "val navTransition = NavTransition.Slide",
+    "SPLASH_CONTENT": "Text(\"欢迎使用德州餐厅\")",
+    "EMPTY_STATE": "Text(\"暂无数据\")",
+    "ERROR_STATE": "Text(\"出错了\")",
+    "DEPENDENCY_SNIPPETS": "dependencies { implementation 'androidx.core:core:1.0.0') }",
+    "DEBUG_PANEL": "val debugPanel = DebugPanel()",
+    "BUILD_SUMMARY": "val buildSummary = BuildSummary()",
+    "HEADER_AD_SLOT": "AdView()",
+    "FEED_ITEM_BADGES": "val feedItemBadges = listOf(\"新\")",
+    "USER_PROFILE_CARD": "UserProfileCard()",
+    "SPONSORED_CARD": "SponsoredCard()",
+    "PROFILE_SECTION": "ProfileSection()",
+    "SETTINGS_SECTION": "SettingsSection()"
+  },
+  "lists": {
+    "PROGUARD_EXTRA": [
+      "-keep class * { *; }"
+    ],
+    "PACKAGING_RULES": [
+      "com.ndjc.demo.restaurant.R$*"
+    ],
+    "ROUTES": [
+      "/home",
+      "/detail",
+      "/post"
+    ],
+    "POST_FIELDS": [
+      "title",
+      "content",
+      "price"
+    ],
+    "COMMENT_FIELDS": [
+      "content",
+      "rating"
+    ],
+    "ABI_SPLITS": [
+      "armeabi-v7a",
+      "arm64-v8a"
+    ],
+    "PLURAL_STRINGS": [
+      "hello",
+      "world"
+    ],
+    "COMPONENT_STYLES": [
+      "Button",
+      "TextView"
+    ],
+    "REMOTE_FLAGS": [
+      "remote"
+    ],
+    "DEEPLINK_PATTERNS": [
+      "https://www.example.com/*"
+    ]
+  },
+  "conditions": {
+    "PERMISSION.CAMERA": true,
+    "PERMISSION.MEDIA": true,
+    "PERMISSION.NOTIFICATION": false,
+    "PERMISSION.LOCATION": false,
+    "PERMISSION.CONTACTS": false,
+    "PERMISSION.SCHEDULE_EXACT_ALARM": false,
+    "PERMISSION.CLIPBOARD": false,
+    "NETWORK.CLEAR_TEXT": true,
+    "FILE_PROVIDER": true,
+    "INTENT.SHARE": true
+  },
+  "hooks": {
+    "BEFORE_BUILD": "println(\"开始构建\")",
+    "AFTER_BUILD": "println(\"构建完成\")",
+    "PRE_INJECT": "println(\"开始注入\")",
+    "POST_INJECT": "println(\"注入完成\")",
+    "PRE_COMMIT": "println(\"开始提交\")",
+    "AFTER_INSTALL": "println(\"安装完成\")"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.ndjc.demo.restaurant",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.MEDIA",
+      "android.permission.ACCESS_FINE_LOCATION"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.ndjc.demo.restaurant",
+    "mode": "B"
+  },
+  "droppedDanger": 0
+}

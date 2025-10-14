@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- BLOCK:THEME_COLORS -->
+val themeColors = mapOf("primary" to Color(0xFF0000), "secondary" to Color(0xFF00FF))
+<!-- END_BLOCK -->
+
+    <!-- BLOCK:TYPOCASE_OVERRIDES -->
+val typography = Typography.Default.copy(fontFamily = FontFamily.Serif)
+<!-- END_BLOCK -->
+
+</resources>
