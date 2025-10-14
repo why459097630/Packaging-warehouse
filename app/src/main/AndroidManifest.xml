@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  说明：
+  - Android 8+ 的 AGP 会以 Gradle 的 android { namespace = "…" } 作为 R 的包名。
+  - 因此这里 **不再** 写 package 属性，以免产生 “Setting the namespace via the package attribute… is ignored” 警告，
+    以及由此导致的 R 未生成/引用不到的问题。
+  - 其余锚点（IF / LIST / BLOCK / NDJC:…）保持不变，供物化脚本替换。
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ===== Permissions（条件锚点） ===== -->
+
+    
+    <uses-permission android:name="android.permission.CAMERA" />
+    
+
+    
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    
+
+    <!-- IF:PERMISSION.NOTIFICATION -->
+<!-- END_IF -->
+
+    <!-- IF:PERMISSION.LOCATION -->
+<!-- END_IF -->
+
+    <!-- IF:PERMISSION.CONTACTS -->
+<!-- END_IF -->
+
+    <!-- IF:PERMISSION.SCHEDULE_EXACT_ALARM -->
+<!-- END_IF -->
+
+    <!-- IF:PERMISSION.CLIPBOARD -->
+<!-- END_IF -->
+
+    <!-- ===== Application ===== -->
+    <application
+        android:name=".App"
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/NDJCTheme">
+
+        
+        <!-- 如需明文 HTTP，可在条件为真时由生成器注入 usesCleartextTraffic 或相关片段 -->
+        <meta-data android:name="ndjc.placeholder" android:value="true"/>
+        
+
+        <!-- BLOCK:SPLASH_CONTENT -->
+德州餐厅
+<!-- END_BLOCK -->
+
+        
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- LIST:DEEPLINK_PATTERNS -->
+            <!-- 例：<intent-filter>…<data android:scheme="${ITEM}" /></intent-filter>（请按需要复制完整 intent-filter） -->
+            <!-- END_LIST -->
+        </activity>
+
+        
+        <activity
+            android:name=".ShareProxyActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+        
+
+    </application>
+
+</manifest>
