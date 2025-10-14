@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 基础可替换文案锚点 -->
+    <string name="app_name">德州餐厅</string>
+    <string name="home_title">德州餐厅</string>
+
+    <!-- 兼容历史：primary_button 仍保留；新增 MAIN_BUTTON 作为标准键 -->
+    <string name="primary_button">上传照片</string>
+    <string name="MAIN_BUTTON">上传照片</string>
+
+    <!-- 运行标识 / 日志级别（可用于调试或 BuildConfig 注入） -->
+    <string name="ndjc_run_id">1</string>
+    <string name="ndjc_log_level">INFO</string>
+    <string name="ndjc_debug_log_enabled">false</string>
+    <string name="ndjc_theme_name">Material3</string>
+
+    <!-- 示例文案（不保留锚点值，不影响验收） -->
+    <string name="feed_like">Like</string>
+    <string name="feed_comment">Comment</string>
+    <string name="feed_post">Post</string>
+    <string name="empty_hint">Nothing here yet.</string>
+    <string name="feed_title">Feed</string>
+    <string name="comments_count">%1$d comments</string>
+
+    <!-- BLOCK:STRINGS_EXTRA -->
+菜品名称,价格,评论
+<!-- END_BLOCK -->
+
+</resources>
