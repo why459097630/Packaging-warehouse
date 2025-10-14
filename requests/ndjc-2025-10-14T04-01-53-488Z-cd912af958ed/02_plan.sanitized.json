@@ -1,0 +1,132 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.dtxc",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "德州餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "德州餐厅",
+    "NDJC:DARK_MODE": "auto",
+    "NDJC:FONT_FAMILY_PRIMARY": "system",
+    "NDJC:FONT_FAMILY_SECONDARY": "system",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "300",
+    "NDJC:LAYOUT_DENSITY": "comfortable",
+    "NDJC:DATA_SOURCE": "local",
+    "NDJC:SEED_ENABLED": "false",
+    "NDJC:FEED_SORT": "latest",
+    "NDJC:PAGING_SIZE": "20",
+    "NDJC:OFFLINE_POLICY": "read_through_cache",
+    "NDJC:PRIVACY_POLICY": "https://www.dtxc.com/privacy",
+    "NDJC:DRAFT_ENABLED": "true",
+    "NDJC:USE_APP_BUNDLE": "true",
+    "NDJC:BUILD_META_RUNID": "20230220",
+    "NDJC:FEATURE_TOGGLE_MIN": "baseline",
+    "NDJC:DEBUG_LOG_ENABLED": "false",
+    "NDJC:RUN_ID": "20230220",
+    "NDJC:LOG_LEVEL": "info",
+    "NDJC:METRICS_ENABLED": "false",
+    "NDJC:CRASHLYTICS_ENABLED": "false",
+    "NDJC:EXPERIMENT_BUCKET": "dtxc-experiment"
+  },
+  "blocks": {
+    "HOME_HEADER": "__BLOCK_HOME_HEADER__",
+    "HOME_BODY": "__BLOCK_HOME_BODY__",
+    "HOME_ACTIONS": "__BLOCK_HOME_ACTIONS__",
+    "THEME_COLORS": "__BLOCK_THEME_COLORS__",
+    "TYPOCASE_OVERRIDES": "__BLOCK_TYPOCASE__",
+    "STRINGS_EXTRA": "__BLOCK_STRINGS_EXTRA__",
+    "ROUTE_HOME": "__BLOCK_ROUTE_HOME__",
+    "ROUTE_DETAIL": "__BLOCK_ROUTE_DETAIL__",
+    "ROUTE_POST": "__BLOCK_ROUTE_POST__",
+    "NAV_TRANSITIONS": "__BLOCK_NAV_TRANSITIONS__",
+    "SPLASH_CONTENT": "__BLOCK_SPLASH__",
+    "EMPTY_STATE": "__BLOCK_EMPTY__",
+    "ERROR_STATE": "__BLOCK_ERROR__",
+    "DEPENDENCY_SNIPPETS": "__BLOCK_DEPENDENCY__",
+    "DEBUG_PANEL": "__BLOCK_DEBUG__",
+    "BUILD_SUMMARY": "__BLOCK_BUILD_SUMMARY__",
+    "HEADER_AD_SLOT": "__BLOCK_HEADER_AD__",
+    "FEED_ITEM_BADGES": "__BLOCK_FEED_BADGES__",
+    "USER_PROFILE_CARD": "__BLOCK_USER_PROFILE__",
+    "SPONSORED_CARD": "__BLOCK_SPONSORED__",
+    "PROFILE_SECTION": "__BLOCK_PROFILE__",
+    "SETTINGS_SECTION": "__BLOCK_SETTINGS__"
+  },
+  "lists": {
+    "PROGUARD_EXTRA": [
+      "__PROGUARD__"
+    ],
+    "PACKAGING_RULES": [
+      "__PACKAGING_RULE__"
+    ],
+    "ROUTES": [
+      "home"
+    ],
+    "POST_FIELDS": [
+      "id",
+      "title",
+      "body"
+    ],
+    "COMMENT_FIELDS": [
+      "id",
+      "postId",
+      "body"
+    ],
+    "ABI_SPLITS": [
+      "arm64-v8a"
+    ],
+    "PLURAL_STRINGS": [
+      "item_count"
+    ],
+    "COMPONENT_STYLES": [
+      "card",
+      "chip"
+    ],
+    "REMOTE_FLAGS": [
+      "__REMOTE_FLAG__"
+    ],
+    "DEEPLINK_PATTERNS": [
+      "myapp://home"
+    ]
+  },
+  "conditions": {
+    "PERMISSION.CAMERA": false,
+    "PERMISSION.MEDIA": false,
+    "PERMISSION.NOTIFICATION": false,
+    "PERMISSION.LOCATION": false,
+    "PERMISSION.CONTACTS": false,
+    "PERMISSION.SCHEDULE_EXACT_ALARM": false,
+    "PERMISSION.CLIPBOARD": false,
+    "NETWORK.CLEAR_TEXT": false,
+    "FILE_PROVIDER": false,
+    "INTENT.SHARE": false
+  },
+  "hooks": {
+    "BEFORE_BUILD": "__HOOK_BEFORE_BUILD__",
+    "AFTER_BUILD": "__HOOK_AFTER_BUILD__",
+    "PRE_INJECT": "__HOOK_PRE_INJECT__",
+    "POST_INJECT": "__HOOK_POST_INJECT__",
+    "PRE_COMMIT": "__HOOK_PRE_COMMIT__",
+    "AFTER_INSTALL": "__HOOK_AFTER_INSTALL__"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.example.dtxc",
+    "resConfigs": [
+      "en"
+    ],
+    "permissions": [
+      "android.permission.INTERNET"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxc",
+    "mode": "B"
+  },
+  "droppedDanger": 0
+}

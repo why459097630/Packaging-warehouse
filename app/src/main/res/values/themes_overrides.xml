@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- BLOCK:THEME_COLORS -->
+__BLOCK_THEME_COLORS__
+<!-- END_BLOCK -->
+
+    <!-- BLOCK:TYPOCASE_OVERRIDES -->
+__BLOCK_TYPOCASE__
+<!-- END_BLOCK -->
+
+</resources>
