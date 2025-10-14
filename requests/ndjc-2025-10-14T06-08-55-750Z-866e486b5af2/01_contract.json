@@ -1,0 +1,161 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.ndjc.demo.restaurant",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "f91695bf98615cb54878a1a6a7ed96183c7ae40f45feb0443767a5cfea2fa14a",
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.demo.restaurant",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "菜单",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "德州风格",
+      "NDJC:DARK_MODE": "false",
+      "NDJC:FONT_FAMILY_PRIMARY": "Arial",
+      "NDJC:FONT_FAMILY_SECONDARY": "Times New Roman",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "500",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "网络",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "时间",
+      "NDJC:PAGING_SIZE": "10",
+      "NDJC:OFFLINE_POLICY": "false",
+      "NDJC:PRIVACY_POLICY": "https://www.example.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "false",
+      "NDJC:BUILD_META_RUNID": "1",
+      "NDJC:FEATURE_TOGGLE_MIN": "1.0",
+      "NDJC:DEBUG_LOG_ENABLED": "true",
+      "NDJC:RUN_ID": "1",
+      "NDJC:LOG_LEVEL": "DEBUG",
+      "NDJC:METRICS_ENABLED": "true",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "https://www.example.com/experiment"
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "@Composable fun HomeHeader() { Text(\"菜单\") }",
+      "BLOCK:HOME_BODY": "@Composable fun HomeBody() { LazyColumn { items = listOf( \"菜品1\", \"菜品2\", \"菜品3\") { item -> Text(item) } } }",
+      "BLOCK:HOME_ACTIONS": "@Composable fun HomeActions() { Button(onClick = { /* 上传照片 */ }) { Text(\"上传照片\") } }",
+      "BLOCK:THEME_COLORS": "val themeColors = mapOf(\"primary\" to Color(0xFF0000), \"secondary\" to Color(0xFF00FF))",
+      "BLOCK:TYPOCASE_OVERRIDES": "val typography = Typography.Default.copy(fontFamily = FontFamily.Serif)",
+      "BLOCK:STRINGS_EXTRA": "val strings = mapOf(\"hello\" to \"world\")",
+      "BLOCK:ROUTE_HOME": "/home",
+      "BLOCK:ROUTE_DETAIL": "/detail",
+      "BLOCK:ROUTE_POST": "/post",
+      "BLOCK:NAV_TRANSITIONS": "val navTransition = NavTransition.Slide",
+      "BLOCK:SPLASH_CONTENT": "Text(\"欢迎使用德州餐厅\")",
+      "BLOCK:EMPTY_STATE": "Text(\"暂无数据\")",
+      "BLOCK:ERROR_STATE": "Text(\"出错了\")",
+      "BLOCK:DEPENDENCY_SNIPPETS": "dependencies { implementation 'androidx.core:core:1.0.0') }",
+      "BLOCK:DEBUG_PANEL": "val debugPanel = DebugPanel()",
+      "BLOCK:BUILD_SUMMARY": "val buildSummary = BuildSummary()",
+      "BLOCK:HEADER_AD_SLOT": "AdView()",
+      "BLOCK:FEED_ITEM_BADGES": "val feedItemBadges = listOf(\"新\")",
+      "BLOCK:USER_PROFILE_CARD": "UserProfileCard()",
+      "BLOCK:SPONSORED_CARD": "SponsoredCard()",
+      "BLOCK:PROFILE_SECTION": "ProfileSection()",
+      "BLOCK:SETTINGS_SECTION": "SettingsSection()"
+    },
+    "list": {
+      "LIST:PROGUARD_EXTRA": [
+        "-keep class * { *; }"
+      ],
+      "LIST:PACKAGING_RULES": [
+        "com.ndjc.demo.restaurant.R$*"
+      ],
+      "LIST:ROUTES": [
+        "/home",
+        "/detail",
+        "/post"
+      ],
+      "LIST:POST_FIELDS": [
+        "title",
+        "content",
+        "price"
+      ],
+      "LIST:COMMENT_FIELDS": [
+        "content",
+        "rating"
+      ],
+      "LIST:ABI_SPLITS": [
+        "armeabi-v7a",
+        "arm64-v8a"
+      ],
+      "LIST:PLURAL_STRINGS": [
+        "hello",
+        "world"
+      ],
+      "LIST:COMPONENT_STYLES": [
+        "Button",
+        "TextView"
+      ],
+      "LIST:REMOTE_FLAGS": [
+        "remote"
+      ],
+      "LIST:DEEPLINK_PATTERNS": [
+        "https://www.example.com/*"
+      ]
+    },
+    "if": {
+      "IF:PERMISSION.CAMERA": true,
+      "IF:PERMISSION.MEDIA": true,
+      "IF:PERMISSION.NOTIFICATION": false,
+      "IF:PERMISSION.LOCATION": false,
+      "IF:PERMISSION.CONTACTS": false,
+      "IF:PERMISSION.SCHEDULE_EXACT_ALARM": false,
+      "IF:PERMISSION.CLIPBOARD": false,
+      "IF:NETWORK.CLEAR_TEXT": true,
+      "IF:FILE_PROVIDER": true,
+      "IF:INTENT.SHARE": true
+    },
+    "hook": {
+      "HOOK:BEFORE_BUILD": "println(\"开始构建\")",
+      "HOOK:AFTER_BUILD": "println(\"构建完成\")",
+      "HOOK:PRE_INJECT": "println(\"开始注入\")",
+      "HOOK:POST_INJECT": "println(\"注入完成\")",
+      "HOOK:PRE_COMMIT": "println(\"开始提交\")",
+      "HOOK:AFTER_INSTALL": "println(\"安装完成\")"
+    },
+    "gradle": {
+      "applicationId": "com.ndjc.demo.restaurant",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.MEDIA",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "ok": true
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "f91695bf98615cb54878a1a6a7ed96183c7ae40f45feb0443767a5cfea2fa14a",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha256": "6ec9d3fe45b613ed39548f203c90f6b558e0045411fafd603752845e476557f0",
+      "model": "groq"
+    },
+    "rawText": "{\n   \"metadata\": {\n      \"template\": \"circle-basic\",\n      \"appName\": \"德州餐厅\",\n      \"packageId\": \"com.ndjc.demo.restaurant\",\n      \"mode\": \"B\"\n   },\n   \"anchors\": {\n      \"text\": {\n         \"NDJC:PACKAGE_NAME\": \"com.ndjc.demo.restaurant\",\n         \"NDJC:APP_LABEL\": \"德州餐厅\",\n         \"NDJC:HOME_TITLE\": \"菜单\",\n         \"NDJC:PRIMARY_BUTTON_TEXT\": \"上传照片\",\n         \"NDJC:THEME_NAME\": \"德州风格\",\n         \"NDJC:DARK_MODE\": \"false\",\n         \"NDJC:FONT_FAMILY_PRIMARY\": \"Arial\",\n         \"NDJC:FONT_FAMILY_SECONDARY\": \"Times New Roman\",\n         \"NDJC:I18N_ENABLED\": \"true\",\n         \"NDJC:ANIM_ENABLED\": \"true\",\n         \"NDJC:ANIM_DURATION_MS\": \"500\",\n         \"NDJC:LAYOUT_DENSITY\": \"mdpi\",\n         \"NDJC:DATA_SOURCE\": \"网络\",\n         \"NDJC:SEED_ENABLED\": \"false\",\n         \"NDJC:FEED_SORT\": \"时间\",\n         \"NDJC:PAGING_SIZE\": \"10\",\n         \"NDJC:OFFLINE_POLICY\": \"false\",\n         \"NDJC:PRIVACY_POLICY\": \"https://www.example.com/privacy\",\n         \"NDJC:DRAFT_ENABLED\": \"true\",\n         \"NDJC:USE_APP_BUNDLE\": \"false\",\n         \"NDJC:BUILD_META_RUNID\": \"1\",\n         \"NDJC:FEATURE_TOGGLE_MIN\": \"1.0\",\n         \"NDJC:DEBUG_LOG_ENABLED\": \"true\",\n         \"NDJC:RUN_ID\": \"1\",\n         \"NDJC:LOG_LEVEL\": \"DEBUG\",\n         \"NDJC:METRICS_ENABLED\": \"true\",\n         \"NDJC:CRASHLYTICS_ENABLED\": \"true\",\n         \"NDJC:EXPERIMENT_BUCKET\": \"https://www.example.com/experiment\"\n      },\n      \"block\": {\n         \"BLOCK:HOME_HEADER\": \"@Composable fun HomeHeader() { Text(\\\"菜单\\\") }\",\n         \"BLOCK:HOME_BODY\": \"@Composable fun HomeBody() { LazyColumn { items = listOf( \\\"菜品1\\\", \\\"菜品2\\\", \\\"菜品3\\\") { item -> Text(item) } } }\",\n         \"BLOCK:HOME_ACTIONS\": \"@Composable fun HomeActions() { Button(onClick = { /* 上传照片 */ }) { Text(\\\"上传照片\\\") } }\",\n         \"BLOCK:THEME_COLORS\": \"val themeColors = mapOf(\\\"primary\\\" to Color(0xFF0000), \\\"secondary\\\" to Color(0xFF00FF))\",\n         \"BLOCK:TYPOCASE_OVERRIDES\": \"val typography = Typography.Default.copy(fontFamily = FontFamily.Serif)\",\n         \"BLOCK:STRINGS_EXTRA\": \"val strings = mapOf(\\\"hello\\\" to \\\"world\\\")\",\n         \"BLOCK:ROUTE_HOME\": \"/home\",\n         \"BLOCK:ROUTE_DETAIL\": \"/detail\",\n         \"BLOCK:ROUTE_POST\": \"/post\",\n         \"BLOCK:NAV_TRANSITIONS\": \"val navTransition = NavTransition.Slide\",\n         \"BLOCK:SPLASH_CONTENT\": \"Text(\\\"欢迎使用德州餐厅\\\")\",\n         \"BLOCK:EMPTY_STATE\": \"Text(\\\"暂无数据\\\")\",\n         \"BLOCK:ERROR_STATE\": \"Text(\\\"出错了\\\")\",\n         \"BLOCK:DEPENDENCY_SNIPPETS\": \"dependencies { implementation 'androidx.core:core:1.0.0') }\",\n         \"BLOCK:DEBUG_PANEL\": \"val debugPanel = DebugPanel()\",\n         \"BLOCK:BUILD_SUMMARY\": \"val buildSummary = BuildSummary()\",\n         \"BLOCK:HEADER_AD_SLOT\": \"AdView()\",\n         \"BLOCK:FEED_ITEM_BADGES\": \"val feedItemBadges = listOf(\\\"新\\\")\",\n         \"BLOCK:USER_PROFILE_CARD\": \"UserProfileCard()\",\n         \"BLOCK:SPONSORED_CARD\": \"SponsoredCard()\",\n         \"BLOCK:PROFILE_SECTION\": \"ProfileSection()\",\n         \"BLOCK:SETTINGS_SECTION\": \"SettingsSection()\"\n      },\n      \"list\": {\n         \"LIST:PROGUARD_EXTRA\": [\"-keep class * { *; }\"],\n         \"LIST:PACKAGING_RULES\": [\"com.ndjc.demo.restaurant.R$*\"],\n         \"LIST:ROUTES\": [\"/home\", \"/detail\", \"/post\"],\n         \"LIST:POST_FIELDS\": [\"title\", \"content\", \"price\"],\n         \"LIST:COMMENT_FIELDS\": [\"content\", \"rating\"],\n         \"LIST:ABI_SPLITS\": [\"armeabi-v7a\", \"arm64-v8a\"],\n         \"LIST:PLURAL_STRINGS\": [\"hello\", \"world\"],\n         \"LIST:COMPONENT_STYLES\": [\"Button\", \"TextView\"],\n         \"LIST:REMOTE_FLAGS\": [\"remote\"],\n         \"LIST:DEEPLINK_PATTERNS\": [\"https://www.example.com/*\"]\n      },\n      \"if\": {\n         \"IF:PERMISSION.CAMERA\": true,\n         \"IF:PERMISSION.MEDIA\": true,\n         \"IF:PERMISSION.NOTIFICATION\": false,\n         \"IF:PERMISSION.LOCATION\": false,\n         \"IF:PERMISSION.CONTACTS\": false,\n         \"IF:PERMISSION.SCHEDULE_EXACT_ALARM\": false,\n         \"IF:PERMISSION.CLIPBOARD\": false,\n         \"IF:NETWORK.CLEAR_TEXT\": true,\n         \"IF:FILE_PROVIDER\": true,\n         \"IF:INTENT.SHARE\": true\n      },\n      \"hook\": {\n         \"HOOK:BEFORE_BUILD\": \"println(\\\"开始构建\\\")\",\n         \"HOOK:AFTER_BUILD\": \"println(\\\"构建完成\\\")\",\n         \"HOOK:PRE_INJECT\": \"println(\\\"开始注入\\\")\",\n         \"HOOK:POST_INJECT\": \"println(\\\"注入完成\\\")\",\n         \"HOOK:PRE_COMMIT\": \"println(\\\"开始提交\\\")\",\n         \"HOOK:AFTER_INSTALL\": \"println(\\\"安装完成\\\")\"\n      },\n      \"gradle\": {\n         \"applicationId\": \"com.ndjc.demo.restaurant\",\n         \"resConfigs\": [\n            \"en\",\n            \"zh-rCN\",\n            \"zh-rTW\"\n         ],\n         \"permissions\": [\n            \"android.permission.CAMERA\",\n            \"android.permission.MEDIA\",\n            \"android.permission.ACCESS_FINE_LOCATION\"\n         ]\n      }\n   },\n   \"files\": []\n}"
+  }
+}
