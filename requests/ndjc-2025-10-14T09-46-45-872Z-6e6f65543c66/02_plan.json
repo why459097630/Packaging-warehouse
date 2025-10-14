@@ -1,0 +1,263 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.dz.canteen",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "德州餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "Material3",
+    "NDJC:DARK_MODE": "auto",
+    "NDJC:FONT_FAMILY_PRIMARY": "Montserrat",
+    "NDJC:FONT_FAMILY_SECONDARY": "Open Sans",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "200",
+    "NDJC:LAYOUT_DENSITY": "mdpi",
+    "NDJC:DATA_SOURCE": "网络",
+    "NDJC:SEED_ENABLED": "true",
+    "NDJC:FEED_SORT": "时间",
+    "NDJC:PAGING_SIZE": "20",
+    "NDJC:OFFLINE_POLICY": "允许",
+    "NDJC:PRIVACY_POLICY": "https://www.dz.canteen.com/privacy",
+    "NDJC:DRAFT_ENABLED": "true",
+    "NDJC:USE_APP_BUNDLE": "true",
+    "NDJC:BUILD_META_RUNID": "1",
+    "NDJC:FEATURE_TOGGLE_MIN": "1.0.0",
+    "NDJC:DEBUG_LOG_ENABLED": "false",
+    "NDJC:RUN_ID": "1",
+    "NDJC:LOG_LEVEL": "INFO",
+    "NDJC:METRICS_ENABLED": "true",
+    "NDJC:CRASHLYTICS_ENABLED": "true",
+    "NDJC:EXPERIMENT_BUCKET": "dz-canteen"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "德州餐厅",
+    "BLOCK:HOME_BODY": "上传照片并编辑文字介绍",
+    "BLOCK:HOME_ACTIONS": "上传照片、编辑文字介绍、设定价格、评论点赞",
+    "BLOCK:THEME_COLORS": "#FF69B4,#34A85A,#FFC107",
+    "BLOCK:TYPOCASE_OVERRIDES": "none",
+    "BLOCK:STRINGS_EXTRA": "{'upload_photo': '上传照片', 'edit_description': '编辑文字介绍', 'set_price': '设定价格', 'comment_like': '评论点赞'}",
+    "BLOCK:ROUTE_HOME": "/home",
+    "BLOCK:ROUTE_DETAIL": "/detail",
+    "BLOCK:ROUTE_POST": "/post",
+    "BLOCK:NAV_TRANSITIONS": "slide",
+    "BLOCK:SPLASH_CONTENT": "德州餐厅",
+    "BLOCK:EMPTY_STATE": "暂无数据",
+    "BLOCK:ERROR_STATE": "发生错误",
+    "BLOCK:DEPENDENCY_SNIPPETS": "{'photo_picker': 'com.dz.photo_picker'}",
+    "BLOCK:DEBUG_PANEL": "{'debug_mode': true}",
+    "BLOCK:BUILD_SUMMARY": "德州餐厅",
+    "BLOCK:HEADER_AD_SLOT": "德州餐厅",
+    "BLOCK:FEED_ITEM_BADGES": "{'upload_photo': true, 'edit_description': true, 'set_price': true, 'comment_like': true}",
+    "BLOCK:USER_PROFILE_CARD": "{'name': '用户', 'photo': '用户照片'}",
+    "BLOCK:SPONSORED_CARD": "{'title': '赞助商', 'photo': '赞助商照片'}",
+    "BLOCK:PROFILE_SECTION": "{'name': '用户', 'photo': '用户照片', 'description': '用户描述'}",
+    "BLOCK:SETTINGS_SECTION": "{'title': '设置', 'description': '设置描述'}"
+  },
+  "lists": {
+    "LIST:PROGUARD_EXTRA": [
+      "-keep class com.dz.photo_picker.PhotoPicker"
+    ],
+    "LIST:PACKAGING_RULES": [
+      "-keep class com.dz.photo_picker.PhotoPicker"
+    ],
+    "LIST:ROUTES": [
+      "home",
+      "detail",
+      "post"
+    ],
+    "LIST:POST_FIELDS": [
+      "photo",
+      "description",
+      "price",
+      "comments"
+    ],
+    "LIST:COMMENT_FIELDS": [
+      "text",
+      "likes"
+    ],
+    "LIST:ABI_SPLITS": [
+      "armeabi-v7a",
+      "arm64-v8a"
+    ],
+    "LIST:PLURAL_STRINGS": [
+      "{'one': '一条评论', 'other': '%d条评论'}"
+    ],
+    "LIST:COMPONENT_STYLES": [
+      "{'photo_picker': {'theme': 'light'}}"
+    ],
+    "LIST:REMOTE_FLAGS": [
+      "{'remote': true}"
+    ],
+    "LIST:DEEPLINK_PATTERNS": [
+      "{'pattern': 'https://www.dz.canteen.com/*'}"
+    ]
+  },
+  "conditions": {
+    "IF:PERMISSION.CAMERA": true,
+    "IF:PERMISSION.MEDIA": true,
+    "IF:PERMISSION.NOTIFICATION": false,
+    "IF:PERMISSION.LOCATION": false,
+    "IF:PERMISSION.CONTACTS": false,
+    "IF:PERMISSION.SCHEDULE_EXACT_ALARM": false,
+    "IF:PERMISSION.CLIPBOARD": false,
+    "IF:NETWORK.CLEAR_TEXT": true,
+    "IF:FILE_PROVIDER": true,
+    "IF:INTENT.SHARE": true
+  },
+  "hooks": {
+    "HOOK:BEFORE_BUILD": "echo '开始构建...'",
+    "HOOK:AFTER_BUILD": "echo '构建完成...'",
+    "HOOK:PRE_INJECT": "echo '开始注入...'",
+    "HOOK:POST_INJECT": "echo '注入完成...'",
+    "HOOK:PRE_COMMIT": "echo '开始提交...'",
+    "HOOK:AFTER_INSTALL": "echo '安装完成...'"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.dz.canteen",
+    "resConfigs": [
+      "en",
+      "zh-rCN",
+      "zh-rTW"
+    ],
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.MEDIA"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.dz.canteen",
+    "mode": "B"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.dz.canteen",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "德州餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "Material3",
+      "NDJC:DARK_MODE": "auto",
+      "NDJC:FONT_FAMILY_PRIMARY": "Montserrat",
+      "NDJC:FONT_FAMILY_SECONDARY": "Open Sans",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "200",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "网络",
+      "NDJC:SEED_ENABLED": "true",
+      "NDJC:FEED_SORT": "时间",
+      "NDJC:PAGING_SIZE": "20",
+      "NDJC:OFFLINE_POLICY": "允许",
+      "NDJC:PRIVACY_POLICY": "https://www.dz.canteen.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META_RUNID": "1",
+      "NDJC:FEATURE_TOGGLE_MIN": "1.0.0",
+      "NDJC:DEBUG_LOG_ENABLED": "false",
+      "NDJC:RUN_ID": "1",
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:METRICS_ENABLED": "true",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "dz-canteen"
+    },
+    "block": {
+      "HOME_HEADER": "德州餐厅",
+      "HOME_BODY": "上传照片并编辑文字介绍",
+      "HOME_ACTIONS": "上传照片、编辑文字介绍、设定价格、评论点赞",
+      "THEME_COLORS": "#FF69B4,#34A85A,#FFC107",
+      "TYPOCASE_OVERRIDES": "none",
+      "STRINGS_EXTRA": "{'upload_photo': '上传照片', 'edit_description': '编辑文字介绍', 'set_price': '设定价格', 'comment_like': '评论点赞'}",
+      "ROUTE_HOME": "/home",
+      "ROUTE_DETAIL": "/detail",
+      "ROUTE_POST": "/post",
+      "NAV_TRANSITIONS": "slide",
+      "SPLASH_CONTENT": "德州餐厅",
+      "EMPTY_STATE": "暂无数据",
+      "ERROR_STATE": "发生错误",
+      "DEPENDENCY_SNIPPETS": "{'photo_picker': 'com.dz.photo_picker'}",
+      "DEBUG_PANEL": "{'debug_mode': true}",
+      "BUILD_SUMMARY": "德州餐厅",
+      "HEADER_AD_SLOT": "德州餐厅",
+      "FEED_ITEM_BADGES": "{'upload_photo': true, 'edit_description': true, 'set_price': true, 'comment_like': true}",
+      "USER_PROFILE_CARD": "{'name': '用户', 'photo': '用户照片'}",
+      "SPONSORED_CARD": "{'title': '赞助商', 'photo': '赞助商照片'}",
+      "PROFILE_SECTION": "{'name': '用户', 'photo': '用户照片', 'description': '用户描述'}",
+      "SETTINGS_SECTION": "{'title': '设置', 'description': '设置描述'}"
+    },
+    "list": {
+      "PROGUARD_EXTRA": [
+        "-keep class com.dz.photo_picker.PhotoPicker"
+      ],
+      "PACKAGING_RULES": [
+        "-keep class com.dz.photo_picker.PhotoPicker"
+      ],
+      "ROUTES": [
+        "home",
+        "detail",
+        "post"
+      ],
+      "POST_FIELDS": [
+        "photo",
+        "description",
+        "price",
+        "comments"
+      ],
+      "COMMENT_FIELDS": [
+        "text",
+        "likes"
+      ],
+      "ABI_SPLITS": [
+        "armeabi-v7a",
+        "arm64-v8a"
+      ],
+      "PLURAL_STRINGS": [
+        "{'one': '一条评论', 'other': '%d条评论'}"
+      ],
+      "COMPONENT_STYLES": [
+        "{'photo_picker': {'theme': 'light'}}"
+      ],
+      "REMOTE_FLAGS": [
+        "{'remote': true}"
+      ],
+      "DEEPLINK_PATTERNS": [
+        "{'pattern': 'https://www.dz.canteen.com/*'}"
+      ]
+    },
+    "if": {
+      "PERMISSION.CAMERA": true,
+      "PERMISSION.MEDIA": true,
+      "PERMISSION.NOTIFICATION": false,
+      "PERMISSION.LOCATION": false,
+      "PERMISSION.CONTACTS": false,
+      "PERMISSION.SCHEDULE_EXACT_ALARM": false,
+      "PERMISSION.CLIPBOARD": false,
+      "NETWORK.CLEAR_TEXT": true,
+      "FILE_PROVIDER": true,
+      "INTENT.SHARE": true
+    },
+    "hook": {
+      "BEFORE_BUILD": "echo '开始构建...'",
+      "AFTER_BUILD": "echo '构建完成...'",
+      "PRE_INJECT": "echo '开始注入...'",
+      "POST_INJECT": "echo '注入完成...'",
+      "PRE_COMMIT": "echo '开始提交...'",
+      "AFTER_INSTALL": "echo '安装完成...'"
+    },
+    "gradle": {
+      "applicationId": "com.dz.canteen",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.MEDIA"
+      ]
+    }
+  }
+}
