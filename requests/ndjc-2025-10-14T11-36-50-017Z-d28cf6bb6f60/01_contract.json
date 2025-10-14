@@ -1,0 +1,166 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.ndjc.dtxc",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "d57107eb8685f6227d6eb66952a372ce160fdb329d5ba5e853e0d1dee443fd0b",
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.dtxc",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "德州餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "Material3",
+      "NDJC:DARK_MODE": "auto",
+      "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+      "NDJC:FONT_FAMILY_SECONDARY": "Open Sans",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "200",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "网络",
+      "NDJC:SEED_ENABLED": "true",
+      "NDJC:FEED_SORT": "时间",
+      "NDJC:PAGING_SIZE": "20",
+      "NDJC:OFFLINE_POLICY": "允许",
+      "NDJC:PRIVACY_POLICY": "https://www.dtxc.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META_RUNID": "1",
+      "NDJC:FEATURE_TOGGLE_MIN": "1",
+      "NDJC:DEBUG_LOG_ENABLED": "false",
+      "NDJC:RUN_ID": "1",
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:METRICS_ENABLED": "true",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "dtxc"
+    },
+    "block": {
+      "HOME_HEADER": "欢迎来到德州餐厅",
+      "HOME_BODY": "上传照片并编辑文字介绍",
+      "HOME_ACTIONS": "上传照片",
+      "THEME_COLORS": "#FF69B4,#34A85A",
+      "TYPOCASE_OVERRIDES": "大写",
+      "STRINGS_EXTRA": "菜品名称,价格,评论",
+      "ROUTE_HOME": "/home",
+      "ROUTE_DETAIL": "/detail",
+      "ROUTE_POST": "/post",
+      "NAV_TRANSITIONS": "滑动",
+      "SPLASH_CONTENT": "德州餐厅",
+      "EMPTY_STATE": "暂无数据",
+      "ERROR_STATE": "出错了",
+      "DEPENDENCY_SNIPPETS": "kotlinx.coroutines",
+      "DEBUG_PANEL": "调试面板",
+      "BUILD_SUMMARY": "构建完成",
+      "HEADER_AD_SLOT": "广告",
+      "FEED_ITEM_BADGES": "点赞,评论",
+      "USER_PROFILE_CARD": "用户资料",
+      "SPONSORED_CARD": "赞助商",
+      "PROFILE_SECTION": "用户资料",
+      "SETTINGS_SECTION": "设置"
+    },
+    "list": {
+      "PROGUARD_EXTRA": [
+        "-keep class *"
+      ],
+      "PACKAGING_RULES": [
+        "-keep class *"
+      ],
+      "ROUTES": [
+        "home",
+        "detail",
+        "post"
+      ],
+      "POST_FIELDS": [
+        "照片",
+        "文字介绍",
+        "价格"
+      ],
+      "COMMENT_FIELDS": [
+        "评论",
+        "点赞"
+      ],
+      "ABI_SPLITS": [
+        "armeabi-v7a",
+        "arm64-v8a"
+      ],
+      "PLURAL_STRINGS": [
+        "菜品名称",
+        "价格"
+      ],
+      "COMPONENT_STYLES": [
+        "照片",
+        "文字介绍"
+      ],
+      "REMOTE_FLAGS": [
+        "允许"
+      ],
+      "DEEPLINK_PATTERNS": [
+        "https://www.dtxc.com/*"
+      ]
+    },
+    "if": {
+      "PERMISSION.CAMERA": true,
+      "PERMISSION.MEDIA": true,
+      "PERMISSION.NOTIFICATION": false,
+      "PERMISSION.LOCATION": false,
+      "PERMISSION.CONTACTS": false,
+      "PERMISSION.SCHEDULE_EXACT_ALARM": false,
+      "PERMISSION.CLIPBOARD": false,
+      "NETWORK.CLEAR_TEXT": true,
+      "FILE_PROVIDER": true,
+      "INTENT.SHARE": true
+    },
+    "hook": {
+      "BEFORE_BUILD": "清理缓存",
+      "AFTER_BUILD": "上传到服务器",
+      "PRE_INJECT": "检查依赖",
+      "POST_INJECT": "生成配置文件",
+      "PRE_COMMIT": "检查代码",
+      "AFTER_INSTALL": "启动应用"
+    },
+    "gradle": {
+      "applicationId": "com.ndjc.dtxc",
+      "resConfigs": [
+        "en",
+        "zh-rCN",
+        "zh-rTW"
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.MEDIA",
+        "android.permission.NETWORK",
+        "android.permission.FILE_PROVIDER"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "ok": true,
+        "report": {
+          "missing": [],
+          "invalid": []
+        }
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "d57107eb8685f6227d6eb66952a372ce160fdb329d5ba5e853e0d1dee443fd0b",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha256": "fca4e391493cca23a3cee19d14318a316525775ffcb3501e333f5724784c1452",
+      "model": "groq"
+    },
+    "rawText": "```json\n{\n  \"metadata\": {\n    \"template\": \"circle-basic\",\n    \"appName\": \"德州餐厅\",\n    \"packageId\": \"com.ndjc.dtxc\",\n    \"mode\": \"B\"\n  },\n  \"anchors\": {\n    \"text\": {\n      \"NDJC:PACKAGE_NAME\": \"com.ndjc.dtxc\",\n      \"NDJC:APP_LABEL\": \"德州餐厅\",\n      \"NDJC:HOME_TITLE\": \"德州餐厅\",\n      \"NDJC:PRIMARY_BUTTON_TEXT\": \"上传照片\",\n      \"NDJC:THEME_NAME\": \"Material3\",\n      \"NDJC:DARK_MODE\": \"auto\",\n      \"NDJC:FONT_FAMILY_PRIMARY\": \"Roboto\",\n      \"NDJC:FONT_FAMILY_SECONDARY\": \"Open Sans\",\n      \"NDJC:I18N_ENABLED\": \"true\",\n      \"NDJC:ANIM_ENABLED\": \"true\",\n      \"NDJC:ANIM_DURATION_MS\": \"200\",\n      \"NDJC:LAYOUT_DENSITY\": \"mdpi\",\n      \"NDJC:DATA_SOURCE\": \"网络\",\n      \"NDJC:SEED_ENABLED\": \"true\",\n      \"NDJC:FEED_SORT\": \"时间\",\n      \"NDJC:PAGING_SIZE\": \"20\",\n      \"NDJC:OFFLINE_POLICY\": \"允许\",\n      \"NDJC:PRIVACY_POLICY\": \"https://www.dtxc.com/privacy\",\n      \"NDJC:DRAFT_ENABLED\": \"true\",\n      \"NDJC:USE_APP_BUNDLE\": \"true\",\n      \"NDJC:BUILD_META_RUNID\": \"1\",\n      \"NDJC:FEATURE_TOGGLE_MIN\": \"1\",\n      \"NDJC:DEBUG_LOG_ENABLED\": \"false\",\n      \"NDJC:RUN_ID\": \"1\",\n      \"NDJC:LOG_LEVEL\": \"INFO\",\n      \"NDJC:METRICS_ENABLED\": \"true\",\n      \"NDJC:CRASHLYTICS_ENABLED\": \"true\",\n      \"NDJC:EXPERIMENT_BUCKET\": \"dtxc\"\n    },\n    \"block\": {\n      \"HOME_HEADER\": \"欢迎来到德州餐厅\",\n      \"HOME_BODY\": \"上传照片并编辑文字介绍\",\n      \"HOME_ACTIONS\": \"上传照片\",\n      \"THEME_COLORS\": \"#FF69B4,#34A85A\",\n      \"TYPOCASE_OVERRIDES\": \"大写\",\n      \"STRINGS_EXTRA\": \"菜品名称,价格,评论\",\n      \"ROUTE_HOME\": \"/home\",\n      \"ROUTE_DETAIL\": \"/detail\",\n      \"ROUTE_POST\": \"/post\",\n      \"NAV_TRANSITIONS\": \"滑动\",\n      \"SPLASH_CONTENT\": \"德州餐厅\",\n      \"EMPTY_STATE\": \"暂无数据\",\n      \"ERROR_STATE\": \"出错了\",\n      \"DEPENDENCY_SNIPPETS\": \"kotlinx.coroutines\",\n      \"DEBUG_PANEL\": \"调试面板\",\n      \"BUILD_SUMMARY\": \"构建完成\",\n      \"HEADER_AD_SLOT\": \"广告\",\n      \"FEED_ITEM_BADGES\": \"点赞,评论\",\n      \"USER_PROFILE_CARD\": \"用户资料\",\n      \"SPONSORED_CARD\": \"赞助商\",\n      \"PROFILE_SECTION\": \"用户资料\",\n      \"SETTINGS_SECTION\": \"设置\"\n    },\n    \"list\": {\n      \"PROGUARD_EXTRA\": [\"-keep class *\"],\n      \"PACKAGING_RULES\": [\"-keep class *\"],\n      \"ROUTES\": [\n        \"home\",\n        \"detail\",\n        \"post\"\n      ],\n      \"POST_FIELDS\": [\"照片\", \"文字介绍\", \"价格\"],\n      \"COMMENT_FIELDS\": [\"评论\", \"点赞\"],\n      \"ABI_SPLITS\": [\"armeabi-v7a\", \"arm64-v8a\"],\n      \"PLURAL_STRINGS\": [\"菜品名称\", \"价格\"],\n      \"COMPONENT_STYLES\": [\"照片\", \"文字介绍\"],\n      \"REMOTE_FLAGS\": [\"允许\"],\n      \"DEEPLINK_PATTERNS\": [\"https://www.dtxc.com/*\"]\n    },\n    \"if\": {\n      \"PERMISSION.CAMERA\": true,\n      \"PERMISSION.MEDIA\": true,\n      \"PERMISSION.NOTIFICATION\": false,\n      \"PERMISSION.LOCATION\": false,\n      \"PERMISSION.CONTACTS\": false,\n      \"PERMISSION.SCHEDULE_EXACT_ALARM\": false,\n      \"PERMISSION.CLIPBOARD\": false,\n      \"NETWORK.CLEAR_TEXT\": true,\n      \"FILE_PROVIDER\": true,\n      \"INTENT.SHARE\": true\n    },\n    \"hook\": {\n      \"BEFORE_BUILD\": \"清理缓存\",\n      \"AFTER_BUILD\": \"上传到服务器\",\n      \"PRE_INJECT\": \"检查依赖\",\n      \"POST_INJECT\": \"生成配置文件\",\n      \"PRE_COMMIT\": \"检查代码\",\n      \"AFTER_INSTALL\": \"启动应用\"\n    },\n    \"gradle\": {\n      \"applicationId\": \"com.ndjc.dtxc\",\n      \"resConfigs\": [\n        \"en\",\n        \"zh-rCN\",\n        \"zh-rTW\"\n      ],\n      \"permissions\": [\n        \"android.permission.CAMERA\",\n        \"android.permission.MEDIA\",\n        \"android.permission.NETWORK\",\n        \"android.permission.FILE_PROVIDER\"\n      ]\n    }\n  },\n  \"files\": []\n}\n```"
+  }
+}
