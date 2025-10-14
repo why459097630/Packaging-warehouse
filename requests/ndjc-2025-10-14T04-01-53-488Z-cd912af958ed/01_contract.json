@@ -1,0 +1,159 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxc",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "9fddd690c1a4c576d803576b8b391bae257cec5e191cc78106c0bf6bf1fa7600",
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.dtxc",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "德州餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "德州餐厅",
+      "NDJC:DARK_MODE": "auto",
+      "NDJC:FONT_FAMILY_PRIMARY": "system",
+      "NDJC:FONT_FAMILY_SECONDARY": "system",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "300",
+      "NDJC:LAYOUT_DENSITY": "comfortable",
+      "NDJC:DATA_SOURCE": "local",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "latest",
+      "NDJC:PAGING_SIZE": "20",
+      "NDJC:OFFLINE_POLICY": "read_through_cache",
+      "NDJC:PRIVACY_POLICY": "https://www.dtxc.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META_RUNID": "20230220",
+      "NDJC:FEATURE_TOGGLE_MIN": "baseline",
+      "NDJC:DEBUG_LOG_ENABLED": "false",
+      "NDJC:RUN_ID": "20230220",
+      "NDJC:LOG_LEVEL": "info",
+      "NDJC:METRICS_ENABLED": "false",
+      "NDJC:CRASHLYTICS_ENABLED": "false",
+      "NDJC:EXPERIMENT_BUCKET": "dtxc-experiment"
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "__BLOCK_HOME_HEADER__",
+      "BLOCK:HOME_BODY": "__BLOCK_HOME_BODY__",
+      "BLOCK:HOME_ACTIONS": "__BLOCK_HOME_ACTIONS__",
+      "BLOCK:THEME_COLORS": "__BLOCK_THEME_COLORS__",
+      "BLOCK:TYPOCASE_OVERRIDES": "__BLOCK_TYPOCASE__",
+      "BLOCK:STRINGS_EXTRA": "__BLOCK_STRINGS_EXTRA__",
+      "BLOCK:ROUTE_HOME": "__BLOCK_ROUTE_HOME__",
+      "BLOCK:ROUTE_DETAIL": "__BLOCK_ROUTE_DETAIL__",
+      "BLOCK:ROUTE_POST": "__BLOCK_ROUTE_POST__",
+      "BLOCK:NAV_TRANSITIONS": "__BLOCK_NAV_TRANSITIONS__",
+      "BLOCK:SPLASH_CONTENT": "__BLOCK_SPLASH__",
+      "BLOCK:EMPTY_STATE": "__BLOCK_EMPTY__",
+      "BLOCK:ERROR_STATE": "__BLOCK_ERROR__",
+      "BLOCK:DEPENDENCY_SNIPPETS": "__BLOCK_DEPENDENCY__",
+      "BLOCK:DEBUG_PANEL": "__BLOCK_DEBUG__",
+      "BLOCK:BUILD_SUMMARY": "__BLOCK_BUILD_SUMMARY__",
+      "BLOCK:HEADER_AD_SLOT": "__BLOCK_HEADER_AD__",
+      "BLOCK:FEED_ITEM_BADGES": "__BLOCK_FEED_BADGES__",
+      "BLOCK:USER_PROFILE_CARD": "__BLOCK_USER_PROFILE__",
+      "BLOCK:SPONSORED_CARD": "__BLOCK_SPONSORED__",
+      "BLOCK:PROFILE_SECTION": "__BLOCK_PROFILE__",
+      "BLOCK:SETTINGS_SECTION": "__BLOCK_SETTINGS__"
+    },
+    "list": {
+      "LIST:PROGUARD_EXTRA": [
+        "__PROGUARD__"
+      ],
+      "LIST:PACKAGING_RULES": [
+        "__PACKAGING_RULE__"
+      ],
+      "LIST:ROUTES": [
+        "home"
+      ],
+      "LIST:POST_FIELDS": [
+        "id",
+        "title",
+        "body"
+      ],
+      "LIST:COMMENT_FIELDS": [
+        "id",
+        "postId",
+        "body"
+      ],
+      "LIST:ABI_SPLITS": [
+        "arm64-v8a"
+      ],
+      "LIST:PLURAL_STRINGS": [
+        "item_count"
+      ],
+      "LIST:COMPONENT_STYLES": [
+        "card",
+        "chip"
+      ],
+      "LIST:REMOTE_FLAGS": [
+        "__REMOTE_FLAG__"
+      ],
+      "LIST:DEEPLINK_PATTERNS": [
+        "myapp://home"
+      ]
+    },
+    "if": {
+      "IF:PERMISSION.CAMERA": false,
+      "IF:PERMISSION.MEDIA": false,
+      "IF:PERMISSION.NOTIFICATION": false,
+      "IF:PERMISSION.LOCATION": false,
+      "IF:PERMISSION.CONTACTS": false,
+      "IF:PERMISSION.SCHEDULE_EXACT_ALARM": false,
+      "IF:PERMISSION.CLIPBOARD": false,
+      "IF:NETWORK.CLEAR_TEXT": false,
+      "IF:FILE_PROVIDER": false,
+      "IF:INTENT.SHARE": false
+    },
+    "hook": {
+      "HOOK:BEFORE_BUILD": "__HOOK_BEFORE_BUILD__",
+      "HOOK:AFTER_BUILD": "__HOOK_AFTER_BUILD__",
+      "HOOK:PRE_INJECT": "__HOOK_PRE_INJECT__",
+      "HOOK:POST_INJECT": "__HOOK_POST_INJECT__",
+      "HOOK:PRE_COMMIT": "__HOOK_PRE_COMMIT__",
+      "HOOK:AFTER_INSTALL": "__HOOK_AFTER_INSTALL__"
+    },
+    "gradle": {
+      "applicationId": "com.example.dtxc",
+      "resConfigs": [
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "ok": true,
+        "report": {
+          "missing": [],
+          "invalid": []
+        }
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "9fddd690c1a4c576d803576b8b391bae257cec5e191cc78106c0bf6bf1fa7600",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha256": "d94efce50f9e962333a0670fa438946a0278bfdc0bc7bf531a1f7f3754a051d3",
+      "model": "groq"
+    },
+    "synthesized": false,
+    "rawText": "{\n  \"metadata\": {\n    \"template\": \"circle-basic\",\n    \"appName\": \"德州餐厅\",\n    \"packageId\": \"com.example.dtxc\",\n    \"mode\": \"B\"\n  },\n  \"anchors\": {\n    \"text\": {\n      \"NDJC:PACKAGE_NAME\": \"com.example.dtxc\",\n      \"NDJC:APP_LABEL\": \"德州餐厅\",\n      \"NDJC:HOME_TITLE\": \"德州餐厅\",\n      \"NDJC:PRIMARY_BUTTON_TEXT\": \"上传照片\",\n      \"NDJC:THEME_NAME\": \"德州餐厅\",\n      \"NDJC:DARK_MODE\": \"auto\",\n      \"NDJC:FONT_FAMILY_PRIMARY\": \"system\",\n      \"NDJC:FONT_FAMILY_SECONDARY\": \"system\",\n      \"NDJC:I18N_ENABLED\": \"true\",\n      \"NDJC:ANIM_ENABLED\": \"true\",\n      \"NDJC:ANIM_DURATION_MS\": \"300\",\n      \"NDJC:LAYOUT_DENSITY\": \"comfortable\",\n      \"NDJC:DATA_SOURCE\": \"local\",\n      \"NDJC:SEED_ENABLED\": \"false\",\n      \"NDJC:FEED_SORT\": \"latest\",\n      \"NDJC:PAGING_SIZE\": \"20\",\n      \"NDJC:OFFLINE_POLICY\": \"read_through_cache\",\n      \"NDJC:PRIVACY_POLICY\": \"https://www.dtxc.com/privacy\",\n      \"NDJC:DRAFT_ENABLED\": \"true\",\n      \"NDJC:USE_APP_BUNDLE\": \"true\",\n      \"NDJC:BUILD_META_RUNID\": \"20230220\",\n      \"NDJC:FEATURE_TOGGLE_MIN\": \"baseline\",\n      \"NDJC:DEBUG_LOG_ENABLED\": \"false\",\n      \"NDJC:RUN_ID\": \"20230220\",\n      \"NDJC:LOG_LEVEL\": \"info\",\n      \"NDJC:METRICS_ENABLED\": \"false\",\n      \"NDJC:CRASHLYTICS_ENABLED\": \"false\",\n      \"NDJC:EXPERIMENT_BUCKET\": \"dtxc-experiment\"\n    },\n    \"block\": {\n      \"BLOCK:HOME_HEADER\": \"__BLOCK_HOME_HEADER__\",\n      \"BLOCK:HOME_BODY\": \"__BLOCK_HOME_BODY__\",\n      \"BLOCK:HOME_ACTIONS\": \"__BLOCK_HOME_ACTIONS__\",\n      \"BLOCK:THEME_COLORS\": \"__BLOCK_THEME_COLORS__\",\n      \"BLOCK:TYPOCASE_OVERRIDES\": \"__BLOCK_TYPOCASE__\",\n      \"BLOCK:STRINGS_EXTRA\": \"__BLOCK_STRINGS_EXTRA__\",\n      \"BLOCK:ROUTE_HOME\": \"__BLOCK_ROUTE_HOME__\",\n      \"BLOCK:ROUTE_DETAIL\": \"__BLOCK_ROUTE_DETAIL__\",\n      \"BLOCK:ROUTE_POST\": \"__BLOCK_ROUTE_POST__\",\n      \"BLOCK:NAV_TRANSITIONS\": \"__BLOCK_NAV_TRANSITIONS__\",\n      \"BLOCK:SPLASH_CONTENT\": \"__BLOCK_SPLASH__\",\n      \"BLOCK:EMPTY_STATE\": \"__BLOCK_EMPTY__\",\n      \"BLOCK:ERROR_STATE\": \"__BLOCK_ERROR__\",\n      \"BLOCK:DEPENDENCY_SNIPPETS\": \"__BLOCK_DEPENDENCY__\",\n      \"BLOCK:DEBUG_PANEL\": \"__BLOCK_DEBUG__\",\n      \"BLOCK:BUILD_SUMMARY\": \"__BLOCK_BUILD_SUMMARY__\",\n      \"BLOCK:HEADER_AD_SLOT\": \"__BLOCK_HEADER_AD__\",\n      \"BLOCK:FEED_ITEM_BADGES\": \"__BLOCK_FEED_BADGES__\",\n      \"BLOCK:USER_PROFILE_CARD\": \"__BLOCK_USER_PROFILE__\",\n      \"BLOCK:SPONSORED_CARD\": \"__BLOCK_SPONSORED__\",\n      \"BLOCK:PROFILE_SECTION\": \"__BLOCK_PROFILE__\",\n      \"BLOCK:SETTINGS_SECTION\": \"__BLOCK_SETTINGS__\"\n    },\n    \"list\": {\n      \"LIST:PROGUARD_EXTRA\": [\n        \"__PROGUARD__\"\n      ],\n      \"LIST:PACKAGING_RULES\": [\n        \"__PACKAGING_RULE__\"\n      ],\n      \"LIST:ROUTES\": [\n        \"home\"\n      ],\n      \"LIST:POST_FIELDS\": [\n        \"id\",\n        \"title\",\n        \"body\"\n      ],\n      \"LIST:COMMENT_FIELDS\": [\n        \"id\",\n        \"postId\",\n        \"body\"\n      ],\n      \"LIST:ABI_SPLITS\": [\n        \"arm64-v8a\"\n      ],\n      \"LIST:PLURAL_STRINGS\": [\n        \"item_count\"\n      ],\n      \"LIST:COMPONENT_STYLES\": [\n        \"card\",\n        \"chip\"\n      ],\n      \"LIST:REMOTE_FLAGS\": [\n        \"__REMOTE_FLAG__\"\n      ],\n      \"LIST:DEEPLINK_PATTERNS\": [\n        \"myapp://home\"\n      ]\n    },\n    \"if\": {\n      \"IF:PERMISSION.CAMERA\": false,\n      \"IF:PERMISSION.MEDIA\": false,\n      \"IF:PERMISSION.NOTIFICATION\": false,\n      \"IF:PERMISSION.LOCATION\": false,\n      \"IF:PERMISSION.CONTACTS\": false,\n      \"IF:PERMISSION.SCHEDULE_EXACT_ALARM\": false,\n      \"IF:PERMISSION.CLIPBOARD\": false,\n      \"IF:NETWORK.CLEAR_TEXT\": false,\n      \"IF:FILE_PROVIDER\": false,\n      \"IF:INTENT.SHARE\": false\n    },\n    \"hook\": {\n      \"HOOK:BEFORE_BUILD\": \"__HOOK_BEFORE_BUILD__\",\n      \"HOOK:AFTER_BUILD\": \"__HOOK_AFTER_BUILD__\",\n      \"HOOK:PRE_INJECT\": \"__HOOK_PRE_INJECT__\",\n      \"HOOK:POST_INJECT\": \"__HOOK_POST_INJECT__\",\n      \"HOOK:PRE_COMMIT\": \"__HOOK_PRE_COMMIT__\",\n      \"HOOK:AFTER_INSTALL\": \"__HOOK_AFTER_INSTALL__\"\n    },\n    \"gradle\": {\n      \"applicationId\": \"com.example.dtxc\",\n      \"resConfigs\": [\n        \"en\"\n      ],\n      \"permissions\": [\n        \"android.permission.INTERNET\"\n      ]\n    }\n  },\n  \"files\": []\n}"
+  }
+}
