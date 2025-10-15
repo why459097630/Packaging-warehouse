@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-15T13-52-36-329Z-9fba8d158923",
+  "status": "pre-ci",
+  "template": "circle-basic",
+  "appTitle": "德州餐厅",
+  "packageName": "com.ndjc.texas.restaurant",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
