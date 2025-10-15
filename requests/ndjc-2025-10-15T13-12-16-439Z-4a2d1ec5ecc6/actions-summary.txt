@@ -1,0 +1,4 @@
+created by api; mode=online(llama-3.1-8b-instant)
+prompt_file=/var/task/lib/ndjc/prompts/contract_v1.en.json
+prompt_sha256=f24aad427b0a12ef7dc2773bf42f582580fa6012c35af5d0fcab51e38ffa9963
+prompt_loaded_from_env=null
