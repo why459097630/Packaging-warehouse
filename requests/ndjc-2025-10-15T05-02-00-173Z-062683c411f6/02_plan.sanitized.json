@@ -1,0 +1,31 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.texas.restaurant",
+    "NDJC:APP_LABEL": "Texas Restaurant App",
+    "NDJC:HOME_TITLE": "Texas Restaurant App",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start"
+  },
+  "blocks": {},
+  "lists": {
+    "ROUTES": [
+      "home"
+    ]
+  },
+  "conditions": {},
+  "hooks": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.texas.restaurant",
+    "resConfigs": [],
+    "permissions": []
+  },
+  "meta": {
+    "mode": "A",
+    "appName": "Texas Restaurant App",
+    "packageId": "com.texas.restaurant",
+    "template": "circle-basic"
+  },
+  "droppedDanger": 0
+}
