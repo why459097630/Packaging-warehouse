@@ -1,0 +1,100 @@
+{
+  "contract": "v1",
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.dz.canteen",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "619aba12ea0d3a931a42eabcb66d71dd1d64a355c74043644138e0cd0fb24538",
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.dz.canteen",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "菜品介绍",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "Light",
+      "NDJC:DARK_MODE": "false",
+      "NDJC:FONT_FAMILY_PRIMARY": "OpenSans",
+      "NDJC:FONT_FAMILY_SECONDARY": "Montserrat",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "300",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "api.example.com",
+      "NDJC:SEED_ENABLED": "true",
+      "NDJC:FEED_SORT": "date",
+      "NDJC:PAGING_SIZE": "10",
+      "NDJC:OFFLINE_POLICY": "cache",
+      "NDJC:PRIVACY_POLICY": "https://example.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META:RUNID": "auto",
+      "NDJC:FEATURE_TOGGLE:MIN": "1",
+      "NDJC:DEBUG_LOG_ENABLED": "true",
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "exp-001",
+      "THEME_COLORS": "{\"primary\":\"#7C3AED\",\"secondary\":\"#10B981\"}"
+    },
+    "block": {
+      "HOME_HEADER": "欢迎来到德州餐厅",
+      "HOME_BODY": "这里是菜品介绍页面",
+      "HOME_ACTIONS": "上传照片、编辑文字介绍、设定价格",
+      "SPLASH_CONTENT": "正在加载...",
+      "EMPTY_STATE": "暂无菜品",
+      "ERROR_STATE": "出错了",
+      "DEBUG_PANEL": "",
+      "HEADER_AD_SLOT": "",
+      "PROFILE_SECTION": "",
+      "SETTINGS_SECTION": "",
+      "SETTINGS_SECTION:EXTRA": ""
+    },
+    "list": {
+      "ROUTES": [
+        "home",
+        "detail"
+      ],
+      "PROGUARD_EXTRA": [],
+      "POST_FIELDS": [],
+      "PLURAL_STRINGS": [],
+      "COMPONENT_STYLES": [],
+      "DEEPLINK_PATTERNS": []
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.dz.canteen",
+      "resConfigs": [
+        "en",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "ok": true
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "619aba12ea0d3a931a42eabcb66d71dd1d64a355c74043644138e0cd0fb24538",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha256": "3377956b2ec1d3af8a7f3d8b19c05c1db03daa63ed5a5ee144bcec9c1927b97e",
+      "model": "groq"
+    },
+    "rawText": "{\"contract\":\"v1\",\"metadata\":{\"template\":\"circle-basic\",\"appName\":\"德州餐厅\",\"packageId\":\"com.dz.canteen\",\"mode\":\"B\"},\"anchorsGrouped\":{\"text\":{\"NDJC:PACKAGE_NAME\":\"com.dz.canteen\",\"NDJC:APP_LABEL\":\"德州餐厅\",\"NDJC:HOME_TITLE\":\"菜品介绍\",\"NDJC:PRIMARY_BUTTON_TEXT\":\"上传照片\",\"NDJC:THEME_NAME\":\"Light\",\"NDJC:DARK_MODE\":\"false\",\"NDJC:FONT_FAMILY_PRIMARY\":\"OpenSans\",\"NDJC:FONT_FAMILY_SECONDARY\":\"Montserrat\",\"NDJC:I18N_ENABLED\":\"true\",\"NDJC:ANIM_ENABLED\":\"true\",\"NDJC:ANIM_DURATION_MS\":\"300\",\"NDJC:LAYOUT_DENSITY\":\"mdpi\",\"NDJC:DATA_SOURCE\":\"api.example.com\",\"NDJC:SEED_ENABLED\":\"true\",\"NDJC:FEED_SORT\":\"date\",\"NDJC:PAGING_SIZE\":\"10\",\"NDJC:OFFLINE_POLICY\":\"cache\",\"NDJC:PRIVACY_POLICY\":\"https://example.com/privacy\",\"NDJC:DRAFT_ENABLED\":\"true\",\"NDJC:USE_APP_BUNDLE\":\"true\",\"NDJC:BUILD_META:RUNID\":\"auto\",\"NDJC:FEATURE_TOGGLE:MIN\":\"1\",\"NDJC:DEBUG_LOG_ENABLED\":\"true\",\"NDJC:LOG_LEVEL\":\"INFO\",\"NDJC:CRASHLYTICS_ENABLED\":\"true\",\"NDJC:EXPERIMENT_BUCKET\":\"exp-001\",\"THEME_COLORS\":\"{\\\"primary\\\":\\\"#7C3AED\\\",\\\"secondary\\\":\\\"#10B981\\\"}\"},\"block\":{\"HOME_HEADER\":\"欢迎来到德州餐厅\",\"HOME_BODY\":\"这里是菜品介绍页面\",\"HOME_ACTIONS\":\"上传照片、编辑文字介绍、设定价格\",\"SPLASH_CONTENT\":\"正在加载...\",\"EMPTY_STATE\":\"暂无菜品\",\"ERROR_STATE\":\"出错了\",\"DEBUG_PANEL\":\"\",\"HEADER_AD_SLOT\":\"\",\"PROFILE_SECTION\":\"\",\"SETTINGS_SECTION\":\"\",\"SETTINGS_SECTION:EXTRA\":\"\"},\"list\":{\"ROUTES\":[\"home\",\"detail\"],\"PROGUARD_EXTRA\":[],\"POST_FIELDS\":[],\"PLURAL_STRINGS\":[],\"COMPONENT_STYLES\":[],\"DEEPLINK_PATTERNS\":[]},\"if\":{},\"hook\":{},\"gradle\":{\"applicationId\":\"com.dz.canteen\",\"resConfigs\":[\"en\",\"zh-rCN\"],\"permissions\":[\"android.permission.INTERNET\"]}},\"files\":[]}"
+  }
+}
