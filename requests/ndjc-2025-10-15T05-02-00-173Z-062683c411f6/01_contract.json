@@ -1,0 +1,63 @@
+{
+  "metadata": {
+    "mode": "A",
+    "appName": "Texas Restaurant App",
+    "packageId": "com.texas.restaurant",
+    "template": "circle-basic",
+    "trace": {
+      "prompt_file": null,
+      "prompt_sha256": null,
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:APP_LABEL": "Texas Restaurant App",
+      "NDJC:PACKAGE_NAME": "com.texas.restaurant",
+      "NDJC:HOME_TITLE": "Home",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Create",
+      "NDJC:I18N_ENABLED": true,
+      "NDJC:ANIM_ENABLED": true,
+      "NDJC:ANIM_DURATION_MS": 300,
+      "NDJC:PAGING_SIZE": 10,
+      "NDJC:FEED_SORT": "date"
+    },
+    "block": "",
+    "list": {
+      "ROUTES": [
+        "home"
+      ]
+    },
+    "if": "",
+    "hook": "",
+    "gradle": {
+      "applicationId": "com.texas.restaurant",
+      "resConfigs": [
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET"
+      ]
+    }
+  },
+  "_trace": {
+    "template_key": "circle-basic",
+    "preset_hint": "social",
+    "mode": "B",
+    "provider": "groq",
+    "meta": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha": "619aba12ea0d",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha": "3377956b2ec1",
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "registry_sha": "6c8257d72bab"
+    },
+    "provider_used": "groq",
+    "raw_llm_text": "{\"metadata\":{\"mode\":\"A\",\"appName\":\"Texas Restaurant App\",\"packageId\":\"com.texas.restaurant\"},\"anchorsGrouped\":{\"text\":{\"NDJC:APP_LABEL\":\"Texas Restaurant App\",\"NDJC:PACKAGE_NAME\":\"com.texas.restaurant\",\"NDJC:HOME_TITLE\":\"Home\",\"NDJC:PRIMARY_BUTTON_TEXT\":\"Create\",\"NDJC:I18N_ENABLED\":true,\"NDJC:ANIM_ENABLED\":true,\"NDJC:ANIM_DURATION_MS\":300,\"NDJC:PAGING_SIZE\":10,\"NDJC:FEED_SORT\":\"date\"},\"block\":\"\",\"list\":{\"ROUTES\":[\"home\"]},\"if\":\"\",\"hook\":\"\",\"gradle\":{\"applicationId\":\"com.texas.restaurant\",\"resConfigs\":[\"en\"],\"permissions\":[\"android.permission.INTERNET\"]}}}",
+    "postprocess": {
+      "injected_metadata_template": true
+    }
+  }
+}
