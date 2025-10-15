@@ -1,0 +1,100 @@
+{
+  "contract": "v1",
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.ndjc.texas.restaurant",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "4f965923df52e8ca5d9ab64d05b51ffcb1cc688b51a01fcbf8c7bae83783f14d",
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.ndjc.texas.restaurant",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "菜品介绍",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "Light",
+      "NDJC:DARK_MODE": "false",
+      "NDJC:FONT_FAMILY_PRIMARY": "OpenSans",
+      "NDJC:FONT_FAMILY_SECONDARY": "Montserrat",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "300",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "api.example.com",
+      "NDJC:SEED_ENABLED": "true",
+      "NDJC:FEED_SORT": "date",
+      "NDJC:PAGING_SIZE": "10",
+      "NDJC:OFFLINE_POLICY": "cache",
+      "NDJC:PRIVACY_POLICY": "https://example.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META:RUNID": "auto",
+      "NDJC:FEATURE_TOGGLE:MIN": "1",
+      "NDJC:DEBUG_LOG_ENABLED": "true",
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "exp-001",
+      "THEME_COLORS": "{\"primary\":\"#7C3AED\",\"secondary\":\"#10B981\"}"
+    },
+    "block": {
+      "HOME_HEADER": "",
+      "HOME_BODY": "",
+      "HOME_ACTIONS": "",
+      "SPLASH_CONTENT": "",
+      "EMPTY_STATE": "",
+      "ERROR_STATE": "",
+      "DEBUG_PANEL": "",
+      "HEADER_AD_SLOT": "",
+      "PROFILE_SECTION": "",
+      "SETTINGS_SECTION": "",
+      "SETTINGS_SECTION:EXTRA": ""
+    },
+    "list": {
+      "ROUTES": [
+        "home",
+        "detail"
+      ],
+      "PROGUARD_EXTRA": [],
+      "POST_FIELDS": [],
+      "PLURAL_STRINGS": [],
+      "COMPONENT_STYLES": [],
+      "DEEPLINK_PATTERNS": []
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.ndjc.texas.restaurant",
+      "resConfigs": [
+        "en",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "ok": true
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "4f965923df52e8ca5d9ab64d05b51ffcb1cc688b51a01fcbf8c7bae83783f14d",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha256": "1e2a8fd749e8eb4d01a26e94d7cfdc26c94e3e30bb06776c2bc4a7226798e78c",
+      "model": "groq"
+    },
+    "rawText": "{\"contract\":\"v1\",\"metadata\":{\"template\":\"circle-basic\",\"appName\":\"德州餐厅\",\"packageId\":\"com.ndjc.texas.restaurant\",\"mode\":\"B\"},\"anchorsGrouped\":{\"text\":{\"NDJC:PACKAGE_NAME\":\"com.ndjc.texas.restaurant\",\"NDJC:APP_LABEL\":\"德州餐厅\",\"NDJC:HOME_TITLE\":\"菜品介绍\",\"NDJC:PRIMARY_BUTTON_TEXT\":\"上传照片\",\"NDJC:THEME_NAME\":\"Light\",\"NDJC:DARK_MODE\":\"false\",\"NDJC:FONT_FAMILY_PRIMARY\":\"OpenSans\",\"NDJC:FONT_FAMILY_SECONDARY\":\"Montserrat\",\"NDJC:I18N_ENABLED\":\"true\",\"NDJC:ANIM_ENABLED\":\"true\",\"NDJC:ANIM_DURATION_MS\":\"300\",\"NDJC:LAYOUT_DENSITY\":\"mdpi\",\"NDJC:DATA_SOURCE\":\"api.example.com\",\"NDJC:SEED_ENABLED\":\"true\",\"NDJC:FEED_SORT\":\"date\",\"NDJC:PAGING_SIZE\":\"10\",\"NDJC:OFFLINE_POLICY\":\"cache\",\"NDJC:PRIVACY_POLICY\":\"https://example.com/privacy\",\"NDJC:DRAFT_ENABLED\":\"true\",\"NDJC:USE_APP_BUNDLE\":\"true\",\"NDJC:BUILD_META:RUNID\":\"auto\",\"NDJC:FEATURE_TOGGLE:MIN\":\"1\",\"NDJC:DEBUG_LOG_ENABLED\":\"true\",\"NDJC:LOG_LEVEL\":\"INFO\",\"NDJC:CRASHLYTICS_ENABLED\":\"true\",\"NDJC:EXPERIMENT_BUCKET\":\"exp-001\",\"THEME_COLORS\":\"{\\\"primary\\\":\\\"#7C3AED\\\",\\\"secondary\\\":\\\"#10B981\\\"}\"},\"block\":{\"HOME_HEADER\":\"\",\"HOME_BODY\":\"\",\"HOME_ACTIONS\":\"\",\"SPLASH_CONTENT\":\"\",\"EMPTY_STATE\":\"\",\"ERROR_STATE\":\"\",\"DEBUG_PANEL\":\"\",\"HEADER_AD_SLOT\":\"\",\"PROFILE_SECTION\":\"\",\"SETTINGS_SECTION\":\"\",\"SETTINGS_SECTION:EXTRA\":\"\"},\"list\":{\"ROUTES\":[\"home\",\"detail\"],\"PROGUARD_EXTRA\":[],\"POST_FIELDS\":[],\"PLURAL_STRINGS\":[],\"COMPONENT_STYLES\":[],\"DEEPLINK_PATTERNS\":[]},\"if\":{},\"hook\":{},\"gradle\":{\"applicationId\":\"com.ndjc.texas.restaurant\",\"resConfigs\":[\"en\",\"zh-rCN\"],\"permissions\":[\"android.permission.INTERNET\"]}},\"files\":[]}"
+  }
+}
