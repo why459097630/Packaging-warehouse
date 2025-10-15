@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-15T05-02-00-173Z-062683c411f6",
+  "status": "pre-ci",
+  "template": "circle-basic",
+  "appTitle": "Texas Restaurant App",
+  "packageName": "com.texas.restaurant",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
