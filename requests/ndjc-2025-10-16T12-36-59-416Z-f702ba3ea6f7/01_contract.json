@@ -1,0 +1,135 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.ndjc",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "ecc74d62135b9df1e4ef59dc8516ef6754eda0f15a57597815ed96a51618a10a",
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.ndjc",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "菜单",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "德州风格",
+      "NDJC:DARK_MODE": "false",
+      "NDJC:FONT_FAMILY_PRIMARY": "Arial",
+      "NDJC:FONT_FAMILY_SECONDARY": "Times New Roman",
+      "NDJC:I18N_ENABLED": "false",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "500",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "本地数据库",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "__NDJC_PLACEHOLDER__",
+      "NDJC:PAGING_SIZE": "10",
+      "NDJC:OFFLINE_POLICY": "true",
+      "NDJC:PRIVACY_POLICY": "https://example.com/privacy",
+      "NDJC:DRAFT_ENABLED": "false",
+      "NDJC:USE_APP_BUNDLE": "false",
+      "NDJC:BUILD_META:RUNID": "20230220",
+      "NDJC:FEATURE_TOGGLE:MIN": "1",
+      "NDJC:DEBUG_LOG_ENABLED": "false",
+      "NDJC:LOG_LEVEL": "DEBUG",
+      "NDJC:CRASHLYTICS_ENABLED": "false",
+      "NDJC:EXPERIMENT_BUCKET": "https://example.com/experiment",
+      "THEME_COLORS": "__NDJC_PLACEHOLDER__"
+    },
+    "block": {
+      "HOME_HEADER": "__NDJC_PLACEHOLDER__",
+      "HOME_BODY": "__NDJC_PLACEHOLDER__",
+      "HOME_ACTIONS": "__NDJC_PLACEHOLDER__",
+      "SPLASH_CONTENT": "欢迎使用德州餐厅",
+      "EMPTY_STATE": "暂无菜单",
+      "ERROR_STATE": "出错了",
+      "DEBUG_PANEL": "调试面板",
+      "HEADER_AD_SLOT": "广告",
+      "PROFILE_SECTION": "用户资料",
+      "SETTINGS_SECTION": "设置",
+      "SETTINGS_SECTION:EXTRA": "更多设置"
+    },
+    "list": {
+      "ROUTES": [
+        "__NDJC_PLACEHOLDER__"
+      ],
+      "PROGUARD_EXTRA": [
+        "-keep class com.example.ndjc.** { *; }"
+      ],
+      "POST_FIELDS": [
+        "id",
+        "name",
+        "price"
+      ],
+      "PLURAL_STRINGS": [
+        "菜单",
+        "照片",
+        "价格"
+      ],
+      "COMPONENT_STYLES": [
+        "com.example.ndjc:style:1.0"
+      ],
+      "DEEPLINK_PATTERNS": [
+        "https://example.com/deeplink"
+      ]
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.example.ndjc",
+      "resConfigs": [
+        "en",
+        "zh"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "ok": false,
+        "report": {
+          "missing": [
+            "text:THEME_COLORS"
+          ],
+          "invalid": [
+            "text:NDJC:FEED_SORT (enum)",
+            "text:THEME_COLORS (regex)",
+            "block:HOME_HEADER (too_short(<30))",
+            "block:HOME_BODY (too_short(<30))",
+            "block:HOME_ACTIONS (too_short(<30))",
+            "list:ROUTES (itemRegex)"
+          ]
+        }
+      },
+      {
+        "attempt": 1,
+        "error": "Groq HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `llama-3.1-8b-instant` in organization `org_01k2v5pda7e8ttpt7p5m1tm1j4` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Used 3157, Requested 3912. Please try again in 10.69s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n"
+      },
+      {
+        "attempt": 2,
+        "error": "Groq HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `llama-3.1-8b-instant` in organization `org_01k2v5pda7e8ttpt7p5m1tm1j4` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Used 3131, Requested 3826. Please try again in 9.57s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n"
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "ecc74d62135b9df1e4ef59dc8516ef6754eda0f15a57597815ed96a51618a10a",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha256": "1e2a8fd749e8eb4d01a26e94d7cfdc26c94e3e30bb06776c2bc4a7226798e78c",
+      "model": "groq"
+    },
+    "synthesized": false,
+    "rawText": "{\n  \"metadata\": {\n    \"template\": \"circle-basic\",\n    \"appName\": \"德州餐厅\",\n    \"packageId\": \"com.example.ndjc\",\n    \"mode\": \"B\"\n  },\n  \"anchors\": {\n    \"text\": {\n      \"NDJC:PACKAGE_NAME\": \"com.example.ndjc\",\n      \"NDJC:APP_LABEL\": \"德州餐厅\",\n      \"NDJC:HOME_TITLE\": \"菜单\",\n      \"NDJC:PRIMARY_BUTTON_TEXT\": \"上传照片\",\n      \"NDJC:THEME_NAME\": \"德州风格\",\n      \"NDJC:DARK_MODE\": \"false\",\n      \"NDJC:FONT_FAMILY_PRIMARY\": \"Arial\",\n      \"NDJC:FONT_FAMILY_SECONDARY\": \"Times New Roman\",\n      \"NDJC:I18N_ENABLED\": \"false\",\n      \"NDJC:ANIM_ENABLED\": \"true\",\n      \"NDJC:ANIM_DURATION_MS\": \"500\",\n      \"NDJC:LAYOUT_DENSITY\": \"mdpi\",\n      \"NDJC:DATA_SOURCE\": \"本地数据库\",\n      \"NDJC:SEED_ENABLED\": \"false\",\n      \"NDJC:FEED_SORT\": \"__NDJC_PLACEHOLDER__\",\n      \"NDJC:PAGING_SIZE\": \"10\",\n      \"NDJC:OFFLINE_POLICY\": \"true\",\n      \"NDJC:PRIVACY_POLICY\": \"https://example.com/privacy\",\n      \"NDJC:DRAFT_ENABLED\": \"false\",\n      \"NDJC:USE_APP_BUNDLE\": \"false\",\n      \"NDJC:BUILD_META:RUNID\": \"20230220\",\n      \"NDJC:FEATURE_TOGGLE:MIN\": \"1\",\n      \"NDJC:DEBUG_LOG_ENABLED\": \"false\",\n      \"NDJC:LOG_LEVEL\": \"DEBUG\",\n      \"NDJC:CRASHLYTICS_ENABLED\": \"false\",\n      \"NDJC:EXPERIMENT_BUCKET\": \"https://example.com/experiment\",\n      \"THEME_COLORS\": \"__NDJC_PLACEHOLDER__\"\n    },\n    \"block\": {\n      \"HOME_HEADER\": \"__NDJC_PLACEHOLDER__\",\n      \"HOME_BODY\": \"__NDJC_PLACEHOLDER__\",\n      \"HOME_ACTIONS\": \"__NDJC_PLACEHOLDER__\",\n      \"SPLASH_CONTENT\": \"欢迎使用德州餐厅\",\n      \"EMPTY_STATE\": \"暂无菜单\",\n      \"ERROR_STATE\": \"出错了\",\n      \"DEBUG_PANEL\": \"调试面板\",\n      \"HEADER_AD_SLOT\": \"广告\",\n      \"PROFILE_SECTION\": \"用户资料\",\n      \"SETTINGS_SECTION\": \"设置\",\n      \"SETTINGS_SECTION:EXTRA\": \"更多设置\"\n    },\n    \"list\": {\n      \"ROUTES\": [\n        \"__NDJC_PLACEHOLDER__\"\n      ],\n      \"PROGUARD_EXTRA\": [\n        \"-keep class com.example.ndjc.** { *; }\"\n      ],\n      \"POST_FIELDS\": [\n        \"id\",\n        \"name\",\n        \"price\"\n      ],\n      \"PLURAL_STRINGS\": [\n        \"菜单\",\n        \"照片\",\n        \"价格\"\n      ],\n      \"COMPONENT_STYLES\": [\n        \"com.example.ndjc:style:1.0\"\n      ],\n      \"DEEPLINK_PATTERNS\": [\n        \"https://example.com/deeplink\"\n      ]\n    },\n    \"if\": {},\n    \"hook\": {},\n    \"gradle\": {\n      \"applicationId\": \"com.example.ndjc\",\n      \"resConfigs\": [\n        \"en\",\n        \"zh\"\n      ],\n      \"permissions\": [\n        \"android.permission.INTERNET\",\n        \"android.permission.ACCESS_FINE_LOCATION\"\n      ]\n    }\n  },\n  \"files\": []\n}"
+  }
+}
