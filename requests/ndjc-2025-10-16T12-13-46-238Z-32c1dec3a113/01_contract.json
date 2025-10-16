@@ -1,0 +1,154 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.ndjc",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "060094c8603f46857def4b7c31144edeb1ed43892b3393718d8f495866bca357",
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.ndjc",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "菜品介绍",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "德州餐厅",
+      "NDJC:DARK_MODE": "false",
+      "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+      "NDJC:FONT_FAMILY_SECONDARY": "Montserrat",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "500",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "网络",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "__NDJC_PLACEHOLDER__",
+      "NDJC:PAGING_SIZE": "10",
+      "NDJC:OFFLINE_POLICY": "离线可用",
+      "NDJC:PRIVACY_POLICY": "隐私政策",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "false",
+      "NDJC:BUILD_META:RUNID": "1",
+      "NDJC:FEATURE_TOGGLE:MIN": "1",
+      "NDJC:DEBUG_LOG_ENABLED": "true",
+      "NDJC:LOG_LEVEL": "DEBUG",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "实验室",
+      "THEME_COLORS": "__NDJC_PLACEHOLDER__"
+    },
+    "block": {
+      "HOME_HEADER": "__NDJC_PLACEHOLDER__",
+      "HOME_BODY": "__NDJC_PLACEHOLDER__",
+      "HOME_ACTIONS": "__NDJC_PLACEHOLDER__",
+      "SPLASH_CONTENT": "欢迎使用德州餐厅",
+      "EMPTY_STATE": "暂无菜品",
+      "ERROR_STATE": "错误",
+      "DEBUG_PANEL": "调试面板",
+      "HEADER_AD_SLOT": "广告",
+      "PROFILE_SECTION": "用户资料",
+      "SETTINGS_SECTION": "设置",
+      "SETTINGS_SECTION:EXTRA": "额外设置"
+    },
+    "list": {
+      "ROUTES": [
+        "__NDJC_PLACEHOLDER__"
+      ],
+      "PROGUARD_EXTRA": [
+        "-keep class com.example.ndjc.** { *; }"
+      ],
+      "POST_FIELDS": [
+        "id",
+        "name",
+        "price"
+      ],
+      "PLURAL_STRINGS": [
+        "菜品",
+        "菜品们"
+      ],
+      "COMPONENT_STYLES": [
+        "com.example.ndjc:style1",
+        "com.example.ndjc:style2"
+      ],
+      "DEEPLINK_PATTERNS": [
+        "https://example.com/deeplink"
+      ]
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.example.ndjc",
+      "resConfigs": [
+        "__NDJC_PLACEHOLDER__"
+      ],
+      "permissions": [
+        "__NDJC_PLACEHOLDER__"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "AndroidManifest.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?><manifest xmlns:android=\"http://schemas.android.com/apk/res/android\" package=\"com.example.ndjc\" android:versionCode=\"1\" android:versionName=\"1.0\"><application android:allowBackup=\"true\" android:icon=\"@mipmap/ic_launcher\" android:label=\"@string/app_name\" android:roundIcon=\"@mipmap/ic_launcher_round\" android:supportsRtl=\"true\" android:theme=\"@style/AppTheme\"><activity android:name=\".MainActivity\"><intent-filter><action android:name=\"android.intent.action.MAIN\"/></intent-filter></activity></application></manifest>",
+      "overwrite": false,
+      "kind": "txt"
+    },
+    {
+      "path": "res/values/strings.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?><resources><string name=\"app_name\">德州餐厅</string><string name=\"hello_world\">Hello World!</string></resources>",
+      "overwrite": false,
+      "kind": "txt"
+    },
+    {
+      "path": "src/main/java/com/example/ndjc/MainActivity.java",
+      "content": "package com.example.ndjc;\n\nimport android.os.Bundle;\nimport android.view.View;\nimport android.widget.Button;\nimport android.widget.TextView;\n\nimport androidx.appcompat.app.AppCompatActivity;\n\npublic class MainActivity extends AppCompatActivity {\n\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n\n        Button button = findViewById(R.id.button);\n        button.setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                // 上传照片\n            }\n        });\n\n        TextView textView = findViewById(R.id.text_view);\n        textView.setText(R.string.hello_world);\n    }\n\n    @Override\n    protected void onResume() {\n        super.onResume();\n        // 编辑文字介绍\n    }\n\n    @Override\n    protected void onPause() {\n        super.onPause();\n        // 设定价格\n    }\n\n    @Override\n    protected void onDestroy() {\n        super.onDestroy();\n        // 评论点赞\n    }\n}",
+      "overwrite": false,
+      "kind": "txt"
+    }
+  ],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "ok": false,
+        "report": {
+          "missing": [
+            "text:THEME_COLORS"
+          ],
+          "invalid": [
+            "text:NDJC:FEED_SORT (enum)",
+            "text:THEME_COLORS (regex)",
+            "block:HOME_HEADER (too_short(<30))",
+            "block:HOME_BODY (too_short(<30))",
+            "block:HOME_ACTIONS (too_short(<30))",
+            "list:ROUTES (itemRegex)",
+            "gradle:resConfigs (itemRegex)",
+            "gradle:permissions (itemRegex)"
+          ]
+        }
+      },
+      {
+        "attempt": 1,
+        "error": "Groq HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `llama-3.1-8b-instant` in organization `org_01k2v5pda7e8ttpt7p5m1tm1j4` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Used 3329, Requested 4212. Please try again in 15.41s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n"
+      },
+      {
+        "attempt": 2,
+        "error": "Groq HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `llama-3.1-8b-instant` in organization `org_01k2v5pda7e8ttpt7p5m1tm1j4` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Used 3320, Requested 4107. Please try again in 14.27s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n"
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "060094c8603f46857def4b7c31144edeb1ed43892b3393718d8f495866bca357",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha256": "1e2a8fd749e8eb4d01a26e94d7cfdc26c94e3e30bb06776c2bc4a7226798e78c",
+      "model": "groq"
+    },
+    "synthesized": false,
+    "rawText": "{\n  \"metadata\": {\n    \"template\": \"circle-basic\",\n    \"appName\": \"德州餐厅\",\n    \"packageId\": \"com.example.ndjc\",\n    \"mode\": \"B\"\n  },\n  \"anchors\": {\n    \"text\": {\n      \"NDJC:PACKAGE_NAME\": \"com.example.ndjc\",\n      \"NDJC:APP_LABEL\": \"德州餐厅\",\n      \"NDJC:HOME_TITLE\": \"菜品介绍\",\n      \"NDJC:PRIMARY_BUTTON_TEXT\": \"上传照片\",\n      \"NDJC:THEME_NAME\": \"德州餐厅\",\n      \"NDJC:DARK_MODE\": \"false\",\n      \"NDJC:FONT_FAMILY_PRIMARY\": \"Roboto\",\n      \"NDJC:FONT_FAMILY_SECONDARY\": \"Montserrat\",\n      \"NDJC:I18N_ENABLED\": \"true\",\n      \"NDJC:ANIM_ENABLED\": \"true\",\n      \"NDJC:ANIM_DURATION_MS\": \"500\",\n      \"NDJC:LAYOUT_DENSITY\": \"mdpi\",\n      \"NDJC:DATA_SOURCE\": \"网络\",\n      \"NDJC:SEED_ENABLED\": \"false\",\n      \"NDJC:FEED_SORT\": \"__NDJC_PLACEHOLDER__\",\n      \"NDJC:PAGING_SIZE\": \"10\",\n      \"NDJC:OFFLINE_POLICY\": \"离线可用\",\n      \"NDJC:PRIVACY_POLICY\": \"隐私政策\",\n      \"NDJC:DRAFT_ENABLED\": \"true\",\n      \"NDJC:USE_APP_BUNDLE\": \"false\",\n      \"NDJC:BUILD_META:RUNID\": \"1\",\n      \"NDJC:FEATURE_TOGGLE:MIN\": \"1\",\n      \"NDJC:DEBUG_LOG_ENABLED\": \"true\",\n      \"NDJC:LOG_LEVEL\": \"DEBUG\",\n      \"NDJC:CRASHLYTICS_ENABLED\": \"true\",\n      \"NDJC:EXPERIMENT_BUCKET\": \"实验室\",\n      \"THEME_COLORS\": \"__NDJC_PLACEHOLDER__\"\n    },\n    \"block\": {\n      \"HOME_HEADER\": \"__NDJC_PLACEHOLDER__\",\n      \"HOME_BODY\": \"__NDJC_PLACEHOLDER__\",\n      \"HOME_ACTIONS\": \"__NDJC_PLACEHOLDER__\",\n      \"SPLASH_CONTENT\": \"欢迎使用德州餐厅\",\n      \"EMPTY_STATE\": \"暂无菜品\",\n      \"ERROR_STATE\": \"错误\",\n      \"DEBUG_PANEL\": \"调试面板\",\n      \"HEADER_AD_SLOT\": \"广告\",\n      \"PROFILE_SECTION\": \"用户资料\",\n      \"SETTINGS_SECTION\": \"设置\",\n      \"SETTINGS_SECTION:EXTRA\": \"额外设置\"\n    },\n    \"list\": {\n      \"ROUTES\": [\n        \"__NDJC_PLACEHOLDER__\"\n      ],\n      \"PROGUARD_EXTRA\": [\n        \"-keep class com.example.ndjc.** { *; }\"\n      ],\n      \"POST_FIELDS\": [\n        \"id\",\n        \"name\",\n        \"price\"\n      ],\n      \"PLURAL_STRINGS\": [\n        \"菜品\",\n        \"菜品们\"\n      ],\n      \"COMPONENT_STYLES\": [\n        \"com.example.ndjc:style1\",\n        \"com.example.ndjc:style2\"\n      ],\n      \"DEEPLINK_PATTERNS\": [\n        \"https://example.com/deeplink\"\n      ]\n    },\n    \"if\": {},\n    \"hook\": {},\n    \"gradle\": {\n      \"applicationId\": \"com.example.ndjc\",\n      \"resConfigs\": [\n        \"__NDJC_PLACEHOLDER__\"\n      ],\n      \"permissions\": [\n        \"__NDJC_PLACEHOLDER__\"\n      ]\n    }\n  },\n  \"files\": [\n    {\n      \"path\": \"AndroidManifest.xml\",\n      \"content\": \"<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?><manifest xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\" package=\\\"com.example.ndjc\\\" android:versionCode=\\\"1\\\" android:versionName=\\\"1.0\\\"><application android:allowBackup=\\\"true\\\" android:icon=\\\"@mipmap/ic_launcher\\\" android:label=\\\"@string/app_name\\\" android:roundIcon=\\\"@mipmap/ic_launcher_round\\\" android:supportsRtl=\\\"true\\\" android:theme=\\\"@style/AppTheme\\\"><activity android:name=\\\".MainActivity\\\"><intent-filter><action android:name=\\\"android.intent.action.MAIN\\\"/></intent-filter></activity></application></manifest>\",\n      \"overwrite\": false,\n      \"kind\": \"txt\"\n    },\n    {\n      \"path\": \"res/values/strings.xml\",\n      \"content\": \"<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?><resources><string name=\\\"app_name\\\">德州餐厅</string><string name=\\\"hello_world\\\">Hello World!</string></resources>\",\n      \"overwrite\": false,\n      \"kind\": \"txt\"\n    },\n    {\n      \"path\": \"src/main/java/com/example/ndjc/MainActivity.java\",\n      \"content\": \"package com.example.ndjc;\\n\\nimport android.os.Bundle;\\nimport android.view.View;\\nimport android.widget.Button;\\nimport android.widget.TextView;\\n\\nimport androidx.appcompat.app.AppCompatActivity;\\n\\npublic class MainActivity extends AppCompatActivity {\\n\\n    @Override\\n    protected void onCreate(Bundle savedInstanceState) {\\n        super.onCreate(savedInstanceState);\\n        setContentView(R.layout.activity_main);\\n\\n        Button button = findViewById(R.id.button);\\n        button.setOnClickListener(new View.OnClickListener() {\\n            @Override\\n            public void onClick(View v) {\\n                // 上传照片\\n            }\\n        });\\n\\n        TextView textView = findViewById(R.id.text_view);\\n        textView.setText(R.string.hello_world);\\n    }\\n\\n    @Override\\n    protected void onResume() {\\n        super.onResume();\\n        // 编辑文字介绍\\n    }\\n\\n    @Override\\n    protected void onPause() {\\n        super.onPause();\\n        // 设定价格\\n    }\\n\\n    @Override\\n    protected void onDestroy() {\\n        super.onDestroy();\\n        // 评论点赞\\n    }\\n}\",\n      \"overwrite\": false,\n      \"kind\": \"txt\"\n    }\n  ]\n}"
+  }
+}
