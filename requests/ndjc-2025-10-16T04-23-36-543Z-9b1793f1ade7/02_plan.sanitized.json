@@ -1,0 +1,90 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.dtxc",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "菜单",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "德州风格",
+    "NDJC:DARK_MODE": "false",
+    "NDJC:FONT_FAMILY_PRIMARY": "Arial",
+    "NDJC:FONT_FAMILY_SECONDARY": "Times New Roman",
+    "NDJC:I18N_ENABLED": "false",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "500",
+    "NDJC:LAYOUT_DENSITY": "mdpi",
+    "NDJC:DATA_SOURCE": "网络",
+    "NDJC:SEED_ENABLED": "false",
+    "NDJC:FEED_SORT": "__NDJC_PLACEHOLDER__",
+    "NDJC:PAGING_SIZE": "10",
+    "NDJC:OFFLINE_POLICY": "false",
+    "NDJC:PRIVACY_POLICY": "https://www.example.com/privacy",
+    "NDJC:DRAFT_ENABLED": "false",
+    "NDJC:USE_APP_BUNDLE": "false",
+    "NDJC:BUILD_META:RUNID": "20230220",
+    "NDJC:FEATURE_TOGGLE:MIN": "1",
+    "NDJC:DEBUG_LOG_ENABLED": "false",
+    "NDJC:LOG_LEVEL": "DEBUG",
+    "NDJC:CRASHLYTICS_ENABLED": "false",
+    "NDJC:EXPERIMENT_BUCKET": "default"
+  },
+  "blocks": {
+    "HOME_HEADER": "__NDJC_PLACEHOLDER__",
+    "HOME_BODY": "__NDJC_PLACEHOLDER__",
+    "HOME_ACTIONS": "__NDJC_PLACEHOLDER__",
+    "SPLASH_CONTENT": "欢迎使用德州餐厅",
+    "EMPTY_STATE": "暂无数据",
+    "ERROR_STATE": "出错了",
+    "DEBUG_PANEL": "调试面板",
+    "HEADER_AD_SLOT": "广告",
+    "PROFILE_SECTION": "用户资料",
+    "SETTINGS_SECTION": "设置",
+    "SETTINGS_SECTION:EXTRA": "更多设置"
+  },
+  "lists": {
+    "ROUTES": [
+      "__NDJC_PLACEHOLDER__"
+    ],
+    "PROGUARD_EXTRA": [
+      "-keep class com.example.dtxc.** { *; }"
+    ],
+    "POST_FIELDS": [
+      "id",
+      "name",
+      "price"
+    ],
+    "PLURAL_STRINGS": [
+      "菜单",
+      "照片",
+      "价格"
+    ],
+    "COMPONENT_STYLES": [
+      "com.example.dtxc:style1",
+      "com.example.dtxc:style2"
+    ],
+    "DEEPLINK_PATTERNS": [
+      "https://www.example.com/deeplink"
+    ]
+  },
+  "conditions": {},
+  "hooks": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.example.dtxc",
+    "resConfigs": [
+      "en",
+      "zh-rCN"
+    ],
+    "permissions": [
+      "__NDJC_PLACEHOLDER__"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxc",
+    "mode": "B"
+  },
+  "droppedDanger": 1
+}
