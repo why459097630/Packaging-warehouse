@@ -1,0 +1,183 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.ndjc",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "菜品介绍",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "德州餐厅",
+    "NDJC:DARK_MODE": "false",
+    "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+    "NDJC:FONT_FAMILY_SECONDARY": "Montserrat",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "500",
+    "NDJC:LAYOUT_DENSITY": "mdpi",
+    "NDJC:DATA_SOURCE": "网络",
+    "NDJC:SEED_ENABLED": "false",
+    "NDJC:FEED_SORT": "__NDJC_PLACEHOLDER__",
+    "NDJC:PAGING_SIZE": "10",
+    "NDJC:OFFLINE_POLICY": "离线可用",
+    "NDJC:PRIVACY_POLICY": "隐私政策",
+    "NDJC:DRAFT_ENABLED": "true",
+    "NDJC:USE_APP_BUNDLE": "false",
+    "NDJC:BUILD_META:RUNID": "1",
+    "NDJC:FEATURE_TOGGLE:MIN": "1",
+    "NDJC:DEBUG_LOG_ENABLED": "true",
+    "NDJC:LOG_LEVEL": "DEBUG",
+    "NDJC:CRASHLYTICS_ENABLED": "true",
+    "NDJC:EXPERIMENT_BUCKET": "实验室",
+    "NDJC:THEME_COLORS": "__NDJC_PLACEHOLDER__"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "__NDJC_PLACEHOLDER__",
+    "BLOCK:HOME_BODY": "__NDJC_PLACEHOLDER__",
+    "BLOCK:HOME_ACTIONS": "__NDJC_PLACEHOLDER__",
+    "BLOCK:SPLASH_CONTENT": "欢迎使用德州餐厅",
+    "BLOCK:EMPTY_STATE": "暂无菜品",
+    "BLOCK:ERROR_STATE": "错误",
+    "BLOCK:DEBUG_PANEL": "调试面板",
+    "BLOCK:HEADER_AD_SLOT": "广告",
+    "BLOCK:PROFILE_SECTION": "用户资料",
+    "BLOCK:SETTINGS_SECTION": "设置",
+    "BLOCK:SETTINGS_SECTION:EXTRA": "额外设置"
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "__NDJC_PLACEHOLDER__"
+    ],
+    "LIST:PROGUARD_EXTRA": [
+      "-keep class com.example.ndjc.** { *; }"
+    ],
+    "LIST:POST_FIELDS": [
+      "id",
+      "name",
+      "price"
+    ],
+    "LIST:PLURAL_STRINGS": [
+      "菜品",
+      "菜品们"
+    ],
+    "LIST:COMPONENT_STYLES": [
+      "com.example.ndjc:style1",
+      "com.example.ndjc:style2"
+    ],
+    "LIST:DEEPLINK_PATTERNS": [
+      "https://example.com/deeplink"
+    ]
+  },
+  "conditions": {},
+  "hooks": {},
+  "resources": {},
+  "companions": [
+    {
+      "path": "AndroidManifest.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?><manifest xmlns:android=\"http://schemas.android.com/apk/res/android\" package=\"com.example.ndjc\" android:versionCode=\"1\" android:versionName=\"1.0\"><application android:allowBackup=\"true\" android:icon=\"@mipmap/ic_launcher\" android:label=\"@string/app_name\" android:roundIcon=\"@mipmap/ic_launcher_round\" android:supportsRtl=\"true\" android:theme=\"@style/AppTheme\"><activity android:name=\".MainActivity\"><intent-filter><action android:name=\"android.intent.action.MAIN\"/></intent-filter></activity></application></manifest>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "res/values/strings.xml",
+      "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?><resources><string name=\"app_name\">德州餐厅</string><string name=\"hello_world\">Hello World!</string></resources>",
+      "encoding": "utf8"
+    },
+    {
+      "path": "src/main/java/com/example/ndjc/MainActivity.java",
+      "content": "package com.example.ndjc;\n\nimport android.os.Bundle;\nimport android.view.View;\nimport android.widget.Button;\nimport android.widget.TextView;\n\nimport androidx.appcompat.app.AppCompatActivity;\n\npublic class MainActivity extends AppCompatActivity {\n\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n\n        Button button = findViewById(R.id.button);\n        button.setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                // 上传照片\n            }\n        });\n\n        TextView textView = findViewById(R.id.text_view);\n        textView.setText(R.string.hello_world);\n    }\n\n    @Override\n    protected void onResume() {\n        super.onResume();\n        // 编辑文字介绍\n    }\n\n    @Override\n    protected void onPause() {\n        super.onPause();\n        // 设定价格\n    }\n\n    @Override\n    protected void onDestroy() {\n        super.onDestroy();\n        // 评论点赞\n    }\n}",
+      "encoding": "utf8"
+    }
+  ],
+  "gradle": {
+    "applicationId": "com.example.ndjc",
+    "resConfigs": [
+      "__NDJC_PLACEHOLDER__"
+    ],
+    "permissions": [
+      "__NDJC_PLACEHOLDER__"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.ndjc",
+    "mode": "B"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.ndjc",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "菜品介绍",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "德州餐厅",
+      "NDJC:DARK_MODE": "false",
+      "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+      "NDJC:FONT_FAMILY_SECONDARY": "Montserrat",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "500",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "网络",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "__NDJC_PLACEHOLDER__",
+      "NDJC:PAGING_SIZE": "10",
+      "NDJC:OFFLINE_POLICY": "离线可用",
+      "NDJC:PRIVACY_POLICY": "隐私政策",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "false",
+      "NDJC:BUILD_META:RUNID": "1",
+      "NDJC:FEATURE_TOGGLE:MIN": "1",
+      "NDJC:DEBUG_LOG_ENABLED": "true",
+      "NDJC:LOG_LEVEL": "DEBUG",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "实验室",
+      "THEME_COLORS": "__NDJC_PLACEHOLDER__"
+    },
+    "block": {
+      "HOME_HEADER": "__NDJC_PLACEHOLDER__",
+      "HOME_BODY": "__NDJC_PLACEHOLDER__",
+      "HOME_ACTIONS": "__NDJC_PLACEHOLDER__",
+      "SPLASH_CONTENT": "欢迎使用德州餐厅",
+      "EMPTY_STATE": "暂无菜品",
+      "ERROR_STATE": "错误",
+      "DEBUG_PANEL": "调试面板",
+      "HEADER_AD_SLOT": "广告",
+      "PROFILE_SECTION": "用户资料",
+      "SETTINGS_SECTION": "设置",
+      "SETTINGS_SECTION:EXTRA": "额外设置"
+    },
+    "list": {
+      "ROUTES": [
+        "__NDJC_PLACEHOLDER__"
+      ],
+      "PROGUARD_EXTRA": [
+        "-keep class com.example.ndjc.** { *; }"
+      ],
+      "POST_FIELDS": [
+        "id",
+        "name",
+        "price"
+      ],
+      "PLURAL_STRINGS": [
+        "菜品",
+        "菜品们"
+      ],
+      "COMPONENT_STYLES": [
+        "com.example.ndjc:style1",
+        "com.example.ndjc:style2"
+      ],
+      "DEEPLINK_PATTERNS": [
+        "https://example.com/deeplink"
+      ]
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.example.ndjc",
+      "resConfigs": [
+        "__NDJC_PLACEHOLDER__"
+      ],
+      "permissions": [
+        "__NDJC_PLACEHOLDER__"
+      ]
+    }
+  }
+}
