@@ -1,0 +1,88 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.ndjc",
+    "NDJC:APP_LABEL": "NDJC App",
+    "NDJC:HOME_TITLE": "Home",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start",
+    "NDJC:THEME_NAME": "NDJC Theme",
+    "NDJC:DARK_MODE": "false",
+    "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+    "NDJC:FONT_FAMILY_SECONDARY": "Arial",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "500",
+    "NDJC:LAYOUT_DENSITY": "mdpi",
+    "NDJC:DATA_SOURCE": "network",
+    "NDJC:SEED_ENABLED": "false",
+    "NDJC:FEED_SORT": "__NDJC_PLACEHOLDER__",
+    "NDJC:PAGING_SIZE": "10",
+    "NDJC:OFFLINE_POLICY": "false",
+    "NDJC:PRIVACY_POLICY": "https://www.example.com/privacy",
+    "NDJC:DRAFT_ENABLED": "false",
+    "NDJC:USE_APP_BUNDLE": "false",
+    "NDJC:BUILD_META:RUNID": "1",
+    "NDJC:FEATURE_TOGGLE:MIN": "1",
+    "NDJC:DEBUG_LOG_ENABLED": "false",
+    "NDJC:LOG_LEVEL": "DEBUG",
+    "NDJC:CRASHLYTICS_ENABLED": "false",
+    "NDJC:EXPERIMENT_BUCKET": "https://example.com/experiment"
+  },
+  "blocks": {
+    "HOME_HEADER": "__NDJC_PLACEHOLDER__",
+    "HOME_BODY": "This is the home page of NDJC App",
+    "HOME_ACTIONS": "Upload photo, edit description, set price, comment and like",
+    "SPLASH_CONTENT": "NDJC App",
+    "EMPTY_STATE": "No data",
+    "ERROR_STATE": "Error occurred",
+    "DEBUG_PANEL": "Debug panel",
+    "HEADER_AD_SLOT": "Advertisement",
+    "PROFILE_SECTION": "User profile",
+    "SETTINGS_SECTION": "Settings",
+    "SETTINGS_SECTION:EXTRA": "More settings"
+  },
+  "lists": {
+    "ROUTES": [
+      "__NDJC_PLACEHOLDER__"
+    ],
+    "PROGUARD_EXTRA": [
+      "-keep class com.example.ndjc.** { *; }"
+    ],
+    "POST_FIELDS": [
+      "id",
+      "name",
+      "price"
+    ],
+    "PLURAL_STRINGS": [
+      "item",
+      "items"
+    ],
+    "COMPONENT_STYLES": [
+      "com.example.ndjc:componentStyle1",
+      "com.example.ndjc:componentStyle2"
+    ],
+    "DEEPLINK_PATTERNS": [
+      "https://example.com/deeplink"
+    ]
+  },
+  "conditions": {},
+  "hooks": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.example.ndjc",
+    "resConfigs": [
+      "__NDJC_PLACEHOLDER__"
+    ],
+    "permissions": [
+      "__NDJC_PLACEHOLDER__"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "NDJC App",
+    "packageId": "com.example.ndjc",
+    "mode": "B"
+  },
+  "droppedDanger": 1
+}
