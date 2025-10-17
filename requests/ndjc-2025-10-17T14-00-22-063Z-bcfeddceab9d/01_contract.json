@@ -1,0 +1,94 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.",
+    "packageId": "__ndjc_placeholder__ndjcappprovidesseamlessbrowsinguploadsandrichcontentforandroid",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": null,
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.",
+      "NDJC:APP_LABEL": "__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.",
+      "NDJC:HOME_TITLE": "__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.",
+      "NDJC:PRIMARY_BUTTON_TEXT": "__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.",
+      "THEME_COLORS": "__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android."
+    },
+    "block": {},
+    "list": {
+      "ROUTES": [
+        "__NDJC_PLACEHOLDER__"
+      ]
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "__ndjc_placeholder__",
+      "resConfigs": [
+        "__NDJC_PLACEHOLDER__"
+      ],
+      "permissions": [
+        "__NDJC_PLACEHOLDER__"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "ok": false,
+        "report": {
+          "missing": [
+            "text:NDJC:PACKAGE_NAME",
+            "text:NDJC:APP_LABEL",
+            "text:NDJC:HOME_TITLE",
+            "text:NDJC:PRIMARY_BUTTON_TEXT",
+            "text:THEME_COLORS",
+            "list:ROUTES"
+          ],
+          "invalid": [
+            "text:NDJC:PACKAGE_NAME (regex)",
+            "text:THEME_COLORS (regex)",
+            "list:ROUTES (itemRegex)"
+          ]
+        }
+      },
+      {
+        "attempt": 1,
+        "ok": false,
+        "report": {
+          "missing": [
+            "text:NDJC:PACKAGE_NAME",
+            "text:NDJC:APP_LABEL",
+            "text:NDJC:HOME_TITLE",
+            "text:NDJC:PRIMARY_BUTTON_TEXT",
+            "text:THEME_COLORS",
+            "list:ROUTES"
+          ],
+          "invalid": [
+            "text:NDJC:PACKAGE_NAME (regex)",
+            "text:THEME_COLORS (regex)",
+            "list:ROUTES (itemRegex)"
+          ]
+        }
+      },
+      {
+        "attempt": 2,
+        "error": "Groq HTTP 429 (req req_01k7s7j5t5eghs9nzx4m0xrr24): {\"error\":{\"message\":\"Rate limit reached for model `llama-3.1-8b-instant` in organization `org_01k2v5pda7e8ttpt7p5m1tm1j4` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Used 3595, Requested 3446. Please try again in 10.41s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n"
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "rules_file": "/var/task/lib/ndjc/rules/ndjc-rules.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt"
+    },
+    "rawText": "{\n  \"metadata\": {\n    \"template\": \"circle-basic\",\n    \"appName\": \"__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.\",\n    \"packageId\": \"__ndjc_placeholder__ndjcappprovidesseamlessbrowsinguploadsandrichcontentforandroid\",\n    \"mode\": \"B\"\n  },\n  \"anchors\": {\n    \"text\": {\n      \"NDJC:PACKAGE_NAME\": \"__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.\",\n      \"NDJC:APP_LABEL\": \"__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.\",\n      \"NDJC:HOME_TITLE\": \"__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.\",\n      \"NDJC:PRIMARY_BUTTON_TEXT\": \"__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.\",\n      \"THEME_COLORS\": \"__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.\"\n    },\n    \"block\": {},\n    \"list\": {\n      \"ROUTES\": [\n        \"__NDJC_PLACEHOLDER__\"\n      ]\n    },\n    \"if\": {},\n    \"hook\": {},\n    \"gradle\": {\n      \"applicationId\": \"__ndjc_placeholder__\",\n      \"resConfigs\": [\n        \"__NDJC_PLACEHOLDER__\"\n      ],\n      \"permissions\": [\n        \"__NDJC_PLACEHOLDER__\"\n      ]\n    }\n  },\n  \"files\": []\n}"
+  }
+}
