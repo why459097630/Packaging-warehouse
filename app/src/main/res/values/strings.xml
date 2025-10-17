@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 基础可替换文案锚点 -->
+    <string name="app_name">NDJC App</string>
+    <string name="home_title">Home</string>
+
+    <!-- 兼容历史：primary_button 仍保留；新增 MAIN_BUTTON 作为标准键 -->
+    <string name="primary_button">Start</string>
+    <string name="MAIN_BUTTON">Start</string>
+
+    <!-- 运行标识 / 日志级别（可用于调试或 BuildConfig 注入） -->
+    <string name="ndjc_run_id">NDJC:RUN_ID</string>
+    <string name="ndjc_log_level">DEBUG</string>
+    <string name="ndjc_debug_log_enabled">false</string>
+    <string name="ndjc_theme_name">NDJC Theme</string>
+
+    <!-- 示例文案（不保留锚点值，不影响验收） -->
+    <string name="feed_like">Like</string>
+    <string name="feed_comment">Comment</string>
+    <string name="feed_post">Post</string>
+    <string name="empty_hint">Nothing here yet.</string>
+    <string name="feed_title">Feed</string>
+    <string name="comments_count">%1$d comments</string>
+
+    <!-- BLOCK:STRINGS_EXTRA -->
+    <!-- 额外字符串请写入以上位 -->
+    <!-- END_BLOCK -->
+
+</resources>
