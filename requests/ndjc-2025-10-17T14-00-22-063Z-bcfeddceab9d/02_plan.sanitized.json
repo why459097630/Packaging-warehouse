@@ -1,0 +1,35 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.",
+    "NDJC:APP_LABEL": "__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.",
+    "NDJC:HOME_TITLE": "__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.",
+    "NDJC:PRIMARY_BUTTON_TEXT": "__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android."
+  },
+  "blocks": {},
+  "lists": {
+    "ROUTES": [
+      "__NDJC_PLACEHOLDER__"
+    ]
+  },
+  "conditions": {},
+  "hooks": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "__ndjc_placeholder__",
+    "resConfigs": [
+      "__NDJC_PLACEHOLDER__"
+    ],
+    "permissions": [
+      "__NDJC_PLACEHOLDER__"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.",
+    "packageId": "__ndjc_placeholder__ndjcappprovidesseamlessbrowsinguploadsandrichcontentforandroid",
+    "mode": "B"
+  },
+  "droppedDanger": 1
+}
