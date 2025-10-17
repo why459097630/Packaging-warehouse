@@ -1,0 +1,148 @@
+{
+  "metadata": {
+    "template": "circle-basic",
+    "appName": "NDJC App",
+    "packageId": "com.example.ndjc",
+    "mode": "B",
+    "trace": {
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "01b96b48571e69ccbdb46d44b4cd5b96070ebb71c72d86525799319fae78aacd",
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)"
+    }
+  },
+  "anchors": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.ndjc",
+      "NDJC:APP_LABEL": "NDJC App",
+      "NDJC:HOME_TITLE": "Home",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Start",
+      "NDJC:THEME_NAME": "NDJC Theme",
+      "NDJC:DARK_MODE": "false",
+      "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+      "NDJC:FONT_FAMILY_SECONDARY": "Arial",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "500",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "network",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "__NDJC_PLACEHOLDER__",
+      "NDJC:PAGING_SIZE": "10",
+      "NDJC:OFFLINE_POLICY": "false",
+      "NDJC:PRIVACY_POLICY": "https://www.example.com/privacy",
+      "NDJC:DRAFT_ENABLED": "false",
+      "NDJC:USE_APP_BUNDLE": "false",
+      "NDJC:BUILD_META:RUNID": "1",
+      "NDJC:FEATURE_TOGGLE:MIN": "1",
+      "NDJC:DEBUG_LOG_ENABLED": "false",
+      "NDJC:LOG_LEVEL": "DEBUG",
+      "NDJC:CRASHLYTICS_ENABLED": "false",
+      "NDJC:EXPERIMENT_BUCKET": "https://example.com/experiment",
+      "THEME_COLORS": "__NDJC_PLACEHOLDER__"
+    },
+    "block": {
+      "HOME_HEADER": "__NDJC_PLACEHOLDER__",
+      "HOME_BODY": "This is the home page of NDJC App",
+      "HOME_ACTIONS": "Upload photo, edit description, set price, comment and like",
+      "SPLASH_CONTENT": "NDJC App",
+      "EMPTY_STATE": "No data",
+      "ERROR_STATE": "Error occurred",
+      "DEBUG_PANEL": "Debug panel",
+      "HEADER_AD_SLOT": "Advertisement",
+      "PROFILE_SECTION": "User profile",
+      "SETTINGS_SECTION": "Settings",
+      "SETTINGS_SECTION:EXTRA": "More settings"
+    },
+    "list": {
+      "ROUTES": [
+        "__NDJC_PLACEHOLDER__"
+      ],
+      "PROGUARD_EXTRA": [
+        "-keep class com.example.ndjc.** { *; }"
+      ],
+      "POST_FIELDS": [
+        "id",
+        "name",
+        "price"
+      ],
+      "PLURAL_STRINGS": [
+        "item",
+        "items"
+      ],
+      "COMPONENT_STYLES": [
+        "com.example.ndjc:componentStyle1",
+        "com.example.ndjc:componentStyle2"
+      ],
+      "DEEPLINK_PATTERNS": [
+        "https://example.com/deeplink"
+      ]
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.example.ndjc",
+      "resConfigs": [
+        "__NDJC_PLACEHOLDER__"
+      ],
+      "permissions": [
+        "__NDJC_PLACEHOLDER__"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "retries": [
+      {
+        "attempt": 0,
+        "ok": false,
+        "report": {
+          "missing": [
+            "text:THEME_COLORS"
+          ],
+          "invalid": [
+            "text:NDJC:FEED_SORT (enum)",
+            "text:THEME_COLORS (regex)",
+            "block:HOME_HEADER (too_short(<30))",
+            "block:HOME_BODY (too_short(<30))",
+            "block:HOME_ACTIONS (too_short(<30))",
+            "list:ROUTES (itemRegex)",
+            "gradle:resConfigs (itemRegex)",
+            "gradle:permissions (itemRegex)"
+          ]
+        }
+      },
+      {
+        "attempt": 1,
+        "ok": false,
+        "report": {
+          "missing": [
+            "text:THEME_COLORS"
+          ],
+          "invalid": [
+            "text:NDJC:FEED_SORT (enum)",
+            "text:THEME_COLORS (regex)",
+            "block:HOME_HEADER (too_short(<30))",
+            "list:ROUTES (itemRegex)",
+            "gradle:resConfigs (itemRegex)",
+            "gradle:permissions (itemRegex)"
+          ]
+        }
+      },
+      {
+        "attempt": 2,
+        "error": "Groq HTTP 429 (req req_01k7rmnr44fy59fj0q2s3y4fcx): {\"error\":{\"message\":\"Rate limit reached for model `llama-3.1-8b-instant` in organization `org_01k2v5pda7e8ttpt7p5m1tm1j4` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Used 4418, Requested 3453. Please try again in 18.71s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n"
+      }
+    ],
+    "source": {
+      "registry_file": "/var/task/lib/ndjc/anchors/registry.circle-basic.json",
+      "prompt_file": "/var/task/lib/ndjc/prompts/contract_v1.en.json",
+      "prompt_sha256": "01b96b48571e69ccbdb46d44b4cd5b96070ebb71c72d86525799319fae78aacd",
+      "retry_file": "/var/task/lib/ndjc/prompts/contract_v1.retry.en.txt",
+      "retry_sha256": "1e2a8fd749e8eb4d01a26e94d7cfdc26c94e3e30bb06776c2bc4a7226798e78c",
+      "model": "groq"
+    },
+    "synthesized": false,
+    "rawText": "{\n  \"metadata\": {\n    \"template\": \"circle-basic\",\n    \"appName\": \"NDJC App\",\n    \"packageId\": \"com.example.ndjc\",\n    \"mode\": \"B\"\n  },\n  \"anchors\": {\n    \"text\": {\n      \"NDJC:PACKAGE_NAME\": \"com.example.ndjc\",\n      \"NDJC:APP_LABEL\": \"NDJC App\",\n      \"NDJC:HOME_TITLE\": \"Home\",\n      \"NDJC:PRIMARY_BUTTON_TEXT\": \"Start\",\n      \"NDJC:THEME_NAME\": \"NDJC Theme\",\n      \"NDJC:DARK_MODE\": \"false\",\n      \"NDJC:FONT_FAMILY_PRIMARY\": \"Roboto\",\n      \"NDJC:FONT_FAMILY_SECONDARY\": \"Arial\",\n      \"NDJC:I18N_ENABLED\": \"true\",\n      \"NDJC:ANIM_ENABLED\": \"true\",\n      \"NDJC:ANIM_DURATION_MS\": \"500\",\n      \"NDJC:LAYOUT_DENSITY\": \"mdpi\",\n      \"NDJC:DATA_SOURCE\": \"network\",\n      \"NDJC:SEED_ENABLED\": \"false\",\n      \"NDJC:FEED_SORT\": \"__NDJC_PLACEHOLDER__\",\n      \"NDJC:PAGING_SIZE\": \"10\",\n      \"NDJC:OFFLINE_POLICY\": \"false\",\n      \"NDJC:PRIVACY_POLICY\": \"https://www.example.com/privacy\",\n      \"NDJC:DRAFT_ENABLED\": \"false\",\n      \"NDJC:USE_APP_BUNDLE\": \"false\",\n      \"NDJC:BUILD_META:RUNID\": \"1\",\n      \"NDJC:FEATURE_TOGGLE:MIN\": \"1\",\n      \"NDJC:DEBUG_LOG_ENABLED\": \"false\",\n      \"NDJC:LOG_LEVEL\": \"DEBUG\",\n      \"NDJC:CRASHLYTICS_ENABLED\": \"false\",\n      \"NDJC:EXPERIMENT_BUCKET\": \"https://example.com/experiment\",\n      \"THEME_COLORS\": \"__NDJC_PLACEHOLDER__\"\n    },\n    \"block\": {\n      \"HOME_HEADER\": \"__NDJC_PLACEHOLDER__\",\n      \"HOME_BODY\": \"This is the home page of NDJC App\",\n      \"HOME_ACTIONS\": \"Upload photo, edit description, set price, comment and like\",\n      \"SPLASH_CONTENT\": \"NDJC App\",\n      \"EMPTY_STATE\": \"No data\",\n      \"ERROR_STATE\": \"Error occurred\",\n      \"DEBUG_PANEL\": \"Debug panel\",\n      \"HEADER_AD_SLOT\": \"Advertisement\",\n      \"PROFILE_SECTION\": \"User profile\",\n      \"SETTINGS_SECTION\": \"Settings\",\n      \"SETTINGS_SECTION:EXTRA\": \"More settings\"\n    },\n    \"list\": {\n      \"ROUTES\": [\n        \"__NDJC_PLACEHOLDER__\"\n      ],\n      \"PROGUARD_EXTRA\": [\n        \"-keep class com.example.ndjc.** { *; }\"\n      ],\n      \"POST_FIELDS\": [\n        \"id\",\n        \"name\",\n        \"price\"\n      ],\n      \"PLURAL_STRINGS\": [\n        \"item\",\n        \"items\"\n      ],\n      \"COMPONENT_STYLES\": [\n        \"com.example.ndjc:componentStyle1\",\n        \"com.example.ndjc:componentStyle2\"\n      ],\n      \"DEEPLINK_PATTERNS\": [\n        \"https://example.com/deeplink\"\n      ]\n    },\n    \"if\": {},\n    \"hook\": {},\n    \"gradle\": {\n      \"applicationId\": \"com.example.ndjc\",\n      \"resConfigs\": [\n        \"__NDJC_PLACEHOLDER__\"\n      ],\n      \"permissions\": [\n        \"__NDJC_PLACEHOLDER__\"\n      ]\n    }\n  },\n  \"files\": []\n}"
+  }
+}
