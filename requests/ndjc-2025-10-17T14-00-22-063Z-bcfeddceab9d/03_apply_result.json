@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-17T14-00-22-063Z-bcfeddceab9d",
+  "status": "pre-ci",
+  "template": "circle-basic",
+  "appTitle": "__NDJC_PLACEHOLDER__ — NDJC App provides seamless browsing, uploads, and rich content for Android.",
+  "packageName": "__ndjc_placeholder__ndjcappprovidesseamlessbrowsinguploadsandrichcontentforandroid",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
