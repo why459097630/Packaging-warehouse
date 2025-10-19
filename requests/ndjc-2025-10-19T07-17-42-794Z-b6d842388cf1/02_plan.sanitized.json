@@ -1,0 +1,121 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.dtxc",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "德州餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "德州风格",
+    "NDJC:DARK_MODE": "false",
+    "NDJC:FONT_FAMILY_PRIMARY": "Arial",
+    "NDJC:FONT_FAMILY_SECONDARY": "Times New Roman",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "500",
+    "NDJC:LAYOUT_DENSITY": "high",
+    "NDJC:DATA_SOURCE": "网络",
+    "NDJC:SEED_ENABLED": "false",
+    "NDJC:FEED_SORT": "时间",
+    "NDJC:PAGING_SIZE": "10",
+    "NDJC:OFFLINE_POLICY": "false",
+    "NDJC:PRIVACY_POLICY": "https://www.example.com/privacy",
+    "NDJC:DRAFT_ENABLED": "true",
+    "NDJC:USE_APP_BUNDLE": "true",
+    "NDJC:BUILD_META:RUNID": "20230220",
+    "NDJC:FEATURE_TOGGLE:MIN": "1.0",
+    "NDJC:DEBUG_LOG_ENABLED": "true",
+    "NDJC:LOG_LEVEL": "DEBUG",
+    "NDJC:CRASHLYTICS_ENABLED": "true",
+    "NDJC:EXPERIMENT_BUCKET": "https://example.com/experiment"
+  },
+  "blocks": {
+    "HOME_HEADER": "德州餐厅",
+    "HOME_BODY": "上传照片、编辑文字介绍、设定价格、评论点赞",
+    "HOME_ACTIONS": "上传照片、编辑文字介绍、设定价格、评论点赞",
+    "SPLASH_CONTENT": "欢迎使用德州餐厅",
+    "EMPTY_STATE": "暂无数据",
+    "ERROR_STATE": "发生错误",
+    "DEBUG_PANEL": "调试面板",
+    "HEADER_AD_SLOT": "广告位",
+    "USER_PROFILE_CARD": "用户资料",
+    "SPONSORED_CARD": "赞助商",
+    "PROFILE_SECTION": "用户资料",
+    "SETTINGS_SECTION": "设置",
+    "SETTINGS_SECTION:EXTRA": "更多设置"
+  },
+  "lists": {
+    "ROUTES": [
+      "/home",
+      "/detail"
+    ],
+    "DEPENDENCY_SNIPPETS": [
+      "com.example.dtxc:dependency:1.0"
+    ],
+    "PROGUARD_EXTRA": [
+      "-keep class com.example.dtxc.** { *; }"
+    ],
+    "PACKAGING_RULES": [
+      "com.example.dtxc:packaging:1.0"
+    ],
+    "POST_FIELDS": [
+      "title",
+      "description",
+      "price",
+      "comment",
+      "like"
+    ],
+    "PLURAL_STRINGS": [
+      "{'one': '一条评论', 'other': '%d条评论'}"
+    ],
+    "COMPONENT_STYLES": [
+      "com.example.dtxc:style:1.0"
+    ],
+    "DEEPLINK_PATTERNS": [
+      "https://example.com/deeplink"
+    ],
+    "NETWORK_CLEAR_TEXT": [
+      "https://example.com/network"
+    ],
+    "RES_CONFIGS_OVERRIDE": [
+      "com.example.dtxc:res:1.0"
+    ]
+  },
+  "conditions": {
+    "NAV_TRANSITIONS": true,
+    "BUILD_SUMMARY": true,
+    "NATIVE_SPLITS": true,
+    "AFTER_BUILD": true,
+    "PRE_COMMIT": true,
+    "AFTER_INSTALL": true,
+    "BEFORE_BUILD": true,
+    "POST_INJECT": true,
+    "BEFORE_BUNDLE": true,
+    "AFTER_BUNDLE": true
+  },
+  "hooks": {
+    "INTENT_SHARE": "com.example.dtxc:share:1.0",
+    "FILE_PROVIDER": "com.example.dtxc:file:1.0",
+    "PERMISSIONS:ON_REQUEST": "android.permission.INTERNET",
+    "PRE_COMMIT:HOOK": "com.example.dtxc:pre-commit:1.0",
+    "POST_BUILD:HOOK": "com.example.dtxc:post-build:1.0",
+    "AFTER_INSTALL:HOOK": "com.example.dtxc:after-install:1.0"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.example.dtxc",
+    "resConfigs": [
+      "en"
+    ],
+    "permissions": [
+      "android.permission.INTERNET"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxc",
+    "mode": "B"
+  },
+  "droppedDanger": 5
+}
