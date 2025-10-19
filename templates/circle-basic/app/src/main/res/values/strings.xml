@@ -11,11 +11,17 @@
 
     <!-- = 运行标识 / 日志级别（可用于调试或 BuildConfig 注入） = -->
     <string name="ndjc_run_id">NDJC:RUN_ID</string>
+    <!-- 新增：构建元信息 RunId（与 RUN_ID 区分，供统计/追踪用） -->
+    <string name="ndjc_build_meta_runid">NDJC:BUILD_META:RUNID</string>
+
     <string name="ndjc_log_level">NDJC:LOG_LEVEL</string>
     <string name="ndjc_debug_log_enabled">NDJC:DEBUG_LOG_ENABLED</string>
     <string name="ndjc_theme_name">NDJC:THEME_NAME</string>
 
-    <!-- = 新增：本次缺失的文案类锚点补齐（均以 NDJC:* 作为值，供物化器替换） = -->
+    <!-- = 新增：动画开关布尔占位（作为字符串承载，Kotlin 侧可解析为 bool） = -->
+    <string name="ndjc_anim_enabled">NDJC:ANIM_ENABLED</string>
+
+    <!-- = 本次缺失的文案类锚点补齐（均以 NDJC:* 作为值，供物化器替换） = -->
     <string name="ndjc_privacy_policy">NDJC:PRIVACY_POLICY</string>
     <string name="ndjc_feed_sort">NDJC:FEED_SORT</string>
     <string name="ndjc_feature_toggle_min">NDJC:FEATURE_TOGGLE:MIN</string>
@@ -50,7 +56,7 @@
 
     <!-- = 追加自定义文案区（供后续扩展） = -->
     <!-- BLOCK:STRINGS_EXTRA -->
-    <!-- 额外字串请插入以上区位 -->
+    <!-- 额外字串请写入以上区位 -->
     <!-- END_BLOCK -->
 
 </resources>
