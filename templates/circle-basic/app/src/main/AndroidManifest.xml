@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   说明：
-  - Android 8+ 的 AGP 会以 Gradle 的 android { namespace = "…" } 作为 R 的包名。
-  - 因此这里 **不再** 写 package 属性，以免产生 “Setting the namespace via the package attribute… is ignored” 警告，
-    以及由此导致的 R 未生成/引用不到的问题。
-  - 其余锚点（IF / LIST / BLOCK / NDJC:…）保持不变，供物化脚本替换。
+  - Android 8+ 的 AGP 会以 Gradle 的 android { namespace = "<pkg>" } 作为 R 的包名。
+  - 但这里仍然保留 manifest 的 package 属性，便于 NDJC 物化阶段用 NDJC:PACKAGE_NAME 同步/校验。
+  - 注释样式保持 IF / LIST / BLOCK / HOOK / NDJC:... 以配合物化脚本匹配。
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- ===== Permissions（条件锚点） ===== -->
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="NDJC:PACKAGE_NAME">
+
+    <!-- ===== PERMISSIONS（条件插入） ===== -->
 
     <!-- IF:PERMISSION.CAMERA -->
     <uses-permission android:name="android.permission.CAMERA" />
@@ -48,8 +50,9 @@
         android:supportsRtl="true"
         android:theme="@style/NDJCTheme">
 
-        <!-- IF:NETWORK.CLEAR_TEXT -->
-        <!-- 如需明文 HTTP，可在条件为真时由生成器注入 usesCleartextTraffic 或相关片段 -->
+        <!-- IF:NETWORK_CLEAR_TEXT -->
+        <!-- 说明：如需 HTTP，可在 res/xml/network_security_config.xml 设置明文域名
+             同时这里通过 meta-data 打开 usesCleartextTraffic 或由代码读取 -->
         <meta-data android:name="ndjc.placeholder" android:value="true"/>
         <!-- END_IF -->
 
@@ -58,6 +61,7 @@
         <!-- END_BLOCK -->
 
         <!-- IF:FILE_PROVIDER -->
+        <!-- HOOK FILE_PROVIDER -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -76,13 +80,16 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-            <!-- LIST:DEEPLINK_PATTERNS -->
-            <!-- 例：<intent-filter>…<data android:scheme="${ITEM}" /></intent-filter>（请按需要复制完整 intent-filter） -->
-            <!-- END_LIST -->
         </activity>
 
-        <!-- IF:INTENT.SHARE -->
+        <!-- LIST:DEEPLINK_PATTERNS -->
+        <!-- 例：<intent-filter>...<data android:scheme="${ITEM}"/></intent-filter>（如需可在对应 Activity 上展开） -->
+        <!-- END_LIST -->
+
+        <!-- HOOK INTENT_SHARE -->
+        <!-- 如需分享代理，可由物化在此处或单独 Activity 注入 -->
+        <!-- 示例： -->
+        <!--
         <activity
             android:name=".ShareProxyActivity"
             android:exported="true">
@@ -92,8 +99,7 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-        <!-- END_IF -->
+        -->
 
     </application>
-
 </manifest>
