@@ -10,11 +10,21 @@ import androidx.navigation.compose.rememberNavController
 import com.ndjc.app.navigation.NavGraph
 
 class MainActivity : ComponentActivity() {
+
+    // HOOK PERMISSIONS:ON_REQUEST
+    // 在这里集中放置运行时权限的 launcher / 回调等实现
+    // END_HOOK
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // HOOK:AFTER_INSTALL
+        // HOOK AFTER_INSTALL:HOOK
+        // 这里可放“首次安装后”的一次性逻辑，比如打点/引导页触发
         // END_HOOK
+
+        // IF:AFTER_INSTALL
+        // 若需要在代码侧（而非 CI 脚本）执行“安装后”动作，可在此注入
+        // END_IF
 
         setContent { NDJCApp() }
     }
@@ -41,11 +51,11 @@ fun NDJCApp() {
         // END_BLOCK
 
         // BLOCK:DEBUG_PANEL
-        // 可注入：调试开关/环境查看（如网络 Host、用户态等）
+        // 可注入：调试开关/环境变量（如网络 Host、用户态等）
         // END_BLOCK
 
         // BLOCK:BUILD_SUMMARY
-        // 可注入：BuildConfig/NDJC_RUN_ID / 构建变量摘要/文案
+        // 可注入 BuildConfig/NDJC_RUN_ID / 构建摘要/变更
         // END_BLOCK
 
         NavGraph(nav)
