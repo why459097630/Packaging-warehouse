@@ -20,9 +20,10 @@ object Routes {
 
 @Composable
 fun NavGraph(navController: NavHostController) {
-    // BLOCK:NAV_TRANSITIONS
-    // 这里可以交换为 AnimatedNavHost 等
-    // END_BLOCK
+
+    // IF:NAV_TRANSITIONS
+    // 这里可切换为 AnimatedNavHost 并注入 enter/exit/popEnter/popExit 转场动画
+    // END_IF
 
     NavHost(navController = navController, startDestination = Routes.Home) {
         // BLOCK:ROUTE_HOME
