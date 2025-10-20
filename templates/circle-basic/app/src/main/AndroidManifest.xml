@@ -84,7 +84,7 @@
         <!-- 例：<intent-filter>...<data android:scheme="${ITEM}"/></intent-filter>（按需放到对应 Activity 上即可） -->
         <!-- END_LIST -->
 
-        <!-- HOOK INTENT_SHARE -->
+        <!-- HOOK:INTENT_SHARE -->
         <!-- 说明：按需分发逻辑，可自定义化这里或对应 Activity 里 -->
         <!-- 示例： -->
         <activity
