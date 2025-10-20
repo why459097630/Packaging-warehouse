@@ -55,8 +55,15 @@
     <string name="comments_count">%1$d comments</string>
 
     <!-- = 追加自定义文案区（供后续扩展） = -->
-    <!-- BLOCK:STRINGS_EXTRA -->
-    <!-- 额外字串请写入以上区位 -->
-    <!-- END_BLOCK -->
+    <!-- NDJC:STRINGS_EXTRA -->
+    <!--
+      预期：由生成器把额外 <string> / <plurals> 条目注入到此处。
+      例如（仅示例，已注释，不参与构建）：
+      <string name="welcome">Welcome!</string>
+      <plurals name="photos_count">
+        <item quantity="one">%1$d photo</item>
+        <item quantity="other">%1$d photos</item>
+      </plurals>
+    -->
 
 </resources>
