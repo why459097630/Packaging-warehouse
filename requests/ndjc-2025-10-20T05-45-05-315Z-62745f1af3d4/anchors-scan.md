@@ -1,0 +1,80 @@
+# Anchors Scan (baseline=registry.circle-basic.json)
+
+template: circle-basic | runId: ndjc-2025-10-20T05-45-05-315Z-62745f1af3d4
+
+| Anchor | InTemplate | InSanitized | File |
+|---|---|---|---|
+| NDJC:PACKAGE_NAME | HIT | YES | template.yaml |
+| NDJC:APP_LABEL | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:HOME_TITLE | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:PRIMARY_BUTTON_TEXT | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:THEME_NAME | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:DARK_MODE | HIT | YES | app/src/main/res/values/themes.xml |
+| NDJC:FONT_FAMILY_PRIMARY | HIT | YES | app/src/main/res/values/themes.xml |
+| NDJC:FONT_FAMILY_SECONDARY | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:I18N_ENABLED | HIT | YES | template.yaml |
+| NDJC:ANIM_ENABLED | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:ANIM_DURATION_MS | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:LAYOUT_DENSITY | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:DATA_SOURCE | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:SEED_ENABLED | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:FEED_SORT | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:PAGING_SIZE | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:OFFLINE_POLICY | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:PRIVACY_POLICY | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:DRAFT_ENABLED | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:USE_APP_BUNDLE | HIT | YES | app/build.gradle |
+| NDJC:BUILD_META:RUNID | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:FEATURE_TOGGLE:MIN | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:DEBUG_LOG_ENABLED | HIT | YES | app/build.gradle |
+| NDJC:LOG_LEVEL | HIT | YES | app/build.gradle |
+| NDJC:CRASHLYTICS_ENABLED | HIT | YES | app/src/main/res/values/strings.xml |
+| NDJC:EXPERIMENT_BUCKET | HIT | YES | app/src/main/res/values/strings.xml |
+| THEME_COLORS | HIT | NO | app/src/main/res/values/themes.xml |
+| TYPOCASE_OVERRIDES | HIT | NO | app/src/main/res/values/themes_overrides.xml |
+| STRINGS_EXTRA | HIT | NO | app/src/main/res/values/strings.xml |
+| ROUTE_HOME | HIT | NO | app/src/main/java/com/ndjc/app/navigation/NavGraph.kt |
+| ROUTE_DETAIL | HIT | NO | app/src/main/java/com/ndjc/app/navigation/NavGraph.kt |
+| BLOCK:HOME_HEADER | HIT | YES | app/src/main/java/com/ndjc/app/MainActivity.kt |
+| BLOCK:HOME_BODY | HIT | YES | app/src/main/java/com/ndjc/app/MainActivity.kt |
+| BLOCK:HOME_ACTIONS | HIT | YES | app/src/main/java/com/ndjc/app/MainActivity.kt |
+| BLOCK:SPLASH_CONTENT | HIT | YES | app/src/main/java/com/ndjc/app/ui/screens/SplashScreen.kt |
+| BLOCK:EMPTY_STATE | HIT | YES | app/src/main/java/com/ndjc/app/feature/common/EmptyState.kt |
+| BLOCK:ERROR_STATE | HIT | YES | app/src/main/java/com/ndjc/app/MainActivity.kt |
+| BLOCK:DEBUG_PANEL | HIT | YES | app/src/main/java/com/ndjc/app/MainActivity.kt |
+| BLOCK:HEADER_AD_SLOT | HIT | YES | docs/ANCHORS_AND_MODULES.md |
+| BLOCK:USER_PROFILE_CARD | HIT | YES | app/src/main/java/com/ndjc/app/ui/screens/ProfileScreen.kt |
+| BLOCK:SPONSORED_CARD | HIT | YES | app/src/main/java/com/ndjc/app/feature/feed/ui/FeedItem.kt |
+| BLOCK:PROFILE_SECTION | HIT | YES | app/src/main/java/com/ndjc/app/ui/screens/ProfileScreen.kt |
+| BLOCK:SETTINGS_SECTION | HIT | YES | docs/ANCHORS_AND_MODULES.md |
+| BLOCK:SETTINGS_SECTION:EXTRA | MISS | YES |  |
+| LIST:ROUTES | HIT | YES | template.yaml |
+| LIST:DEPENDENCY_SNIPPETS | HIT | YES | app/build.gradle |
+| LIST:PROGUARD_EXTRA | HIT | YES | app/build.gradle |
+| LIST:PACKAGING_RULES | HIT | YES | app/build.gradle |
+| LIST:POST_FIELDS | HIT | YES | app/src/main/java/com/ndjc/app/ui/screens/HomeScreen.kt |
+| LIST:PLURAL_STRINGS | HIT | YES | app/src/main/res/values/plurals.xml |
+| LIST:COMPONENT_STYLES | HIT | YES | app/src/main/res/values/arrays.xml |
+| LIST:DEEPLINK_PATTERNS | HIT | YES | app/src/main/AndroidManifest.xml |
+| LIST:NETWORK_CLEAR_TEXT | MISS | YES |  |
+| LIST:RES_CONFIGS_OVERRIDE | HIT | YES | app/build.gradle |
+| IF:NAV_TRANSITIONS | HIT | YES | app/src/main/java/com/ndjc/app/navigation/NavGraph.kt |
+| IF:BUILD_SUMMARY | HIT | YES | app/build.gradle |
+| IF:NATIVE_SPLITS | HIT | YES | app/build.gradle |
+| IF:AFTER_BUILD | HIT | YES | app/build.gradle |
+| IF:PRE_COMMIT | MISS | YES |  |
+| IF:AFTER_INSTALL | HIT | YES | app/src/main/java/com/ndjc/app/MainActivity.kt |
+| IF:BEFORE_BUILD | HIT | YES | app/build.gradle |
+| IF:POST_INJECT | HIT | YES | app/build.gradle |
+| IF:BEFORE_BUNDLE | HIT | YES | app/build.gradle |
+| IF:AFTER_BUNDLE | HIT | YES | app/build.gradle |
+| HOOK:INTENT_SHARE | MISS | YES |  |
+| HOOK:FILE_PROVIDER | MISS | YES |  |
+| HOOK:PERMISSIONS:ON_REQUEST | MISS | YES |  |
+| HOOK:PRE_COMMIT:HOOK | MISS | YES |  |
+| HOOK:POST_BUILD:HOOK | MISS | YES |  |
+| HOOK:AFTER_INSTALL:HOOK | MISS | YES |  |
+
+Total: 70 | HIT: 61 | MISS: 9
+
+_Non-blocking preflight; this step never fails the build._
