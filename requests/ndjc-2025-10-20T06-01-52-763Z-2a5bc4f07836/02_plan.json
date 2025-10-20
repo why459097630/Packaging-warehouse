@@ -1,0 +1,241 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.dtxc",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "德州餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "德州风格",
+    "NDJC:DARK_MODE": "false",
+    "NDJC:FONT_FAMILY_PRIMARY": "Arial",
+    "NDJC:FONT_FAMILY_SECONDARY": "Times New Roman",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "500",
+    "NDJC:LAYOUT_DENSITY": "high",
+    "NDJC:DATA_SOURCE": "网络",
+    "NDJC:SEED_ENABLED": "false",
+    "NDJC:FEED_SORT": "时间",
+    "NDJC:PAGING_SIZE": "10",
+    "NDJC:OFFLINE_POLICY": "false",
+    "NDJC:PRIVACY_POLICY": "https://www.example.com/privacy",
+    "NDJC:DRAFT_ENABLED": "true",
+    "NDJC:USE_APP_BUNDLE": "true",
+    "NDJC:BUILD_META:RUNID": "20230220",
+    "NDJC:FEATURE_TOGGLE:MIN": "1.0",
+    "NDJC:DEBUG_LOG_ENABLED": "true",
+    "NDJC:LOG_LEVEL": "DEBUG",
+    "NDJC:CRASHLYTICS_ENABLED": "true",
+    "NDJC:EXPERIMENT_BUCKET": "https://example.com/experiment",
+    "NDJC:THEME_COLORS": "#FF0000,#00FF00,#0000FF",
+    "NDJC:TYPOCASE_OVERRIDES": "{'title': 'uppercase', 'description': 'lowercase'}",
+    "NDJC:STRINGS_EXTRA": "{'upload': '上传照片', 'edit': '编辑文字', 'price': '价格', 'comment': '评论', 'like': '点赞'}",
+    "NDJC:ROUTE_HOME": "/home",
+    "NDJC:ROUTE_DETAIL": "/detail"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "德州餐厅",
+    "BLOCK:HOME_BODY": "上传照片、编辑文字介绍、设定价格、评论点赞",
+    "BLOCK:HOME_ACTIONS": "上传照片、编辑文字介绍、设定价格、评论点赞",
+    "BLOCK:SPLASH_CONTENT": "欢迎使用德州餐厅",
+    "BLOCK:EMPTY_STATE": "暂无数据",
+    "BLOCK:ERROR_STATE": "发生错误",
+    "BLOCK:DEBUG_PANEL": "调试面板",
+    "BLOCK:HEADER_AD_SLOT": "广告位",
+    "BLOCK:USER_PROFILE_CARD": "用户资料",
+    "BLOCK:SPONSORED_CARD": "赞助商",
+    "BLOCK:PROFILE_SECTION": "用户资料",
+    "BLOCK:SETTINGS_SECTION": "设置",
+    "BLOCK:SETTINGS_SECTION:EXTRA": "更多设置"
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "/home",
+      "/detail"
+    ],
+    "LIST:DEPENDENCY_SNIPPETS": [
+      "com.example.dtxc:dependency:1.0"
+    ],
+    "LIST:PROGUARD_EXTRA": [
+      "-keep class com.example.dtxc.** { *; }"
+    ],
+    "LIST:PACKAGING_RULES": [
+      "com.example.dtxc:packaging:1.0"
+    ],
+    "LIST:POST_FIELDS": [
+      "title",
+      "description",
+      "price",
+      "comment",
+      "like"
+    ],
+    "LIST:PLURAL_STRINGS": [
+      "{'upload': '上传照片', 'edit': '编辑文字', 'price': '价格', 'comment': '评论', 'like': '点赞'}"
+    ],
+    "LIST:COMPONENT_STYLES": [
+      "com.example.dtxc:style:1.0"
+    ],
+    "LIST:DEEPLINK_PATTERNS": [
+      "https://example.com/deeplink"
+    ],
+    "LIST:NETWORK_CLEAR_TEXT": [
+      "https://example.com/network"
+    ],
+    "LIST:RES_CONFIGS_OVERRIDE": [
+      "com.example.dtxc:res:1.0"
+    ]
+  },
+  "conditions": {
+    "IF:NAV_TRANSITIONS": true,
+    "IF:BUILD_SUMMARY": true,
+    "IF:NATIVE_SPLITS": true,
+    "IF:AFTER_BUILD": true,
+    "IF:PRE_COMMIT": true,
+    "IF:AFTER_INSTALL": true,
+    "IF:BEFORE_BUILD": true,
+    "IF:POST_INJECT": true,
+    "IF:BEFORE_BUNDLE": true,
+    "IF:AFTER_BUNDLE": true
+  },
+  "hooks": {
+    "HOOK:INTENT_SHARE": "com.example.dtxc:share:1.0",
+    "HOOK:FILE_PROVIDER": "com.example.dtxc:file:1.0",
+    "HOOK:PERMISSIONS:ON_REQUEST": "android.permission.INTERNET",
+    "HOOK:PRE_COMMIT:HOOK": "com.example.dtxc:pre-commit:1.0",
+    "HOOK:POST_BUILD:HOOK": "com.example.dtxc:post-build:1.0",
+    "HOOK:AFTER_INSTALL:HOOK": "com.example.dtxc:after-install:1.0"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.example.dtxc",
+    "resConfigs": [
+      "en"
+    ],
+    "permissions": [
+      "android.permission.INTERNET"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxc",
+    "mode": "B"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.dtxc",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "德州餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_NAME": "德州风格",
+      "NDJC:DARK_MODE": "false",
+      "NDJC:FONT_FAMILY_PRIMARY": "Arial",
+      "NDJC:FONT_FAMILY_SECONDARY": "Times New Roman",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "500",
+      "NDJC:LAYOUT_DENSITY": "high",
+      "NDJC:DATA_SOURCE": "网络",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "时间",
+      "NDJC:PAGING_SIZE": "10",
+      "NDJC:OFFLINE_POLICY": "false",
+      "NDJC:PRIVACY_POLICY": "https://www.example.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META:RUNID": "20230220",
+      "NDJC:FEATURE_TOGGLE:MIN": "1.0",
+      "NDJC:DEBUG_LOG_ENABLED": "true",
+      "NDJC:LOG_LEVEL": "DEBUG",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "https://example.com/experiment",
+      "THEME_COLORS": "#FF0000,#00FF00,#0000FF",
+      "TYPOCASE_OVERRIDES": "{'title': 'uppercase', 'description': 'lowercase'}",
+      "STRINGS_EXTRA": "{'upload': '上传照片', 'edit': '编辑文字', 'price': '价格', 'comment': '评论', 'like': '点赞'}",
+      "ROUTE_HOME": "/home",
+      "ROUTE_DETAIL": "/detail"
+    },
+    "block": {
+      "HOME_HEADER": "德州餐厅",
+      "HOME_BODY": "上传照片、编辑文字介绍、设定价格、评论点赞",
+      "HOME_ACTIONS": "上传照片、编辑文字介绍、设定价格、评论点赞",
+      "SPLASH_CONTENT": "欢迎使用德州餐厅",
+      "EMPTY_STATE": "暂无数据",
+      "ERROR_STATE": "发生错误",
+      "DEBUG_PANEL": "调试面板",
+      "HEADER_AD_SLOT": "广告位",
+      "USER_PROFILE_CARD": "用户资料",
+      "SPONSORED_CARD": "赞助商",
+      "PROFILE_SECTION": "用户资料",
+      "SETTINGS_SECTION": "设置",
+      "SETTINGS_SECTION:EXTRA": "更多设置"
+    },
+    "list": {
+      "ROUTES": [
+        "/home",
+        "/detail"
+      ],
+      "DEPENDENCY_SNIPPETS": [
+        "com.example.dtxc:dependency:1.0"
+      ],
+      "PROGUARD_EXTRA": [
+        "-keep class com.example.dtxc.** { *; }"
+      ],
+      "PACKAGING_RULES": [
+        "com.example.dtxc:packaging:1.0"
+      ],
+      "POST_FIELDS": [
+        "title",
+        "description",
+        "price",
+        "comment",
+        "like"
+      ],
+      "PLURAL_STRINGS": [
+        "{'upload': '上传照片', 'edit': '编辑文字', 'price': '价格', 'comment': '评论', 'like': '点赞'}"
+      ],
+      "COMPONENT_STYLES": [
+        "com.example.dtxc:style:1.0"
+      ],
+      "DEEPLINK_PATTERNS": [
+        "https://example.com/deeplink"
+      ],
+      "NETWORK_CLEAR_TEXT": [
+        "https://example.com/network"
+      ],
+      "RES_CONFIGS_OVERRIDE": [
+        "com.example.dtxc:res:1.0"
+      ]
+    },
+    "if": {
+      "NAV_TRANSITIONS": true,
+      "BUILD_SUMMARY": true,
+      "NATIVE_SPLITS": true,
+      "AFTER_BUILD": true,
+      "PRE_COMMIT": true,
+      "AFTER_INSTALL": true,
+      "BEFORE_BUILD": true,
+      "POST_INJECT": true,
+      "BEFORE_BUNDLE": true,
+      "AFTER_BUNDLE": true
+    },
+    "hook": {
+      "INTENT_SHARE": "com.example.dtxc:share:1.0",
+      "FILE_PROVIDER": "com.example.dtxc:file:1.0",
+      "PERMISSIONS:ON_REQUEST": "android.permission.INTERNET",
+      "PRE_COMMIT:HOOK": "com.example.dtxc:pre-commit:1.0",
+      "POST_BUILD:HOOK": "com.example.dtxc:post-build:1.0",
+      "AFTER_INSTALL:HOOK": "com.example.dtxc:after-install:1.0"
+    },
+    "gradle": {
+      "applicationId": "com.example.dtxc",
+      "resConfigs": [
+        "en"
+      ],
+      "permissions": [
+        "android.permission.INTERNET"
+      ]
+    }
+  }
+}
