@@ -1,21 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <!-- BLOCK:THEME_COLORS -->
     <!--
-    这里可注入 M3 主题覆盖项，例如：
-    <item name="colorPrimary">#6200EE</item>
-    <item name="colorSecondary">#03DAC6</item>
-    <item name="android:statusBarColor">?attr/colorPrimary</item>
-    -->
-    <!-- END_BLOCK -->
+      Reserved for future theme overrides.
 
-    <!-- BLOCK:TYPOCASE_OVERRIDES -->
-    <!--
-    这里可注入字体/字重/字形等排版覆盖，例如：
-    <item name="fontFamily">@font/primary</item>
-    <item name="textAppearanceBodyLarge">@style/YourBodyLarge</item>
+      说明：
+      - THEME_COLORS 与 TYPOCASE_OVERRIDES 的权威落点已迁移到
+        res/values/themes.xml，并改为文本锚点：
+          NDJC:THEME_COLORS
+          NDJC:TYPOCASE_OVERRIDES
+      - 这里不再保留对应的 BLOCK 锚点，避免重复落点导致命中统计混乱。
     -->
-    <!-- END_BLOCK -->
-
 </resources>
