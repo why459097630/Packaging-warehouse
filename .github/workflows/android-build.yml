@@ -201,11 +201,13 @@ jobs:
           echo "template: ${TEMPLATE} | runId: ${RUN_ID}" >> "${OUT}"
           echo "" >> "${OUT}"
 
-          # 1) 从 registry（数组形态）取出全部锚点名，并拼出模板占位符 token
+          # 1) 从 registry（数组形态）取出全部锚点名，并拼出模板占位符 token（避免重复前缀）
           mapfile -t ROWS < <(jq -r '
-            def emit(arr;prefix;section):
+            def emit(arr; prefix; section):
               (arr // []) | if (type=="array") then .[] else empty end
-              | "\(section)|\(.)|\(prefix)\(.)";
+              | . as $name
+              | ( if (prefix == "" or ($name | startswith(prefix))) then $name else (prefix + $name) end ) as $token
+              | "\(section)|\($name)|\($token)";
             emit(.text; ""; "text"),
             emit(.block; "BLOCK:"; "block"),
             emit(.list;  "LIST:";  "list"),
@@ -235,11 +237,6 @@ jobs:
             fi
 
             # 3) 按 02_plan.sanitized.json 的真实结构判断是否仍存在
-            #    text → .anchors（对象）
-            #    block → .blocks（对象）
-            #    list → .lists（对象）
-            #    if   → .conditions（对象）
-            #    hook → .hooks（对象）
             if jq -e --arg sec "$section" --arg k "$name" '
               def pick(sec):
                 if   sec=="text" then (.anchors    // {})
