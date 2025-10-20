@@ -198,29 +198,33 @@ jobs:
 
           echo "# Anchors Scan (baseline=registry.circle-basic.json)" > "${OUT}"
           echo "" >> "${OUT}"
-          echo "**template:** ${TEMPLATE}  |  **runId:** ${RUN_ID}" >> "${OUT}"
+          echo "template: ${TEMPLATE} | runId: ${RUN_ID}" >> "${OUT}"
           echo "" >> "${OUT}"
 
-          # 1) 拉取“锚点清单”中的全部锚点名（text/block/list/if/hook）
-          mapfile -t ANCHORS < <(jq -r '
-            def n(o;p): (o // {} | keys[] | "\(p)\(.)");
-            [ n(.text; ""),
-              n(.block; "BLOCK:"),
-              n(.list; "LIST:"),
-              n(.if;   "IF:"),
-              n(.hook; "HOOK:")
-            ] | .[] | tostring
+          # 1) 从 registry（数组形态）取出全部锚点名，并拼出模板占位符 token
+          mapfile -t ROWS < <(jq -r '
+            def emit(arr;prefix;section):
+              (arr // []) | if (type=="array") then .[] else empty end
+              | "\(section)|\(.)|\(prefix)\(.)";
+            emit(.text; ""; "text"),
+            emit(.block; "BLOCK:"; "block"),
+            emit(.list;  "LIST:";  "list"),
+            emit(.if;    "IF:";    "if"),
+            emit(.hook;  "HOOK:";  "hook")
           ' "${REGISTRY_PATH}")
-
-          total="${#ANCHORS[@]}"
-          hit=0; miss=0
 
           echo "| Anchor | InTemplate | InSanitized | File |" >> "${OUT}"
           echo "|---|---|---|---|" >> "${OUT}"
 
-          for A in "${ANCHORS[@]}"; do
-            # 2) InTemplate：在模板源码中搜占位符（精确 token）
-            if grep -RIl --line-number -e "$A" "${TEMPLATE_DIR}" >/tmp/_ndjc_hit 2>/dev/null; then
+          total=0; hit=0; miss=0
+
+          for row in "${ROWS[@]}"; do
+            total=$((total+1))
+            section="${row%%|*}"; rest="${row#*|}"
+            name="${rest%%|*}"; token="${rest#*|}"
+
+            # 2) 扫描模板（固定串匹配，避免把 : 当正则）
+            if grep -RIlF --line-number -e "$token" "${TEMPLATE_DIR}" >/tmp/_ndjc_hit 2>/dev/null; then
               IN_TEMPLATE="HIT"
               FILE=$(head -n1 /tmp/_ndjc_hit | sed 's|^'${TEMPLATE_DIR}'/||')
               hit=$((hit+1))
@@ -230,31 +234,33 @@ jobs:
               miss=$((miss+1))
             fi
 
-            # 3) InSanitized：是否仍在 02_plan.sanitized.json 中
-            KEY="$A"
-            SECTION_QUERY='.'
-            if [[ "$A" == BLOCK:* ]]; then KEY="${A#BLOCK:}"; SECTION_QUERY='.anchors.block // {} | has($k)';
-            elif [[ "$A" == LIST:* ]]; then KEY="${A#LIST:}"; SECTION_QUERY='.anchors.list // {} | has($k)';
-            elif [[ "$A" == IF:* ]]; then KEY="${A#IF:}"; SECTION_QUERY='.anchors.if   // {} | has($k)';
-            elif [[ "$A" == HOOK:* ]]; then KEY="${A#HOOK:}"; SECTION_QUERY='.anchors.hook // {} | has($k)';
-            else SECTION_QUERY='.anchors.text // {} | has($k)';
-            fi
-
-            if jq -e --arg k "$KEY" "${SECTION_QUERY}" "${SANITIZED_PATH}" | grep -q true; then
+            # 3) 判断该锚点是否仍在 02_plan.sanitized.json 中（兼容对象/数组）
+            if jq -e --arg sec "$section" --arg k "$name" '
+              .anchors as $a
+              | (if   $sec=="text" then $a.text
+                 elif $sec=="block" then $a.block
+                 elif $sec=="list" then $a.list
+                 elif $sec=="if"   then $a.if
+                 else                    $a.hook
+                 end) as $s
+              | if ($s|type)=="object" then ($s|has($k))
+                elif ($s|type)=="array" then ([ $s[] ] | index($k) != null)
+                else false end
+            ' "${SANITIZED_PATH}" >/dev/null; then
               IN_SAN="YES"
             else
               IN_SAN="NO"
             fi
 
-            printf "| %s | %s | %s | %s |\n" "$A" "$IN_TEMPLATE" "$IN_SAN" "${FILE}" >> "${OUT}"
+            printf "| %s | %s | %s | %s |\n" "$token" "$IN_TEMPLATE" "$IN_SAN" "${FILE}" >> "${OUT}"
           done
 
           echo "" >> "${OUT}"
-          echo "Total: ${total}  |  HIT: ${hit}  |  MISS: ${miss}" >> "${OUT}"
+          echo "Total: ${total} | HIT: ${hit} | MISS: ${miss}" >> "${OUT}"
           echo "" >> "${OUT}"
-          echo "*(Non-blocking preflight. This step never fails the build.)*" >> "${OUT}"
+          echo "_Non-blocking preflight; this step never fails the build._" >> "${OUT}"
 
-      # 7) Show diff produced by materialize
+      # 7) Show modified files after materialize
       - name: Show modified files after materialize
         shell: bash
         run: |
