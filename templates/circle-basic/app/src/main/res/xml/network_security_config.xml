@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
 
-    <!-- LIST START: NETWORK_CLEAR_TEXT -->
+    <!-- LIST:NETWORK_CLEAR_TEXT -->
     <!--
       物化时会把每个域名 ${ITEM} 展开成如下片段，可按需 includeSubdomains：
       <domain-config cleartextTrafficPermitted="true">
