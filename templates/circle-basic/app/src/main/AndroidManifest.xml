@@ -11,6 +11,10 @@
 
     <!-- ===== PERMISSIONS（条件插入） ===== -->
 
+    <!-- HOOK:PERMISSIONS:ON_REQUEST -->
+    <!-- 用于按需追加一批 uses-permission 项（由构建/本地规则注入） -->
+    <!-- END_HOOK -->
+
     <!-- IF:PERMISSION.CAMERA -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- END_IF -->
@@ -55,11 +59,17 @@
         <meta-data android:name="ndjc.placeholder" android:value="true"/>
         <!-- END_IF -->
 
+        <!-- LIST:NETWORK_CLEAR_TEXT -->
+        <!-- 说明：当列表非空时，通常会同时在 <application> 上设置
+             android:networkSecurityConfig="@xml/network_security_config"
+             并根据需要设置 android:usesCleartextTraffic="true" -->
+        <!-- END_LIST -->
+
         <!-- BLOCK:SPLASH_CONTENT -->
         <!-- 可注入 Splash 相关 Activity/Theme 片段 -->
         <!-- END_BLOCK -->
 
-        <!-- IF:FILE_PROVIDER -->
+        <!-- HOOK:FILE_PROVIDER -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -69,7 +79,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-        <!-- END_IF -->
+        <!-- END_HOOK -->
 
         <activity
             android:name=".MainActivity"
