@@ -1,16 +1,18 @@
 <resources>
-    <style name="NDJCTheme" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- 夜间策略：由 NDJC:DARK_MODE 影响（Auto/On/Off，可由生成器调整AppCompatDelegate） -->
+  <style name="NDJCTheme" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- 夜间策略：由 NDJC:DARK_MODE 驱动（Auto/On/Off，可由兼容层调整 AppCompatDelegate） -->
 
-        <!-- BLOCK:THEME_COLORS -->
-        <!-- 注入 M3 ColorScheme 或直接 item 覆写，例如：
-        <item name="colorPrimary">@android:color/holo_blue_light</item>
-        <item name="colorSecondary">@android:color/holo_green_light</item>
-        -->
-        <!-- END_BLOCK -->
+    <!-- NDJC:THEME_COLORS -->
+    <!--
+      预期：由生成器把 {"primary":"#RRGGBB","secondary":"#RRGGBB"} 解析为 <item> 注入。
+      例如（仅示例，已注释，不会参与构建）：
+      <item name="colorPrimary">#7C3AED</item>
+      <item name="colorSecondary">#10B981</item>
+    -->
 
-        <!-- BLOCK:TYPOSCALE_OVERRIDES -->
-        <!-- 可注入 fontFamily（NDJC:FONT_FAMILY_PRIMARY/SECONDARY）与 Display/Body 尺寸覆写 -->
-        <!-- END_BLOCK -->
-    </style>
+    <!-- NDJC:TYPOCASE_OVERRIDES -->
+    <!--
+      可选：与排版/字号相关的额外覆盖（若未提供，此处保持为空）
+    -->
+  </style>
 </resources>
