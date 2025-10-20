@@ -1,4 +1,4 @@
-package com.ndjc.app.navigation  // 固定源码包名
+package com.ndjc.app.navigation  // 需与实际包名保持一致
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -13,9 +13,12 @@ object Routes {
     // ${ITEM}
     // END_LIST
 
-    const val Home = "home"
-    const val Detail = "detail/{id}"
-    const val Post = "post"
+    // 文本锚点（由 NDJC 在物化时替换为真实字符串）
+    const val Home: String = "NDJC:ROUTE_HOME"
+    const val Detail: String = "NDJC:ROUTE_DETAIL"
+
+    // 其它路由保持模板默认值
+    const val Post: String = "post"
 }
 
 @Composable
@@ -26,24 +29,26 @@ fun NavGraph(navController: NavHostController) {
     // END_IF
 
     NavHost(navController = navController, startDestination = Routes.Home) {
-        // BLOCK:ROUTE_HOME
+
+        // NDJC:ROUTE_HOME
         composable(Routes.Home) {
             HomeScreen(
-                onOpenDetail = { id -> navController.navigate("detail/$id") },
+                onOpenDetail = { id ->
+                    val path = Routes.Detail.replace("{id}", id)
+                    navController.navigate(path)
+                },
                 onCreatePost = { navController.navigate(Routes.Post) }
             )
         }
-        // END_BLOCK
 
-        // BLOCK:ROUTE_DETAIL
-        composable("detail/{id}") { backStack ->
+        // NDJC:ROUTE_DETAIL
+        composable(Routes.Detail) { backStack ->
             val id = backStack.arguments?.getString("id") ?: "0"
             PostDetailScreen(
                 id = id,
                 onBack = { navController.popBackStack() }
             )
         }
-        // END_BLOCK
 
         // BLOCK:ROUTE_POST
         composable(Routes.Post) {
