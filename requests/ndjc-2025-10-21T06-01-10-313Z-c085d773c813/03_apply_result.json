@@ -1,10 +1,13 @@
 {
-  "runId": "ndjc-2025-10-21T06-01-10-313Z-c085d773c813",
-  "status": "pre-ci",
-  "template": "circle-basic",
-  "appTitle": "德州餐厅",
-  "packageName": "com.example.dtxc",
-  "note": "Apply result will be finalized in CI pipeline.",
-  "changes": [],
-  "warnings": []
+  "replaced_total": 43,
+  "replaced_text": 43,
+  "replaced_block": 0,
+  "replaced_list": 0,
+  "replaced_if": 0,
+  "hooks_applied": 0,
+  "missing_text": 31,
+  "missing_block": 13,
+  "missing_list": 10,
+  "missing_if": 10,
+  "generated_at": "2025-10-21T06:02:13Z"
 }
