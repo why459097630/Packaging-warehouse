@@ -119,7 +119,7 @@ hooks = plan.get('hooks')     or plan.get('hook')        or {}
 aliases = plan.get('aliases', {})
 
 def esc(v:str)->str:
-    return v.replace('"','\\"').replace('$','\\$').replace('\\n','\\\\n')
+    return v.replace('"','\\"').replace('$','\\$').replace('\n','\\n')
 
 def sh_kv_map(name,d):
     out=[f'declare -gA {name}=(']
@@ -129,7 +129,7 @@ def sh_kv_map(name,d):
     return ' '.join(out)
 
 def to_list_map(name,d):
-    SEP="\\x1f"; out=[f'declare -gA {name}=(']
+    SEP="\x1f"; out=[f'declare -gA {name}=(']
     for k,v in d.items():
         if isinstance(v,list): items=[str(x) for x in v]
         elif v is None: items=[]
@@ -297,8 +297,8 @@ replace_if_in_file_any() {
   if perl -0777 -ne 'exit 1 unless /<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
-      # ✅ 条件为真：保留 IF 标记与内部内容
-      perl -0777 -i -pe 's/<!--\s*'"$token"'\s*-->(.*?)<!--\s*'"$re_end_if"'\s*-->/<!-- '"$token"' -->\1<!-- END_IF -->/s' "$file"
+      # ✅ 条件为真：保留 IF/END_IF 标记与内部内容（分组回填）
+      perl -0777 -i -pe 's/(<!--\s*'"$token"'\s*-->)(.*?)(<!--\s*'"$re_end_if"'\s*-->)/\1\2\3/s' "$file"
     else
       perl -0777 -i -pe 's/<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/<!-- '"$token"' -->\n<!-- END_IF -->/s' "$file"
     fi
@@ -306,8 +306,8 @@ replace_if_in_file_any() {
   if perl -0777 -ne 'exit 1 unless /\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_if"'/s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
-      # ✅ 条件为真：保留 IF 标记与内部内容
-      perl -0777 -i -pe 's/\/\/\s*'"$token"'(.*?)\/\/\s*'"$re_end_if"'/\/\/ '"$token"'\1\/\/ END_IF/s' "$file"
+      # ✅ 条件为真：保留 IF/END_IF 标记与内部内容（分组回填）
+      perl -0777 -i -pe 's/(\/\/\s*'"$token"')(.*?)(\/\/\s*'"$re_end_if"')/\1\2\3/s' "$file"
     else
       perl -0777 -i -pe 's/\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_if"'/\/\/ '"$token"'\n\/\/ END_IF/s' "$file"
     fi
@@ -315,8 +315,8 @@ replace_if_in_file_any() {
   if perl -0777 -ne 'exit 1 unless /\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
-      # ✅ 条件为真：保留 IF 标记与内部内容
-      perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/(.*?)\/\*\s*'"$re_end_if"'\s*\*\//\/\* '"$token"' \*\/\1\/\* END_IF \*\//s' "$file"
+      # ✅ 条件为真：保留 IF/END_IF 标记与内部内容（分组回填）
+      perl -0777 -i -pe 's/(\/\*\s*'"$token"'\s*\*\/)(.*?)(\/\*\s*'"$re_end_if"'\s*\*\/)/\1\2\3/s' "$file"
     else
       perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//\/\* '"$token"' \*\/\n\/\* END_IF \*\//s' "$file"
     fi
