@@ -1,0 +1,130 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.dtxc",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "德州餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+    "NDJC:THEME_NAME": "德州风格",
+    "NDJC:DARK_MODE": "false",
+    "NDJC:FONT_FAMILY_PRIMARY": "Arial",
+    "NDJC:FONT_FAMILY_SECONDARY": "Times New Roman",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "500",
+    "NDJC:LAYOUT_DENSITY": "high",
+    "NDJC:DATA_SOURCE": "网络",
+    "NDJC:SEED_ENABLED": "false",
+    "NDJC:FEED_SORT": "时间",
+    "NDJC:PAGING_SIZE": "10",
+    "NDJC:OFFLINE_POLICY": "false",
+    "NDJC:PRIVACY_POLICY": "https://www.example.com/privacy",
+    "NDJC:DRAFT_ENABLED": "true",
+    "NDJC:USE_APP_BUNDLE": "false",
+    "NDJC:BUILD_META:RUNID": "20230220",
+    "NDJC:FEATURE_TOGGLE:MIN": "1.0.0",
+    "NDJC:DEBUG_LOG_ENABLED": "true",
+    "NDJC:LOG_LEVEL": "DEBUG",
+    "NDJC:CRASHLYTICS_ENABLED": "false",
+    "NDJC:EXPERIMENT_BUCKET": "https://example.com/experiment",
+    "NDJC:THEME_COLORS": "#FF0000,#00FF00,#0000FF",
+    "NDJC:TYPOCASE_OVERRIDES": "false",
+    "NDJC:STRINGS_EXTRA": "{'hello': 'world'}",
+    "NDJC:ROUTE_HOME": "/home",
+    "NDJC:ROUTE_DETAIL": "/detail"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "德州餐厅",
+    "BLOCK:HOME_BODY": "上传照片",
+    "BLOCK:HOME_ACTIONS": "上传照片",
+    "BLOCK:SPLASH_CONTENT": "德州餐厅",
+    "BLOCK:EMPTY_STATE": "没有数据",
+    "BLOCK:ERROR_STATE": "错误",
+    "BLOCK:DEBUG_PANEL": "调试面板",
+    "BLOCK:HEADER_AD_SLOT": "广告",
+    "BLOCK:USER_PROFILE_CARD": "用户资料",
+    "BLOCK:SPONSORED_CARD": "赞助",
+    "BLOCK:PROFILE_SECTION": "用户资料",
+    "BLOCK:SETTINGS_SECTION": "设置",
+    "BLOCK:SETTINGS_SECTION:EXTRA": "更多设置"
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "/home",
+      "/detail"
+    ],
+    "LIST:DEPENDENCY_SNIPPETS": [
+      "https://example.com/dependency1",
+      "https://example.com/dependency2"
+    ],
+    "LIST:PROGUARD_EXTRA": [
+      "-keep class com.example.dtxc.** { *; }"
+    ],
+    "LIST:PACKAGING_RULES": [
+      "com.example.dtxc:packagingRule1",
+      "com.example.dtxc:packagingRule2"
+    ],
+    "LIST:POST_FIELDS": [
+      "name",
+      "price"
+    ],
+    "LIST:PLURAL_STRINGS": [
+      "菜品",
+      "评论"
+    ],
+    "LIST:COMPONENT_STYLES": [
+      "com.example.dtxc:style1",
+      "com.example.dtxc:style2"
+    ],
+    "LIST:DEEPLINK_PATTERNS": [
+      "https://example.com/deeplink1",
+      "https://example.com/deeplink2"
+    ],
+    "LIST:NETWORK_CLEAR_TEXT": [
+      "https://example.com/network1",
+      "https://example.com/network2"
+    ],
+    "LIST:RES_CONFIGS_OVERRIDE": [
+      "com.example.dtxc:resConfigs1",
+      "com.example.dtxc:resConfigs2"
+    ]
+  },
+  "conditions": {
+    "IF:NAV_TRANSITIONS": true,
+    "IF:BUILD_SUMMARY": true,
+    "IF:NATIVE_SPLITS": true,
+    "IF:AFTER_BUILD": true,
+    "IF:PRE_COMMIT": true,
+    "IF:AFTER_INSTALL": true,
+    "IF:BEFORE_BUILD": true,
+    "IF:POST_INJECT": true,
+    "IF:BEFORE_BUNDLE": true,
+    "IF:AFTER_BUNDLE": true
+  },
+  "hooks": {
+    "HOOK:INTENT_SHARE": "com.example.dtxc:share",
+    "HOOK:FILE_PROVIDER": "com.example.dtxc:fileProvider",
+    "HOOK:PERMISSIONS:ON_REQUEST": "android.permission.INTERNET",
+    "HOOK:PRE_COMMIT:HOOK": "com.example.dtxc:preCommit",
+    "HOOK:POST_BUILD:HOOK": "com.example.dtxc:postBuild",
+    "HOOK:AFTER_INSTALL:HOOK": "com.example.dtxc:afterInstall"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.example.dtxc",
+    "resConfigs": [
+      "en"
+    ],
+    "permissions": [
+      "android.permission.INTERNET"
+    ]
+  },
+  "meta": {
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxc",
+    "mode": "B"
+  },
+  "droppedDanger": 0
+}
