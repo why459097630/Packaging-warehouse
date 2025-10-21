@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- = 基础可替换文案锚点 = -->
+    <string name="app_name">德州餐厅</string>
+    <string name="home_title">德州餐厅</string>
+
+    <!-- 兼容历史：primary_button 仍保留；新增 MAIN_BUTTON 作为标准键 -->
+    <string name="primary_button">上传照片</string>
+    <string name="MAIN_BUTTON">上传照片</string>
+
+    <!-- = 运行标识 / 日志级别（可用于调试或 BuildConfig 注入） = -->
+    <string name="ndjc_run_id">NDJC:RUN_ID</string>
+    <!-- 新增：构建元信息 RunId（与 RUN_ID 区分，供统计/追踪用） -->
+    <string name="ndjc_build_meta_runid">20230220</string>
+
+    <string name="ndjc_log_level">DEBUG</string>
+    <string name="ndjc_debug_log_enabled">true</string>
+    <string name="ndjc_theme_name">德州风格</string>
+
+    <!-- = 新增：动画开关布尔占位（作为字符串承载，Kotlin 侧可解析为 bool） = -->
+    <string name="ndjc_anim_enabled">true</string>
+
+    <!-- = 本次缺失的文案类锚点补齐（均以 NDJC:* 作为值，供物化器替换） = -->
+    <string name="ndjc_privacy_policy">https://www.example.com/privacy</string>
+    <string name="ndjc_feed_sort">时间</string>
+    <string name="ndjc_feature_toggle_min">1.0.0</string>
+
+    <!-- 配置/数值型也先用字符串承载，后续可在 Kotlin 侧解析或直接替换 -->
+    <string name="ndjc_anim_duration_ms">500</string>
+    <string name="ndjc_layout_density">high</string>
+    <string name="ndjc_paging_size">10</string>
+
+    <!-- 字体/多语言/可访问性等开关文案位（如需可映射到 UI 展示） -->
+    <string name="ndjc_font_family_primary">Arial</string>
+    <string name="ndjc_font_family_secondary">Times New Roman</string>
+    <string name="ndjc_i18n_enabled">true</string>
+    <string name="ndjc_a11y_enabled">NDJC:A11Y_ENABLED</string>
+    <string name="ndjc_dark_mode">false</string>
+
+    <!-- 业务/实验与数据源策略 -->
+    <string name="ndjc_experiment_bucket">https://example.com/experiment</string>
+    <string name="ndjc_seed_enabled">false</string>
+    <string name="ndjc_crashlytics_enabled">false</string>
+    <string name="ndjc_data_source">网络</string>
+    <string name="ndjc_offline_policy">false</string>
+    <string name="ndjc_draft_enabled">true</string>
+
+    <!-- = 示例文案（不保留编译后，不影响验收） = -->
+    <string name="feed_like">Like</string>
+    <string name="feed_comment">Comment</string>
+    <string name="feed_post">Post</string>
+    <string name="empty_hint">Nothing here yet.</string>
+    <string name="feed_title">Feed</string>
+    <string name="comments_count">%1$d comments</string>
+
+    <!-- = 追加自定义文案区（供后续扩展） = -->
+    <!-- {'hello': 'world'} -->
+    <!--
+      预期：由生成器把额外 <string> / <plurals> 条目注入到此处。
+      例如（仅示例，已注释，不参与构建）：
+      <string name="welcome">Welcome!</string>
+      <plurals name="photos_count">
+        <item quantity="one">%1$d photo</item>
+        <item quantity="other">%1$d photos</item>
+      </plurals>
+    -->
+
+</resources>
