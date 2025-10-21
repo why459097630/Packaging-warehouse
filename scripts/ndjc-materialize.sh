@@ -242,19 +242,23 @@ exists_text()  { grep -RFl -- "$1" "${APP_DIR}" >/dev/null 2>&1; }
 
 exists_block_any() {
   local name="$1"
-  grep -RIl -E "(<!-- *BLOCK:${name} *-->.*?<!-- *${re_end_block} *-->|// *BLOCK:${name}.*?// *${re_end_block}|/\* *BLOCK:${name} *\*/.*?/\\* *${re_end_block} *\*/)" -z "${APP_DIR}" 2>/dev/null | grep -q .
+  local token="$name"; [[ "$token" == BLOCK:* ]] || token="BLOCK:$token"
+  grep -RIl -E "(<!-- *$token *-->.*?<!-- *${re_end_block} *-->|// *$token.*?// *${re_end_block}|/\* *$token *\*/.*?/\\* *${re_end_block} *\*/)" -z "${APP_DIR}" 2>/dev/null | grep -q .
 }
 exists_list_any() {
   local name="$1"
-  grep -RIl -E "(LIST:${name}.*?${re_end_list})" -z "${APP_DIR}" 2>/dev/null | grep -q .
+  local token="$name"; [[ "$token" == LIST:* ]] || token="LIST:$token"
+  grep -RIl -E "($token.*?${re_end_list})" -z "${APP_DIR}" 2>/dev/null | grep -q .
 }
 exists_if_any() {
   local name="$1"
-  grep -RIl -E "(<!-- *IF:${name} *-->.*?<!-- *${re_end_if} *-->|// *IF:${name}.*?// *${re_end_if}|/\* *IF:${name} *\*/.*?/\\* *${re_end_if} *\*/)" -z "${APP_DIR}" 2>/dev/null | grep -q .
+  local token="$name"; [[ "$token" == IF:* ]] || token="IF:$token"
+  grep -RIl -E "(<!-- *$token *-->.*?<!-- *${re_end_if} *-->|// *$token.*?// *${re_end_if}|/\* *$token *\*/.*?/\\* *${re_end_if} *\*/)" -z "${APP_DIR}" 2>/dev/null | grep -q .
 }
 exists_hook_any() {
   local name="$1"
-  grep -RIl -E "(<!-- *HOOK:${name} *-->.*?<!-- *${re_end_hook} *-->|// *HOOK:${name}.*?// *${re_end_hook}|/\* *HOOK:${name} *\*/.*?/\\* *${re_end_hook} *\*/)" -z "${APP_DIR}" 2>/dev/null | grep -q .
+  local token="$name"; [[ "$token" == HOOK:* ]] || token="HOOK:$token"
+  grep -RIl -E "(<!-- *$token *-->.*?<!-- *${re_end_hook} *-->|// *$token.*?// *${re_end_hook}|/\* *$token *\*/.*?/\\* *${re_end_hook} *\*/)" -z "${APP_DIR}" 2>/dev/null | grep -q .
 }
 
 # ---------------- list & hook helpers ----------------
@@ -295,15 +299,16 @@ replace_text_in_file() {
 
 replace_block_in_file_any() {
   local file="$1" name="$2" body="$3" cnt=0
+  local token="$name"; [[ "$token" == BLOCK:* ]] || token="BLOCK:$token"
   body="$(prepare_body_for_file "$file" "$body")"
-  if perl -0777 -ne 'exit 1 unless /<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*'"$re_end_block"'\s*-->/s' "$file"; then
-    perl -0777 -i -pe 's/<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*'"$re_end_block"'\s*-->/<!-- BLOCK:'"$name"' -->\n'"$body"'\n<!-- END_BLOCK -->/s' "$file"; cnt=$((cnt+1))
+  if perl -0777 -ne 'exit 1 unless /<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_block"'\s*-->/s' "$file"; then
+    perl -0777 -i -pe 's/<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_block"'\s*-->/<!-- '"$token"' -->\n'"$body"'\n<!-- END_BLOCK -->/s' "$file"; cnt=$((cnt+1))
   fi
-  if perl -0777 -ne 'exit 1 unless /\/\/\s*BLOCK:'"$name"'.*?\/\/\s*'"$re_end_block"'/s' "$file"; then
-    perl -0777 -i -pe 's/\/\/\s*BLOCK:'"$name"'.*?\/\/\s*'"$re_end_block"'/\/\/ BLOCK:'"$name"'\n'"$body"'\n\/\/ END_BLOCK/s' "$file"; cnt=$((cnt+1))
+  if perl -0777 -ne 'exit 1 unless /\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_block"'/s' "$file"; then
+    perl -0777 -i -pe 's/\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_block"'/\/\/ '"$token"'\n'"$body"'\n\/\/ END_BLOCK/s' "$file"; cnt=$((cnt+1))
   fi
-  if perl -0777 -ne 'exit 1 unless /\/\*\s*BLOCK:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_block"'\s*\*\//s' "$file"; then
-    perl -0777 -i -pe 's/\/\*\s*BLOCK:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_block"'\s*\*\//\/\* BLOCK:'"$name"' \*\/\n'"$body"'\n\/\* END_BLOCK \*\//s' "$file"; cnt=$((cnt+1))
+  if perl -0777 -ne 'exit 1 unless /\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_block"'\s*\*\//s' "$file"; then
+    perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_block"'\s*\*\//\/\* '"$token"' \*\/\n'"$body"'\n\/\* END_BLOCK \*\//s' "$file"; cnt=$((cnt+1))
   fi
   if [ "$cnt" -gt 0 ]; then echo -e "BLOCK\t${name}\t${file}" >> "${APPLIED_LIST}"; replaced_block=$((replaced_block+cnt)); return 0; fi
   return 1
@@ -311,42 +316,44 @@ replace_block_in_file_any() {
 
 replace_list_in_file_any() {
   local file="$1" name="$2"
+  local token="$name"; [[ "$token" == LIST:* ]] || token="LIST:$token"
   local items; items="$(get_list_items "$name" || true)"; [ -z "$items" ] && return 1
-  if ! perl -0777 -ne 'exit 1 unless /LIST:'"$name"'.*?'"$re_end_list"'/s' "$file"; then return 1; fi
-  local tmpl; tmpl="$(perl -0777 -ne 'if (/LIST:'"$name"'\s*(.*)\s*'"$re_end_list"'/s) { print($1) }' "$file")"
+  if ! perl -0777 -ne 'exit 1 unless /'"$token"'.*?'"$re_end_list"'/s' "$file"; then return 1; fi
+  local tmpl; tmpl="$(perl -0777 -ne 'if (/'"$token"'\s*(.*)\s*'"$re_end_list"'/s) { print($1) }' "$file")"
   [ -z "$tmpl" ] && tmpl=$'\n'
   local rendered; rendered="$(render_items "$tmpl" "$items")"
-  perl -0777 -i -pe 's/LIST:'"$name"'.*?'"$re_end_list"'/LIST:'"$name"'\n'"$rendered"'END_LIST/s' "$file"
+  perl -0777 -i -pe 's/'"$token"'.*?'"$re_end_list"'/'"$token"'\n'"$rendered"'END_LIST/s' "$file"
   echo -e "LIST\t${name}\t${file}" >> "${APPLIED_LIST}"
   replaced_list=$((replaced_list+1)); return 0
 }
 
 replace_if_in_file_any() {
   local file="$1" name="$2" cond="$3"
+  local token="$name"; [[ "$token" == IF:* ]] || token="IF:$token"
   local truthy=0; case "${cond,,}" in ""|"false"|"0"|"no"|"off") truthy=0 ;; *) truthy=1 ;; esac
   local hit=0
-  if perl -0777 -ne 'exit 1 unless /<!--\s*IF:'"$name"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/s' "$file"; then
+  if perl -0777 -ne 'exit 1 unless /<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
-      perl -0777 -i -pe 's/<!--\s*IF:'"$name"'\s*-->(.*?)<!--\s*'"$re_end_if"'\s*-->/\1/s' "$file"
+      perl -0777 -i -pe 's/<!--\s*'"$token"'\s*-->(.*?)<!--\s*'"$re_end_if"'\s*-->/\1/s' "$file"
     else
-      perl -0777 -i -pe 's/<!--\s*IF:'"$name"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/<!-- IF:'"$name"' -->\n<!-- END_IF -->/s' "$file"
+      perl -0777 -i -pe 's/<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/<!-- '"$token"' -->\n<!-- END_IF -->/s' "$file"
     fi
   fi
-  if perl -0777 -ne 'exit 1 unless /\/\/\s*IF:'"$name"'.*?\/\/\s*'"$re_end_if"'/s' "$file"; then
+  if perl -0777 -ne 'exit 1 unless /\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_if"'/s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
-      perl -0777 -i -pe 's/\/\/\s*IF:'"$name"'(.*?)\/\/\s*'"$re_end_if"'/\1/s' "$file"
+      perl -0777 -i -pe 's/\/\/\s*'"$token"'(.*?)\/\/\s*'"$re_end_if"'/\1/s' "$file"
     else
-      perl -0777 -i -pe 's/\/\/\s*IF:'"$name"'.*?\/\/\s*'"$re_end_if"'/\/\/ IF:'"$name"'\n\/\/ END_IF/s' "$file"
+      perl -0777 -i -pe 's/\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_if"'/\/\/ '"$token"'\n\/\/ END_IF/s' "$file"
     fi
   fi
-  if perl -0777 -ne 'exit 1 unless /\/\*\s*IF:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//s' "$file"; then
+  if perl -0777 -ne 'exit 1 unless /\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
-      perl -0777 -i -pe 's/\/\*\s*IF:'"$name"'\s*\*\/(.*?)\/\*\s*'"$re_end_if"'\s*\*\//\1/s' "$file"
+      perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/(.*?)\/\*\s*'"$re_end_if"'\s*\*\//\1/s' "$file"
     else
-      perl -0777 -i -pe 's/\/\*\s*IF:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//\/\* IF:'"$name"' \*\/\n\/\* END_IF \*\//s' "$file"
+      perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//\/\* '"$token"' \*\/\n\/\* END_IF \*\//s' "$file"
     fi
   fi
   if [ "$hit" -eq 1 ]; then echo -e "IF\t${name}\t${file}" >> "${APPLIED_LIST}"; replaced_if=$((replaced_if+1)); return 0; fi
@@ -355,15 +362,16 @@ replace_if_in_file_any() {
 
 replace_hook_in_file_any() {
   local file="$1" name="$2" body="$3" cnt=0
+  local token="$name"; [[ "$token" == HOOK:* ]] || token="HOOK:$token"
   body="$(prepare_body_for_file "$file" "$body")"
-  if perl -0777 -ne 'exit 1 unless /<!--\s*HOOK:'"$name"'\s*-->.*?<!--\s*'"$re_end_hook"'\s*-->/s' "$file"; then
-    perl -0777 -i -pe 's/<!--\s*HOOK:'"$name"'\s*-->.*?<!--\s*'"$re_end_hook"'\s*-->/<!-- HOOK:'"$name"' -->\n'"$body"'\n<!-- END_HOOK -->/s' "$file"; cnt=$((cnt+1))
+  if perl -0777 -ne 'exit 1 unless /<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_hook"'\s*-->/s' "$file"; then
+    perl -0777 -i -pe 's/<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_hook"'\s*-->/<!-- '"$token"' -->\n'"$body"'\n<!-- END_HOOK -->/s' "$file"; cnt=$((cnt+1))
   fi
-  if perl -0777 -ne 'exit 1 unless /\/\/\s*HOOK:'"$name"'.*?\/\/\s*'"$re_end_hook"'/s' "$file"; then
-    perl -0777 -i -pe 's/\/\/\s*HOOK:'"$name"'.*?\/\/\s*'"$re_end_hook"'/\/\/ HOOK:'"$name"'\n'"$body"'\n\/\/ END_HOOK/s' "$file"; cnt=$((cnt+1))
+  if perl -0777 -ne 'exit 1 unless /\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_hook"'/s' "$file"; then
+    perl -0777 -i -pe 's/\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_hook"'/\/\/ '"$token"'\n'"$body"'\n\/\/ END_HOOK/s' "$file"; cnt=$((cnt+1))
   fi
-  if perl -0777 -ne 'exit 1 unless /\/\*\s*HOOK:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//s' "$file"; then
-    perl -0777 -i -pe 's/\/\*\s*HOOK:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//\/\* HOOK:'"$name"' \*\/\n'"$body"'\n\/\* END_HOOK \*\//s' "$file"; cnt=$((cnt+1))
+  if perl -0777 -ne 'exit 1 unless /\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//s' "$file"; then
+    perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//\/\* '"$token"' \*\/\n'"$body"'\n\/\* END_HOOK \*\//s' "$file"; cnt=$((cnt+1))
   fi
   if [ "$cnt" -gt 0 ]; then echo -e "HOOK\t${name}\t${file}" >> "${APPLIED_LIST}"; hooks_applied=$((hooks_applied+cnt)); return 0; fi
   return 1
