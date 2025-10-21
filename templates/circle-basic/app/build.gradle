@@ -74,17 +74,17 @@ android {
         END_LIST */
     }
 
-    /* IF:NATIVE_SPLITS
-       // 例：启用 ABI 拆分
-       splits {
-           abi {
-               enable true
-               reset()
-               include "armeabi-v7a","arm64-v8a","x86_64"
-               universalApk false
-           }
-       }
-    END_IF */
+    // IF:NATIVE_SPLITS
+    // 例：启用 ABI 拆分
+    splits {
+        abi {
+            enable true
+            reset()
+            include "armeabi-v7a","arm64-v8a","x86_64"
+            universalApk false
+        }
+    }
+    // END_IF
 
     /* LIST:PACKAGING_RULES
        // 例：资源排除/合并规则
@@ -131,21 +131,21 @@ android {
     }
 }
 
-/* IF:BEFORE_BUNDLE
-   // 例：在 bundle 之前执行的任务
-END_IF */
+// IF:BEFORE_BUNDLE
+// 例：在 bundle 之前执行的任务
+// END_IF
 
-/* IF:AFTER_BUNDLE
-   // 例：在 bundle 之后执行的任务
-END_IF */
+// IF:AFTER_BUNDLE
+// 例：在 bundle 之后执行的任务
+// END_IF
 
-/* IF:AFTER_BUILD
-   // 例：构建完成后（assemble / bundle）的后置动作
-END_IF */
+// IF:AFTER_BUILD
+// 例：构建完成后（assemble / bundle）的后置动作
+// END_IF
 
-/* IF:POST_INJECT
-   // 例：资源/代码注入完成后的收尾步骤
-END_IF */
+// IF:POST_INJECT
+// 例：资源/代码注入完成后的收尾步骤
+// END_IF
 
 /* 文本锚点：是否使用 App Bundle（供物化读取，不直接改变配置）
    NDJC:USE_APP_BUNDLE
@@ -183,22 +183,22 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-test-manifest"
 }
 
-/* 可选：把聚合或产物统计等操作挪到此处（保持落位注释语义一致）
-   IF:BUILD_SUMMARY
-END_IF */
+// IF:BUILD_SUMMARY
+// 可选：把聚合或产物统计等操作挪到此处（保持落位注释语义一致）
+// END_IF
 
-/* IF:PRE_COMMIT
-   // 打开后可启用 pre-commit 相关校验/格式化任务等
-END_IF */
+// IF:PRE_COMMIT
+// 打开后可启用 pre-commit 相关校验/格式化任务等
+// END_IF
 
-/* HOOK:PRE_COMMIT:HOOK
-   // 注入 pre-commit 的具体任务/脚本调用（由构建系统填充）
-END_HOOK */
+// HOOK:PRE_COMMIT:HOOK
+// 注入 pre-commit 的具体任务/脚本调用（由构建系统填充）
+// END_HOOK
 
-/* HOOK:POST_BUILD:HOOK
-   // 构建完成后的动作（如产物上报/签名后处理等）
-END_HOOK */
+// HOOK:POST_BUILD:HOOK
+// 构建完成后的动作（如产物上报/签名后处理等）
+// END_HOOK
 
-/* HOOK:AFTER_INSTALL:HOOK
-   // 安装到设备/模拟器后的动作（如自动启动、打点等）
-END_HOOK */
+// HOOK:AFTER_INSTALL:HOOK
+// 安装到设备/模拟器后的动作（如自动启动、打点等）
+// END_HOOK
