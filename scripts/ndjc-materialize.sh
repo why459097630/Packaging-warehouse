@@ -6,12 +6,12 @@
 # Outputs:
 #   requests/<RUN_ID>/02_plan.sanitized.json
 #   requests/<RUN_ID>/03_apply_result.json
+#   requests/<RUN_ID>/applied-anchors.txt
+#   requests/<RUN_ID>/missing-anchors.txt
 #   build-logs/materialize.log
 #   build-logs/anchors.before.txt
 #   build-logs/anchors.after.txt
 #   build-logs/modified-files.txt
-#   build-logs/applied-anchors.txt
-#   build-logs/missing-anchors.txt
 
 set -euo pipefail
 
@@ -31,8 +31,10 @@ SUMMARY_TXT="${REQ_DIR}/actions-summary.txt"
 
 mkdir -p "${REQ_DIR}" build-logs
 LOG_FILE="build-logs/materialize.log"; : > "${LOG_FILE}"
-APPLIED_LIST="build-logs/applied-anchors.txt"; : > "${APPLIED_LIST}"
-MISSING_LIST="build-logs/missing-anchors.txt"; : > "${MISSING_LIST}"
+
+# ✨ 将两份日志直接写到与 03_apply_result.json 同目录
+APPLIED_LIST="${REQ_DIR}/applied-anchors.txt"; : > "${APPLIED_LIST}"
+MISSING_LIST="${REQ_DIR}/missing-anchors.txt"; : > "${MISSING_LIST}"
 
 log() { printf '%s %s\n' "[$(date +%H:%M:%S)]" "$*" | tee -a "${LOG_FILE}"; }
 ts_utc() { date -u +%Y-%m-%dT%H:%M:%SZ; }
@@ -121,7 +123,7 @@ plan=json.load(open(p,'r',encoding='utf-8'))
 text  = plan.get('anchors')   or plan.get('text')        or {}
 block = plan.get('blocks')    or plan.get('block')       or {}
 lists = plan.get('lists')     or plan.get('list')        or {}
-iff   = plan.get('if')        or plan.get('conditions')  or {}
+iff   = plan.get('conditions') or plan.get('if')         or {}
 hooks = plan.get('hooks')     or plan.get('hook')        or {}
 aliases = plan.get('aliases', {})  # optional
 
@@ -160,7 +162,6 @@ ensure_assoc(){ local n="$1"; if ! declare -p "$n" >/dev/null 2>&1 || ! declare 
 ensure_assoc TEXT_KV; ensure_assoc BLOCK_KV; ensure_assoc LISTS_KV; ensure_assoc IFCOND_KV; ensure_assoc HOOKS_KV; ensure_assoc ALIASES_KV
 
 # ---------------- 1.1 compat helpers ----------------
-# name variants: e.g. PERMISSION.CAMERA <-> PERMISSION_CAMERA
 variants_for() {
   local key="$1"
   local alt1="${key//./_}"
@@ -225,41 +226,15 @@ prepare_body_for_file(){
 
 # ---------------- counters ----------------
 replaced_text=0 replaced_block=0 replaced_list=0 replaced_if=0 hooks_applied=0
-missing_text=0 missing_block=0 missing_list=0 missing_if=0 missing_hook=0
 
 # ---------------- file selection ----------------
 mapfile -t WORK_FILES < <(find "$APP_DIR" -type f \( -name "*.xml" -o -name "*.kt" -o -name "*.kts" -o -name "*.gradle" -o -name "*.pro" -o -name "AndroidManifest.xml" -o -name "*.txt" \) | LC_ALL=C sort)
 
 # ---------------- anchors snapshot (before) ----------------
 ANCHORS_BEFORE="build-logs/anchors.before.txt"
-{ grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/tmp || true; } > /dev/null 2>&1 || true
 { grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/null || true; } > "${ANCHORS_BEFORE}" || true
 before_total=$(wc -l <"${ANCHORS_BEFORE}" || echo 0)
 log "anchors before: ${before_total}"
-
-# ---------------- existence helpers (compat) ----------------
-exists_text()  { grep -RFl -- "$1" "${APP_DIR}" >/dev/null 2>&1; }
-
-exists_block_any() {
-  local name="$1"
-  local token="$name"; [[ "$token" == BLOCK:* ]] || token="BLOCK:$token"
-  grep -RIl -E "(<!-- *$token *-->.*?<!-- *${re_end_block} *-->|// *$token.*?// *${re_end_block}|/\* *$token *\*/.*?/\\* *${re_end_block} *\*/)" -z "${APP_DIR}" 2>/dev/null | grep -q .
-}
-exists_list_any() {
-  local name="$1"
-  local token="$name"; [[ "$token" == LIST:* ]] || token="LIST:$token"
-  grep -RIl -E "($token.*?${re_end_list})" -z "${APP_DIR}" 2>/dev/null | grep -q .
-}
-exists_if_any() {
-  local name="$1"
-  local token="$name"; [[ "$token" == IF:* ]] || token="IF:$token"
-  grep -RIl -E "(<!-- *$token *-->.*?<!-- *${re_end_if} *-->|// *$token.*?// *${re_end_if}|/\* *$token *\*/.*?/\\* *${re_end_if} *\*/)" -z "${APP_DIR}" 2>/dev/null | grep -q .
-}
-exists_hook_any() {
-  local name="$1"
-  local token="$name"; [[ "$token" == HOOK:* ]] || token="HOOK:$token"
-  grep -RIl -E "(<!-- *$token *-->.*?<!-- *${re_end_hook} *-->|// *$token.*?// *${re_end_hook}|/\* *$token *\*/.*?/\\* *${re_end_hook} *\*/)" -z "${APP_DIR}" 2>/dev/null | grep -q .
-}
 
 # ---------------- list & hook helpers ----------------
 get_list_items() {
@@ -371,7 +346,7 @@ replace_hook_in_file_any() {
     perl -0777 -i -pe 's/\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_hook"'/\/\/ '"$token"'\n'"$body"'\n\/\/ END_HOOK/s' "$file"; cnt=$((cnt+1))
   fi
   if perl -0777 -ne 'exit 1 unless /\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//s' "$file"; then
-    perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//\/\* '"$token"' \*\/\n'"$body"'\n\/\* END_HOOK \*\//s' "$file"; cnt=$((cnt+1))
+    perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//\/\* HOOK:'"$name"' \*\/\n'"$body"'\n\/\* END_HOOK \*\//s' "$file"; cnt=$((cnt+1))
   fi
   if [ "$cnt" -gt 0 ]; then echo -e "HOOK\t${name}\t${file}" >> "${APPLIED_LIST}"; hooks_applied=$((hooks_applied+cnt)); return 0; fi
   return 1
@@ -434,32 +409,80 @@ apply_all || true
 ANCHORS_AFTER="build-logs/anchors.after.txt"
 { grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/null || true; } > "${ANCHORS_AFTER}" || true
 
+# 3.1 依据“应落位集合 ∧ 实际落位集合”统计 missing（不再用替换后再搜 Token 的方式）
+# ---- 先从 applied-anchors.txt 收集“已落位集合”（去重）
+declare -A APPLIED_TEXT=() APPLIED_BLOCK=() APPLIED_LIST=() APPLIED_IF=() APPLIED_HOOK=()
+if [ -s "${APPLIED_LIST}" ]; then
+  while IFS=$'\t' read -r typ key rest; do
+    case "$typ" in
+      TEXT)  APPLIED_TEXT["$key"]=1  ;;
+      BLOCK) APPLIED_BLOCK["$key"]=1 ;;
+      LIST)  APPLIED_LIST["$key"]=1  ;;
+      IF)    APPLIED_IF["$key"]=1    ;;
+      HOOK)  APPLIED_HOOK["$key"]=1  ;;
+    esac
+  done < "${APPLIED_LIST}"
+fi
+
+# ---- 定义“应落位”的判定（有值才应落位）
+truthy() { case "${1,,}" in ""|"false"|"0"|"no"|"off") return 1 ;; *) return 0 ;; esac; }
+nonempty() { [ -n "$(printf '%s' "$1" | sed 's/[[:space:]]//g')" ]; }
+
+missing_text=0 missing_block=0 missing_list=0 missing_if=0 missing_hook=0
+
 note_missing() { echo -e "$1\t$2\t$3" >> "${MISSING_LIST}"; }
 
-# TEXT missing
+# TEXT：plan 中出现即视为“有值”（空串也算显式赋值）
 for k in "${!TEXT_KV[@]}"; do
-  exists_text "$k" || { missing_text=$((missing_text+1)); note_missing "TEXT" "$k" "NOT_FOUND"; }
+  if [ -z "${APPLIED_TEXT[$k]+x}" ]; then
+    missing_text=$((missing_text+1)); note_missing "TEXT" "$k" "NOT_APPLIED"
+  fi
 done
-# BLOCK missing
+
+# BLOCK：仅 body 非空才应落位
 for k in "${!BLOCK_KV[@]}"; do
-  found=0; while IFS= read -r nm; do exists_block_any "$nm" && { found=1; break; }; done < <(variants_for "$k")
-  [ "$found" -eq 1 ] || { missing_block=$((missing_block+1)); note_missing "BLOCK" "$k" "NOT_FOUND"; }
+  v="${BLOCK_KV[$k]}"
+  if nonempty "$v"; then
+    if [ -z "${APPLIED_BLOCK[$k]+x}" ]; then
+      missing_block=$((missing_block+1)); note_missing "BLOCK" "$k" "NOT_APPLIED"
+    fi
+  fi
 done
-# LIST missing
+
+# LIST：仅当列表长度 > 0 才应落位
 for k in "${!LISTS_KV[@]}"; do
-  found=0; while IFS= read -r nm; do exists_list_any "$nm" && { found=1; break; }; done < <(variants_for "$k")
-  [ "$found" -eq 1 ] || { missing_list=$((missing_list+1)); note_missing "LIST" "$k" "NOT_FOUND"; }
+  raw="${LISTS_KV[$k]}"
+  items_count=$(python - <<PY
+raw="""$raw"""
+print(len([x for x in raw.split("\x1f") if x.strip()]))
+PY
+)
+  if [ "${items_count:-0}" -gt 0 ]; then
+    if [ -z "${APPLIED_LIST[$k]+x}" ]; then
+      missing_list=$((missing_list+1)); note_missing "LIST" "$k" "NOT_APPLIED"
+    fi
+  fi
 done
-# IF missing
+
+# IF：仅 truthy 才应落位；false/缺失都不算缺失
 for k in "${!IFCOND_KV[@]}"; do
-  found=0; while IFS= read -r nm; do exists_if_any "$nm" && { found=1; break; }; done < <(variants_for "$k")
-  [ "$found" -eq 1 ] || { missing_if=$((missing_if+1)); note_missing "IF" "$k" "NOT_FOUND"; }
+  v="${IFCOND_KV[$k]}"
+  if truthy "$v"; then
+    if [ -z "${APPLIED_IF[$k]+x}" ]; then
+      missing_if=$((missing_if+1)); note_missing "IF" "$k" "NOT_APPLIED"
+    fi
+  fi
 done
-# HOOK missing
-missing_hook=0
+
+# HOOK：仅 body 非空才应落位
 for k in "${!HOOKS_KV[@]}"; do
-  found=0; while IFS= read -r nm; do exists_hook_any "$nm" && { found=1; break; }; done < <(variants_for "$k")
-  [ "$found" -eq 1 ] || { missing_hook=$((missing_hook+1)); note_missing "HOOK" "$k" "NOT_FOUND"; }
+  body="$(get_hook_body "$k" || true)"
+  if nonempty "$body"; then
+    if [ -z "${APPLIED_HOOK[$k]+x}" ]; then
+      # 目前 hooks 的“命中条数”计数 hooks_applied，但 missing 也要照口径输出
+      note_missing "HOOK" "$k" "NOT_APPLIED"
+    fi
+  fi
 done
 
 replaced_total=$((replaced_text+replaced_block+replaced_list+replaced_if+hooks_applied))
