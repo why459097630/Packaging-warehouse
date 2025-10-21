@@ -297,8 +297,8 @@ replace_if_in_file_any() {
   if perl -0777 -ne 'exit 1 unless /<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
-      # ✅ 条件为真：保留 IF/END_IF 标记与内部内容（分组回填）
-      perl -0777 -i -pe 's/(<!--\s*'"$token"'\s*-->)(.*?)(<!--\s*'"$re_end_if"'\s*-->)/\1\2\3/s' "$file"
+      # ✅ 条件为真：保留 IF/END_IF 标记与内部内容（整串双引号，变量安全展开）
+      perl -0777 -i -pe "s/(<!--\s*$token\s*-->)(.*?)(<!--\s*$re_end_if\s*-->)/\1\2\3/s" "$file"
     else
       perl -0777 -i -pe 's/<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/<!-- '"$token"' -->\n<!-- END_IF -->/s' "$file"
     fi
@@ -306,8 +306,8 @@ replace_if_in_file_any() {
   if perl -0777 -ne 'exit 1 unless /\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_if"'/s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
-      # ✅ 条件为真：保留 IF/END_IF 标记与内部内容（分组回填）
-      perl -0777 -i -pe 's/(\/\/\s*'"$token"')(.*?)(\/\/\s*'"$re_end_if"')/\1\2\3/s' "$file"
+      # ✅ 条件为真：保留 IF/END_IF 标记与内部内容（整串双引号，变量安全展开）
+      perl -0777 -i -pe "s/(\/\/\s*$token)(.*?)(\/\/\s*$re_end_if)/\1\2\3/s" "$file"
     else
       perl -0777 -i -pe 's/\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_if"'/\/\/ '"$token"'\n\/\/ END_IF/s' "$file"
     fi
@@ -315,8 +315,8 @@ replace_if_in_file_any() {
   if perl -0777 -ne 'exit 1 unless /\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
-      # ✅ 条件为真：保留 IF/END_IF 标记与内部内容（分组回填）
-      perl -0777 -i -pe 's/(\/\*\s*'"$token"'\s*\*\/)(.*?)(\/\*\s*'"$re_end_if"'\s*\*\/)/\1\2\3/s' "$file"
+      # ✅ 条件为真：保留 IF/END_IF 标记与内部内容（整串双引号，变量安全展开）
+      perl -0777 -i -pe "s/(\/\*\s*$token\s*\*\/)(.*?)(\/\*\s*$re_end_if\s*\*\/)/\1\2\3/s" "$file"
     else
       perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//\/\* '"$token"' \*\/\n\/\* END_IF \*\//s' "$file"
     fi
