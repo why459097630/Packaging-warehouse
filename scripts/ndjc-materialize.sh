@@ -1,17 +1,5 @@
 #!/usr/bin/env bash
 # NDJC: materialize anchors from plan → apply into template app
-# Usage: bash scripts/ndjc-materialize.sh <APP_DIR> <RUN_ID>
-# Inputs:
-#   requests/<RUN_ID>/02_plan.json
-# Outputs:
-#   requests/<RUN_ID>/02_plan.sanitized.json
-#   requests/<RUN_ID>/03_apply_result.json
-#   requests/<RUN_ID>/applied-anchors.txt
-#   requests/<RUN_ID>/missing-anchors.txt
-#   build-logs/materialize.log
-#   build-logs/anchors.before.txt
-#   build-logs/anchors.after.txt
-#   build-logs/modified-files.txt
 
 set -euo pipefail
 
@@ -32,30 +20,25 @@ SUMMARY_TXT="${REQ_DIR}/actions-summary.txt"
 mkdir -p "${REQ_DIR}" build-logs
 LOG_FILE="build-logs/materialize.log"; : > "${LOG_FILE}"
 
-# ✨ 将两份日志直接写到与 03_apply_result.json 同目录
-APPLIED_LIST="${REQ_DIR}/applied-anchors.txt"; : > "${APPLIED_LIST}"
-MISSING_LIST="${REQ_DIR}/missing-anchors.txt"; : > "${MISSING_LIST}"
+# 将 applied/missing 日志写到 03 同目录
+APPLIED_LIST="${APPLY_JSON%/*}/applied-anchors.txt"; : > "${APPLIED_LIST}"
+MISSING_LIST="${APPLY_JSON%/*}/missing-anchors.txt"; : > "${MISSING_LIST}"
 
 log() { printf '%s %s\n' "[$(date +%H:%M:%S)]" "$*" | tee -a "${LOG_FILE}"; }
 ts_utc() { date -u +%Y-%m-%dT%H:%M:%SZ; }
-escape_sed() { printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'; }
 
 # -------- Resolve registry path (fail-fast if missing) --------
 resolve_registry() {
   local cand=""
-  # Respect explicit env first
   if [ -n "${REGISTRY_FILE:-}" ]; then
     cand="$REGISTRY_FILE"
   elif [ -n "${NDJC_REGISTRY_FILE:-}" ]; then
     cand="$NDJC_REGISTRY_FILE"
   fi
-
-  # If not provided or not found, try common locations
   if [ -z "$cand" ] || [ ! -f "$cand" ]; then
     local ws="${GITHUB_WORKSPACE:-$PWD}"
-    local gitroot="$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")"
-
-    # Candidates ordered by likelihood
+    local gitroot
+    gitroot="$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")"
     for p in \
       "$ws/niandongjicheng/lib/ndjc/anchors/registry.circle-basic.json" \
       "$gitroot/niandongjicheng/lib/ndjc/anchors/registry.circle-basic.json" \
@@ -65,7 +48,6 @@ resolve_registry() {
       if [ -f "$p" ]; then cand="$p"; break; fi
     done
   fi
-
   if [ -z "$cand" ] || [ ! -f "$cand" ]; then
     echo "::error::Registry file not found. Please set REGISTRY_FILE or NDJC_REGISTRY_FILE to niandongjicheng/lib/ndjc/anchors/registry.circle-basic.json"
     exit 1
@@ -73,7 +55,6 @@ resolve_registry() {
   REGISTRY_FILE="$cand"
   export REGISTRY_FILE
 }
-
 resolve_registry
 
 log "env: PLAN_JSON=${PLAN_JSON}"
@@ -84,7 +65,6 @@ log "env: RUN_ID=${RUN_ID}"
 log "env: REGISTRY_FILE=${REGISTRY_FILE}"
 log "env: NDJC_SANITIZE_FAIL_ON_EMPTY=${NDJC_SANITIZE_FAIL_ON_EMPTY:-0}"
 
-# Basic presence check for plan
 if [ ! -f "${PLAN_JSON}" ]; then
   echo "::error::Plan file not found: ${PLAN_JSON}"
   exit 1
@@ -92,14 +72,12 @@ fi
 
 # ---------------- 0) sanitize plan ----------------
 log "::group::Sanitize plan"
-# Force using resolved registry; allow caller to flip fail-on-empty
 env PLAN_JSON="${PLAN_JSON}" RUN_ID="${RUN_ID}" NDJC_SANITIZE_OVERWRITE=0 \
   REGISTRY_FILE="${REGISTRY_FILE}" \
   NDJC_SANITIZE_FAIL_ON_EMPTY="${NDJC_SANITIZE_FAIL_ON_EMPTY:-0}" \
   npx -y tsx lib/ndjc/sanitize/index.ts
 log "::endgroup::"
 
-# Fallback: if derived name not present, try *.sanitized.json next to PLAN_JSON
 if [ ! -f "${PLAN_JSON_SAN}" ]; then
   alt="${PLAN_JSON%.json}.sanitized.json"
   if [ -f "${alt}" ]; then
@@ -112,20 +90,26 @@ if [ ! -f "${PLAN_JSON_SAN}" ]; then
   exit 1
 fi
 
-# ---------------- 1) read plan (with aliases) ----------------
+# ---------------- helpers ----------------
+perl_escape_repl() {
+  # 供 perl s/// 的替换部分使用：转义 / \ $ &
+  # shellcheck disable=SC2001
+  printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/\$/\\\$/g' -e 's/&/\\\&/g'
+}
+
+# 读取 plan（保持你原有结构）
 read_plan() {
 python - "$PLAN_JSON_SAN" <<'PY'
 import json,sys
 p=sys.argv[1]
 plan=json.load(open(p,'r',encoding='utf-8'))
 
-# tolerate both new/legacy keys
 text  = plan.get('anchors')   or plan.get('text')        or {}
 block = plan.get('blocks')    or plan.get('block')       or {}
 lists = plan.get('lists')     or plan.get('list')        or {}
-iff   = plan.get('conditions') or plan.get('if')         or {}
+iff   = plan.get('if')        or plan.get('conditions')  or {}
 hooks = plan.get('hooks')     or plan.get('hook')        or {}
-aliases = plan.get('aliases', {})  # optional
+aliases = plan.get('aliases', {})  # 兼容字段，未使用重命名
 
 def esc(v:str)->str:
     return v.replace('"','\\"').replace('$','\\$').replace('\n','\\n')
@@ -140,10 +124,10 @@ def sh_kv_map(name,d):
 def to_list_map(name,d):
     SEP="\x1f"; out=[f'declare -gA {name}=(']
     for k,v in d.items():
-        if isinstance(v,list): items=[str(x) for x in v]
-        elif v is None: items=[]
-        else: items=[str(v)]
-        out.append(f'["{esc(str(k))}"]="{esc(SEP.join(items))}"')
+      if isinstance(v,list): items=[str(x) for x in v]
+      elif v is None: items=[]
+      else: items=[str(v)]
+      out.append(f'["{esc(str(k))}"]="{esc(SEP.join(items))}"')
     out.append(')')
     return ' '.join(out)
 
@@ -157,113 +141,62 @@ PY
 }
 eval "$(read_plan)"
 
-# ensure assoc
 ensure_assoc(){ local n="$1"; if ! declare -p "$n" >/dev/null 2>&1 || ! declare -p "$n" 2>/dev/null | grep -q 'declare \-A'; then eval "unset $n; declare -gA $n=()"; fi; }
 ensure_assoc TEXT_KV; ensure_assoc BLOCK_KV; ensure_assoc LISTS_KV; ensure_assoc IFCOND_KV; ensure_assoc HOOKS_KV; ensure_assoc ALIASES_KV
 
-# ---------------- 1.1 compat helpers ----------------
-variants_for() {
-  local key="$1"
-  local alt1="${key//./_}"
-  local alt2="${key//_/.}"
-  printf "%s\n%s\n%s\n" "$key" "$alt1" "$alt2" | awk '!x[$0]++'
+# 只有“有值”的锚点才参与
+has_non_empty() { [ -n "${1//[$'\t\r\n ']/}" ]; }
+
+get_list_items() {
+  local raw="${LISTS_KV[$1]-}"; [ -z "${raw}" ] && return 0
+  python - "$raw" <<'PY'
+import sys
+print("\n".join([x for x in sys.argv[1].split("\x1f") if x!=""]))
+PY
 }
 
-# END markers regex variants
+get_hook_body() {
+  local raw="${HOOKS_KV[$1]-}"; [ -z "${raw}" ] && return 0
+  python - "$raw" <<'PY'
+import sys
+print("\n".join(sys.argv[1].split("\x1f")))
+PY
+}
+
+# 结束标记
 re_end_block='(END_BLOCK|ENDBLOCK)'
 re_end_list='(END_LIST|ENDLIST)'
 re_end_if='(END_IF|ENDIF)'
 re_end_hook='(END_HOOK|ENDHOOK)'
 
-# Item token variants for LIST
-render_items() {
-  local tmpl="$1"; local items="$2"; local rendered=""
-  local token=""
-  if grep -q '\${ITEM}' <<<"$tmpl"; then token='\${ITEM}'
-  elif grep -q '\$ITEM' <<<"$tmpl"; then token='\$ITEM'
-  elif grep -q '{{ITEM}}' <<<"$tmpl"; then token='{{ITEM}}'
-  else
-    log "WARN compat.used: LIST template without ITEM token"
-    token='\${ITEM}'
-  fi
-  while IFS= read -r it; do
-    rendered+=$(python - <<PY
-import sys
-tmpl = """$tmpl"""
-tok  = """$token"""
-it   = """$it"""
-print(tmpl.replace(tok, it))
-PY
-)
-    rendered+=$'\n'
-  done <<<"$items"
-  printf "%s" "$rendered"
-}
-
-# ---------------- Pre-injection guard for Kotlin/Gradle ----------------
-looks_like_json(){ [[ "$1" =~ ^[[:space:]]*[\{\[] ]]; }
-looks_like_html(){ [[ "$1" == *"<!--"* ]]; }
-is_code_for_kotlin_gradle(){
-  [[ "$1" =~ (^|[[:space:]])(fun|val|var|import|class|object|when|if|dependencies|plugins)[[:space:]] ]]
-}
-comment_for_kg(){ sed 's/^/\/\/ /'; }
-prepare_body_for_file(){
-  local file="$1"; shift
-  local body="$*"
-  local ext="${file##*.}"
-  if [[ "$ext" == "kt" || "$ext" == "kts" || "$file" == *".gradle" ]]; then
-    if looks_like_json "$body" || looks_like_html "$body"; then
-      log "compat.used: commented-out non-code block for $file"
-      printf '%s\n' "$body" | comment_for_kg; return 0
-    fi
-    if ! is_code_for_kotlin_gradle "$body"; then
-      log "compat.used: body not detected as kotlin/gradle code → commented for $file"
-      printf '%s\n' "$body" | comment_for_kg; return 0
-    fi
-  fi
-  printf '%s' "$body"
-}
-
-# ---------------- counters ----------------
-replaced_text=0 replaced_block=0 replaced_list=0 replaced_if=0 hooks_applied=0
-
-# ---------------- file selection ----------------
+# 文件集合
 mapfile -t WORK_FILES < <(find "$APP_DIR" -type f \( -name "*.xml" -o -name "*.kt" -o -name "*.kts" -o -name "*.gradle" -o -name "*.pro" -o -name "AndroidManifest.xml" -o -name "*.txt" \) | LC_ALL=C sort)
 
-# ---------------- anchors snapshot (before) ----------------
-ANCHORS_BEFORE="build-logs/anchors.before.txt"
-{ grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/null || true; } > "${ANCHORS_BEFORE}" || true
-before_total=$(wc -l <"${ANCHORS_BEFORE}" || echo 0)
-log "anchors before: ${before_total}"
+# 匹配是否存在
+exists_text()  { grep -RFl -- "$1" "${APP_DIR}" >/dev/null 2>&1; }
+exists_block_any() { grep -RIl -E "(<!-- *BLOCK:$1 *-->.*?<!-- *${re_end_block} *-->|// *BLOCK:$1.*?// *${re_end_block}|/\* *BLOCK:$1 *\*/.*?/\\* *${re_end_block} *\*/)" -z "${APP_DIR}" >/dev/null 2>&1; }
+exists_list_any()  { grep -RIl -E "(LIST:$1.*?${re_end_list})" -z "${APP_DIR}" >/dev/null 2>&1; }
+exists_if_any()    { grep -RIl -E "(<!-- *IF:$1 *-->.*?<!-- *${re_end_if} *-->|// *IF:$1.*?// *${re_end_if}|/\* *IF:$1 *\*/.*?/\\* *${re_end_if} *\*/)" -z "${APP_DIR}" >/dev/null 2>&1; }
+exists_hook_any()  { grep -RIl -E "(<!-- *HOOK:$1 *-->.*?<!-- *${re_end_hook} *-->|// *HOOK:$1.*?// *${re_end_hook}|/\* *HOOK:$1 *\*/.*?/\\* *${re_end_hook} *\*/)" -z "${APP_DIR}" >/dev/null 2>&1; }
 
-# ---------------- list & hook helpers ----------------
-get_list_items() {
-  local raw="${LISTS_KV[$1]-}"; [ -z "${raw}" ] && return 0
-  python - "$raw" <<'PY'
-import sys; print("\n".join(sys.argv[1].split("\x1f")))
-PY
-}
-get_hook_body() {
-  local raw="${HOOKS_KV[$1]-}"; [ -z "${raw}" ] && return 0
-  python - "$raw" <<'PY'
-import sys; print("\n".join(sys.argv[1].split("\x1f")))
-PY
-}
+# 计数器
+replaced_text=0 replaced_block=0 replaced_list=0 replaced_if=0 hooks_applied=0
+missing_text=0 missing_block=0 missing_list=0 missing_if=0 missing_hook=0
 
-# ---------------- replacers (compat + guard) ----------------
+# TEXT 替换
 replace_text_in_file() {
   local file="$1" key="$2" val="$3"
   local hits; hits="$(grep -n -F "$key" "$file" || true)"
   [ -z "$hits" ] && return 1
-
+  # 记应用位置
   while IFS= read -r line; do
     [ -z "$line" ] && continue
     echo -e "TEXT\t${key}\t${file}:${line%%:*}" >> "${APPLIED_LIST}"
   done <<< "${hits}"
-
-  local vv; vv="$(escape_sed "$val")"
-  sed -i "s/${key}/${vv}/g" "$file"
-
+  # 直接按字面替换
+  local vv; vv="$(perl_escape_repl "$val")"
+  perl -0777 -i -pe "s/\Q${key}\E/${vv}/g" "$file"
+  # 估算替换次数
   local before after count
   before=$(printf '%s\n' "${hits}" | wc -l | tr -d ' ')
   after=$(grep -o -n -F "$key" "$file" | wc -l | tr -d ' ' || true)
@@ -272,63 +205,77 @@ replace_text_in_file() {
   return 1
 }
 
+# BLOCK/IF/HOOK/LIST 替换
 replace_block_in_file_any() {
   local file="$1" name="$2" body="$3" cnt=0
-  local token="$name"; [[ "$token" == BLOCK:* ]] || token="BLOCK:$token"
-  body="$(prepare_body_for_file "$file" "$body")"
-  if perl -0777 -ne 'exit 1 unless /<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_block"'\s*-->/s' "$file"; then
-    perl -0777 -i -pe 's/<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_block"'\s*-->/<!-- '"$token"' -->\n'"$body"'\n<!-- END_BLOCK -->/s' "$file"; cnt=$((cnt+1))
+  local repl; repl="$(perl_escape_repl "$body")"
+  # XML
+  if perl -0777 -ne 'exit 1 unless /<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*'"$re_end_block"'\s*-->/s' "$file"; then
+    perl -0777 -i -pe 's/<!--\s*BLOCK:'"$name"'\s*-->.*?<!--\s*'"$re_end_block"'\s*-->/<!-- BLOCK:'"$name"' -->\n'"$repl"'\n<!-- END_BLOCK -->/s' "$file"; cnt=$((cnt+1))
   fi
-  if perl -0777 -ne 'exit 1 unless /\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_block"'/s' "$file"; then
-    perl -0777 -i -pe 's/\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_block"'/\/\/ '"$token"'\n'"$body"'\n\/\/ END_BLOCK/s' "$file"; cnt=$((cnt+1))
+  # // 注释
+  if perl -0777 -ne 'exit 1 unless /\/\/\s*BLOCK:'"$name"'.*?\/\/\s*'"$re_end_block"'/s' "$file"; then
+    perl -0777 -i -pe 's/\/\/\s*BLOCK:'"$name"'.*?\/\/\s*'"$re_end_block"'/\/\/ BLOCK:'"$name"'\n'"$repl"'\n\/\/ END_BLOCK/s' "$file"; cnt=$((cnt+1))
   fi
-  if perl -0777 -ne 'exit 1 unless /\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_block"'\s*\*\//s' "$file"; then
-    perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_block"'\s*\*\//\/\* '"$token"' \*\/\n'"$body"'\n\/\* END_BLOCK \*\//s' "$file"; cnt=$((cnt+1))
+  # /* */ 注释
+  if perl -0777 -ne 'exit 1 unless /\/\*\s*BLOCK:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_block"'\s*\*\//s' "$file"; then
+    perl -0777 -i -pe 's/\/\*\s*BLOCK:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_block"'\s*\*\//\/\* BLOCK:'"$name"' \*\/\n'"$repl"'\n\/\* END_BLOCK \*\//s' "$file"; cnt=$((cnt+1))
   fi
   if [ "$cnt" -gt 0 ]; then echo -e "BLOCK\t${name}\t${file}" >> "${APPLIED_LIST}"; replaced_block=$((replaced_block+cnt)); return 0; fi
   return 1
 }
 
+render_items() {
+  # $1: 模板（已提取），$2: items（多行）
+  python - "$1" <<'PY'
+import sys
+tmpl = sys.argv[1]
+items = sys.stdin.read().splitlines()
+for it in items:
+  print(tmpl.replace("${ITEM}", it).replace("$ITEM", it).replace("{{ITEM}}", it))
+PY
+}
+
 replace_list_in_file_any() {
   local file="$1" name="$2"
-  local token="$name"; [[ "$token" == LIST:* ]] || token="LIST:$token"
-  local items; items="$(get_list_items "$name" || true)"; [ -z "$items" ] && return 1
-  if ! perl -0777 -ne 'exit 1 unless /'"$token"'.*?'"$re_end_list"'/s' "$file"; then return 1; fi
-  local tmpl; tmpl="$(perl -0777 -ne 'if (/'"$token"'\s*(.*)\s*'"$re_end_list"'/s) { print($1) }' "$file")"
+  local items; items="$(get_list_items "$name" || true)"
+  [ -z "$items" ] && return 1
+  if ! perl -0777 -ne 'exit 1 unless /LIST:'"$name"'.*?'"$re_end_list"'/s' "$file"; then return 1; fi
+  local tmpl; tmpl="$(perl -0777 -ne 'if (/LIST:'"$name"'\s*(.*)\s*'"$re_end_list"'/s) { print($1) }' "$file")"
   [ -z "$tmpl" ] && tmpl=$'\n'
-  local rendered; rendered="$(render_items "$tmpl" "$items")"
-  perl -0777 -i -pe 's/'"$token"'.*?'"$re_end_list"'/'"$token"'\n'"$rendered"'END_LIST/s' "$file"
+  local rendered; rendered="$(printf '%s\n' "$items" | render_items "$tmpl")"
+  local repl; repl="$(perl_escape_repl "$rendered")"
+  perl -0777 -i -pe 's/LIST:'"$name"'.*?'"$re_end_list"'/LIST:'"$name"'\n'"$repl"'END_LIST/s' "$file"
   echo -e "LIST\t${name}\t${file}" >> "${APPLIED_LIST}"
   replaced_list=$((replaced_list+1)); return 0
 }
 
 replace_if_in_file_any() {
   local file="$1" name="$2" cond="$3"
-  local token="$name"; [[ "$token" == IF:* ]] || token="IF:$token"
   local truthy=0; case "${cond,,}" in ""|"false"|"0"|"no"|"off") truthy=0 ;; *) truthy=1 ;; esac
   local hit=0
-  if perl -0777 -ne 'exit 1 unless /<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/s' "$file"; then
+  if perl -0777 -ne 'exit 1 unless /<!--\s*IF:'"$name"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
-      perl -0777 -i -pe 's/<!--\s*'"$token"'\s*-->(.*?)<!--\s*'"$re_end_if"'\s*-->/\1/s' "$file"
+      perl -0777 -i -pe 's/<!--\s*IF:'"$name"'\s*-->(.*?)<!--\s*'"$re_end_if"'\s*-->/\1/s' "$file"
     else
-      perl -0777 -i -pe 's/<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/<!-- '"$token"' -->\n<!-- END_IF -->/s' "$file"
+      perl -0777 -i -pe 's/<!--\s*IF:'"$name"'\s*-->.*?<!--\s*'"$re_end_if"'\s*-->/<!-- IF:'"$name"' -->\n<!-- END_IF -->/s' "$file"
     fi
   fi
-  if perl -0777 -ne 'exit 1 unless /\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_if"'/s' "$file"; then
+  if perl -0777 -ne 'exit 1 unless /\/\/\s*IF:'"$name"'.*?\/\/\s*'"$re_end_if"'/s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
-      perl -0777 -i -pe 's/\/\/\s*'"$token"'(.*?)\/\/\s*'"$re_end_if"'/\1/s' "$file"
+      perl -0777 -i -pe 's/\/\/\s*IF:'"$name"'(.*?)\/\/\s*'"$re_end_if"'/\1/s' "$file"
     else
-      perl -0777 -i -pe 's/\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_if"'/\/\/ '"$token"'\n\/\/ END_IF/s' "$file"
+      perl -0777 -i -pe 's/\/\/\s*IF:'"$name"'.*?\/\/\s*'"$re_end_if"'/\/\/ IF:'"$name"'\n\/\/ END_IF/s' "$file"
     fi
   fi
-  if perl -0777 -ne 'exit 1 unless /\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//s' "$file"; then
+  if perl -0777 -ne 'exit 1 unless /\/\*\s*IF:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//s' "$file"; then
     hit=1
     if [ "$truthy" -eq 1 ]; then
-      perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/(.*?)\/\*\s*'"$re_end_if"'\s*\*\//\1/s' "$file"
+      perl -0777 -i -pe 's/\/\*\s*IF:'"$name"'\s*\*\/(.*?)\/\*\s*'"$re_end_if"'\s*\*\//\1/s' "$file"
     else
-      perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//\/\* '"$token"' \*\/\n\/\* END_IF \*\//s' "$file"
+      perl -0777 -i -pe 's/\/\*\s*IF:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_if"'\s*\*\//\/\* IF:'"$name"' \*\/\n\/\* END_IF \*\//s' "$file"
     fi
   fi
   if [ "$hit" -eq 1 ]; then echo -e "IF\t${name}\t${file}" >> "${APPLIED_LIST}"; replaced_if=$((replaced_if+1)); return 0; fi
@@ -337,16 +284,15 @@ replace_if_in_file_any() {
 
 replace_hook_in_file_any() {
   local file="$1" name="$2" body="$3" cnt=0
-  local token="$name"; [[ "$token" == HOOK:* ]] || token="HOOK:$token"
-  body="$(prepare_body_for_file "$file" "$body")"
-  if perl -0777 -ne 'exit 1 unless /<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_hook"'\s*-->/s' "$file"; then
-    perl -0777 -i -pe 's/<!--\s*'"$token"'\s*-->.*?<!--\s*'"$re_end_hook"'\s*-->/<!-- '"$token"' -->\n'"$body"'\n<!-- END_HOOK -->/s' "$file"; cnt=$((cnt+1))
+  local repl; repl="$(perl_escape_repl "$body")"
+  if perl -0777 -ne 'exit 1 unless /<!--\s*HOOK:'"$name"'\s*-->.*?<!--\s*'"$re_end_hook"'\s*-->/s' "$file"; then
+    perl -0777 -i -pe 's/<!--\s*HOOK:'"$name"'\s*-->.*?<!--\s*'"$re_end_hook"'\s*-->/<!-- HOOK:'"$name"' -->\n'"$repl"'\n<!-- END_HOOK -->/s' "$file"; cnt=$((cnt+1))
   fi
-  if perl -0777 -ne 'exit 1 unless /\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_hook"'/s' "$file"; then
-    perl -0777 -i -pe 's/\/\/\s*'"$token"'.*?\/\/\s*'"$re_end_hook"'/\/\/ '"$token"'\n'"$body"'\n\/\/ END_HOOK/s' "$file"; cnt=$((cnt+1))
+  if perl -0777 -ne 'exit 1 unless /\/\/\s*HOOK:'"$name"'.*?\/\/\s*'"$re_end_hook"'/s' "$file"; then
+    perl -0777 -i -pe 's/\/\/\s*HOOK:'"$name"'.*?\/\/\s*'"$re_end_hook"'/\/\/ HOOK:'"$name"'\n'"$repl"'\n\/\/ END_HOOK/s' "$file"; cnt=$((cnt+1))
   fi
-  if perl -0777 -ne 'exit 1 unless /\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//s' "$file"; then
-    perl -0777 -i -pe 's/\/\*\s*'"$token"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//\/\* HOOK:'"$name"' \*\/\n'"$body"'\n\/\* END_HOOK \*\//s' "$file"; cnt=$((cnt+1))
+  if perl -0777 -ne 'exit 1 unless /\/\*\s*HOOK:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//s' "$file"; then
+    perl -0777 -i -pe 's/\/\*\s*HOOK:'"$name"'\s*\*\/.*?\/\*\s*'"$re_end_hook"'\s*\*\//\/\* HOOK:'"$name"' \*\/\n'"$repl"'\n\/\* END_HOOK \*\//s' "$file"; cnt=$((cnt+1))
   fi
   if [ "$cnt" -gt 0 ]; then echo -e "HOOK\t${name}\t${file}" >> "${APPLIED_LIST}"; hooks_applied=$((hooks_applied+cnt)); return 0; fi
   return 1
@@ -354,135 +300,76 @@ replace_hook_in_file_any() {
 
 # ---------------- 2) apply all ----------------
 apply_all() {
-  local file k v nm
+  local file k v
 
-  # TEXT
+  # TEXT（只处理有值）
   for file in "${WORK_FILES[@]}"; do
     for k in "${!TEXT_KV[@]}"; do
-      v="${TEXT_KV[$k]}"
+      v="${TEXT_KV[$k]}"; has_non_empty "$v" || continue
       replace_text_in_file "$file" "$k" "$v" || true
     done
   done
 
-  # BLOCKS
+  # BLOCK（只处理有值）
   for file in "${WORK_FILES[@]}"; do
     for k in "${!BLOCK_KV[@]}"; do
-      v="${BLOCK_KV[$k]}"
-      while IFS= read -r nm; do
-        replace_block_in_file_any "$file" "$nm" "$v" && { log "compat.used: BLOCK name '${k}'→'${nm}' on $file"; break; }
-      done < <(variants_for "$k")
+      v="${BLOCK_KV[$k]}"; has_non_empty "$v" || continue
+      replace_block_in_file_any "$file" "$k" "$v" || true
     done
   done
 
-  # LISTS
+  # LIST（items>0 才处理）
   for file in "${WORK_FILES[@]}"; do
     for k in "${!LISTS_KV[@]}"; do
-      while IFS= read -r nm; do
-        replace_list_in_file_any "$file" "$nm" && { log "compat.used: LIST name '${k}'→'${nm}' on $file"; break; }
-      done < <(variants_for "$k")
+      local items_cnt
+      items_cnt="$(get_list_items "$k" | wc -l | tr -d ' ' || true)"
+      [ "${items_cnt:-0}" -gt 0 ] || continue
+      replace_list_in_file_any "$file" "$k" || true
     done
   done
 
-  # IF
+  # IF（只要出现在 plan 就参与）
   for file in "${WORK_FILES[@]}"; do
     for k in "${!IFCOND_KV[@]}"; do
       v="${IFCOND_KV[$k]}"
-      while IFS= read -r nm; do
-        replace_if_in_file_any "$file" "$nm" "$v" && { log "compat.used: IF name '${k}'→'${nm}' on $file"; break; }
-      done < <(variants_for "$k")
+      replace_if_in_file_any "$file" "$k" "$v" || true
     done
   done
 
-  # HOOKS
+  # HOOK（只处理有值）
   for file in "${WORK_FILES[@]}"; do
     for k in "${!HOOKS_KV[@]}"; do
-      v="$(get_hook_body "$k" || true)"; [ -z "$v" ] && continue
-      while IFS= read -r nm; do
-        replace_hook_in_file_any "$file" "$nm" "$v" && { log "compat.used: HOOK name '${k}'→'${nm}' on $file"; break; }
-      done < <(variants_for "$k")
+      v="$(get_hook_body "$k" || true)"; has_non_empty "$v" || continue
+      replace_hook_in_file_any "$file" "$k" "$v" || true
     done
   done
 }
 apply_all || true
 
 # ---------------- 3) stats & output ----------------
-ANCHORS_AFTER="build-logs/anchors.after.txt"
-{ grep -R --line-number -E 'NDJC:|BLOCK:|LIST:|HOOK:|IF:' "${APP_DIR}" 2>/dev/null || true; } > "${ANCHORS_AFTER}" || true
-
-# 3.1 依据“应落位集合 ∧ 实际落位集合”统计 missing（不再用替换后再搜 Token 的方式）
-# ---- 先从 applied-anchors.txt 收集“已落位集合”（去重）
-declare -A APPLIED_TEXT=() APPLIED_BLOCK=() APPLIED_LIST=() APPLIED_IF=() APPLIED_HOOK=()
-if [ -s "${APPLIED_LIST}" ]; then
-  while IFS=$'\t' read -r typ key rest; do
-    case "$typ" in
-      TEXT)  APPLIED_TEXT["$key"]=1  ;;
-      BLOCK) APPLIED_BLOCK["$key"]=1 ;;
-      LIST)  APPLIED_LIST["$key"]=1  ;;
-      IF)    APPLIED_IF["$key"]=1    ;;
-      HOOK)  APPLIED_HOOK["$key"]=1  ;;
-    esac
-  done < "${APPLIED_LIST}"
-fi
-
-# ---- 定义“应落位”的判定（有值才应落位）
-truthy() { case "${1,,}" in ""|"false"|"0"|"no"|"off") return 1 ;; *) return 0 ;; esac; }
-nonempty() { [ -n "$(printf '%s' "$1" | sed 's/[[:space:]]//g')" ]; }
-
-missing_text=0 missing_block=0 missing_list=0 missing_if=0 missing_hook=0
-
 note_missing() { echo -e "$1\t$2\t$3" >> "${MISSING_LIST}"; }
 
-# TEXT：plan 中出现即视为“有值”（空串也算显式赋值）
+# 仅对“有值”的锚点做 missing 统计
 for k in "${!TEXT_KV[@]}"; do
-  if [ -z "${APPLIED_TEXT[$k]+x}" ]; then
-    missing_text=$((missing_text+1)); note_missing "TEXT" "$k" "NOT_APPLIED"
-  fi
+  v="${TEXT_KV[$k]}"; has_non_empty "$v" || continue
+  exists_text "$k" || { missing_text=$((missing_text+1)); note_missing "TEXT" "$k" "NOT_FOUND"; }
 done
-
-# BLOCK：仅 body 非空才应落位
 for k in "${!BLOCK_KV[@]}"; do
-  v="${BLOCK_KV[$k]}"
-  if nonempty "$v"; then
-    if [ -z "${APPLIED_BLOCK[$k]+x}" ]; then
-      missing_block=$((missing_block+1)); note_missing "BLOCK" "$k" "NOT_APPLIED"
-    fi
-  fi
+  v="${BLOCK_KV[$k]}"; has_non_empty "$v" || continue
+  exists_block_any "$k" || { missing_block=$((missing_block+1)); note_missing "BLOCK" "$k" "NOT_FOUND"; }
 done
-
-# LIST：仅当列表长度 > 0 才应落位
 for k in "${!LISTS_KV[@]}"; do
-  raw="${LISTS_KV[$k]}"
-  items_count=$(python - <<PY
-raw="""$raw"""
-print(len([x for x in raw.split("\x1f") if x.strip()]))
-PY
-)
-  if [ "${items_count:-0}" -gt 0 ]; then
-    if [ -z "${APPLIED_LIST[$k]+x}" ]; then
-      missing_list=$((missing_list+1)); note_missing "LIST" "$k" "NOT_APPLIED"
-    fi
-  fi
+  cnt="$(get_list_items "$k" | wc -l | tr -d ' ' || true)"
+  [ "${cnt:-0}" -gt 0 ] || continue
+  exists_list_any "$k" || { missing_list=$((missing_list+1)); note_missing "LIST" "$k" "NOT_FOUND"; }
 done
-
-# IF：仅 truthy 才应落位；false/缺失都不算缺失
 for k in "${!IFCOND_KV[@]}"; do
-  v="${IFCOND_KV[$k]}"
-  if truthy "$v"; then
-    if [ -z "${APPLIED_IF[$k]+x}" ]; then
-      missing_if=$((missing_if+1)); note_missing "IF" "$k" "NOT_APPLIED"
-    fi
-  fi
+  exists_if_any "$k" || { missing_if=$((missing_if+1)); note_missing "IF" "$k" "NOT_FOUND"; }
 done
-
-# HOOK：仅 body 非空才应落位
+# HOOK（有值才统计）
 for k in "${!HOOKS_KV[@]}"; do
-  body="$(get_hook_body "$k" || true)"
-  if nonempty "$body"; then
-    if [ -z "${APPLIED_HOOK[$k]+x}" ]; then
-      # 目前 hooks 的“命中条数”计数 hooks_applied，但 missing 也要照口径输出
-      note_missing "HOOK" "$k" "NOT_APPLIED"
-    fi
-  fi
+  v="$(get_hook_body "$k" || true)"; has_non_empty "$v" || continue
+  exists_hook_any "$k" || { missing_hook=$((missing_hook+1)); note_missing "HOOK" "$k" "NOT_FOUND"; }
 done
 
 replaced_total=$((replaced_text+replaced_block+replaced_list+replaced_if+hooks_applied))
