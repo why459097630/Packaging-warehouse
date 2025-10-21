@@ -195,7 +195,7 @@ prepare_body_for_file(){
     if looks_like_json "$body" || looks_like_html "$body" || ! is_code_for_kg "$body"; then
       printf '%s\n' "$body" | comment_for_kg; return 0
     fi
-  }
+  fi
   printf '%s' "$body"
 }
 
