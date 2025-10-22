@@ -1,5 +1,7 @@
-created by api; mode=online(llama-3.1-8b-instant)
-prompt_file=
-prompt_sha256=
-prompt_loaded_from_env=null
-precheck_note=no_raw_text_used_object_mode
+branch=main
+variant=unknown
+apk=
+classes=
+missing_text=0
+missing_block=0
+ts=2025-10-22T07:39:04Z
