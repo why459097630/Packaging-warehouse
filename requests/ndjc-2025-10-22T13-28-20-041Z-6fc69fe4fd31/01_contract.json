@@ -1,0 +1,155 @@
+{
+  "metadata": {
+    "title": "德州餐厅",
+    "description": "介绍德州餐厅的菜品",
+    "version": "1.0",
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxrestaurant",
+    "mode": "B",
+    "trace": {
+      "prompt_file": null,
+      "prompt_sha256": null,
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)",
+      "precheck_note": "no_raw_text_used_object_mode"
+    }
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.dtxrestaurant",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "德州餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_COLORS": "{\"primary\":\"#FF69B4\",\"secondary\":\"#34A85A\"}",
+      "NDJC:THEME_NAME": "Light",
+      "NDJC:DARK_MODE": "true",
+      "NDJC:FONT_FAMILY_PRIMARY": "OpenSans",
+      "NDJC:FONT_FAMILY_SECONDARY": "Montserrat",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "300",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "https://api.example.com",
+      "NDJC:SEED_ENABLED": "true",
+      "NDJC:FEED_SORT": "date",
+      "NDJC:PAGING_SIZE": "10",
+      "NDJC:OFFLINE_POLICY": "cache",
+      "NDJC:PRIVACY_POLICY": "https://example.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META:RUNID": "auto",
+      "NDJC:FEATURE_TOGGLE:MIN": "1",
+      "NDJC:DEBUG_LOG_ENABLED": "true",
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "exp-001",
+      "NDJC:TYPOCASE_OVERRIDES": "none",
+      "NDJC:STRINGS_EXTRA": "{\"extra\":\"value\"}",
+      "NDJC:ROUTE_HOME": "home",
+      "NDJC:ROUTE_DETAIL": "detail"
+    },
+    "block": {
+      "BLOCK:UPLOAD_PHOTO": "上传照片",
+      "BLOCK:EDIT_INTRO": "编辑文字介绍",
+      "BLOCK:SET_PRICE": "设定价格",
+      "BLOCK:COMMENT_LIKE": "评论点赞",
+      "BLOCK:HOME_HEADER": "content ready for rendering...",
+      "BLOCK:HOME_BODY": "content ready for rendering...",
+      "BLOCK:HOME_ACTIONS": "content ready for rendering...",
+      "BLOCK:SPLASH_CONTENT": "content ready for rendering...",
+      "BLOCK:EMPTY_STATE": "content ready for rendering...",
+      "BLOCK:ERROR_STATE": "content ready for rendering...",
+      "BLOCK:DEBUG_PANEL": "content ready for rendering...",
+      "BLOCK:HEADER_AD_SLOT": "content ready for rendering...",
+      "BLOCK:USER_PROFILE_CARD": "content ready for rendering...",
+      "BLOCK:SPONSORED_CARD": "content ready for rendering...",
+      "BLOCK:PROFILE_SECTION": "content ready for rendering...",
+      "BLOCK:SETTINGS_SECTION": "content ready for rendering...",
+      "BLOCK:SETTINGS_SECTION:EXTRA": "content ready for rendering..."
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ],
+      "LIST:DEPENDENCY_SNIPPETS": [
+        "implementation 'androidx.core:core-ktx:1.10.0'"
+      ],
+      "LIST:PROGUARD_EXTRA": [
+        "-keep class com.ndjc.** { *; }"
+      ],
+      "LIST:PACKAGING_RULES": [
+        "resources.exclude META-INF/DEPENDENCIES"
+      ],
+      "LIST:POST_FIELDS": [
+        "title",
+        "description"
+      ],
+      "LIST:PLURAL_STRINGS": [
+        "items_count"
+      ],
+      "LIST:COMPONENT_STYLES": [
+        "material3"
+      ],
+      "LIST:DEEPLINK_PATTERNS": [
+        "https://example.com/home"
+      ],
+      "LIST:NETWORK_CLEAR_TEXT": [
+        "api.example.com"
+      ],
+      "LIST:RES_CONFIGS_OVERRIDE": [
+        "en",
+        "zh-rCN"
+      ]
+    },
+    "if": {
+      "IF:HAS_PHOTO": false,
+      "IF:HAS_INTRO": false,
+      "IF:HAS_PRICE": false,
+      "IF:NAV_TRANSITIONS": false,
+      "IF:BUILD_SUMMARY": false,
+      "IF:NATIVE_SPLITS": false,
+      "IF:AFTER_BUILD": false,
+      "IF:PRE_COMMIT": false,
+      "IF:AFTER_INSTALL": false,
+      "IF:BEFORE_BUILD": false,
+      "IF:POST_INJECT": false,
+      "IF:BEFORE_BUNDLE": false,
+      "IF:AFTER_BUNDLE": false
+    },
+    "hook": {
+      "HOOK:UPLOAD_PHOTO_SUCCESS": "照片上传成功",
+      "HOOK:EDIT_INTRO_SUCCESS": "文字介绍编辑成功",
+      "HOOK:SET_PRICE_SUCCESS": "价格设定成功",
+      "HOOK:INTENT_SHARE": "ready",
+      "HOOK:FILE_PROVIDER": "ready",
+      "HOOK:PERMISSIONS:ON_REQUEST": "ready",
+      "HOOK:PRE_COMMIT:HOOK": "ready",
+      "HOOK:POST_BUILD:HOOK": "ready",
+      "HOOK:AFTER_INSTALL:HOOK": "ready"
+    },
+    "gradle": {
+      "applicationId": "com.example.dtxrestaurant",
+      "resConfigs": [
+        "en",
+        "zh"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": {
+    "res/layout/activity_main.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".MainActivity\">\n    <Button\n        android:id=\"@+id/upload_photo_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/upload_photo\"/>\n    <EditText\n        android:id=\"@+id/edit_intro_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"@string/edit_intro\"/>\n    <TextView\n        android:id=\"@+id/price_text\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/price\"/>\n    <Button\n        android:id=\"@+id/comment_like_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/comment_like\"/>\n</LinearLayout>",
+    "res/layout/activity_upload_photo.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".UploadPhotoActivity\">\n    <ImageView\n        android:id=\"@+id/photo_image_view\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\"/>\n    <Button\n        android:id=\"@+id/upload_photo_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/upload_photo\"/>\n</LinearLayout>",
+    "res/layout/activity_edit_intro.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".EditIntroActivity\">\n    <EditText\n        android:id=\"@+id/edit_intro_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"@string/edit_intro\"/>\n    <Button\n        android:id=\"@+id/save_intro_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/save_intro\"/>\n</LinearLayout>",
+    "res/layout/activity_set_price.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".SetPriceActivity\">\n    <EditText\n        android:id=\"@+id/price_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"@string/price\"/>\n    <Button\n        android:id=\"@+id/save_price_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/save_price\"/>\n</LinearLayout>",
+    "res/layout/activity_comment_like.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".CommentLikeActivity\">\n    <TextView\n        android:id=\"@+id/comment_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/like_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/like\"/>\n</LinearLayout>",
+    "res/values/strings.xml": "<resources>\n    <string name=\"upload_photo\">上传照片</string>\n    <string name=\"edit_intro\">编辑文字介绍</string>\n    <string name=\"price\">设定价格</string>\n    <string name=\"comment_like\">评论点赞</string>\n    <string name=\"upload_photo_success\">照片上传成功</string>\n    <string name=\"edit_intro_success\">文字介绍编辑成功</string>\n    <string name=\"set_price_success\">价格设定成功</string>\n</resources>",
+    "res/values/colors.xml": "<resources>\n    <color name=\"primary_color\">#FF69B4</color>\n    <color name=\"secondary_color\">#34A85A</color>\n</resources>",
+    "AndroidManifest.xml": "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    package=\"com.example.dtxrestaurant\"\n    android:versionCode=\"1\"\n    android:versionName=\"1.0\">\n    <uses-permission android:name=\"android.permission.INTERNET\"/>\n    <uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>\n    <application\n        android:allowBackup=\"true\"\n        android:icon=\"@mipmap/ic_launcher\"\n        android:label=\"@string/app_name\"\n        android:supportsRtl=\"true\"\n        android:theme=\"@style/AppTheme\">\n        <activity android:name=\".MainActivity\">\n            <intent-filter>\n                <action android:name=\"android.intent.action.MAIN\"/>\n                <category android:name=\"android.intent.category.LAUNCHER\"/>\n            </intent-filter>\n        </activity>\n        <activity android:name=\".UploadPhotoActivity\"/>\n        <activity android:name=\".EditIntroActivity\"/>\n        <activity android:name=\".SetPriceActivity\"/>\n        <activity android:name=\".CommentLikeActivity\"/>\n    </application>\n</manifest>",
+    "build.gradle": "apply plugin: 'com.android.application'\n\nandroid {\n    compileSdkVersion 29\n    defaultConfig {\n        applicationId 'com.example.dtxrestaurant'\n        minSdkVersion 21\n        targetSdkVersion 29\n        versionCode 1\n        versionName '1.0'\n        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'\n    }\n    buildTypes {\n        release {\n            minifyEnabled false\n            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'\n        }\n    }\n    productFlavors {\n    }\n}\n\ndependencies {\n    implementation 'com.android.support:appcompat-v7:28.0.0'\n    implementation 'com.android.support.constraint:constraint-layout:1.1.3'\n    testImplementation 'junit:junit:4.12'\n    androidTestImplementation 'com.android.support.test:runner:1.0.2'\n    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'\n}"
+  },
+  "_trace": {}
+}
