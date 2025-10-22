@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "title": "德州餐厅",
+    "description": "介绍德州餐厅的菜品",
+    "version": "1.0",
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxrestaurant",
+    "mode": "B",
+    "trace": {
+      "prompt_file": null,
+      "prompt_sha256": null,
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)",
+      "precheck_note": "no_raw_text_used_object_mode"
+    }
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.dtxrestaurant",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "德州餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_COLORS": "{\"primary\":\"#FF69B4\",\"secondary\":\"#34A85A\"}"
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "menu",
+        "reviews",
+        "upload"
+      ]
+    },
+    "block": {
+      "BLOCK:UPLOAD_PHOTO": "上传照片",
+      "BLOCK:EDIT_INTRO": "编辑文字介绍",
+      "BLOCK:SET_PRICE": "设定价格"
+    },
+    "if": {
+      "IF:HAS_PHOTO": false,
+      "IF:HAS_INTRO": false,
+      "IF:HAS_PRICE": false
+    },
+    "hook": {
+      "HOOK:UPLOAD_PHOTO_SUCCESS": "照片上传成功",
+      "HOOK:UPLOAD_PHOTO_FAILURE": "照片上传失败",
+      "HOOK:EDIT_INTRO_SUCCESS": "文字介绍编辑成功",
+      "HOOK:EDIT_INTRO_FAILURE": "文字介绍编辑失败",
+      "HOOK:SET_PRICE_SUCCESS": "价格设定成功",
+      "HOOK:SET_PRICE_FAILURE": "价格设定失败"
+    },
+    "gradle": {
+      "applicationId": "com.example.dtxrestaurant",
+      "resConfigs": [
+        "en-rUS",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": {
+    "menu.xml": "<menu xmlns:android=\"http://schemas.android.com/apk/res/android\">\n    <item android:id=\"@+id/menu_item_upload_photo\" android:title=\"@string/menu_upload_photo\" android:icon=\"@drawable/ic_upload_photo\"/>\n    <item android:id=\"@+id/menu_item_edit_intro\" android:title=\"@string/menu_edit_intro\" android:icon=\"@drawable/ic_edit_intro\"/>\n    <item android:id=\"@+id/menu_item_set_price\" android:title=\"@string/menu_set_price\" android:icon=\"@drawable/ic_set_price\"/>\n</menu>",
+    "upload_photo_activity.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\" android:orientation=\"vertical\">\n    <Button android:id=\"@+id/button_upload_photo\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/button_upload_photo\"/>\n    <ImageView android:id=\"@+id/image_view_photo\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\"/>\n</LinearLayout>",
+    "edit_intro_activity.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\" android:orientation=\"vertical\">\n    <EditText android:id=\"@+id/edit_text_intro\" android:layout_width=\"match_parent\" android:layout_height=\"wrap_content\" android:hint=\"@string/edit_text_hint_intro\"/>\n    <Button android:id=\"@+id/button_edit_intro\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/button_edit_intro\"/>\n</LinearLayout>",
+    "set_price_activity.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\" android:layout_width=\"match_parent\" android:layout_height=\"match_parent\" android:orientation=\"vertical\">\n    <EditText android:id=\"@+id/edit_text_price\" android:layout_width=\"match_parent\" android:layout_height=\"wrap_content\" android:hint=\"@string/edit_text_hint_price\"/>\n    <Button android:id=\"@+id/button_set_price\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"@string/button_set_price\"/>\n</LinearLayout>",
+    "strings.xml": "<resources>\n    <string name=\"app_name\">德州餐厅</string>\n    <string name=\"menu_upload_photo\">上传照片</string>\n    <string name=\"menu_edit_intro\">编辑文字介绍</string>\n    <string name=\"menu_set_price\">设定价格</string>\n    <string name=\"button_upload_photo\">上传照片</string>\n    <string name=\"button_edit_intro\">编辑文字介绍</string>\n    <string name=\"button_set_price\">设定价格</string>\n    <string name=\"edit_text_hint_intro\">请输入文字介绍</string>\n    <string name=\"edit_text_hint_price\">请输入价格</string>\n</resources>",
+    "colors.xml": "<resources>\n    <color name=\"primary_color\">#FF69B4</color>\n    <color name=\"secondary_color\">#34A85A</color>\n</resources>"
+  },
+  "_trace": {}
+}
