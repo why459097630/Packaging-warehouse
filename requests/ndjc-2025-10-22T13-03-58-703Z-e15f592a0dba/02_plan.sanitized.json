@@ -1,0 +1,29 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {},
+  "blocks": {},
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "conditions": {},
+  "hooks": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.example.dtxrestaurant",
+    "resConfigs": [],
+    "permissions": []
+  },
+  "meta": {
+    "title": "德州餐厅",
+    "description": "介绍德州餐厅的菜品",
+    "version": "1.0",
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxrestaurant",
+    "mode": "B"
+  },
+  "droppedDanger": 0
+}
