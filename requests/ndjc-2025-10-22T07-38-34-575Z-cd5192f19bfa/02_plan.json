@@ -1,0 +1,49 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.dtxrestaurant",
+    "NDJC:APP_LABEL": "德州餐厅",
+    "NDJC:HOME_TITLE": "德州餐厅",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start"
+  },
+  "blocks": {},
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "listKinds": {
+    "LIST:ROUTES": "other"
+  },
+  "conditions": {},
+  "hooks": {},
+  "hooksStructured": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.example.dtxrestaurant",
+    "resConfigs": [],
+    "permissions": []
+  },
+  "meta": {
+    "title": "德州餐厅",
+    "description": "介绍德州餐厅的菜品",
+    "version": "1.0",
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxrestaurant",
+    "mode": "B"
+  },
+  "violations": [],
+  "coercions": [],
+  "anchorsGrouped": {
+    "text": {},
+    "block": {},
+    "list": {},
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.example.dtxrestaurant"
+    }
+  }
+}
