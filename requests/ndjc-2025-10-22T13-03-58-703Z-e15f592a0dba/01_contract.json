@@ -1,0 +1,159 @@
+{
+  "metadata": {
+    "title": "德州餐厅",
+    "description": "介绍德州餐厅的菜品",
+    "version": "1.0",
+    "template": "circle-basic",
+    "appName": "德州餐厅",
+    "packageId": "com.example.dtxrestaurant",
+    "mode": "B",
+    "trace": {
+      "prompt_file": null,
+      "prompt_sha256": null,
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(llama-3.1-8b-instant)",
+      "precheck_note": "no_raw_text_used_object_mode"
+    }
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.dtxrestaurant",
+      "NDJC:APP_LABEL": "德州餐厅",
+      "NDJC:HOME_TITLE": "德州餐厅",
+      "NDJC:PRIMARY_BUTTON_TEXT": "上传照片",
+      "NDJC:THEME_COLORS": "{\"primary\":\"#FF69B4\",\"secondary\":\"#34A85A\"}",
+      "NDJC:PACKAGE_NAME // desc: Android applicationId / package name | type: string(packageId) | example: com.ndjc.demo.core": "value",
+      "NDJC:APP_LABEL // desc: App 显示名称 | type: string | example: NDJC App": "value",
+      "NDJC:HOME_TITLE // desc: 首页标题 | type: string | example: Home": "value",
+      "NDJC:PRIMARY_BUTTON_TEXT // desc: 首页主按钮文案 | type: string | example: Create": "value",
+      "NDJC:THEME_NAME // desc: 主题名称 | type: enum(Light|Dark|System) | example: Light": "value",
+      "NDJC:DARK_MODE // desc: 是否启用深色模式 | type: boolean | example: true": "value",
+      "NDJC:FONT_FAMILY_PRIMARY // desc: 主字体族 | type: string | example: Inter": "value",
+      "NDJC:FONT_FAMILY_SECONDARY // desc: 次字体族 | type: string | example: Roboto": "value",
+      "NDJC:I18N_ENABLED // desc: 是否启用多语言 | type: boolean | example: true": "value",
+      "NDJC:ANIM_ENABLED // desc: 是否启用动效 | type: boolean | example: true": "value",
+      "NDJC:ANIM_DURATION_MS // desc: 动效时长(毫秒) | type: number | example: 300": "value",
+      "NDJC:LAYOUT_DENSITY // desc: 版式密度/目标密度 | type: enum(ldpi|mdpi|hdpi|xhdpi|xxhdpi) | example: mdpi": "value",
+      "NDJC:DATA_SOURCE // desc: 远端数据源根URL | type: string(url) | example: https://api.example.com": "value",
+      "NDJC:SEED_ENABLED // desc: 是否启用种子数据 | type: boolean | example: true": "value",
+      "NDJC:FEED_SORT // desc: 列表排序策略 | type: enum(date|popularity|rating) | example: date": "value",
+      "NDJC:PAGING_SIZE // desc: 分页大小 | type: number | example: 10": "value",
+      "NDJC:OFFLINE_POLICY // desc: 离线策略 | type: enum(cache|network|mixed) | example: cache": "value",
+      "NDJC:PRIVACY_POLICY // desc: 隐私政策URL | type: string(https-url) | example: https://example.com/privacy": "value",
+      "NDJC:DRAFT_ENABLED // desc: 是否启用草稿 | type: boolean | example: true": "value",
+      "NDJC:USE_APP_BUNDLE // desc: 是否构建AAB | type: boolean | example: true": "value",
+      "NDJC:BUILD_META:RUNID // desc: 本次构建运行ID | type: string | example: run_20251022_001": "value",
+      "NDJC:FEATURE_TOGGLE:MIN // desc: 最小功能级别开关 | type: number | example: 1": "value",
+      "NDJC:DEBUG_LOG_ENABLED // desc: 调试日志开关 | type: boolean | example: true": "value",
+      "NDJC:LOG_LEVEL // desc: 日志级别 | type: enum(DEBUG|INFO|WARN|ERROR) | example: INFO": "value",
+      "NDJC:CRASHLYTICS_ENABLED // desc: 崩溃上报开关 | type: boolean | example: true": "value",
+      "NDJC:EXPERIMENT_BUCKET // desc: 实验分桶名 | type: string | example: exp-001": "value",
+      "NDJC:THEME_COLORS // desc: 主题主副色 | type: object({primary:#RRGGBB,secondary:#RRGGBB}) | example: {\"primary\":\"#7C3AED\",\"secondary\":\"#10B981\"}": "value",
+      "NDJC:TYPOCASE_OVERRIDES // desc: 文案大小写覆盖策略 | type: string | example: none": "value",
+      "NDJC:STRINGS_EXTRA // desc: 额外字符串资源 | type: object | example: {\"extra\":\"value\"}": "value",
+      "NDJC:ROUTE_HOME // desc: 首页路由ID | type: string(route-id) | example: home": "value",
+      "NDJC:ROUTE_DETAIL // desc: 详情页路由ID | type: string(route-id) | example: detail": "value"
+    },
+    "block": {
+      "BLOCK:UPLOAD_PHOTO": "上传照片",
+      "BLOCK:EDIT_INTRO": "编辑文字介绍",
+      "BLOCK:SET_PRICE": "设定价格",
+      "BLOCK:COMMENT_LIKE": "评论点赞",
+      "BLOCK:HOME_HEADER // desc: 首页头部可替换UI片段 | type: block:compose | example: Column { /* header */ }": "content ready for rendering...",
+      "BLOCK:HOME_BODY // desc: 首页主体内容片段 | type: block:compose | example: Column { /* content */ }": "content ready for rendering...",
+      "BLOCK:HOME_ACTIONS // desc: 首页操作区片段(按钮/动作) | type: block:compose | example: Row { /* actions */ }": "content ready for rendering...",
+      "BLOCK:SPLASH_CONTENT // desc: 启动页内容片段 | type: block:compose | example: Box { /* splash */ }": "content ready for rendering...",
+      "BLOCK:EMPTY_STATE // desc: 空数据态片段 | type: block:compose | example: Column { /* empty */ }": "content ready for rendering...",
+      "BLOCK:ERROR_STATE // desc: 错误态片段 | type: block:compose | example: Column { /* error */ }": "content ready for rendering...",
+      "BLOCK:DEBUG_PANEL // desc: 调试信息面板片段 | type: block:compose | example: Column { /* debug */ }": "content ready for rendering...",
+      "BLOCK:HEADER_AD_SLOT // desc: 头部广告位片段 | type: block:compose | example: Box { /* ad */ }": "content ready for rendering...",
+      "BLOCK:USER_PROFILE_CARD // desc: 用户卡片片段 | type: block:compose | example: Card { /* profile */ }": "content ready for rendering...",
+      "BLOCK:SPONSORED_CARD // desc: 商业赞助卡片片段 | type: block:compose | example: Card { /* sponsored */ }": "content ready for rendering...",
+      "BLOCK:PROFILE_SECTION // desc: 个人资料区片段 | type: block:compose | example: Column { /* profile section */ }": "content ready for rendering...",
+      "BLOCK:SETTINGS_SECTION // desc: 设置页片段 | type: block:compose | example: Column { /* settings */ }": "content ready for rendering...",
+      "BLOCK:SETTINGS_SECTION:EXTRA // desc: 设置页额外扩展片段 | type: block:compose | example: Column { /* settings extra */ }": "content ready for rendering..."
+    },
+    "list": {
+      "LIST:ROUTES": "['首页', '菜单', '评论']",
+      "LIST:ROUTES // desc: 路由ID列表 | type: list<string(route-id)> | example: [\"home\",\"detail\"]": [
+        "item"
+      ],
+      "LIST:DEPENDENCY_SNIPPETS // desc: 额外Gradle依赖行 | type: list<string> | example: [\"implementation 'androidx.core:core-ktx:1.10.0'\"]": [
+        "item"
+      ],
+      "LIST:PROGUARD_EXTRA // desc: 额外Proguard规则 | type: list<string> | example: [\"-keep class com.ndjc.** { *; }\"]": [
+        "item"
+      ],
+      "LIST:PACKAGING_RULES // desc: 打包规则(排除/合并等) | type: list<string> | example: [\"resources.exclude META-INF/DEPENDENCIES\"]": [
+        "item"
+      ],
+      "LIST:POST_FIELDS // desc: 发布/表单字段列表 | type: list<string> | example: [\"title\",\"description\"]": [
+        "item"
+      ],
+      "LIST:PLURAL_STRINGS // desc: 需复数化的字符串键 | type: list<string> | example: [\"items_count\"]": [
+        "item"
+      ],
+      "LIST:COMPONENT_STYLES // desc: 组件风格标识 | type: list<string> | example: [\"material3\"]": [
+        "item"
+      ],
+      "LIST:DEEPLINK_PATTERNS // desc: DeepLink URL 模式 | type: list<string(url|pattern)> | example: [\"https://example.com/home\"]": [
+        "item"
+      ],
+      "LIST:NETWORK_CLEAR_TEXT // desc: 需允许HTTP明文的域名 | type: list<string(domain)> | example: [\"api.example.com\"]": [
+        "item"
+      ],
+      "LIST:RES_CONFIGS_OVERRIDE // desc: 追加的语言资源配置 | type: list<string(locale)> | example: [\"en\",\"zh-CN\"]": [
+        "item"
+      ]
+    },
+    "if": {
+      "IF:HAS_PHOTO": false,
+      "IF:HAS_INTRO": false,
+      "IF:HAS_PRICE": false,
+      "IF:NAV_TRANSITIONS // desc: 是否启用导航转场 | type: boolean | example: true": false,
+      "IF:BUILD_SUMMARY // desc: 构建结束输出摘要 | type: boolean | example: true": false,
+      "IF:NATIVE_SPLITS // desc: 是否启用ABI拆分 | type: boolean | example: false": false,
+      "IF:AFTER_BUILD // desc: 构建后执行hook | type: boolean | example: true": false,
+      "IF:PRE_COMMIT // desc: 提交前执行hook | type: boolean | example: false": false,
+      "IF:AFTER_INSTALL // desc: 安装后执行hook | type: boolean | example: true": false,
+      "IF:BEFORE_BUILD // desc: 构建前执行hook | type: boolean | example: true": false,
+      "IF:POST_INJECT // desc: 模板注入后执行hook | type: boolean | example: true": false,
+      "IF:BEFORE_BUNDLE // desc: 打AAB前执行hook | type: boolean | example: false": false,
+      "IF:AFTER_BUNDLE // desc: 打AAB后执行hook | type: boolean | example: false": false
+    },
+    "hook": {
+      "HOOK:UPLOAD_PHOTO_SUCCESS": "照片上传成功",
+      "HOOK:EDIT_INTRO_SUCCESS": "文字介绍编辑成功",
+      "HOOK:SET_PRICE_SUCCESS": "价格设定成功",
+      "HOOK:INTENT_SHARE // desc: 分享意图hook | type: hook:enum(noop|enabled|emit_event:NAME) | example: noop": "ready",
+      "HOOK:FILE_PROVIDER // desc: 文件提供器hook | type: hook:enum(noop|enabled|emit_event:NAME) | example: enabled": "ready",
+      "HOOK:PERMISSIONS:ON_REQUEST // desc: 动态权限请求hook | type: hook:enum(noop|enabled|emit_event:NAME) | example: emit_event:PERM_REQUESTED": "ready",
+      "HOOK:PRE_COMMIT:HOOK // desc: 提交前hook实现 | type: hook:enum(noop|enabled|emit_event:NAME) | example: noop": "ready",
+      "HOOK:POST_BUILD:HOOK // desc: 构建后hook实现 | type: hook:enum(noop|enabled|emit_event:NAME) | example: emit_event:BUILD_DONE": "ready",
+      "HOOK:AFTER_INSTALL:HOOK // desc: 安装后hook实现 | type: hook:enum(noop|enabled|emit_event:NAME) | example: enabled": "ready"
+    },
+    "gradle": {
+      "applicationId": "com.example.dtxrestaurant",
+      "resConfigs": [
+        "en",
+        "zh"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "files": {
+    "res/layout/activity_main.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".MainActivity\">\n    <Button\n        android:id=\"@+id/upload_photo_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/upload_photo\"/>\n    <EditText\n        android:id=\"@+id/edit_intro_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"@string/edit_intro\"/>\n    <TextView\n        android:id=\"@+id/price_text\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/price\"/>\n    <Button\n        android:id=\"@+id/comment_like_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/comment_like\"/>\n</LinearLayout>",
+    "res/layout/activity_upload_photo.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".UploadPhotoActivity\">\n    <ImageView\n        android:id=\"@+id/photo_image_view\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\"/>\n    <Button\n        android:id=\"@+id/upload_photo_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/upload_photo\"/>\n</LinearLayout>",
+    "res/layout/activity_edit_intro.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".EditIntroActivity\">\n    <EditText\n        android:id=\"@+id/edit_intro_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"@string/edit_intro\"/>\n    <Button\n        android:id=\"@+id/save_intro_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/save_intro\"/>\n</LinearLayout>",
+    "res/layout/activity_set_price.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".SetPriceActivity\">\n    <EditText\n        android:id=\"@+id/price_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"\n        android:hint=\"@string/price\"/>\n    <Button\n        android:id=\"@+id/save_price_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/save_price\"/>\n</LinearLayout>",
+    "res/layout/activity_comment_like.xml": "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    tools:context=\".CommentLikeActivity\">\n    <TextView\n        android:id=\"@+id/comment_text\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\"/>\n    <Button\n        android:id=\"@+id/like_button\"\n        android:layout_width=\"wrap_content\"\n        android:layout_height=\"wrap_content\"\n        android:text=\"@string/like\"/>\n</LinearLayout>",
+    "res/values/strings.xml": "<resources>\n    <string name=\"upload_photo\">上传照片</string>\n    <string name=\"edit_intro\">编辑文字介绍</string>\n    <string name=\"price\">设定价格</string>\n    <string name=\"comment_like\">评论点赞</string>\n    <string name=\"upload_photo_success\">照片上传成功</string>\n    <string name=\"edit_intro_success\">文字介绍编辑成功</string>\n    <string name=\"set_price_success\">价格设定成功</string>\n</resources>",
+    "res/values/colors.xml": "<resources>\n    <color name=\"primary_color\">#FF69B4</color>\n    <color name=\"secondary_color\">#34A85A</color>\n</resources>",
+    "AndroidManifest.xml": "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    package=\"com.example.dtxrestaurant\"\n    android:versionCode=\"1\"\n    android:versionName=\"1.0\">\n    <uses-permission android:name=\"android.permission.INTERNET\"/>\n    <uses-permission android:name=\"android.permission.CAMERA\"/>\n    <application\n        android:allowBackup=\"true\"\n        android:icon=\"@mipmap/ic_launcher\"\n        android:label=\"@string/app_name\"\n        android:supportsRtl=\"true\"\n        android:theme=\"@style/AppTheme\">\n        <activity android:name=\".MainActivity\">\n            <intent-filter>\n                <action android:name=\"android.intent.action.MAIN\"/>\n                <category android:name=\"android.intent.category.LAUNCHER\"/>\n            </intent-filter>\n        </activity>\n        <activity android:name=\".UploadPhotoActivity\"/>\n        <activity android:name=\".EditIntroActivity\"/>\n        <activity android:name=\".SetPriceActivity\"/>\n        <activity android:name=\".CommentLikeActivity\"/>\n    </application>\n</manifest>",
+    "build.gradle": "apply plugin: 'com.android.application'\n\nandroid {\n    compileSdkVersion 29\n    defaultConfig {\n        applicationId 'com.example.dtxrestaurant'\n        minSdkVersion 21\n        targetSdkVersion 29\n        versionCode 1\n        versionName '1.0'\n        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'\n    }\n    buildTypes {\n        release {\n            minifyEnabled false\n            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'\n        }\n    }\n    productFlavors {\n    }\n}\n\ndependencies {\n    implementation 'com.android.support:appcompat-v7:28.0.0'\n    implementation 'com.android.support.constraint:constraint-layout:1.1.3'\n    testImplementation 'junit:junit:4.12'\n    androidTestImplementation 'com.android.support.test:runner:1.0.2'\n    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'\n}"
+  },
+  "_trace": {}
+}
