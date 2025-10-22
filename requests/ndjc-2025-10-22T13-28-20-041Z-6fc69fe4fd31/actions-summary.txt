@@ -1,0 +1,5 @@
+created by api; mode=online(llama-3.1-8b-instant)
+prompt_file=
+prompt_sha256=
+prompt_loaded_from_env=null
+precheck_note=no_raw_text_used_object_mode
