@@ -1,0 +1,106 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.texasrestaurant.app",
+    "NDJC:APP_LABEL": "Texas Grill",
+    "NDJC:HOME_TITLE": "Welcome to Texas Grill",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Add Dish",
+    "NDJC:THEME_COLORS": "{\"primary\":\"#7C3AED\",\"secondary\":\"#10B981\"}",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "true",
+    "NDJC:DATA_SOURCE": "https://api.texasrestaurant.com/menu"
+  },
+  "blocks": {},
+  "lists": {
+    "LIST:ROUTES": [
+      "home",
+      "addDish",
+      "gallery",
+      "reviews"
+    ]
+  },
+  "listKinds": {
+    "LIST:ROUTES": "other"
+  },
+  "conditions": {},
+  "hooks": {},
+  "hooksStructured": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.texasrestaurant.app",
+    "resConfigs": [
+      "en",
+      "es",
+      "zh-rRCN"
+    ],
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.INTERNET",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ]
+  },
+  "meta": {
+    "NDJC:BUILD_META:RUNID": "run_20251023_001",
+    "template": "circle-basic",
+    "appName": "Texas Grill",
+    "packageId": "com.texasrestaurant.app",
+    "mode": "A"
+  },
+  "violations": [],
+  "coercions": [
+    {
+      "field": "NDJC:THEME_COLORS",
+      "from": "{\"primary\":\"#7C3AED\",\"secondary\":\"#10B981\"}",
+      "to": "json-object-string"
+    },
+    {
+      "field": "NDJC:ANIM_DURATION_MS",
+      "from": "300",
+      "to": "true"
+    }
+  ],
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.texasrestaurant.app",
+      "NDJC:APP_LABEL": "Texas Grill",
+      "NDJC:HOME_TITLE": "Welcome to Texas Grill",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Add Dish",
+      "NDJC:THEME_COLORS": {
+        "primary": "#7C3AED",
+        "secondary": "#10B981"
+      },
+      "NDJC:I18N_ENABLED": true,
+      "NDJC:ANIM_ENABLED": true,
+      "NDJC:ANIM_DURATION_MS": 300,
+      "NDJC:DATA_SOURCE": "https://api.texasrestaurant.com/menu"
+    },
+    "block": {},
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "addDish",
+        "gallery",
+        "reviews"
+      ]
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.texasrestaurant.app",
+      "resConfigs": [
+        "en",
+        "es",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  }
+}
