@@ -1,0 +1,52 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.socialapp",
+    "NDJC:APP_LABEL": "Social Circle",
+    "NDJC:HOME_TITLE": "Home Feed",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+    "NDJC:THEME_COLORS": "[object Object]",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "300",
+    "NDJC:DATA_SOURCE": "https://api.socialapp.com"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "@Composable fun HomeHeader() { Row { Text(text = \"Welcome\") } }",
+    "BLOCK:HOME_BODY": "@Composable fun HomeBody() { Column { Text(text = \"Latest posts\") Button(onClick = {}) { Text(\"Refresh\") } } }",
+    "BLOCK:HOME_ACTIONS": "@Composable fun HomeActions() { Row { Button(onClick = {}) { Text(\"New Post\") } Button(onClick = {}) { Text(\"Search\") } } }",
+    "BLOCK:SPLASH_CONTENT": "@Composable fun SplashContent() { Column { Image(painter = painterResource(id = R.drawable.splash), contentDescription = null) Text(text = \"Social Circle\") } }"
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home",
+      "profile",
+      "post",
+      "comments"
+    ]
+  },
+  "conditions": {},
+  "hooks": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.example.socialapp",
+    "resConfigs": [
+      "en",
+      "es",
+      "zh-rRCN"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_NETWORK_STATE"
+    ]
+  },
+  "meta": {
+    "NDJC:BUILD_META:RUNID": "run_20251023_001",
+    "template": "circle-basic",
+    "appName": "Social Circle",
+    "packageId": "com.example.socialapp",
+    "mode": "A"
+  },
+  "droppedDanger": 0
+}
