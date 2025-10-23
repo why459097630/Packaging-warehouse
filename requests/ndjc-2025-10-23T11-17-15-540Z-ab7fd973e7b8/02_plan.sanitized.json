@@ -1,0 +1,53 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.texasrestaurant.app",
+    "NDJC:APP_LABEL": "Texas Grill",
+    "NDJC:HOME_TITLE": "Welcome to Texas Grill",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Order Now",
+    "NDJC:THEME_COLORS": "[object Object]",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "300",
+    "NDJC:DATA_SOURCE": "https://api.texasrestaurant.com"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "@Composable\nfun HomeHeader() {\n    Text(text = \"Texas Grill\")\n}",
+    "BLOCK:HOME_BODY": "@Composable\nfun HomeBody() {\n    Column {\n        Text(text = \"Featured Dishes\")\n        Row {\n            Image(painter = painterResource(id = R.drawable.steak), contentDescription = \"Steak\")\n            Text(text = \"Texas Steak - $19.99\")\n        }\n    }\n}",
+    "BLOCK:HOME_ACTIONS": "@Composable\nfun HomeActions() {\n    Button(onClick = { }) {\n        Text(text = \"View Menu\")\n    }\n}",
+    "BLOCK:SPLASH_CONTENT": "@Composable\nfun SplashContent() {\n    Column {\n        Image(painter = painterResource(id = R.drawable.logo), contentDescription = \"Logo\")\n        Text(text = \"Welcome to Texas Grill\")\n    }\n}"
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home",
+      "menu",
+      "upload",
+      "reviews"
+    ]
+  },
+  "conditions": {},
+  "hooks": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.texasrestaurant.app",
+    "resConfigs": [
+      "en",
+      "es",
+      "zh-rRCN"
+    ],
+    "permissions": [
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.CAMERA"
+    ]
+  },
+  "meta": {
+    "NDJC:BUILD_META:RUNID": "run_20251023_001",
+    "template": "circle-basic",
+    "appName": "Texas Grill",
+    "packageId": "com.texasrestaurant.app",
+    "mode": "A"
+  },
+  "droppedDanger": 0
+}
