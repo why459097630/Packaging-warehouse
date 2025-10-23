@@ -1,0 +1,69 @@
+{
+  "metadata": {
+    "NDJC:BUILD_META:RUNID": "run_20251023_001",
+    "template": "circle-basic",
+    "appName": "Texas Grill",
+    "packageId": "com.texasrestaurant.app",
+    "mode": "A",
+    "trace": {
+      "prompt_file": null,
+      "prompt_sha256": null,
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(openai/gpt-oss-120b)",
+      "precheck_note": "no_raw_text_used_object_mode"
+    }
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.texasrestaurant.app",
+      "NDJC:APP_LABEL": "Texas Grill",
+      "NDJC:HOME_TITLE": "Welcome to Texas Grill",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Order Now",
+      "NDJC:THEME_COLORS": {
+        "primary": "#FF5722",
+        "secondary": "#FFC107"
+      },
+      "NDJC:I18N_ENABLED": true,
+      "NDJC:ANIM_ENABLED": true,
+      "NDJC:ANIM_DURATION_MS": 300,
+      "NDJC:DATA_SOURCE": "https://api.texasrestaurant.com"
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "@Composable\nfun HomeHeader() {\n    Text(text = \"Texas Grill\")\n}",
+      "BLOCK:HOME_BODY": "@Composable\nfun HomeBody() {\n    Column {\n        Text(text = \"Featured Dishes\")\n        Row {\n            Image(painter = painterResource(id = R.drawable.steak), contentDescription = \"Steak\")\n            Text(text = \"Texas Steak - $19.99\")\n        }\n    }\n}",
+      "BLOCK:HOME_ACTIONS": "@Composable\nfun HomeActions() {\n    Button(onClick = { }) {\n        Text(text = \"View Menu\")\n    }\n}",
+      "BLOCK:SPLASH_CONTENT": "@Composable\nfun SplashContent() {\n    Column {\n        Image(painter = painterResource(id = R.drawable.logo), contentDescription = \"Logo\")\n        Text(text = \"Welcome to Texas Grill\")\n    }\n}"
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "menu",
+        "upload",
+        "reviews"
+      ]
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.texasrestaurant.app",
+      "resConfigs": [
+        "en",
+        "es",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "model": "groq",
+    "runId": "ndjc-2025-10-23T11-17-15-547Z",
+    "templateKey": "circle-basic",
+    "step": "orchestrate-online",
+    "raw": "{\"metadata\":{\"NDJC:BUILD_META:RUNID\":\"run_20251023_001\"},\"anchorsGrouped\":{\"text\":{\"NDJC:PACKAGE_NAME\":\"com.texasrestaurant.app\",\"NDJC:APP_LABEL\":\"Texas Grill\",\"NDJC:HOME_TITLE\":\"Welcome to Texas Grill\",\"NDJC:PRIMARY_BUTTON_TEXT\":\"Order Now\",\"NDJC:THEME_COLORS\":{\"primary\":\"#FF5722\",\"secondary\":\"#FFC107\"},\"NDJC:I18N_ENABLED\":true,\"NDJC:ANIM_ENABLED\":true,\"NDJC:ANIM_DURATION_MS\":300,\"NDJC:DATA_SOURCE\":\"https://api.texasrestaurant.com\"},\"block\":{\"BLOCK:HOME_HEADER\":\"@Composable\\nfun HomeHeader() {\\n    Text(text = \\\"Texas Grill\\\")\\n}\",\"BLOCK:HOME_BODY\":\"@Composable\\nfun HomeBody() {\\n    Column {\\n        Text(text = \\\"Featured Dishes\\\")\\n        Row {\\n            Image(painter = painterResource(id = R.drawable.steak), contentDescription = \\\"Steak\\\")\\n            Text(text = \\\"Texas Steak - $19.99\\\")\\n        }\\n    }\\n}\",\"BLOCK:HOME_ACTIONS\":\"@Composable\\nfun HomeActions() {\\n    Button(onClick = { }) {\\n        Text(text = \\\"View Menu\\\")\\n    }\\n}\",\"BLOCK:SPLASH_CONTENT\":\"@Composable\\nfun SplashContent() {\\n    Column {\\n        Image(painter = painterResource(id = R.drawable.logo), contentDescription = \\\"Logo\\\")\\n        Text(text = \\\"Welcome to Texas Grill\\\")\\n    }\\n}\"},\"list\":{\"LIST:ROUTES\":[\"home\",\"menu\",\"upload\",\"reviews\"]},\"if\":{},\"hook\":{},\"gradle\":{\"applicationId\":\"com.texasrestaurant.app\",\"resConfigs\":[\"en\",\"es\",\"zh-rCN\"],\"permissions\":[\"android.permission.READ_EXTERNAL_STORAGE\",\"android.permission.WRITE_EXTERNAL_STORAGE\",\"android.permission.CAMERA\"]}},\"files\":[]}"
+  }
+}
