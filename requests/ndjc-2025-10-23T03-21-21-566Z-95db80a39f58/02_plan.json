@@ -1,0 +1,48 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.texasrestaurant.app",
+    "NDJC:APP_LABEL": "Texas Grill",
+    "NDJC:HOME_TITLE": "Texas Grill",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start"
+  },
+  "blocks": {},
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "listKinds": {
+    "LIST:ROUTES": "other"
+  },
+  "conditions": {},
+  "hooks": {},
+  "hooksStructured": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.texasrestaurant.app",
+    "resConfigs": [],
+    "permissions": []
+  },
+  "meta": {
+    "name": "TexasRestaurantApp",
+    "description": "An Android app for Texas restaurant dish introduction with photo upload, text editing, price setting, comments and likes.",
+    "template": "circle-basic",
+    "appName": "Texas Grill",
+    "packageId": "com.texasrestaurant.app",
+    "mode": "B"
+  },
+  "violations": [],
+  "coercions": [],
+  "anchorsGrouped": {
+    "text": {},
+    "block": {},
+    "list": {},
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.texasrestaurant.app"
+    }
+  }
+}
