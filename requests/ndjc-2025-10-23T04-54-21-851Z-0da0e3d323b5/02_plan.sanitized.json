@@ -1,0 +1,32 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.texasrestaurant.app",
+    "NDJC:APP_LABEL": "Texas Grill",
+    "NDJC:HOME_TITLE": "Texas Grill",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start"
+  },
+  "blocks": {},
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "conditions": {},
+  "hooks": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.texasrestaurant.app",
+    "resConfigs": [],
+    "permissions": []
+  },
+  "meta": {
+    "NDJC:BUILD_META:RUNID": "run_20251023_001",
+    "template": "circle-basic",
+    "appName": "Texas Grill",
+    "packageId": "com.texasrestaurant.app",
+    "mode": "B"
+  },
+  "droppedDanger": 0
+}
