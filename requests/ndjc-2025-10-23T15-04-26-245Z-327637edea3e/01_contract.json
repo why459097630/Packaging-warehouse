@@ -1,0 +1,69 @@
+{
+  "metadata": {
+    "NDJC:BUILD_META:RUNID": "run_20251023_001",
+    "template": "circle-basic",
+    "appName": "Social Circle",
+    "packageId": "com.example.socialapp",
+    "mode": "A",
+    "trace": {
+      "prompt_file": null,
+      "prompt_sha256": null,
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(openai/gpt-oss-120b)",
+      "precheck_note": "no_raw_text_used_object_mode"
+    }
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.socialapp",
+      "NDJC:APP_LABEL": "Social Circle",
+      "NDJC:HOME_TITLE": "Welcome Home",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+      "NDJC:THEME_COLORS": {
+        "primary": "#6200EE",
+        "secondary": "#03DAC5"
+      },
+      "NDJC:I18N_ENABLED": true,
+      "NDJC:ANIM_ENABLED": true,
+      "NDJC:ANIM_DURATION_MS": 300,
+      "NDJC:DATA_SOURCE": "https://api.socialapp.com"
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "@Composable\nfun HomeHeader() {\n    Text(text = \"Social Circle\")\n}",
+      "BLOCK:HOME_BODY": "@Composable\nfun HomeBody() {\n    Column {\n        Text(text = \"Feed\")\n        Button(onClick = {}) {\n            Text(text = \"New Post\")\n        }\n    }\n}",
+      "BLOCK:HOME_ACTIONS": "@Composable\nfun HomeActions() {\n    Row {\n        Button(onClick = {}) { Text(text = \"Like\") }\n        Button(onClick = {}) { Text(text = \"Comment\") }\n    }\n}",
+      "BLOCK:SPLASH_CONTENT": "@Composable\nfun SplashContent() {\n    Column {\n        Image(painter = painterResource(id = R.drawable.splash), contentDescription = null)\n        Text(text = \"Social Circle\")\n    }\n}"
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "profile",
+        "post",
+        "settings"
+      ]
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.example.socialapp",
+      "resConfigs": [
+        "en",
+        "es",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "model": "groq",
+    "runId": "ndjc-2025-10-23T15-04-26-251Z",
+    "templateKey": "circle-basic",
+    "step": "orchestrate-online",
+    "raw": "{\"metadata\":{\"NDJC:BUILD_META:RUNID\":\"run_20251023_001\"},\"anchorsGrouped\":{\"text\":{\"NDJC:PACKAGE_NAME\":\"com.example.socialapp\",\"NDJC:APP_LABEL\":\"Social Circle\",\"NDJC:HOME_TITLE\":\"Welcome Home\",\"NDJC:PRIMARY_BUTTON_TEXT\":\"Post\",\"NDJC:THEME_COLORS\":{\"primary\":\"#6200EE\",\"secondary\":\"#03DAC5\"},\"NDJC:I18N_ENABLED\":true,\"NDJC:ANIM_ENABLED\":true,\"NDJC:ANIM_DURATION_MS\":300,\"NDJC:DATA_SOURCE\":\"https://api.socialapp.com\"},\"block\":{\"BLOCK:HOME_HEADER\":\"@Composable\\nfun HomeHeader() {\\n    Text(text = \\\"Social Circle\\\")\\n}\",\"BLOCK:HOME_BODY\":\"@Composable\\nfun HomeBody() {\\n    Column {\\n        Text(text = \\\"Feed\\\")\\n        Button(onClick = {}) {\\n            Text(text = \\\"New Post\\\")\\n        }\\n    }\\n}\",\"BLOCK:HOME_ACTIONS\":\"@Composable\\nfun HomeActions() {\\n    Row {\\n        Button(onClick = {}) { Text(text = \\\"Like\\\") }\\n        Button(onClick = {}) { Text(text = \\\"Comment\\\") }\\n    }\\n}\",\"BLOCK:SPLASH_CONTENT\":\"@Composable\\nfun SplashContent() {\\n    Column {\\n        Image(painter = painterResource(id = R.drawable.splash), contentDescription = null)\\n        Text(text = \\\"Social Circle\\\")\\n    }\\n}\"},\"list\":{\"LIST:ROUTES\":[\"home\",\"profile\",\"post\",\"settings\"]},\"if\":{},\"hook\":{},\"gradle\":{\"applicationId\":\"com.example.socialapp\",\"resConfigs\":[\"en\",\"es\",\"zh-rCN\"],\"permissions\":[\"android.permission.INTERNET\",\"android.permission.READ_EXTERNAL_STORAGE\",\"android.permission.WRITE_EXTERNAL_STORAGE\"]}},\"files\":[]}"
+  }
+}
