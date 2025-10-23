@@ -1,0 +1,134 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.socialapp",
+    "NDJC:APP_LABEL": "Social Circle",
+    "NDJC:HOME_TITLE": "Welcome Home",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+    "NDJC:THEME_COLORS": "{\"primary\":\"#6200EE\",\"secondary\":\"#03DAC5\"}",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "true",
+    "NDJC:DATA_SOURCE": "https://api.socialapp.com"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "@Composable\nfun HomeHeader() {\n    Text(text = \"Social Circle\")\n}",
+    "BLOCK:HOME_BODY": "@Composable\nfun HomeBody() {\n    Column {\n        Text(text = \"Feed\")\n        Button(onClick = {}) {\n            Text(text = \"New Post\")\n        }\n    }\n}",
+    "BLOCK:HOME_ACTIONS": "@Composable\nfun HomeActions() {\n    Row {\n        Button(onClick = {}) { Text(text = \"Like\") }\n        Button(onClick = {}) { Text(text = \"Comment\") }\n    }\n}",
+    "BLOCK:SPLASH_CONTENT": "@Composable\nfun SplashContent() {\n    Column {\n        Image(painter = painterResource(id = R.drawable.splash), contentDescription = null)\n        Text(text = \"Social Circle\")\n    }\n}"
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home",
+      "profile",
+      "post",
+      "settings"
+    ]
+  },
+  "listKinds": {
+    "LIST:ROUTES": "other"
+  },
+  "conditions": {},
+  "hooks": {},
+  "hooksStructured": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.example.socialapp",
+    "resConfigs": [
+      "en",
+      "es",
+      "zh-rRCN"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ]
+  },
+  "meta": {
+    "NDJC:BUILD_META:RUNID": "run_20251023_001",
+    "template": "circle-basic",
+    "appName": "Social Circle",
+    "packageId": "com.example.socialapp",
+    "mode": "A"
+  },
+  "violations": [],
+  "coercions": [
+    {
+      "field": "NDJC:THEME_COLORS",
+      "from": "{\"primary\":\"#6200EE\",\"secondary\":\"#03DAC5\"}",
+      "to": "json-object-string"
+    },
+    {
+      "field": "NDJC:ANIM_DURATION_MS",
+      "from": "300",
+      "to": "true"
+    },
+    {
+      "field": "BLOCK:HOME_HEADER",
+      "from": "string",
+      "to": "snippet"
+    },
+    {
+      "field": "BLOCK:HOME_BODY",
+      "from": "string",
+      "to": "snippet"
+    },
+    {
+      "field": "BLOCK:HOME_ACTIONS",
+      "from": "string",
+      "to": "snippet"
+    },
+    {
+      "field": "BLOCK:SPLASH_CONTENT",
+      "from": "string",
+      "to": "snippet"
+    }
+  ],
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.socialapp",
+      "NDJC:APP_LABEL": "Social Circle",
+      "NDJC:HOME_TITLE": "Welcome Home",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+      "NDJC:THEME_COLORS": {
+        "primary": "#6200EE",
+        "secondary": "#03DAC5"
+      },
+      "NDJC:I18N_ENABLED": true,
+      "NDJC:ANIM_ENABLED": true,
+      "NDJC:ANIM_DURATION_MS": 300,
+      "NDJC:DATA_SOURCE": "https://api.socialapp.com"
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "@Composable\nfun HomeHeader() {\n    Text(text = \"Social Circle\")\n}",
+      "BLOCK:HOME_BODY": "@Composable\nfun HomeBody() {\n    Column {\n        Text(text = \"Feed\")\n        Button(onClick = {}) {\n            Text(text = \"New Post\")\n        }\n    }\n}",
+      "BLOCK:HOME_ACTIONS": "@Composable\nfun HomeActions() {\n    Row {\n        Button(onClick = {}) { Text(text = \"Like\") }\n        Button(onClick = {}) { Text(text = \"Comment\") }\n    }\n}",
+      "BLOCK:SPLASH_CONTENT": "@Composable\nfun SplashContent() {\n    Column {\n        Image(painter = painterResource(id = R.drawable.splash), contentDescription = null)\n        Text(text = \"Social Circle\")\n    }\n}"
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "profile",
+        "post",
+        "settings"
+      ]
+    },
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": "com.example.socialapp",
+      "resConfigs": [
+        "en",
+        "es",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  }
+}
