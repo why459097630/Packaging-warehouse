@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-23T14-04-05-983Z-e75f90965157",
+  "status": "pre-ci",
+  "template": "circle-basic",
+  "appTitle": "Social Circle",
+  "packageName": "com.example.socialapp",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
