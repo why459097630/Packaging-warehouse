@@ -1,0 +1,142 @@
+{
+  "metadata": {
+    "name": "TexasRestaurantApp",
+    "description": "An Android app for Texas restaurant dish introduction with photo upload, text editing, price setting, comments and likes.",
+    "template": "circle-basic",
+    "appName": "Texas Grill",
+    "packageId": "com.texasrestaurant.app",
+    "mode": "B",
+    "trace": {
+      "prompt_file": null,
+      "prompt_sha256": null,
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(openai/gpt-oss-120b)",
+      "precheck_note": "no_raw_text_used_object_mode"
+    }
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.texasrestaurant.app",
+      "NDJC:APP_LABEL": "Texas Grill",
+      "NDJC:HOME_TITLE": "Welcome to Texas Grill",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Add Dish",
+      "NDJC:THEME_COLORS": "{\"primary\":\"#7C3AED\",\"secondary\":\"#10B981\"}",
+      "NDJC:THEME_NAME": "Light",
+      "NDJC:DARK_MODE": "true",
+      "NDJC:FONT_FAMILY_PRIMARY": "OpenSans",
+      "NDJC:FONT_FAMILY_SECONDARY": "Montserrat",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "300",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "https://api.example.com",
+      "NDJC:SEED_ENABLED": "true",
+      "NDJC:FEED_SORT": "date",
+      "NDJC:PAGING_SIZE": "10",
+      "NDJC:OFFLINE_POLICY": "cache",
+      "NDJC:PRIVACY_POLICY": "https://example.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META:RUNID": "auto",
+      "NDJC:FEATURE_TOGGLE:MIN": "1",
+      "NDJC:DEBUG_LOG_ENABLED": "true",
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "exp-001",
+      "NDJC:TYPOCASE_OVERRIDES": "none",
+      "NDJC:STRINGS_EXTRA": "{\"extra\":\"value\"}",
+      "NDJC:ROUTE_HOME": "home",
+      "NDJC:ROUTE_DETAIL": "detail"
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "content ready for rendering...",
+      "BLOCK:HOME_BODY": "content ready for rendering...",
+      "BLOCK:HOME_ACTIONS": "content ready for rendering...",
+      "BLOCK:SPLASH_CONTENT": "content ready for rendering...",
+      "BLOCK:EMPTY_STATE": "content ready for rendering...",
+      "BLOCK:ERROR_STATE": "content ready for rendering...",
+      "BLOCK:DEBUG_PANEL": "content ready for rendering...",
+      "BLOCK:HEADER_AD_SLOT": "content ready for rendering...",
+      "BLOCK:USER_PROFILE_CARD": "content ready for rendering...",
+      "BLOCK:SPONSORED_CARD": "content ready for rendering...",
+      "BLOCK:PROFILE_SECTION": "content ready for rendering...",
+      "BLOCK:SETTINGS_SECTION": "content ready for rendering...",
+      "BLOCK:SETTINGS_SECTION:EXTRA": "content ready for rendering..."
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home"
+      ],
+      "LIST:DEPENDENCY_SNIPPETS": [
+        "implementation 'androidx.core:core-ktx:1.10.0'"
+      ],
+      "LIST:PROGUARD_EXTRA": [
+        "-keep class com.ndjc.** { *; }"
+      ],
+      "LIST:PACKAGING_RULES": [
+        "resources.exclude META-INF/DEPENDENCIES"
+      ],
+      "LIST:POST_FIELDS": [
+        "title",
+        "description"
+      ],
+      "LIST:PLURAL_STRINGS": [
+        "items_count"
+      ],
+      "LIST:COMPONENT_STYLES": [
+        "material3"
+      ],
+      "LIST:DEEPLINK_PATTERNS": [
+        "https://example.com/home"
+      ],
+      "LIST:NETWORK_CLEAR_TEXT": [
+        "api.example.com"
+      ],
+      "LIST:RES_CONFIGS_OVERRIDE": [
+        "en",
+        "zh-rCN"
+      ]
+    },
+    "if": {
+      "IF:NAV_TRANSITIONS": false,
+      "IF:BUILD_SUMMARY": false,
+      "IF:NATIVE_SPLITS": false,
+      "IF:AFTER_BUILD": false,
+      "IF:PRE_COMMIT": false,
+      "IF:AFTER_INSTALL": false,
+      "IF:BEFORE_BUILD": false,
+      "IF:POST_INJECT": false,
+      "IF:BEFORE_BUNDLE": false,
+      "IF:AFTER_BUNDLE": false
+    },
+    "hook": {
+      "HOOK:INTENT_SHARE": "ready",
+      "HOOK:FILE_PROVIDER": "ready",
+      "HOOK:PERMISSIONS:ON_REQUEST": "ready",
+      "HOOK:PRE_COMMIT:HOOK": "ready",
+      "HOOK:POST_BUILD:HOOK": "ready",
+      "HOOK:AFTER_INSTALL:HOOK": "ready"
+    },
+    "gradle": {
+      "applicationId": "com.texasrestaurant.app",
+      "resConfigs": [
+        "en",
+        "es-rES"
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": {
+    "AndroidManifest.xml": "<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?>\\n<manifest xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\" package=\\\"com.texasrestaurant.app\\\">\\n    <uses-permission android:name=\\\"android.permission.CAMERA\\\"/>\\n    <uses-permission android:name=\\\"android.permission.READ_EXTERNAL_STORAGE\\\"/>\\n    <application\\n        android:allowBackup=\\\"true\\\"\\n        android:icon=\\\"@mipmap/ic_launcher\\\"\\n        android:label=\\\"@string/app_name\\\"\\n        android:roundIcon=\\\"@mipmap/ic_launcher_round\\\"\\n        android:supportsRtl=\\\"true\\\"\\n        android:theme=\\\"@style/Theme.TexasRestaurant\\\">\\n        <activity android:name=\\\".MainActivity\\\">\\n            <intent-filter>\\n                <action android:name=\\\"android.intent.action.MAIN\\\"/>\\n                <category android:name=\\\"android.intent.category.LAUNCHER\\\"/>\\n            </intent-filter>\\n        </activity>\\n    </application>\\n</manifest>",
+    "build.gradle": "plugins {\\n    id \\\"com.android.application\\\"\\n    id \\\"org.jetbrains.kotlin.android\\\"\\n}\\n\\nandroid {\\n    compileSdk = 34\\n\\n    defaultConfig {\\n        applicationId \\\"com.texasrestaurant.app\\\"\\n        minSdk = 21\\n        targetSdk = 34\\n        versionCode = 1\\n        versionName = \\\"1.0\\\"\\n        resConfigs \\\"en\\\", \\\"es-rES\\\"\\n    }\\n\\n    buildTypes {\\n        release {\\n            minifyEnabled = false\\n            proguardFiles getDefaultProguardFile(\\\"proguard-android-optimize.txt\\\"), \\\"proguard-rules.pro\\\"\\n        }\\n    }\\n}\\n\\ndependencies {\\n    implementation \\\"androidx.core:core-ktx:1.12.0\\\"\\n    implementation \\\"androidx.appcompat:appcompat:1.6.1\\\"\\n    implementation \\\"com.google.android.material:material:1.10.0\\\"\\n    implementation \\\"androidx.constraintlayout:constraintlayout:2.1.4\\\"\\n    implementation \\\"androidx.recyclerview:recyclerview:1.3.2\\\"\\n    implementation \\\"androidx.lifecycle:lifecycle-runtime-ktx:2.6.2\\\"\\n    implementation \\\"androidx.activity:activity-ktx:1.8.0\\\"\\n    implementation \\\"org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0\\\"\\n}",
+    "src/main/java/com/texasrestaurant/app/MainActivity.kt": "package com.texasrestaurant.app\\n\\nimport android.os.Bundle\\nimport androidx.activity.ComponentActivity\\nimport androidx.activity.compose.setContent\\nimport androidx.compose.foundation.layout.fillMaxSize\\nimport androidx.compose.material3.MaterialTheme\\nimport androidx.compose.material3.Surface\\nimport androidx.compose.material3.Text\\nimport androidx.compose.runtime.Composable\\nimport androidx.compose.ui.Modifier\\nimport com.texasrestaurant.app.ui.theme.TexasRestaurantTheme\\n\\nclass MainActivity : ComponentActivity() {\\n    override fun onCreate(savedInstanceState: Bundle?) {\\n        super.onCreate(savedInstanceState)\\n        setContent {\\n            TexasRestaurantTheme {\\n                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {\\n                    Greeting(\\\"Welcome to Texas Grill!\\\")\\n                }\\n            }\\n        }\\n    }\\n}\\n\\n@Composable\\nfun Greeting(name: String) {\\n    Text(text = \\\"Hello $${{name}}!\\\")\\n}\\n\\n// TODO: Implement photo upload, text editing, price setting, comments, and likes UI.\\n",
+    "res/layout/activity_main.xml": "<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?>\\n<androidx.constraintlayout.widget.ConstraintLayout xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"\\n    xmlns:app=\\\"http://schemas.android.com/apk/res-auto\\\"\\n    xmlns:tools=\\\"http://schemas.android.com/tools\\\"\\n    android:layout_width=\\\"match_parent\\\"\\n    android:layout_height=\\\"match_parent\\\"\\n    tools:context=\\\".MainActivity\\\">\\n\\n    <!-- Placeholder for dish list -->\\n    <androidx.recyclerview.widget.RecyclerView\\n        android:id=\\\"@+id/dishRecyclerView\\\"\\n        android:layout_width=\\\"0dp\\\"\\n        android:layout_height=\\\"0dp\\\"\\n        app:layout_constraintTop_toTopOf=\\\"parent\\\"\\n        app:layout_constraintBottom_toBottomOf=\\\"parent\\\"\\n        app:layout_constraintStart_toStartOf=\\\"parent\\\"\\n        app:layout_constraintEnd_toEndOf=\\\"parent\\\"/>\\n\\n</androidx.constraintlayout.widget.ConstraintLayout>",
+    "res/values/strings.xml": "<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?>\\n<resources>\\n    <string name=\\\"app_name\\\">Texas Grill</string>\\n</resources>",
+    "res/values/themes.xml": "<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?>\\n<resources xmlns:tools=\\\"http://schemas.android.com/tools\\\">\\n    <style name=\\\"Theme.TexasRestaurant\\\" parent=\\\"Theme.Material3.DayNight.NoActionBar\\\">\\n        <!-- Primary brand color. -->\\n        <item name=\\\"colorPrimary\\\">@color/teal_200</item>\\n        <item name=\\\"colorPrimaryVariant\\\">@color/teal_700</item>\\n        <item name=\\\"colorOnPrimary\\\">@android:color/white</item>\\n    </style>\\n</resources>",
+    "res/values/colors.xml": "<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?>\\n<resources>\\n    <color name=\\\"teal_200\\\">#FF03DAC5</color>\\n    <color name=\\\"teal_700\\\">#FF018786</color>\\n    <color name=\\\"purple_200\\\">#FFBB86FC</color>\\n    <color name=\\\"purple_500\\\">#FF6200EE</color>\\n    <color name=\\\"purple_700\\\">#FF3700B3</color>\\n    <color name=\\\"black\\\">#FF000000</color>\\n    <color name=\\\"white\\\">#FFFFFFFF</color>\\n</resources>"
+  },
+  "_trace": {}
+}
