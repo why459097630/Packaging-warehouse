@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Reserved for future theme overrides.
+
+      说明：
+      - THEME_COLORS 与 TYPOCASE_OVERRIDES 的权威落点已迁移到
+        res/values/themes.xml，并改为文本锚点：
+          [object Object]
+          NDJC:TYPOCASE_OVERRIDES
+      - 这里不再保留对应的 BLOCK 锚点，避免重复落点导致命中统计混乱。
+    -->
+</resources>

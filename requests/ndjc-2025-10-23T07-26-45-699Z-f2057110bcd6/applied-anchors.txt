@@ -1,0 +1,16 @@
+TEXT	NDJC:ANIM_DURATION_MS	app/src/main/res/values/strings.xml:30
+TEXT	NDJC:PACKAGE_NAME	app/build.gradle:46
+TEXT	NDJC:PACKAGE_NAME	app/src/main/AndroidManifest.xml:5
+TEXT	NDJC:PACKAGE_NAME	app/src/main/java/com/ndjc/app/App.kt:1
+TEXT	NDJC:PACKAGE_NAME	app/src/main/java/com/ndjc/app/ui/screens/ProfileScreen.kt:1
+TEXT	NDJC:PACKAGE_NAME	app/src/main/java/com/ndjc/app/ui/screens/SettingsScreen.kt:1
+TEXT	NDJC:APP_LABEL	app/src/main/res/values/strings.xml:5
+TEXT	NDJC:THEME_COLORS	app/src/main/res/values/themes.xml:5
+TEXT	NDJC:THEME_COLORS	app/src/main/res/values/themes_overrides.xml:9
+TEXT	NDJC:DATA_SOURCE	app/src/main/res/values/strings.xml:45
+TEXT	NDJC:PRIMARY_BUTTON_TEXT	app/src/main/res/values/strings.xml:9
+TEXT	NDJC:PRIMARY_BUTTON_TEXT	app/src/main/res/values/strings.xml:10
+TEXT	NDJC:I18N_ENABLED	app/src/main/res/values/strings.xml:37
+TEXT	NDJC:ANIM_ENABLED	app/src/main/res/values/strings.xml:22
+TEXT	NDJC:HOME_TITLE	app/src/main/res/values/strings.xml:6
+LIST	LIST:ROUTES	app/src/main/java/com/ndjc/app/navigation/NavGraph.kt
