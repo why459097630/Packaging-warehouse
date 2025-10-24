@@ -1,10 +1,13 @@
 {
-  "runId": "ndjc-2025-10-24T07-15-35-998Z-f24a076b6731",
-  "status": "pre-ci",
-  "template": "circle-basic",
-  "appTitle": "Social Circle",
-  "packageName": "com.example.socialapp",
-  "note": "Apply result will be finalized in CI pipeline.",
-  "changes": [],
-  "warnings": []
+  "replaced_total": 91,
+  "replaced_text": 43,
+  "replaced_block": 20,
+  "replaced_list": 12,
+  "replaced_if": 10,
+  "hooks_applied": 6,
+  "missing_text": 5,
+  "missing_block": 11,
+  "missing_list": 4,
+  "missing_if": 5,
+  "generated_at": "2025-10-24T07:16:39Z"
 }

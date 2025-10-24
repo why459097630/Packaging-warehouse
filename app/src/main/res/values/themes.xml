@@ -1,0 +1,18 @@
+<resources>
+  <style name="NDJCTheme" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- 夜间策略：由 false 驱动（Auto/On/Off，可由兼容层调整 AppCompatDelegate） -->
+
+    <!-- [object Object] -->
+    <!--
+      预期：由生成器把 {"primary":"#RRGGBB","secondary":"#RRGGBB"} 解析为 <item> 注入。
+      例如（仅示例，已注释，不会参与构建）：
+      <item name="colorPrimary">#7C3AED</item>
+      <item name="colorSecondary">#10B981</item>
+    -->
+
+    <!-- {} -->
+    <!--
+      可选：与排版/字号相关的额外覆盖（若未提供，此处保持为空）
+    -->
+  </style>
+</resources>
