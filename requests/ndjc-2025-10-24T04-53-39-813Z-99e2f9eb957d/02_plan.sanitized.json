@@ -1,0 +1,188 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PACKAGE_NAME": "com.example.socialapp",
+    "NDJC:APP_LABEL": "Social Circle",
+    "NDJC:HOME_TITLE": "Welcome Home",
+    "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+    "NDJC:THEME_NAME": "Default",
+    "NDJC:DARK_MODE": "true",
+    "NDJC:FONT_FAMILY_PRIMARY": "sans-serif",
+    "NDJC:FONT_FAMILY_SECONDARY": "serif",
+    "NDJC:I18N_ENABLED": "true",
+    "NDJC:ANIM_ENABLED": "true",
+    "NDJC:ANIM_DURATION_MS": "300",
+    "NDJC:LAYOUT_DENSITY": "mdpi",
+    "NDJC:DATA_SOURCE": "https://api.example.com/v1",
+    "NDJC:SEED_ENABLED": "false",
+    "NDJC:FEED_SORT": "newest",
+    "NDJC:PAGING_SIZE": "20",
+    "NDJC:OFFLINE_POLICY": "cache",
+    "NDJC:PRIVACY_POLICY": "https://example.com/privacy",
+    "NDJC:DRAFT_ENABLED": "true",
+    "NDJC:USE_APP_BUNDLE": "true",
+    "NDJC:BUILD_META:RUNID": "run_20231001_001",
+    "NDJC:FEATURE_TOGGLE:MIN": "0",
+    "NDJC:DEBUG_LOG_ENABLED": "false",
+    "NDJC:LOG_LEVEL": "INFO",
+    "NDJC:CRASHLYTICS_ENABLED": "true",
+    "NDJC:EXPERIMENT_BUCKET": "A",
+    "NDJC:THEME_COLORS": "[object Object]",
+    "NDJC:TYPOCASE_OVERRIDES": "[object Object]",
+    "NDJC:STRINGS_EXTRA": "[object Object]",
+    "NDJC:ROUTE_HOME": "home",
+    "NDJC:ROUTE_DETAIL": "detail",
+    "NDJC:ENABLE_POSTING": "true",
+    "NDJC:ENABLE_COMMENTS": "true",
+    "NDJC:ENABLE_LIKES": "true",
+    "NDJC:PROFILE_EDIT_ENABLED": "true",
+    "NDJC:NOTIFICATIONS_ENABLED": "true"
+  },
+  "blocks": {
+    "BLOCK:HOME_HEADER": "Welcome to Social Circle",
+    "BLOCK:HOME_BODY": "Connect with friends and share moments.",
+    "BLOCK:HOME_ACTIONS": "Create Post, View Feed",
+    "BLOCK:SPLASH_CONTENT": "Loading...",
+    "BLOCK:EMPTY_STATE": "No content available.",
+    "BLOCK:ERROR_STATE": "An error occurred.",
+    "BLOCK:DEBUG_PANEL": "Debug Info",
+    "BLOCK:HEADER_AD_SLOT": "Ad Banner",
+    "BLOCK:USER_PROFILE_CARD": "User Profile",
+    "BLOCK:SPONSORED_CARD": "Sponsored Content",
+    "BLOCK:PROFILE_SECTION": "Profile Details",
+    "BLOCK:SETTINGS_SECTION": "Settings",
+    "BLOCK:SETTINGS_SECTION:EXTRA": "Extra Settings",
+    "BLOCK:POST_COMPOSER": "Compose your post",
+    "BLOCK:POST_CARD": "Post Card",
+    "BLOCK:FEED_LIST": "Feed List",
+    "BLOCK:POST_DETAIL": "Post Detail",
+    "BLOCK:COMMENTS_SCREEN": "Comments",
+    "BLOCK:COMMENT_ITEM": "Comment Item",
+    "BLOCK:LIKE_BUTTON": "Like",
+    "BLOCK:NOTIFICATIONS_SCREEN": "Notifications",
+    "BLOCK:EDIT_PROFILE_SCREEN": "Edit Profile",
+    "BLOCK:SEARCH_SCREEN": "Search",
+    "BLOCK:MEDIA_PICKER": "Pick Media"
+  },
+  "lists": {
+    "LIST:ROUTES": [
+      "home",
+      "detail",
+      "profile",
+      "settings",
+      "search"
+    ],
+    "LIST:PROGUARD_EXTRA": [
+      "-keep class com.example.socialapp.** { *; }"
+    ],
+    "LIST:PACKAGING_RULES": [
+      "exclude 'META-INF/*.kotlin_module'"
+    ],
+    "LIST:POST_FIELDS": [
+      "title",
+      "content",
+      "imageUrl"
+    ],
+    "LIST:PLURAL_STRINGS": [
+      "comment_one",
+      "comment_other"
+    ],
+    "LIST:COMPONENT_STYLES": [
+      "styleHeader",
+      "styleBody"
+    ],
+    "LIST:DEEPLINK_PATTERNS": [
+      "app://home",
+      "app://detail/{id}"
+    ],
+    "LIST:NETWORK_CLEAR_TEXT": [
+      "http://api.example.com"
+    ],
+    "LIST:RES_CONFIGS_OVERRIDE": [
+      "en",
+      "es-rUS"
+    ],
+    "LIST:COMMENT_FIELDS": [
+      "author",
+      "text",
+      "timestamp"
+    ],
+    "LIST:FEED_QUERY_PARAMS": [
+      "page",
+      "size"
+    ],
+    "LIST:PROFILE_FIELDS": [
+      "username",
+      "bio",
+      "avatarUrl"
+    ],
+    "LIST:NOTIFICATION_TYPES": [
+      "message",
+      "friend_request",
+      "like"
+    ],
+    "LIST:UPLOAD_MIME_TYPES": [
+      "image/jpeg",
+      "image/png"
+    ],
+    "LIST:DEPENDENCY_SNIPPETS": [
+      "implementation 'com.squareup.retrofit2:retrofit:2.9.0'"
+    ]
+  },
+  "conditions": {
+    "IF:NAV_TRANSITIONS": false,
+    "IF:BUILD_SUMMARY": false,
+    "IF:NATIVE_SPLITS": false,
+    "IF:AFTER_BUILD": false,
+    "IF:PRE_COMMIT": false,
+    "IF:AFTER_INSTALL": false,
+    "IF:BEFORE_BUILD": false,
+    "IF:POST_INJECT": false,
+    "IF:BEFORE_BUNDLE": false,
+    "IF:AFTER_BUNDLE": false,
+    "IF:ENABLE_POSTING": false,
+    "IF:ENABLE_COMMENTS": false,
+    "IF:ENABLE_LIKES": false,
+    "IF:REQUIRE_LOGIN": false,
+    "IF:SHOW_NOTIFICATIONS": false
+  },
+  "hooks": {
+    "HOOK:INTENT_SHARE": "noop",
+    "HOOK:FILE_PROVIDER": "noop",
+    "HOOK:PERMISSIONS:ON_REQUEST": "noop",
+    "HOOK:PRE_COMMIT:HOOK": "noop",
+    "HOOK:POST_BUILD:HOOK": "noop",
+    "HOOK:AFTER_INSTALL:HOOK": "noop",
+    "HOOK:POST_SUBMIT": "noop",
+    "HOOK:FETCH_FEED": "noop",
+    "HOOK:FETCH_POST": "noop",
+    "HOOK:FETCH_COMMENTS": "noop",
+    "HOOK:COMMENT_SUBMIT": "noop",
+    "HOOK:LIKE_TOGGLE": "noop",
+    "HOOK:UPLOAD_MEDIA": "noop",
+    "HOOK:FETCH_NOTIFICATIONS": "noop"
+  },
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "com.example.socialapp",
+    "resConfigs": [
+      "en",
+      "es-rRUS",
+      "es-rRRUS"
+    ],
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.READ_EXTERNAL_STORAGE"
+    ]
+  },
+  "meta": {
+    "NDJC:BUILD_META:RUNID": "run_20231001_001",
+    "template": "circle-basic",
+    "appName": "Social Circle",
+    "packageId": "com.example.socialapp",
+    "mode": "A",
+    "runId": "run_20231001_001"
+  },
+  "droppedDanger": 0
+}
