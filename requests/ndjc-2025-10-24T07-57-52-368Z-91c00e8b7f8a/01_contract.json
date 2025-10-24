@@ -1,0 +1,273 @@
+{
+  "metadata": {
+    "NDJC:BUILD_META:RUNID": "run_20231130_001",
+    "template": "circle-basic",
+    "appName": "Social Circle",
+    "packageId": "com.example.socialapp",
+    "mode": "A",
+    "runId": "run_20231130_001",
+    "trace": {
+      "prompt_file": null,
+      "prompt_sha256": null,
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(openai/gpt-oss-120b)",
+      "precheck_note": "no_raw_text_used_object_mode"
+    }
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.socialapp",
+      "NDJC:APP_LABEL": "Social Circle",
+      "NDJC:HOME_TITLE": "Home",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+      "NDJC:THEME_NAME": "Default",
+      "NDJC:DARK_MODE": false,
+      "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+      "NDJC:FONT_FAMILY_SECONDARY": "SansSerif",
+      "NDJC:I18N_ENABLED": true,
+      "NDJC:ANIM_ENABLED": true,
+      "NDJC:ANIM_DURATION_MS": 300,
+      "NDJC:LAYOUT_DENSITY": "medium",
+      "NDJC:DATA_SOURCE": "https://api.socialapp.com",
+      "NDJC:SEED_ENABLED": false,
+      "NDJC:FEED_SORT": "newest",
+      "NDJC:PAGING_SIZE": 20,
+      "NDJC:OFFLINE_POLICY": "cache",
+      "NDJC:PRIVACY_POLICY": "https://socialapp.com/privacy",
+      "NDJC:DRAFT_ENABLED": true,
+      "NDJC:USE_APP_BUNDLE": true,
+      "NDJC:BUILD_META:RUNID": "run_20231130_001",
+      "NDJC:FEATURE_TOGGLE:MIN": 1,
+      "NDJC:DEBUG_LOG_ENABLED": true,
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:CRASHLYTICS_ENABLED": true,
+      "NDJC:EXPERIMENT_BUCKET": "beta",
+      "NDJC:THEME_COLORS": {
+        "primary": "#2196F3",
+        "secondary": "#4CAF50"
+      },
+      "NDJC:TYPOCASE_OVERRIDES": {},
+      "NDJC:STRINGS_EXTRA": {},
+      "NDJC:ROUTE_HOME": "home",
+      "NDJC:ROUTE_DETAIL": "detail",
+      "NDJC:ENABLE_POSTING": true,
+      "NDJC:ENABLE_COMMENTS": true,
+      "NDJC:ENABLE_LIKES": true,
+      "NDJC:PROFILE_EDIT_ENABLED": true,
+      "NDJC:NOTIFICATIONS_ENABLED": false
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "TopAppBar(title = { Text(\"Social Circle\") })",
+      "BLOCK:HOME_BODY": "Column { Text(\"Welcome to Social Circle!\") }",
+      "BLOCK:HOME_ACTIONS": "Row { Button(onClick = { /* TODO */ }) { Text(\"Create Post\") } }",
+      "BLOCK:SPLASH_CONTENT": "Box(modifier = Modifier.fillMaxSize()) { Image(painter = painterResource(id = R.drawable.splash), contentDescription = null) }",
+      "BLOCK:EMPTY_STATE": "Column { Icon(Icons.Default.Inbox, contentDescription = null); Text(\"No content yet.\") }",
+      "BLOCK:ERROR_STATE": "Column { Icon(Icons.Default.Error, contentDescription = null); Text(\"An error occurred.\") }",
+      "BLOCK:DEBUG_PANEL": "Column { Text(\"Debug Info\") }",
+      "BLOCK:HEADER_AD_SLOT": "Box { Text(\"Ad\") }",
+      "BLOCK:USER_PROFILE_CARD": "Card { Column { Image(painter = painterResource(id = R.drawable.avatar), contentDescription = null); Text(\"User Name\") } }",
+      "BLOCK:SPONSORED_CARD": "Card { Text(\"Sponsored Content\") }",
+      "BLOCK:PROFILE_SECTION": "Column { Text(\"Profile\") }",
+      "BLOCK:SETTINGS_SECTION": "Column { Text(\"Settings\") }",
+      "BLOCK:SETTINGS_SECTION:EXTRA": "Text(\"Extra Settings\")",
+      "BLOCK:POST_COMPOSER": "Column { TextField(value = \"\", onValueChange = {}, label = { Text(\"Write something\") }); Button(onClick = { /* submit */ }) { Text(\"Post\") } }",
+      "BLOCK:POST_CARD": "Card { Column { Text(\"Post title\"); Image(painter = painterResource(id = R.drawable.post_image), contentDescription = null); Row { IconButton(onClick = { /* like */ }) { Icon(Icons.Default.Favorite, contentDescription = null) } } } }",
+      "BLOCK:FEED_LIST": "LazyColumn { items(feedItems) { PostCard(post = it) } }",
+      "BLOCK:POST_DETAIL": "Column { Text(\"Post Detail\"); Image(painter = painterResource(id = R.drawable.post_image), contentDescription = null); Text(\"Comments\") }",
+      "BLOCK:COMMENTS_SCREEN": "LazyColumn { items(comments) { CommentItem(comment = it) } }",
+      "BLOCK:COMMENT_ITEM": "Row { Text(\"User\"); Text(\"Comment text\") }",
+      "BLOCK:LIKE_BUTTON": "IconButton(onClick = { /* toggle like */ }) { Icon(Icons.Default.FavoriteBorder, contentDescription = null) }",
+      "BLOCK:NOTIFICATIONS_SCREEN": "Column { Text(\"Notifications\") }",
+      "BLOCK:EDIT_PROFILE_SCREEN": "Column { TextField(value = \"\", onValueChange = {}, label = { Text(\"Name\") }) }",
+      "BLOCK:SEARCH_SCREEN": "Column { TextField(value = \"\", onValueChange = {}, label = { Text(\"Search\") }) }",
+      "BLOCK:MEDIA_PICKER": "Button(onClick = { /* open picker */ }) { Text(\"Pick Media\") }"
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "detail",
+        "profile",
+        "settings",
+        "search",
+        "notifications"
+      ],
+      "LIST:DEPENDENCY_SNIPPETS": [
+        "implementation 'androidx.core:core-ktx:1.12.0'",
+        "implementation 'androidx.compose.ui:ui:1.5.0'",
+        "implementation 'com.squareup.retrofit2:retrofit:2.9.0'"
+      ],
+      "LIST:PROGUARD_EXTRA": [],
+      "LIST:PACKAGING_RULES": [],
+      "LIST:POST_FIELDS": [
+        "title",
+        "content",
+        "imageUrl"
+      ],
+      "LIST:PLURAL_STRINGS": [],
+      "LIST:COMPONENT_STYLES": [],
+      "LIST:DEEPLINK_PATTERNS": [
+        "app://socialapp/home",
+        "app://socialapp/detail/{id}"
+      ],
+      "LIST:NETWORK_CLEAR_TEXT": [
+        "api.socialapp.com"
+      ],
+      "LIST:RES_CONFIGS_OVERRIDE": [],
+      "LIST:COMMENT_FIELDS": [
+        "author",
+        "text",
+        "timestamp"
+      ],
+      "LIST:FEED_QUERY_PARAMS": [
+        "page",
+        "size",
+        "sort"
+      ],
+      "LIST:PROFILE_FIELDS": [
+        "username",
+        "bio",
+        "avatarUrl"
+      ],
+      "LIST:NOTIFICATION_TYPES": [
+        "message",
+        "friend_request",
+        "like"
+      ],
+      "LIST:UPLOAD_MIME_TYPES": [
+        "image/jpeg",
+        "image/png"
+      ]
+    },
+    "if": {
+      "IF:NAV_TRANSITIONS": false,
+      "IF:BUILD_SUMMARY": false,
+      "IF:NATIVE_SPLITS": false,
+      "IF:AFTER_BUILD": false,
+      "IF:PRE_COMMIT": false,
+      "IF:AFTER_INSTALL": false,
+      "IF:BEFORE_BUILD": false,
+      "IF:POST_INJECT": false,
+      "IF:BEFORE_BUNDLE": false,
+      "IF:AFTER_BUNDLE": false,
+      "IF:ENABLE_POSTING": true,
+      "IF:ENABLE_COMMENTS": true,
+      "IF:ENABLE_LIKES": true,
+      "IF:REQUIRE_LOGIN": true,
+      "IF:SHOW_NOTIFICATIONS": false
+    },
+    "hook": {
+      "HOOK:INTENT_SHARE": "noop",
+      "HOOK:FILE_PROVIDER": "noop",
+      "HOOK:PERMISSIONS:ON_REQUEST": "noop",
+      "HOOK:PRE_COMMIT:HOOK": "noop",
+      "HOOK:POST_BUILD:HOOK": "noop",
+      "HOOK:AFTER_INSTALL:HOOK": "noop",
+      "HOOK:POST_SUBMIT": {
+        "type": "compose_inject",
+        "value": "handlePostSubmit()"
+      },
+      "HOOK:FETCH_FEED": {
+        "type": "gradle_task",
+        "value": "retrofitFetchFeed"
+      },
+      "HOOK:FETCH_POST": {
+        "type": "gradle_task",
+        "value": "retrofitFetchPost"
+      },
+      "HOOK:FETCH_COMMENTS": {
+        "type": "gradle_task",
+        "value": "retrofitFetchComments"
+      },
+      "HOOK:COMMENT_SUBMIT": {
+        "type": "compose_inject",
+        "value": "handleCommentSubmit()"
+      },
+      "HOOK:LIKE_TOGGLE": {
+        "type": "compose_inject",
+        "value": "toggleLike()"
+      },
+      "HOOK:UPLOAD_MEDIA": {
+        "type": "gradle_task",
+        "value": "uploadMediaTask"
+      },
+      "HOOK:FETCH_NOTIFICATIONS": {
+        "type": "gradle_task",
+        "value": "retrofitFetchNotifications"
+      }
+    },
+    "gradle": {
+      "applicationId": "com.example.socialapp",
+      "resConfigs": [
+        "en",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_MEDIA_IMAGES"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "model": "groq",
+    "runId": "ndjc-2025-10-24T07-57-52-374Z",
+    "templateKey": "circle-basic",
+    "step": "orchestrate-online",
+    "tokenReport": {
+      "files": [
+        {
+          "name": "contract_v1.en.txt (injected)",
+          "path": "/var/task/lib/ndjc/prompts/contract_v1.en.txt",
+          "bytes": 7543,
+          "approxTokens": 3300
+        },
+        {
+          "name": "SKELETON_JSON (inlined json)",
+          "approxTokens": 953
+        },
+        {
+          "name": "SCHEMA_FRAGMENT (inlined json)",
+          "approxTokens": 464
+        },
+        {
+          "name": "system.header (fixed text)",
+          "approxTokens": 140
+        },
+        {
+          "name": "registry.required (inlined json)",
+          "approxTokens": 106
+        },
+        {
+          "name": "topLevelOrder (inlined json)",
+          "approxTokens": 10
+        },
+        {
+          "name": "placeholderBlacklist (inlined json)",
+          "approxTokens": 21
+        },
+        {
+          "name": "user_requirement (inlined text)",
+          "approxTokens": 8
+        }
+      ],
+      "sentTokensTotal": 5002,
+      "returnedTokens": 1463,
+      "totalThisBuild": 6465
+    },
+    "sentFilesSummary": "contract_v1.en.txt (injected) ~3300 tok | SKELETON_JSON (inlined json) ~953 tok | SCHEMA_FRAGMENT (inlined json) ~464 tok | system.header (fixed text) ~140 tok | registry.required (inlined json) ~106 tok | topLevelOrder (inlined json) ~10 tok | placeholderBlacklist (inlined json) ~21 tok | user_requirement (inlined text) ~8 tok",
+    "raw": "{\"metadata\":{\"NDJC:BUILD_META:RUNID\":\"run_20231130_001\"},\"anchorsGrouped\":{\"text\":{\"NDJC:PACKAGE_NAME\":\"com.example.socialapp\",\"NDJC:APP_LABEL\":\"Social Circle\",\"NDJC:HOME_TITLE\":\"Home\",\"NDJC:PRIMARY_BUTTON_TEXT\":\"Post\",\"NDJC:THEME_NAME\":\"Default\",\"NDJC:DARK_MODE\":false,\"NDJC:FONT_FAMILY_PRIMARY\":\"Roboto\",\"NDJC:FONT_FAMILY_SECONDARY\":\"SansSerif\",\"NDJC:I18N_ENABLED\":true,\"NDJC:ANIM_ENABLED\":true,\"NDJC:ANIM_DURATION_MS\":300,\"NDJC:LAYOUT_DENSITY\":\"medium\",\"NDJC:DATA_SOURCE\":\"https://api.socialapp.com\",\"NDJC:SEED_ENABLED\":false,\"NDJC:FEED_SORT\":\"newest\",\"NDJC:PAGING_SIZE\":20,\"NDJC:OFFLINE_POLICY\":\"cache\",\"NDJC:PRIVACY_POLICY\":\"https://socialapp.com/privacy\",\"NDJC:DRAFT_ENABLED\":true,\"NDJC:USE_APP_BUNDLE\":true,\"NDJC:BUILD_META:RUNID\":\"run_20231130_001\",\"NDJC:FEATURE_TOGGLE:MIN\":1,\"NDJC:DEBUG_LOG_ENABLED\":true,\"NDJC:LOG_LEVEL\":\"INFO\",\"NDJC:CRASHLYTICS_ENABLED\":true,\"NDJC:EXPERIMENT_BUCKET\":\"beta\",\"NDJC:THEME_COLORS\":{\"primary\":\"#2196F3\",\"secondary\":\"#4CAF50\"},\"NDJC:TYPOCASE_OVERRIDES\":{},\"NDJC:STRINGS_EXTRA\":{},\"NDJC:ROUTE_HOME\":\"home\",\"NDJC:ROUTE_DETAIL\":\"detail\",\"NDJC:ENABLE_POSTING\":true,\"NDJC:ENABLE_COMMENTS\":true,\"NDJC:ENABLE_LIKES\":true,\"NDJC:PROFILE_EDIT_ENABLED\":true,\"NDJC:NOTIFICATIONS_ENABLED\":false},\"block\":{\"BLOCK:HOME_HEADER\":\"TopAppBar(title = { Text(\\\"Social Circle\\\") })\",\"BLOCK:HOME_BODY\":\"Column { Text(\\\"Welcome to Social Circle!\\\") }\",\"BLOCK:HOME_ACTIONS\":\"Row { Button(onClick = { /* TODO */ }) { Text(\\\"Create Post\\\") } }\",\"BLOCK:SPLASH_CONTENT\":\"Box(modifier = Modifier.fillMaxSize()) { Image(painter = painterResource(id = R.drawable.splash), contentDescription = null) }\",\"BLOCK:EMPTY_STATE\":\"Column { Icon(Icons.Default.Inbox, contentDescription = null); Text(\\\"No content yet.\\\") }\",\"BLOCK:ERROR_STATE\":\"Column { Icon(Icons.Default.Error, contentDescription = null); Text(\\\"An error occurred.\\\") }\",\"BLOCK:DEBUG_PANEL\":\"Column { Text(\\\"Debug Info\\\") }\",\"BLOCK:HEADER_AD_SLOT\":\"Box { Text(\\\"Ad\\\") }\",\"BLOCK:USER_PROFILE_CARD\":\"Card { Column { Image(painter = painterResource(id = R.drawable.avatar), contentDescription = null); Text(\\\"User Name\\\") } }\",\"BLOCK:SPONSORED_CARD\":\"Card { Text(\\\"Sponsored Content\\\") }\",\"BLOCK:PROFILE_SECTION\":\"Column { Text(\\\"Profile\\\") }\",\"BLOCK:SETTINGS_SECTION\":\"Column { Text(\\\"Settings\\\") }\",\"BLOCK:SETTINGS_SECTION:EXTRA\":\"Text(\\\"Extra Settings\\\")\",\"BLOCK:POST_COMPOSER\":\"Column { TextField(value = \\\"\\\", onValueChange = {}, label = { Text(\\\"Write something\\\") }); Button(onClick = { /* submit */ }) { Text(\\\"Post\\\") } }\",\"BLOCK:POST_CARD\":\"Card { Column { Text(\\\"Post title\\\"); Image(painter = painterResource(id = R.drawable.post_image), contentDescription = null); Row { IconButton(onClick = { /* like */ }) { Icon(Icons.Default.Favorite, contentDescription = null) } } } }\",\"BLOCK:FEED_LIST\":\"LazyColumn { items(feedItems) { PostCard(post = it) } }\",\"BLOCK:POST_DETAIL\":\"Column { Text(\\\"Post Detail\\\"); Image(painter = painterResource(id = R.drawable.post_image), contentDescription = null); Text(\\\"Comments\\\") }\",\"BLOCK:COMMENTS_SCREEN\":\"LazyColumn { items(comments) { CommentItem(comment = it) } }\",\"BLOCK:COMMENT_ITEM\":\"Row { Text(\\\"User\\\"); Text(\\\"Comment text\\\") }\",\"BLOCK:LIKE_BUTTON\":\"IconButton(onClick = { /* toggle like */ }) { Icon(Icons.Default.FavoriteBorder, contentDescription = null) }\",\"BLOCK:NOTIFICATIONS_SCREEN\":\"Column { Text(\\\"Notifications\\\") }\",\"BLOCK:EDIT_PROFILE_SCREEN\":\"Column { TextField(value = \\\"\\\", onValueChange = {}, label = { Text(\\\"Name\\\") }) }\",\"BLOCK:SEARCH_SCREEN\":\"Column { TextField(value = \\\"\\\", onValueChange = {}, label = { Text(\\\"Search\\\") }) }\",\"BLOCK:MEDIA_PICKER\":\"Button(onClick = { /* open picker */ }) { Text(\\\"Pick Media\\\") }\"},\"list\":{\"LIST:ROUTES\":[\"home\",\"detail\",\"profile\",\"settings\",\"search\",\"notifications\"],\"LIST:DEPENDENCY_SNIPPETS\":[\"implementation 'androidx.core:core-ktx:1.12.0'\",\"implementation 'androidx.compose.ui:ui:1.5.0'\",\"implementation 'com.squareup.retrofit2:retrofit:2.9.0'\"],\"LIST:PROGUARD_EXTRA\":[],\"LIST:PACKAGING_RULES\":[],\"LIST:POST_FIELDS\":[\"\n... (1850 more chars)",
+    "tokenReportWriteError": "ENOENT: no such file or directory, mkdir '/var/task/requests/ndjc-2025-10-24T07-57-52-374Z'",
+    "validation": {
+      "warnings": [
+        "Empty object at text:NDJC:TYPOCASE_OVERRIDES",
+        "Empty object at text:NDJC:STRINGS_EXTRA",
+        "Empty array at list:LIST:PROGUARD_EXTRA",
+        "Empty array at list:LIST:PACKAGING_RULES",
+        "Empty array at list:LIST:PLURAL_STRINGS",
+        "Empty array at list:LIST:COMPONENT_STYLES",
+        "Empty array at list:LIST:RES_CONFIGS_OVERRIDE"
+      ],
+      "fixes": []
+    }
+  }
+}
