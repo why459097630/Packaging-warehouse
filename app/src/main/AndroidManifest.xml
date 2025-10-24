@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  说明：
+  - Android 8+ 的 AGP 会以 Gradle 的 android { namespace = "<pkg>" } 作为 R 的包名。
+  - 旧版本在源码 manifest 的 package 属性上生效；在 NDJC 中改由 com.example.socialapp 同步到 Gradle。
+  - 注意保持本文件中 IF / LIST / BLOCK / HOOK / NDJC:... 锚点不变，以便后续物化过程。
+-->
+
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ===== PERMISSIONS（条件插入） ===== -->
+
+    <!-- HOOK:PERMISSIONS:ON_REQUEST -->
+noop
+<!-- END_HOOK -->
+
+    <!-- IF:PERMISSION.CAMERA -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- END_IF -->
+
+    <!-- IF:PERMISSION.MEDIA -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- END_IF -->
+
+    <!-- IF:PERMISSION.NOTIFICATION -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- END_IF -->
+
+    <!-- IF:PERMISSION.LOCATION -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- END_IF -->
+
+    <!-- IF:PERMISSION.CONTACTS -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- END_IF -->
+
+    <!-- IF:PERMISSION.SCHEDULE_EXACT_ALARM -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- END_IF -->
+
+    <!-- IF:PERMISSION.CLIPBOARD -->
+    <uses-permission android:name="android.permission.READ_CLIPBOARD_IN_BACKGROUND" />
+    <!-- END_IF -->
+
+    <!-- ===== Application ===== -->
+    <application
+        android:name=".App"
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/NDJCTheme">
+
+        <!-- IF:NETWORK_CLEAR_TEXT -->
+        <!-- 说明：如需 HTTP 明文，可在 res/xml/network_security_config.xml 设置域名白名单
+             同时也可通过 meta-data 打开 usesCleartextTraffic 或由代码设置 -->
+        <meta-data android:name="ndjc.placeholder" android:value="true"/>
+        <!-- END_IF -->
+
+        <!-- BLOCK:SPLASH_CONTENT -->
+Box(modifier = Modifier.fillMaxSize()) { Image(painter = painterResource(id = R.drawable.splash), contentDescription = null) }
+<!-- END_BLOCK -->
+
+        <!-- HOOK:FILE_PROVIDER -->
+noop
+<!-- END_HOOK -->
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- LIST:DEEPLINK_PATTERNS -->
+        <!-- 例：<intent-filter>...<data android:scheme="${ITEM}"/></intent-filter>（按需放到对应 Activity 上即可） -->
+        <!-- END_LIST -->
+
+        <!-- HOOK:INTENT_SHARE -->
+noop
+<!-- END_HOOK -->
+
+    </application>
+</manifest>

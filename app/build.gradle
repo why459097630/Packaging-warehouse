@@ -1,0 +1,188 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+
+    // IF:BEFORE_BUILD
+// END_IF
+}
+
+/* BLOCK:DEPENDENCY_SNIPPETS（兼容旧写法）
+   END_BLOCK */
+
+/* LIST:DEPENDENCY_SNIPPETS
+   // 例：
+   // implementation "com.squareup.okhttp3:okhttp:4.12.0"
+   // implementation "io.coil-kt:coil-compose:2.7.0"
+END_LIST */
+
+def kotlinAlignVersion = "1.9.24"    // 与 Compose Compiler 1.5.14 匹配
+
+// --- NDJC tokens fallback resolver（保证在未注入时也能正常构建） ---
+def ndjcToken = { String token -> token != null && token.startsWith("NDJC:") }  // 关乎仅是占位符
+
+// String: RUN_ID
+def _RUN_ID_TOKEN = "NDJC:RUN_ID"
+def _RUN_ID = ndjcToken(_RUN_ID_TOKEN)
+        ? (findProperty("NDJC_RUN_ID") ?: System.getenv("NDJC_RUN_ID")) ?: "local-run"
+        : _RUN_ID_TOKEN
+
+// String: LOG_LEVEL
+def _LOG_LEVEL_TOKEN = "INFO"
+def _LOG_LEVEL = ndjcToken(_LOG_LEVEL_TOKEN)
+        ? (findProperty("NDJC_LOG_LEVEL") ?: System.getenv("NDJC_LOG_LEVEL")) ?: "INFO"
+        : _LOG_LEVEL_TOKEN
+
+// Boolean: DEBUG_LOG_ENABLED（支持 1/true/yes/y）
+def _DEBUG_TOKEN = "true"
+def _DEBUG_BOOL = {
+    def v = (findProperty("NDJC_DEBUG_LOG_ENABLED") ?: System.getenv("NDJC_DEBUG_LOG_ENABLED") ?: "false")
+            .toString().trim().toLowerCase()
+    return (v in ["1","true","yes","y"])
+}
+def _DEBUG_ENABLED = ndjcToken(_DEBUG_TOKEN) ? _DEBUG_BOOL() : _DEBUG_TOKEN
+
+// Package: PACKAGE_NAME（覆盖未注入时的缺省，避免 Manifest 处冲突）
+def _PKG_TOKEN = "com.example.socialapp"
+def _PKG = ndjcToken(_PKG_TOKEN) ? "com.ndjc.app" : _PKG_TOKEN
+// --- end resolver ---
+
+android {
+    // 注意：AGP namespace 不等于 Manifest 的 package 且互不干扰
+    namespace "com.ndjc.app"
+
+    compileSdk 34
+
+    defaultConfig {
+        applicationId _PKG
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+
+        // 生成的常量值；字符串要带双引号，布尔不带引号
+        buildConfigField "String",  "NDJC_RUN_ID",   "\"${_RUN_ID}\""
+        buildConfigField "String",  "NDJC_LOG_LEVEL","\"${_LOG_LEVEL}\""
+        buildConfigField "boolean", "NDJC_DEBUG_LOG","${_DEBUG_ENABLED}"
+
+        /* LIST:ABI_SPLITS（按需注入 ABI 条分）
+           END_LIST */
+
+        /* LIST:RES_CONFIGS_OVERRIDE
+           // 例：en,zh,ja（会覆盖默认 resConfigs）
+           // resConfigs 'en','zh'
+        END_LIST */
+    }
+
+    // IF:NATIVE_SPLITS
+// END_IF
+
+    /* LIST:PACKAGING_RULES
+       // 例：资源排除/合并规则
+       // packagingOptions { resources { excludes += ['META-INF/*.version'] } }
+    END_LIST */
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            /* LIST:PROGUARD_EXTRA
+               // 这里追加额外的 proguard 配置
+            END_LIST */
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+
+    buildFeatures {
+        compose true
+        buildConfig true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+        freeCompilerArgs += [
+            "-Xjvm-default=all",
+            // 可按需追加 Compose/Material 实验开关
+        ]
+    }
+}
+
+// IF:BEFORE_BUNDLE
+// END_IF
+
+// IF:AFTER_BUNDLE
+// END_IF
+
+// IF:AFTER_BUILD
+// END_IF
+
+// IF:POST_INJECT
+// END_IF
+
+/* 文本锚点：是否使用 App Bundle（供物化读取，不直接改变配置）
+   true
+*/
+
+kotlin {
+    jvmToolchain(17)
+    // 这里保持你的对齐逻辑
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == "org.jetbrains.kotlin") {
+            details.useVersion(kotlinAlignVersion)
+            details.because("Align Kotlin stdlib to ${kotlinAlignVersion} for Compose Compiler 1.5.14")
+        }
+    }
+}
+
+dependencies {
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
+
+    // 注意：Groovy 下使用 platform 需写成 implementation(platform(...))
+    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    implementation "androidx.activity:activity-compose:1.9.2"
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.ui:ui-tooling-preview"
+    implementation "androidx.compose.material3:material3"
+    implementation "androidx.navigation:navigation-compose:2.8.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
+    implementation "androidx.core:core-ktx:1.13.1"
+    implementation "com.google.android.material:material:1.12.0"
+
+    debugImplementation "androidx.compose.ui:ui-tooling"
+    debugImplementation "androidx.compose.ui:ui-test-manifest"
+}
+
+// IF:BUILD_SUMMARY
+// END_IF
+
+// IF:PRE_COMMIT
+// END_IF
+
+// HOOK:PRE_COMMIT:HOOK
+// 注入 pre-commit 的具体任务/脚本调用（由构建系统填充）
+// END_HOOK
+
+// HOOK:POST_BUILD:HOOK
+// 构建完成后的动作（如产物上报/签名后处理等）
+// END_HOOK
+
+// HOOK:AFTER_INSTALL:HOOK
+// 安装到设备/模拟器后的动作（如自动启动、打点等）
+// END_HOOK
