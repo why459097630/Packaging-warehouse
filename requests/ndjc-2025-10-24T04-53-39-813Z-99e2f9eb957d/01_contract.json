@@ -1,0 +1,254 @@
+{
+  "metadata": {
+    "NDJC:BUILD_META:RUNID": "run_20231001_001",
+    "template": "circle-basic",
+    "appName": "Social Circle",
+    "packageId": "com.example.socialapp",
+    "mode": "A",
+    "runId": "run_20231001_001",
+    "trace": {
+      "prompt_file": null,
+      "prompt_sha256": null,
+      "prompt_loaded_from_env": null,
+      "model_mode": "online(openai/gpt-oss-120b)",
+      "precheck_note": "no_raw_text_used_object_mode"
+    }
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.example.socialapp",
+      "NDJC:APP_LABEL": "Social Circle",
+      "NDJC:HOME_TITLE": "Welcome Home",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+      "NDJC:THEME_NAME": "Default",
+      "NDJC:DARK_MODE": "true",
+      "NDJC:FONT_FAMILY_PRIMARY": "sans-serif",
+      "NDJC:FONT_FAMILY_SECONDARY": "serif",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "300",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "https://api.example.com/v1",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "newest",
+      "NDJC:PAGING_SIZE": "20",
+      "NDJC:OFFLINE_POLICY": "cache",
+      "NDJC:PRIVACY_POLICY": "https://example.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META:RUNID": "run_20231001_001",
+      "NDJC:FEATURE_TOGGLE:MIN": "0",
+      "NDJC:DEBUG_LOG_ENABLED": "false",
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "A",
+      "NDJC:THEME_COLORS": {
+        "primary": "#FF5722",
+        "secondary": "#03A9F4"
+      },
+      "NDJC:TYPOCASE_OVERRIDES": {
+        "header": "H1"
+      },
+      "NDJC:STRINGS_EXTRA": {},
+      "NDJC:ROUTE_HOME": "home",
+      "NDJC:ROUTE_DETAIL": "detail",
+      "NDJC:ENABLE_POSTING": "true",
+      "NDJC:ENABLE_COMMENTS": "true",
+      "NDJC:ENABLE_LIKES": "true",
+      "NDJC:PROFILE_EDIT_ENABLED": "true",
+      "NDJC:NOTIFICATIONS_ENABLED": "true"
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "Welcome to Social Circle",
+      "BLOCK:HOME_BODY": "Connect with friends and share moments.",
+      "BLOCK:HOME_ACTIONS": "Create Post, View Feed",
+      "BLOCK:SPLASH_CONTENT": "Loading...",
+      "BLOCK:EMPTY_STATE": "No content available.",
+      "BLOCK:ERROR_STATE": "An error occurred.",
+      "BLOCK:DEBUG_PANEL": "Debug Info",
+      "BLOCK:HEADER_AD_SLOT": "Ad Banner",
+      "BLOCK:USER_PROFILE_CARD": "User Profile",
+      "BLOCK:SPONSORED_CARD": "Sponsored Content",
+      "BLOCK:PROFILE_SECTION": "Profile Details",
+      "BLOCK:SETTINGS_SECTION": "Settings",
+      "BLOCK:SETTINGS_SECTION:EXTRA": "Extra Settings",
+      "BLOCK:POST_COMPOSER": "Compose your post",
+      "BLOCK:POST_CARD": "Post Card",
+      "BLOCK:FEED_LIST": "Feed List",
+      "BLOCK:POST_DETAIL": "Post Detail",
+      "BLOCK:COMMENTS_SCREEN": "Comments",
+      "BLOCK:COMMENT_ITEM": "Comment Item",
+      "BLOCK:LIKE_BUTTON": "Like",
+      "BLOCK:NOTIFICATIONS_SCREEN": "Notifications",
+      "BLOCK:EDIT_PROFILE_SCREEN": "Edit Profile",
+      "BLOCK:SEARCH_SCREEN": "Search",
+      "BLOCK:MEDIA_PICKER": "Pick Media"
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "detail",
+        "profile",
+        "settings",
+        "search"
+      ],
+      "LIST:DEPENDENCY_SNIPPETS": [
+        "implementation 'com.squareup.retrofit2:retrofit:2.9.0'"
+      ],
+      "LIST:PROGUARD_EXTRA": [
+        "-keep class com.example.socialapp.** { *; }"
+      ],
+      "LIST:PACKAGING_RULES": [
+        "exclude 'META-INF/*.kotlin_module'"
+      ],
+      "LIST:POST_FIELDS": [
+        "title",
+        "content",
+        "imageUrl"
+      ],
+      "LIST:PLURAL_STRINGS": [
+        "comment_one",
+        "comment_other"
+      ],
+      "LIST:COMPONENT_STYLES": [
+        "styleHeader",
+        "styleBody"
+      ],
+      "LIST:DEEPLINK_PATTERNS": [
+        "app://home",
+        "app://detail/{id}"
+      ],
+      "LIST:NETWORK_CLEAR_TEXT": [
+        "http://api.example.com"
+      ],
+      "LIST:RES_CONFIGS_OVERRIDE": [
+        "en",
+        "es-rUS"
+      ],
+      "LIST:COMMENT_FIELDS": [
+        "author",
+        "text",
+        "timestamp"
+      ],
+      "LIST:FEED_QUERY_PARAMS": [
+        "page",
+        "size"
+      ],
+      "LIST:PROFILE_FIELDS": [
+        "username",
+        "bio",
+        "avatarUrl"
+      ],
+      "LIST:NOTIFICATION_TYPES": [
+        "message",
+        "friend_request",
+        "like"
+      ],
+      "LIST:UPLOAD_MIME_TYPES": [
+        "image/jpeg",
+        "image/png"
+      ]
+    },
+    "if": {
+      "IF:NAV_TRANSITIONS": false,
+      "IF:BUILD_SUMMARY": false,
+      "IF:NATIVE_SPLITS": false,
+      "IF:AFTER_BUILD": false,
+      "IF:PRE_COMMIT": false,
+      "IF:AFTER_INSTALL": false,
+      "IF:BEFORE_BUILD": false,
+      "IF:POST_INJECT": false,
+      "IF:BEFORE_BUNDLE": false,
+      "IF:AFTER_BUNDLE": false,
+      "IF:ENABLE_POSTING": false,
+      "IF:ENABLE_COMMENTS": false,
+      "IF:ENABLE_LIKES": false,
+      "IF:REQUIRE_LOGIN": false,
+      "IF:SHOW_NOTIFICATIONS": false
+    },
+    "hook": {
+      "HOOK:INTENT_SHARE": "noop",
+      "HOOK:FILE_PROVIDER": "noop",
+      "HOOK:PERMISSIONS:ON_REQUEST": "noop",
+      "HOOK:PRE_COMMIT:HOOK": "noop",
+      "HOOK:POST_BUILD:HOOK": "noop",
+      "HOOK:AFTER_INSTALL:HOOK": "noop",
+      "HOOK:POST_SUBMIT": "noop",
+      "HOOK:FETCH_FEED": "noop",
+      "HOOK:FETCH_POST": "noop",
+      "HOOK:FETCH_COMMENTS": "noop",
+      "HOOK:COMMENT_SUBMIT": "noop",
+      "HOOK:LIKE_TOGGLE": "noop",
+      "HOOK:UPLOAD_MEDIA": "noop",
+      "HOOK:FETCH_NOTIFICATIONS": "noop"
+    },
+    "gradle": {
+      "applicationId": "com.example.socialapp",
+      "resConfigs": [
+        "en",
+        "es-rUS"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "files": [],
+  "_trace": {
+    "model": "groq",
+    "runId": "ndjc-2025-10-24T04-53-39-820Z",
+    "templateKey": "circle-basic",
+    "step": "orchestrate-online",
+    "tokenReport": {
+      "files": [
+        {
+          "name": "contract_v1.en.txt (injected)",
+          "path": "/var/task/lib/ndjc/prompts/contract_v1.en.txt",
+          "bytes": 1550,
+          "approxTokens": 1806
+        },
+        {
+          "name": "SKELETON_JSON (inlined json)",
+          "approxTokens": 953
+        },
+        {
+          "name": "SCHEMA_FRAGMENT (inlined json)",
+          "approxTokens": 464
+        },
+        {
+          "name": "system.header (fixed text)",
+          "approxTokens": 140
+        },
+        {
+          "name": "registry.required (inlined json)",
+          "approxTokens": 106
+        },
+        {
+          "name": "topLevelOrder (inlined json)",
+          "approxTokens": 10
+        },
+        {
+          "name": "placeholderBlacklist (inlined json)",
+          "approxTokens": 21
+        },
+        {
+          "name": "user_requirement (inlined text)",
+          "approxTokens": 8
+        }
+      ],
+      "sentTokensTotal": 3508,
+      "returnedTokens": 1015,
+      "totalThisBuild": 4523
+    },
+    "sentFilesSummary": "contract_v1.en.txt (injected) ~1806 tok | SKELETON_JSON (inlined json) ~953 tok | SCHEMA_FRAGMENT (inlined json) ~464 tok | system.header (fixed text) ~140 tok | registry.required (inlined json) ~106 tok | topLevelOrder (inlined json) ~10 tok | placeholderBlacklist (inlined json) ~21 tok | user_requirement (inlined text) ~8 tok",
+    "raw": "{\"metadata\":{\"NDJC:BUILD_META:RUNID\":\"run_20231001_001\"},\"anchorsGrouped\":{\"text\":{\"NDJC:PACKAGE_NAME\":\"com.example.socialapp\",\"NDJC:APP_LABEL\":\"Social Circle\",\"NDJC:HOME_TITLE\":\"Welcome Home\",\"NDJC:PRIMARY_BUTTON_TEXT\":\"Post\",\"NDJC:THEME_NAME\":\"Default\",\"NDJC:DARK_MODE\":\"true\",\"NDJC:FONT_FAMILY_PRIMARY\":\"sans-serif\",\"NDJC:FONT_FAMILY_SECONDARY\":\"serif\",\"NDJC:I18N_ENABLED\":\"true\",\"NDJC:ANIM_ENABLED\":\"true\",\"NDJC:ANIM_DURATION_MS\":\"300\",\"NDJC:LAYOUT_DENSITY\":\"mdpi\",\"NDJC:DATA_SOURCE\":\"https://api.example.com/v1\",\"NDJC:SEED_ENABLED\":\"false\",\"NDJC:FEED_SORT\":\"newest\",\"NDJC:PAGING_SIZE\":\"20\",\"NDJC:OFFLINE_POLICY\":\"cache\",\"NDJC:PRIVACY_POLICY\":\"https://example.com/privacy\",\"NDJC:DRAFT_ENABLED\":\"true\",\"NDJC:USE_APP_BUNDLE\":\"true\",\"NDJC:BUILD_META:RUNID\":\"run_20231001_001\",\"NDJC:FEATURE_TOGGLE:MIN\":\"0\",\"NDJC:DEBUG_LOG_ENABLED\":\"false\",\"NDJC:LOG_LEVEL\":\"INFO\",\"NDJC:CRASHLYTICS_ENABLED\":\"true\",\"NDJC:EXPERIMENT_BUCKET\":\"A\",\"NDJC:THEME_COLORS\":{\"primary\":\"#FF5722\",\"secondary\":\"#03A9F4\"},\"NDJC:TYPOCASE_OVERRIDES\":{\"header\":\"H1\"},\"NDJC:STRINGS_EXTRA\":{},\"NDJC:ROUTE_HOME\":\"home\",\"NDJC:ROUTE_DETAIL\":\"detail\",\"NDJC:ENABLE_POSTING\":\"true\",\"NDJC:ENABLE_COMMENTS\":\"true\",\"NDJC:ENABLE_LIKES\":\"true\",\"NDJC:PROFILE_EDIT_ENABLED\":\"true\",\"NDJC:NOTIFICATIONS_ENABLED\":\"true\"},\"block\":{\"BLOCK:HOME_HEADER\":\"Welcome to Social Circle\",\"BLOCK:HOME_BODY\":\"Connect with friends and share moments.\",\"BLOCK:HOME_ACTIONS\":\"Create Post, View Feed\",\"BLOCK:SPLASH_CONTENT\":\"Loading...\",\"BLOCK:EMPTY_STATE\":\"No content available.\",\"BLOCK:ERROR_STATE\":\"An error occurred.\",\"BLOCK:DEBUG_PANEL\":\"Debug Info\",\"BLOCK:HEADER_AD_SLOT\":\"Ad Banner\",\"BLOCK:USER_PROFILE_CARD\":\"User Profile\",\"BLOCK:SPONSORED_CARD\":\"Sponsored Content\",\"BLOCK:PROFILE_SECTION\":\"Profile Details\",\"BLOCK:SETTINGS_SECTION\":\"Settings\",\"BLOCK:SETTINGS_SECTION:EXTRA\":\"Extra Settings\",\"BLOCK:POST_COMPOSER\":\"Compose your post\",\"BLOCK:POST_CARD\":\"Post Card\",\"BLOCK:FEED_LIST\":\"Feed List\",\"BLOCK:POST_DETAIL\":\"Post Detail\",\"BLOCK:COMMENTS_SCREEN\":\"Comments\",\"BLOCK:COMMENT_ITEM\":\"Comment Item\",\"BLOCK:LIKE_BUTTON\":\"Like\",\"BLOCK:NOTIFICATIONS_SCREEN\":\"Notifications\",\"BLOCK:EDIT_PROFILE_SCREEN\":\"Edit Profile\",\"BLOCK:SEARCH_SCREEN\":\"Search\",\"BLOCK:MEDIA_PICKER\":\"Pick Media\"},\"list\":{\"LIST:ROUTES\":[\"home\",\"detail\",\"profile\",\"settings\",\"search\"],\"LIST:DEPENDENCY_SNIPPETS\":[\"implementation 'com.squareup.retrofit2:retrofit:2.9.0'\"],\"LIST:PROGUARD_EXTRA\":[\"-keep class com.example.socialapp.** { *; }\"],\"LIST:PACKAGING_RULES\":[\"exclude 'META-INF/*.kotlin_module'\"],\"LIST:POST_FIELDS\":[\"title\",\"content\",\"imageUrl\"],\"LIST:PLURAL_STRINGS\":[\"comment_one\",\"comment_other\"],\"LIST:COMPONENT_STYLES\":[\"styleHeader\",\"styleBody\"],\"LIST:DEEPLINK_PATTERNS\":[\"app://home\",\"app://detail/{id}\"],\"LIST:NETWORK_CLEAR_TEXT\":[\"http://api.example.com\"],\"LIST:RES_CONFIGS_OVERRIDE\":[\"en\",\"es-rUS\"],\"LIST:COMMENT_FIELDS\":[\"author\",\"text\",\"timestamp\"],\"LIST:FEED_QUERY_PARAMS\":[\"page\",\"size\"],\"LIST:PROFILE_FIELDS\":[\"username\",\"bio\",\"avatarUrl\"],\"LIST:NOTIFICATION_TYPES\":[\"message\",\"friend_request\",\"like\"],\"LIST:UPLOAD_MIME_TYPES\":[\"image/jpeg\",\"image/png\"]},\"if\":{\"IF:NAV_TRANSITIONS\":false,\"IF:BUILD_SUMMARY\":false,\"IF:NATIVE_SPLITS\":false,\"IF:AFTER_BUILD\":false,\"IF:PRE_COMMIT\":false,\"IF:AFTER_INSTALL\":false,\"IF:BEFORE_BUILD\":false,\"IF:POST_INJECT\":false,\"IF:BEFORE_BUNDLE\":false,\"IF:AFTER_BUNDLE\":false,\"IF:ENABLE_POSTING\":false,\"IF:ENABLE_COMMENTS\":false,\"IF:ENABLE_LIKES\":false,\"IF:REQUIRE_LOGIN\":false,\"IF:SHOW_NOTIFICATIONS\":false},\"hook\":{\"HOOK:INTENT_SHARE\":\"noop\",\"HOOK:FILE_PROVIDER\":\"noop\",\"HOOK:PERMISSIONS:ON_REQUEST\":\"noop\",\"HOOK:PRE_COMMIT:HOOK\":\"noop\",\"HOOK:POST_BUILD:HOOK\":\"noop\",\"HOOK:AFTER_INSTALL:HOOK\":\"noop\",\"HOOK:POST_SUBMIT\":\"noop\",\"HOOK:FETCH_FEED\":\"noop\",\"HOOK:FETCH_POST\":\"noop\",\"HOOK:FETCH_COMMENTS\":\"noop\",\"HOOK:COMMENT_SUBMIT\":\"noop\",\"HOOK:LIKE_TOGGLE\":\"noop\",\"HOOK:UPLOAD_MEDIA\":\"noop\",\"HOOK:FETCH_NOTIFICATIONS\":\"noop\"},\"gradle\":{\"applicationId\":\"com.example.socialapp\",\"resConfigs\":[\"en\",\"es-rUS\"],\"permissions\":[\"android.permission.INTERNET\"\n... (58 more chars)",
+    "tokenReportWriteError": "ENOENT: no such file or directory, mkdir '/var/task/requests/ndjc-2025-10-24T04-53-39-820Z'",
+    "validation": {
+      "warnings": [
+        "Empty object at text:NDJC:STRINGS_EXTRA"
+      ],
+      "fixes": []
+    }
+  }
+}
