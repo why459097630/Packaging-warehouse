@@ -1,0 +1,160 @@
+{
+  "metadata": {
+    "NDJC:BUILD_META:RUNID": "run_20231025_001"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.social.circleapp",
+      "NDJC:APP_LABEL": "Circle Connect",
+      "NDJC:HOME_TITLE": "Home Feed",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+      "NDJC:THEME_NAME": "OceanBlue",
+      "NDJC:DARK_MODE": true,
+      "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+      "NDJC:FONT_FAMILY_SECONDARY": "Roboto Slab",
+      "NDJC:I18N_ENABLED": true,
+      "NDJC:ANIM_ENABLED": true,
+      "NDJC:ANIM_DURATION_MS": 300,
+      "NDJC:LAYOUT_DENSITY": 2,
+      "NDJC:DATA_SOURCE": "https://api.socialcircle.com",
+      "NDJC:SEED_ENABLED": false,
+      "NDJC:FEED_SORT": "chronological",
+      "NDJC:PAGING_SIZE": 20,
+      "NDJC:OFFLINE_POLICY": "cache-first",
+      "NDJC:PRIVACY_POLICY": "https://socialcircle.com/privacy",
+      "NDJC:DRAFT_ENABLED": true,
+      "NDJC:USE_APP_BUNDLE": true,
+      "NDJC:BUILD_META:RUNID": "run_20231025_001",
+      "NDJC:FEATURE_TOGGLE:MIN": "1.0.0",
+      "NDJC:DEBUG_LOG_ENABLED": false,
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:CRASHLYTICS_ENABLED": true,
+      "NDJC:EXPERIMENT_BUCKET": "A",
+      "NDJC:THEME_COLORS": {
+        "primary": "#7C3AED",
+        "secondary": "#10B981"
+      },
+      "NDJC:TYPOCASE_OVERRIDES": "none",
+      "NDJC:STRINGS_EXTRA": {},
+      "NDJC:ROUTE_HOME": "home",
+      "NDJC:ROUTE_DETAIL": "detail",
+      "NDJC:ENABLE_POSTING": true,
+      "NDJC:ENABLE_COMMENTS": true,
+      "NDJC:ENABLE_LIKES": true,
+      "NDJC:PROFILE_EDIT_ENABLED": true,
+      "NDJC:NOTIFICATIONS_ENABLED": true
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "detail",
+        "profile",
+        "settings"
+      ],
+      "LIST:DEPENDENCY_SNIPPETS": [],
+      "LIST:PROGUARD_EXTRA": [],
+      "LIST:PACKAGING_RULES": [],
+      "LIST:POST_FIELDS": [
+        "text",
+        "image",
+        "video"
+      ],
+      "LIST:PLURAL_STRINGS": [],
+      "LIST:COMPONENT_STYLES": [],
+      "LIST:DEEPLINK_PATTERNS": [],
+      "LIST:NETWORK_CLEAR_TEXT": [],
+      "LIST:RES_CONFIGS_OVERRIDE": [],
+      "LIST:COMMENT_FIELDS": [
+        "text",
+        "image"
+      ],
+      "LIST:FEED_QUERY_PARAMS": [],
+      "LIST:PROFILE_FIELDS": [
+        "username",
+        "avatar",
+        "bio"
+      ],
+      "LIST:NOTIFICATION_TYPES": [
+        "like",
+        "comment",
+        "follow"
+      ],
+      "LIST:UPLOAD_MIME_TYPES": [
+        "image/jpeg",
+        "image/png",
+        "video/mp4"
+      ]
+    },
+    "if": {
+      "IF:NAV_TRANSITIONS": false,
+      "IF:BUILD_SUMMARY": false,
+      "IF:NATIVE_SPLITS": false,
+      "IF:AFTER_BUILD": false,
+      "IF:PRE_COMMIT": false,
+      "IF:AFTER_INSTALL": false,
+      "IF:BEFORE_BUILD": false,
+      "IF:POST_INJECT": false,
+      "IF:BEFORE_BUNDLE": false,
+      "IF:AFTER_BUNDLE": false,
+      "IF:ENABLE_POSTING": false,
+      "IF:ENABLE_COMMENTS": false,
+      "IF:ENABLE_LIKES": false,
+      "IF:REQUIRE_LOGIN": false,
+      "IF:SHOW_NOTIFICATIONS": false
+    },
+    "gradle": {
+      "applicationId": "com.social.circleapp",
+      "resConfigs": [
+        "en",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "@Composable fun HomeHeader(){ Row{ Text(\"Welcome\") } }",
+      "BLOCK:HOME_BODY": "@Composable fun HomeBody(){ Column{ Text(\"Feed goes here\") } }",
+      "BLOCK:HOME_ACTIONS": "@Composable fun HomeActions(){ Row{ Button(onClick={}){ Text(\"Post\") } } }",
+      "BLOCK:SPLASH_CONTENT": "@Composable fun SplashContent(){ Box{ Text(\"Circle Connect\") } }",
+      "BLOCK:EMPTY_STATE": "@Composable fun EmptyState(){ Column{ Icon(Icons.Default.Inbox, contentDescription=null); Text(\"No posts yet\") } }",
+      "BLOCK:ERROR_STATE": "@Composable fun ErrorState(){ Column{ Icon(Icons.Default.Error, contentDescription=null); Text(\"Something went wrong\") } }",
+      "BLOCK:DEBUG_PANEL": "@Composable fun DebugPanel(){ Column{ Text(\"Debug Info\") } }",
+      "BLOCK:HEADER_AD_SLOT": "@Composable fun HeaderAdSlot(){ Box{ Text(\"Ad\") } }",
+      "BLOCK:USER_PROFILE_CARD": "@Composable fun UserProfileCard(){ Card{ Column{ Text(\"Username\") Text(\"Bio\") } } }",
+      "BLOCK:SPONSORED_CARD": "@Composable fun SponsoredCard(){ Card{ Text(\"Sponsored Content\") } }",
+      "BLOCK:PROFILE_SECTION": "@Composable fun ProfileSection(){ Column{ Text(\"Profile\") } }",
+      "BLOCK:SETTINGS_SECTION": "@Composable fun SettingsSection(){ Column{ Text(\"Settings\") } }",
+      "BLOCK:SETTINGS_SECTION:EXTRA": "@Composable fun SettingsExtra(){ Column{ Text(\"Extra Settings\") } }",
+      "BLOCK:POST_COMPOSER": "@Composable fun PostComposer(){ Column{ TextField(value=\"\", onValueChange={}); Button(onClick={}){ Text(\"Send\") } } }",
+      "BLOCK:POST_CARD": "@Composable fun PostCard(){ Card{ Column{ Text(\"Post content\") Image(painter=..., contentDescription=null) } } }",
+      "BLOCK:FEED_LIST": "@Composable fun FeedList(){ LazyColumn{ items(10){ PostCard() } } }",
+      "BLOCK:POST_DETAIL": "@Composable fun PostDetail(){ Column{ Text(\"Post Detail\") } }",
+      "BLOCK:COMMENTS_SCREEN": "@Composable fun CommentsScreen(){ Column{ Text(\"Comments\") } }",
+      "BLOCK:COMMENT_ITEM": "@Composable fun CommentItem(){ Row{ Text(\"User\") Text(\"Comment\") } }",
+      "BLOCK:LIKE_BUTTON": "@Composable fun LikeButton(){ IconButton(onClick={}){ Icon(Icons.Default.Favorite, contentDescription=null) } }",
+      "BLOCK:NOTIFICATIONS_SCREEN": "@Composable fun NotificationsScreen(){ Column{ Text(\"Notifications\") } }",
+      "BLOCK:EDIT_PROFILE_SCREEN": "@Composable fun EditProfileScreen(){ Column{ Text(\"Edit Profile\") } }",
+      "BLOCK:SEARCH_SCREEN": "@Composable fun SearchScreen(){ Column{ TextField(value=\"\", onValueChange={}); Text(\"Results\") } }",
+      "BLOCK:MEDIA_PICKER": "@Composable fun MediaPicker(){ Column{ Text(\"Pick Media\") } }"
+    },
+    "hook": {
+      "HOOK:INTENT_SHARE": "noop",
+      "HOOK:FILE_PROVIDER": "noop",
+      "HOOK:PERMISSIONS:ON_REQUEST": "noop",
+      "HOOK:PRE_COMMIT:HOOK": "noop",
+      "HOOK:POST_BUILD:HOOK": "noop",
+      "HOOK:AFTER_INSTALL:HOOK": "noop",
+      "HOOK:POST_SUBMIT": "noop",
+      "HOOK:FETCH_FEED": "noop",
+      "HOOK:FETCH_POST": "noop",
+      "HOOK:FETCH_COMMENTS": "noop",
+      "HOOK:COMMENT_SUBMIT": "noop",
+      "HOOK:LIKE_TOGGLE": "noop",
+      "HOOK:UPLOAD_MEDIA": "noop",
+      "HOOK:FETCH_NOTIFICATIONS": "noop"
+    }
+  },
+  "files": []
+}
