@@ -113,7 +113,7 @@ jobs:
           echo "PLAN_BRANCH=${found_at}" >> "$GITHUB_ENV"
           echo "- **Found 02_plan.json at:** \`${PLAN_JSON}\` *(from ${found_at})*" >> "$GITHUB_STEP_SUMMARY"
 
-      # 4) Prepare workspace app/ from template
+      # 4) Prepare workspace app/ from template (safe: only wipes ./app, 不碰 requests/${RUN_ID})
       - name: Prepare workspace app (copy template → ./app)
         shell: bash
         run: |
@@ -144,7 +144,7 @@ jobs:
         shell: bash
         run: chmod +x scripts/ndjc-materialize.sh
 
-      # 5) Checkout frontend repo to fetch registry (hard constraint to LLM)
+      # 5) Checkout frontend repo to fetch registry (LLM anchor baseline)
       - name: Checkout frontend repo (niandongjicheng)
         uses: actions/checkout@v4
         with:
@@ -177,14 +177,18 @@ jobs:
           echo "REGISTRY_FILE=${REGISTRY_FILE}"
           test -f "$REGISTRY_FILE" || { echo "::error::Registry not found at $REGISTRY_FILE"; exit 1; }
 
+          # scripts/ndjc-materialize.sh:
+          # - reads ${PLAN_JSON}
+          # - writes sanitized plan → ${PLAN_JSON_SAN}
+          # - mutates ./app with anchors from the plan
           scripts/ndjc-materialize.sh "${APP_DIR}" "${RUN_ID}"
 
-          echo "---- 02_plan.json (first 120) ----"
+          echo "---- 02_plan.json (first 120 lines) ----"
           sed -n '1,120p' "${PLAN_JSON}" || true
-          echo "---- 02_plan.sanitized.json (first 120) ----"
+          echo "---- 02_plan.sanitized.json (first 120 lines) ----"
           sed -n '1,120p' "${PLAN_JSON_SAN}" || true
 
-      # 6.5) Preflight (non-blocking) — Anchors Scan (baseline = registry.circle-basic.json)
+      # 6.5) Anchors Scan (non-blocking preflight)
       - name: NDJC | Anchors Scan (baseline=registry • non-blocking)
         shell: bash
         run: |
@@ -201,7 +205,7 @@ jobs:
           echo "template: ${TEMPLATE} | runId: ${RUN_ID}" >> "${OUT}"
           echo "" >> "${OUT}"
 
-          # 1) 从 registry（数组形态）取出全部锚点名，并拼出模板占位符 token（避免重复前缀）
+          # Build flattened list of (section,name,token)
           mapfile -t ROWS < <(jq -r '
             def emit(arr; prefix; section):
               (arr // []) | if (type=="array") then .[] else empty end
@@ -225,7 +229,7 @@ jobs:
             section="${row%%|*}"; rest="${row#*|}"
             name="${rest%%|*}"; token="${rest#*|}"
 
-            # 2) 扫描模板（固定串匹配，避免把 : 当正则）
+            # Template presence: strict fixed-string grep
             if grep -RIlF --line-number -e "$token" "${TEMPLATE_DIR}" >/tmp/_ndjc_hit 2>/dev/null; then
               IN_TEMPLATE="HIT"
               FILE=$(head -n1 /tmp/_ndjc_hit | sed 's|^'${TEMPLATE_DIR}'/||')
@@ -236,7 +240,7 @@ jobs:
               miss=$((miss+1))
             fi
 
-            # 3) 按 02_plan.sanitized.json 的真实结构判断是否仍存在
+            # Sanitized plan presence: does sanitized plan still include this anchor?
             if jq -e --arg sec "$section" --arg k "$name" '
               def pick(sec):
                 if   sec=="text" then (.anchors    // {})
@@ -270,19 +274,29 @@ jobs:
           git diff --name-only | sed 's/^/ - /' || true
           git diff --name-only > modified-files.txt || true
 
-      # 8) Optionally commit artifacts into run branch
-      - name: Commit & push to run branch (optional)
+      # 8) Commit & push app changes + updated request dir back to run branch
+      - name: Commit & push to run branch (append artifacts, keep 00_debug_two_phase.json)
         if: steps.checkout_run.outputs.has_run_branch == 'true'
         shell: bash
         run: |
           set -euo pipefail
+          # 这里**不**清空 ${REQ_DIR}，保留 route.ts 早先上传的:
+          # - 00_debug_two_phase.json (phase1/phase2原始返回+校验结果+token用量)
+          # - 01_contract.json
+          # - 02_plan.json
+          # - 03_apply_result.json
+          # 我们只是往同一目录里追加/覆盖:
+          # - 02_plan.sanitized.json
+          # - anchors-scan.md
+          # - any future scan/apply artifacts
+
           git add app "${REQ_DIR}" modified-files.txt || true
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "NDJC materialize ${RUN_ID}" || echo "nothing to commit"
           git push origin "${RUN_BRANCH}" || true
 
-      # 9) Pre-build guards
+      # 9) Pre-build sanity guards
       - name: Guards (root settings & app module)
         shell: bash
         run: |
@@ -290,7 +304,7 @@ jobs:
           [[ -f "./settings.gradle" || -f "./settings.gradle.kts" ]] || { echo "::error::settings.gradle(.kts) not found"; exit 1; }
           [[ -f "app/build.gradle" || -f "app/build.gradle.kts" ]] || { echo "::error::app/build.gradle(.kts) not found"; exit 1; }
 
-      # 10) Build
+      # 10) Build the debug APK with Gradle
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -315,7 +329,7 @@ jobs:
           chmod +x ./gradlew || true
           ./gradlew --no-daemon --stacktrace :app:assembleDebug
 
-      # 11) Upload artifacts (APK + logs) and append clickable links
+      # 11) Upload artifacts (APK + logs) and surface them in summary
       - name: Upload APK artifacts
         if: always()
         id: upload_apk
@@ -333,10 +347,12 @@ jobs:
           name: ndjc-diag-${{ env.RUN_ID }}
           path: |
             modified-files.txt
+            requests/${{ env.RUN_ID }}/00_debug_two_phase.json
             requests/${{ env.RUN_ID }}/01_*.json
             requests/${{ env.RUN_ID }}/02_plan.json
             requests/${{ env.RUN_ID }}/02_plan.sanitized.json
             requests/${{ env.RUN_ID }}/03_apply_result.json
+            requests/${{ env.RUN_ID }}/anchors-scan.md
             build-logs/**/*
           if-no-files-found: warn
 
@@ -354,4 +370,9 @@ jobs:
             echo "- **Requests dir:** [\`${REQ_DIR}\`](${REPO_URL}/tree/${RUN_BRANCH}/${REQ_DIR})"
             echo "- **Plan (raw):** [\`${PLAN_JSON}\`](${REPO_URL}/blob/${RUN_BRANCH}/${PLAN_JSON})"
             echo "- **Plan (sanitized):** [\`${PLAN_JSON_SAN}\`](${REPO_URL}/blob/${RUN_BRANCH}/${PLAN_JSON_SAN})"
+            echo ""
+            echo "In \`${REQ_DIR}/00_debug_two_phase.json\` you will find:"
+            echo "- Phase1 raw + validated"
+            echo "- Phase2 raw + validated"
+            echo "- Token usage (phase1_in/phase1_out/phase2_in/phase2_out/total)"
           } >> "$GITHUB_STEP_SUMMARY"
