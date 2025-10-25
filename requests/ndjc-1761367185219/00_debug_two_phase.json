@@ -1,0 +1,62 @@
+{
+  "runId": "ndjc-1761367185219",
+  "timestamp": "2025-10-25T04:40:01.917Z",
+  "template": "circle-basic",
+  "mode": "A",
+  "phase1": {
+    "raw": null,
+    "checked": null,
+    "issues": []
+  },
+  "phase2": {
+    "raw": null,
+    "checked": {
+      "template_key": "circle-basic",
+      "anchors": {
+        "NDJC:PRIMARY_BUTTON_TEXT": "Start"
+      },
+      "blocks": {},
+      "lists": {
+        "LIST:ROUTES": [
+          "home"
+        ]
+      },
+      "listKinds": {
+        "LIST:ROUTES": "other"
+      },
+      "conditions": {},
+      "hooks": {},
+      "hooksStructured": {},
+      "resources": {},
+      "companions": [],
+      "gradle": {
+        "applicationId": "",
+        "resConfigs": [],
+        "permissions": []
+      },
+      "meta": {},
+      "violations": [],
+      "coercions": [],
+      "anchorsGrouped": {
+        "text": {},
+        "block": {},
+        "list": {},
+        "if": {},
+        "hook": {},
+        "gradle": {
+          "applicationId": ""
+        }
+      }
+    },
+    "issues": []
+  },
+  "tokens": {
+    "phase1_in": null,
+    "phase1_out": null,
+    "phase2_in": null,
+    "phase2_out": null,
+    "total_in": null,
+    "total_out": null,
+    "total": null
+  }
+}
