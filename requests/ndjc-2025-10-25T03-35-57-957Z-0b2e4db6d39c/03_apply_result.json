@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-2025-10-25T03-35-57-957Z-0b2e4db6d39c",
+  "status": "pre-ci",
+  "template": "circle-basic",
+  "appTitle": "Circle Connect",
+  "packageName": "com.social.circleapp",
+  "note": "Apply result will be finalized in CI pipeline.",
+  "changes": [],
+  "warnings": []
+}
