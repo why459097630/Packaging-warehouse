@@ -1,5 +1,7 @@
-NDJC run ID: ndjc-1761367185219
-Template: circle-basic
-Mode: A
-Anchors: 0
-Timestamp: 2025-10-25T04:40:01.917Z
+branch=main
+variant=unknown
+apk=
+classes=
+missing_text=0
+missing_block=0
+ts=2025-10-25T04:40:39Z
