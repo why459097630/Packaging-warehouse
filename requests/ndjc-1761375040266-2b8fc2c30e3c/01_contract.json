@@ -1,0 +1,141 @@
+{
+  "metadata": {
+    "NDJC:BUILD_META:RUNID": "run_20231025_001",
+    "runId": "run_20231025_001"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.social.app",
+      "NDJC:APP_LABEL": "Social Circle",
+      "NDJC:HOME_TITLE": "Home Feed",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+      "NDJC:THEME_NAME": "OceanBlue",
+      "NDJC:DARK_MODE": "true",
+      "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+      "NDJC:FONT_FAMILY_SECONDARY": "OpenSans",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "300",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "https://api.socialapp.com",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "newest",
+      "NDJC:PAGING_SIZE": "20",
+      "NDJC:OFFLINE_POLICY": "cacheFirst",
+      "NDJC:PRIVACY_POLICY": "https://socialapp.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META:RUNID": "run_20231025_001",
+      "NDJC:FEATURE_TOGGLE:MIN": "1.0.0",
+      "NDJC:DEBUG_LOG_ENABLED": "false",
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "A",
+      "NDJC:THEME_COLORS": {
+        "primary": "#7C3AED",
+        "secondary": "#10B981"
+      },
+      "NDJC:TYPOCASE_OVERRIDES": "{}",
+      "NDJC:STRINGS_EXTRA": {},
+      "NDJC:ROUTE_HOME": "home",
+      "NDJC:ROUTE_DETAIL": "detail",
+      "NDJC:ENABLE_POSTING": "true",
+      "NDJC:ENABLE_COMMENTS": "true",
+      "NDJC:ENABLE_LIKES": "true",
+      "NDJC:PROFILE_EDIT_ENABLED": "true",
+      "NDJC:NOTIFICATIONS_ENABLED": "true"
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "detail",
+        "profile"
+      ],
+      "LIST:DEPENDENCY_SNIPPETS": [],
+      "LIST:PROGUARD_EXTRA": [],
+      "LIST:PACKAGING_RULES": [],
+      "LIST:POST_FIELDS": [],
+      "LIST:PLURAL_STRINGS": [],
+      "LIST:COMPONENT_STYLES": [],
+      "LIST:DEEPLINK_PATTERNS": [],
+      "LIST:NETWORK_CLEAR_TEXT": [],
+      "LIST:RES_CONFIGS_OVERRIDE": [],
+      "LIST:COMMENT_FIELDS": [],
+      "LIST:FEED_QUERY_PARAMS": [],
+      "LIST:PROFILE_FIELDS": [],
+      "LIST:NOTIFICATION_TYPES": [],
+      "LIST:UPLOAD_MIME_TYPES": []
+    },
+    "if": {
+      "IF:NAV_TRANSITIONS": true,
+      "IF:BUILD_SUMMARY": false,
+      "IF:NATIVE_SPLITS": true,
+      "IF:AFTER_BUILD": false,
+      "IF:PRE_COMMIT": true,
+      "IF:AFTER_INSTALL": false,
+      "IF:BEFORE_BUILD": true,
+      "IF:POST_INJECT": false,
+      "IF:BEFORE_BUNDLE": true,
+      "IF:AFTER_BUNDLE": false,
+      "IF:ENABLE_POSTING": true,
+      "IF:ENABLE_COMMENTS": true,
+      "IF:ENABLE_LIKES": true,
+      "IF:REQUIRE_LOGIN": true,
+      "IF:SHOW_NOTIFICATIONS": true
+    },
+    "gradle": {
+      "applicationId": "com.social.app",
+      "resConfigs": [
+        "en",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "@Composable fun HomeHeader(){ Column{ Text(\"Welcome to Social Circle\", style=MaterialTheme.typography.h5) Spacer(modifier=Modifier.height(8.dp)) } }",
+      "BLOCK:HOME_BODY": "@Composable fun HomeBody(posts: List<Post>){ LazyColumn{ items(posts){ post-> PostCard(post) } } }",
+      "BLOCK:HOME_ACTIONS": "@Composable fun HomeActions(onPostClick:()->Unit){ Row{ IconButton(onClick={ onPostClick() }){ Icon(Icons.Default.Add,\"Add Post\") } } }",
+      "BLOCK:SPLASH_CONTENT": "@Composable fun SplashScreen(){ Box(modifier=Modifier.fillMaxSize(),contentAlignment=Alignment.Center){ Image(painterResource(R.drawable.splash),contentDescription=null) } }",
+      "BLOCK:EMPTY_STATE": "@Composable fun EmptyState(){ Column(horizontalAlignment=Alignment.CenterHorizontally){ Icon(Icons.Default.Inbox,\"Empty\") Text(\"No content yet\") } }",
+      "BLOCK:ERROR_STATE": "@Composable fun ErrorState(message:String,onRetry:()->Unit){ Column(horizontalAlignment=Alignment.CenterHorizontally){ Icon(Icons.Default.Error,\"Error\") Text(message) Button(onClick={ onRetry() }){ Text(\"Retry\") } } }",
+      "BLOCK:DEBUG_PANEL": "@Composable fun DebugPanel(info:String){ Card{ Text(info, style=MaterialTheme.typography.caption) } }",
+      "BLOCK:HEADER_AD_SLOT": "@Composable fun HeaderAd(){ Box(modifier=Modifier.height(50.dp).fillMaxWidth()){ /* Ad placeholder */ } }",
+      "BLOCK:USER_PROFILE_CARD": "@Composable fun UserProfileCard(user:User){ Card{ Row{ Image(painterResource(user.avatar),modifier=Modifier.size(64.dp)) Column{ Text(user.name, style=MaterialTheme.typography.h6) Text(user.bio, style=MaterialTheme.typography.body2) } } } }",
+      "BLOCK:SPONSORED_CARD": "@Composable fun SponsoredCard(ad:Ad){ Card{ Column{ Image(painterResource(ad.image),modifier=Modifier.fillMaxWidth().height(120.dp)) Text(ad.title, style=MaterialTheme.typography.subtitle1) Text(ad.description, style=MaterialTheme.typography.body2) } } }",
+      "BLOCK:PROFILE_SECTION": "@Composable fun ProfileSection(user:User){ Column{ UserProfileCard(user) Divider() /* additional sections */ } }",
+      "BLOCK:SETTINGS_SECTION": "@Composable fun SettingsSection(){ Column{ SettingItem(\"Notifications\", Icons.Default.Notifications){ /* toggle */ } SettingItem(\"Dark Mode\", Icons.Default.DarkMode){ /* toggle */ } } }",
+      "BLOCK:SETTINGS_SECTION:EXTRA": "@Composable fun SettingsExtra(){ Column{ SettingItem(\"Experimental\", Icons.Default.Flutter){ /* toggle */ } } }",
+      "BLOCK:POST_COMPOSER": "@Composable fun PostComposer(onSubmit:(String)->Unit){ var text by remember{ mutableStateOf(\"\") } Column{ TextField(value=text,onValueChange={text=it},label={Text(\"What’s on your mind?\")}) Button(onClick={ onSubmit(text) }){ Text(\"Post\") } } }",
+      "BLOCK:POST_CARD": "@Composable fun PostCard(post:Post){ Card{ Column{ Text(post.author, style=MaterialTheme.typography.subtitle2) Text(post.content) Row{ LikeButton(post.id,post.liked) CommentButton(post.id) } } } }",
+      "BLOCK:FEED_LIST": "@Composable fun FeedList(posts:List<Post>,onPostClick:(String)->Unit){ LazyColumn{ items(posts){ post-> PostCard(post) } } }",
+      "BLOCK:POST_DETAIL": "@Composable fun PostDetail(postId:String){ /* fetch and display post */ Column{ Text(\"Post Detail for $postId\") } }",
+      "BLOCK:COMMENTS_SCREEN": "@Composable fun CommentsScreen(postId:String){ /* list comments */ Column{ Text(\"Comments for $postId\") } }",
+      "BLOCK:COMMENT_ITEM": "@Composable fun CommentItem(comment:Comment){ Row{ Text(comment.author) Spacer(Modifier.width(8.dp)) Text(comment.text) } }",
+      "BLOCK:LIKE_BUTTON": "@Composable fun LikeButton(postId:String,liked:Boolean){ IconButton(onClick={ /* toggle like */ }){ Icon(if(liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder, contentDescription=null) } }",
+      "BLOCK:NOTIFICATIONS_SCREEN": "@Composable fun NotificationsScreen(){ Column{ Text(\"Notifications\") /* list items */ } }",
+      "BLOCK:EDIT_PROFILE_SCREEN": "@Composable fun EditProfileScreen(user:User){ Column{ TextField(value=user.name,onValueChange={}) TextField(value=user.bio,onValueChange={}) Button(onClick={ /* save */ }){ Text(\"Save\") } } }",
+      "BLOCK:SEARCH_SCREEN": "@Composable fun SearchScreen(onSearch:(String)->Unit){ var query by remember{ mutableStateOf(\"\") } Column{ TextField(value=query,onValueChange={query=it},label={Text(\"Search\")}) Button(onClick={ onSearch(query) }){ Text(\"Go\") } } }",
+      "BLOCK:MEDIA_PICKER": "@Composable fun MediaPicker(onMediaSelected:(Uri)->Unit){ Button(onClick={ /* launch picker */ }){ Text(\"Pick Media\") } }"
+    },
+    "hook": {
+      "HOOK:INTENT_SHARE": "noop",
+      "HOOK:FILE_PROVIDER": "noop",
+      "HOOK:PERMISSIONS:ON_REQUEST": "noop",
+      "HOOK:PRE_COMMIT:HOOK": "noop",
+      "HOOK:POST_BUILD:HOOK": "noop",
+      "HOOK:AFTER_INSTALL:HOOK": "noop",
+      "HOOK:POST_SUBMIT": "noop",
+      "HOOK:FETCH_FEED": "noop",
+      "HOOK:FETCH_POST": "noop",
+      "HOOK:FETCH_COMMENTS": "noop",
+      "HOOK:COMMENT_SUBMIT": "noop",
+      "HOOK:LIKE_TOGGLE": "noop",
+      "HOOK:UPLOAD_MEDIA": "noop",
+      "HOOK:FETCH_NOTIFICATIONS": "noop"
+    }
+  },
+  "files": []
+}
