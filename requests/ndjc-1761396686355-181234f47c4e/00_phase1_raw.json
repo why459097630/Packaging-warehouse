@@ -1,0 +1,107 @@
+{
+  "runId": "ndjc-1761396686355-181234f47c4e",
+  "stage": "phase1",
+  "kind": "raw",
+  "data": {
+    "metadata": {
+      "NDJC:BUILD_META:RUNID": "run_20231025_001",
+      "template": "circle-basic",
+      "appName": "Social Circle",
+      "packageId": "com.example.socialapp",
+      "mode": "A"
+    },
+    "anchorsGrouped": {
+      "text": {
+        "NDJC:PACKAGE_NAME": "com.example.socialapp",
+        "NDJC:APP_LABEL": "Social Circle",
+        "NDJC:HOME_TITLE": "Home",
+        "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+        "NDJC:THEME_NAME": "Light",
+        "NDJC:DARK_MODE": "true",
+        "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+        "NDJC:FONT_FAMILY_SECONDARY": "Sans Serif",
+        "NDJC:I18N_ENABLED": "true",
+        "NDJC:ANIM_ENABLED": "true",
+        "NDJC:ANIM_DURATION_MS": "300",
+        "NDJC:LAYOUT_DENSITY": "mdpi",
+        "NDJC:DATA_SOURCE": "https://api.example.com",
+        "NDJC:SEED_ENABLED": "false",
+        "NDJC:FEED_SORT": "newest",
+        "NDJC:PAGING_SIZE": "20",
+        "NDJC:OFFLINE_POLICY": "cache",
+        "NDJC:PRIVACY_POLICY": "https://example.com/privacy",
+        "NDJC:DRAFT_ENABLED": "true",
+        "NDJC:USE_APP_BUNDLE": "false",
+        "NDJC:BUILD_META:RUNID": "run_20231025_001",
+        "NDJC:FEATURE_TOGGLE:MIN": "0",
+        "NDJC:DEBUG_LOG_ENABLED": "false",
+        "NDJC:LOG_LEVEL": "INFO",
+        "NDJC:CRASHLYTICS_ENABLED": "true",
+        "NDJC:EXPERIMENT_BUCKET": "A",
+        "NDJC:THEME_COLORS": {
+          "primary": "#7C3AED",
+          "secondary": "#10B981"
+        },
+        "NDJC:TYPOCASE_OVERRIDES": "",
+        "NDJC:STRINGS_EXTRA": {},
+        "NDJC:ROUTE_HOME": "home",
+        "NDJC:ROUTE_DETAIL": "post_detail",
+        "NDJC:ENABLE_POSTING": "true",
+        "NDJC:ENABLE_COMMENTS": "true",
+        "NDJC:ENABLE_LIKES": "true",
+        "NDJC:PROFILE_EDIT_ENABLED": "true",
+        "NDJC:NOTIFICATIONS_ENABLED": "true"
+      },
+      "list": {
+        "LIST:ROUTES": [
+          "home",
+          "profile",
+          "post_detail"
+        ],
+        "LIST:DEPENDENCY_SNIPPETS": [],
+        "LIST:PROGUARD_EXTRA": [],
+        "LIST:PACKAGING_RULES": [],
+        "LIST:POST_FIELDS": [],
+        "LIST:PLURAL_STRINGS": [],
+        "LIST:COMPONENT_STYLES": [],
+        "LIST:DEEPLINK_PATTERNS": [],
+        "LIST:NETWORK_CLEAR_TEXT": [],
+        "LIST:RES_CONFIGS_OVERRIDE": [],
+        "LIST:COMMENT_FIELDS": [],
+        "LIST:FEED_QUERY_PARAMS": [],
+        "LIST:PROFILE_FIELDS": [],
+        "LIST:NOTIFICATION_TYPES": [],
+        "LIST:UPLOAD_MIME_TYPES": []
+      },
+      "if": {
+        "IF:NAV_TRANSITIONS": true,
+        "IF:BUILD_SUMMARY": false,
+        "IF:NATIVE_SPLITS": false,
+        "IF:AFTER_BUILD": false,
+        "IF:PRE_COMMIT": false,
+        "IF:AFTER_INSTALL": false,
+        "IF:BEFORE_BUILD": false,
+        "IF:POST_INJECT": false,
+        "IF:BEFORE_BUNDLE": false,
+        "IF:AFTER_BUNDLE": false,
+        "IF:ENABLE_POSTING": true,
+        "IF:ENABLE_COMMENTS": true,
+        "IF:ENABLE_LIKES": true,
+        "IF:REQUIRE_LOGIN": true,
+        "IF:SHOW_NOTIFICATIONS": true
+      },
+      "gradle": {
+        "applicationId": "com.example.socialapp",
+        "resConfigs": [
+          "en",
+          "zh-rCN"
+        ],
+        "permissions": [
+          "android.permission.INTERNET",
+          "android.permission.ACCESS_NETWORK_STATE"
+        ]
+      }
+    },
+    "files": []
+  }
+}
