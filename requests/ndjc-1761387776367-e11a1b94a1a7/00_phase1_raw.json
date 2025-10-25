@@ -1,0 +1,146 @@
+{
+  "runId": "ndjc-1761387776367-e11a1b94a1a7",
+  "stage": "phase1",
+  "kind": "raw",
+  "data": {
+    "metadata": {
+      "NDJC:BUILD_META:RUNID": "run_20231025_001",
+      "template": "circle-basic",
+      "appName": "Circle",
+      "packageId": "com.social.circleapp",
+      "mode": "A"
+    },
+    "anchorsGrouped": {
+      "text": {
+        "NDJC:PACKAGE_NAME": "com.social.circleapp",
+        "NDJC:APP_LABEL": "Circle",
+        "NDJC:HOME_TITLE": "Home Feed",
+        "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+        "NDJC:THEME_NAME": "LightTheme",
+        "NDJC:DARK_MODE": "true",
+        "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+        "NDJC:FONT_FAMILY_SECONDARY": "Roboto Slab",
+        "NDJC:I18N_ENABLED": "true",
+        "NDJC:ANIM_ENABLED": "true",
+        "NDJC:ANIM_DURATION_MS": "300",
+        "NDJC:LAYOUT_DENSITY": "mdpi",
+        "NDJC:DATA_SOURCE": "https://api.socialapp.com",
+        "NDJC:SEED_ENABLED": "false",
+        "NDJC:FEED_SORT": "newest",
+        "NDJC:PAGING_SIZE": "20",
+        "NDJC:OFFLINE_POLICY": "cache",
+        "NDJC:PRIVACY_POLICY": "https://socialapp.com/privacy",
+        "NDJC:DRAFT_ENABLED": "true",
+        "NDJC:USE_APP_BUNDLE": "false",
+        "NDJC:BUILD_META:RUNID": "run_20231025_001",
+        "NDJC:FEATURE_TOGGLE:MIN": "1.0",
+        "NDJC:DEBUG_LOG_ENABLED": "false",
+        "NDJC:LOG_LEVEL": "INFO",
+        "NDJC:CRASHLYTICS_ENABLED": "true",
+        "NDJC:EXPERIMENT_BUCKET": "A",
+        "NDJC:THEME_COLORS": {
+          "primary": "#7C3AED",
+          "secondary": "#10B981"
+        },
+        "NDJC:TYPOCASE_OVERRIDES": "",
+        "NDJC:STRINGS_EXTRA": {},
+        "NDJC:ROUTE_HOME": "home",
+        "NDJC:ROUTE_DETAIL": "detail",
+        "NDJC:ENABLE_POSTING": "true",
+        "NDJC:ENABLE_COMMENTS": "true",
+        "NDJC:ENABLE_LIKES": "true",
+        "NDJC:PROFILE_EDIT_ENABLED": "true",
+        "NDJC:NOTIFICATIONS_ENABLED": "true"
+      },
+      "list": {
+        "LIST:ROUTES": [
+          "home",
+          "detail",
+          "profile"
+        ],
+        "LIST:DEPENDENCY_SNIPPETS": [
+          "implementation 'com.squareup.retrofit2:retrofit:2.9.0'"
+        ],
+        "LIST:PROGUARD_EXTRA": [
+          "-keep class com.social.** { *; }"
+        ],
+        "LIST:PACKAGING_RULES": [
+          "exclude 'META-INF/*.kotlin_module'"
+        ],
+        "LIST:POST_FIELDS": [
+          "text",
+          "image",
+          "location"
+        ],
+        "LIST:PLURAL_STRINGS": [
+          "comment_one",
+          "comment_other"
+        ],
+        "LIST:COMPONENT_STYLES": [
+          "buttonPrimary",
+          "card"
+        ],
+        "LIST:DEEPLINK_PATTERNS": [
+          "app://post/{id}"
+        ],
+        "LIST:NETWORK_CLEAR_TEXT": [
+          "http://"
+        ],
+        "LIST:RES_CONFIGS_OVERRIDE": [],
+        "LIST:COMMENT_FIELDS": [
+          "author",
+          "content",
+          "timestamp"
+        ],
+        "LIST:FEED_QUERY_PARAMS": [
+          "sort",
+          "page",
+          "size"
+        ],
+        "LIST:PROFILE_FIELDS": [
+          "username",
+          "avatar",
+          "bio"
+        ],
+        "LIST:NOTIFICATION_TYPES": [
+          "like",
+          "comment",
+          "follow"
+        ],
+        "LIST:UPLOAD_MIME_TYPES": [
+          "image/jpeg",
+          "image/png"
+        ]
+      },
+      "if": {
+        "IF:NAV_TRANSITIONS": true,
+        "IF:BUILD_SUMMARY": true,
+        "IF:NATIVE_SPLITS": false,
+        "IF:AFTER_BUILD": false,
+        "IF:PRE_COMMIT": false,
+        "IF:AFTER_INSTALL": false,
+        "IF:BEFORE_BUILD": false,
+        "IF:POST_INJECT": false,
+        "IF:BEFORE_BUNDLE": false,
+        "IF:AFTER_BUNDLE": false,
+        "IF:ENABLE_POSTING": true,
+        "IF:ENABLE_COMMENTS": true,
+        "IF:ENABLE_LIKES": true,
+        "IF:REQUIRE_LOGIN": true,
+        "IF:SHOW_NOTIFICATIONS": true
+      },
+      "gradle": {
+        "applicationId": "com.social.circleapp",
+        "resConfigs": [
+          "en",
+          "zh-rCN"
+        ],
+        "permissions": [
+          "android.permission.INTERNET",
+          "android.permission.ACCESS_NETWORK_STATE"
+        ]
+      }
+    },
+    "files": []
+  }
+}
