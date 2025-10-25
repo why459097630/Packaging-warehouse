@@ -1,0 +1,23 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start"
+  },
+  "blocks": {},
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "conditions": {},
+  "hooks": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "",
+    "resConfigs": [],
+    "permissions": []
+  },
+  "meta": {},
+  "droppedDanger": 0
+}
