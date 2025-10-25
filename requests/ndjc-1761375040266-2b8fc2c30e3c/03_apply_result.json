@@ -1,7 +1,13 @@
 {
-  "status": "ok",
-  "template": "circle-basic",
-  "mode": "A",
-  "anchorsCount": 36,
-  "timestamp": "2025-10-25T06:50:51.661Z"
+  "replaced_total": 80,
+  "replaced_text": 43,
+  "replaced_block": 20,
+  "replaced_list": 1,
+  "replaced_if": 10,
+  "hooks_applied": 6,
+  "missing_text": 5,
+  "missing_block": 11,
+  "missing_list": 0,
+  "missing_if": 5,
+  "generated_at": "2025-10-25T06:51:38Z"
 }
