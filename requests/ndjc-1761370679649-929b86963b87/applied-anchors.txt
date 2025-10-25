@@ -1,0 +1,3 @@
+TEXT	NDJC:PRIMARY_BUTTON_TEXT	app/src/main/res/values/strings.xml:9
+TEXT	NDJC:PRIMARY_BUTTON_TEXT	app/src/main/res/values/strings.xml:10
+LIST	LIST:ROUTES	app/src/main/java/com/ndjc/app/navigation/NavGraph.kt
