@@ -1,0 +1,180 @@
+{
+  "metadata": {
+    "NDJC:BUILD_META:RUNID": "run_20231025_001",
+    "runId": "run_20231025_001"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.social.circleapp",
+      "NDJC:APP_LABEL": "Circle",
+      "NDJC:HOME_TITLE": "Home Feed",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+      "NDJC:THEME_NAME": "LightTheme",
+      "NDJC:DARK_MODE": "true",
+      "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+      "NDJC:FONT_FAMILY_SECONDARY": "Roboto Slab",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "300",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "https://api.socialapp.com",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "newest",
+      "NDJC:PAGING_SIZE": "20",
+      "NDJC:OFFLINE_POLICY": "cache",
+      "NDJC:PRIVACY_POLICY": "https://socialapp.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "false",
+      "NDJC:BUILD_META:RUNID": "run_20231025_001",
+      "NDJC:FEATURE_TOGGLE:MIN": "1.0",
+      "NDJC:DEBUG_LOG_ENABLED": "false",
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "A",
+      "NDJC:THEME_COLORS": {
+        "primary": "#7C3AED",
+        "secondary": "#10B981"
+      },
+      "NDJC:TYPOCASE_OVERRIDES": "",
+      "NDJC:STRINGS_EXTRA": {},
+      "NDJC:ROUTE_HOME": "home",
+      "NDJC:ROUTE_DETAIL": "detail",
+      "NDJC:ENABLE_POSTING": "true",
+      "NDJC:ENABLE_COMMENTS": "true",
+      "NDJC:ENABLE_LIKES": "true",
+      "NDJC:PROFILE_EDIT_ENABLED": "true",
+      "NDJC:NOTIFICATIONS_ENABLED": "true"
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "detail",
+        "profile"
+      ],
+      "LIST:DEPENDENCY_SNIPPETS": [
+        "implementation 'com.squareup.retrofit2:retrofit:2.9.0'"
+      ],
+      "LIST:PROGUARD_EXTRA": [
+        "-keep class com.social.** { *; }"
+      ],
+      "LIST:PACKAGING_RULES": [
+        "exclude 'META-INF/*.kotlin_module'"
+      ],
+      "LIST:POST_FIELDS": [
+        "text",
+        "image",
+        "location"
+      ],
+      "LIST:PLURAL_STRINGS": [
+        "comment_one",
+        "comment_other"
+      ],
+      "LIST:COMPONENT_STYLES": [
+        "buttonPrimary",
+        "card"
+      ],
+      "LIST:DEEPLINK_PATTERNS": [
+        "app://post/{id}"
+      ],
+      "LIST:NETWORK_CLEAR_TEXT": [
+        "http://"
+      ],
+      "LIST:RES_CONFIGS_OVERRIDE": [],
+      "LIST:COMMENT_FIELDS": [
+        "author",
+        "content",
+        "timestamp"
+      ],
+      "LIST:FEED_QUERY_PARAMS": [
+        "sort",
+        "page",
+        "size"
+      ],
+      "LIST:PROFILE_FIELDS": [
+        "username",
+        "avatar",
+        "bio"
+      ],
+      "LIST:NOTIFICATION_TYPES": [
+        "like",
+        "comment",
+        "follow"
+      ],
+      "LIST:UPLOAD_MIME_TYPES": [
+        "image/jpeg",
+        "image/png"
+      ]
+    },
+    "if": {
+      "IF:NAV_TRANSITIONS": true,
+      "IF:BUILD_SUMMARY": true,
+      "IF:NATIVE_SPLITS": false,
+      "IF:AFTER_BUILD": false,
+      "IF:PRE_COMMIT": false,
+      "IF:AFTER_INSTALL": false,
+      "IF:BEFORE_BUILD": false,
+      "IF:POST_INJECT": false,
+      "IF:BEFORE_BUNDLE": false,
+      "IF:AFTER_BUNDLE": false,
+      "IF:ENABLE_POSTING": true,
+      "IF:ENABLE_COMMENTS": true,
+      "IF:ENABLE_LIKES": true,
+      "IF:REQUIRE_LOGIN": true,
+      "IF:SHOW_NOTIFICATIONS": true
+    },
+    "gradle": {
+      "applicationId": "com.social.circleapp",
+      "resConfigs": [
+        "en",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "@Composable fun HomeHeader(){ TopAppBar(title = { Text(\\\"Home Feed\\\") }, navigationIcon = { IconButton(onClick = { /*TODO*/ }) { Icon(Icons.Default.Menu, contentDescription = null) } }) }",
+      "BLOCK:HOME_BODY": "@Composable fun HomeBody(posts: List<Post>){ LazyColumn{ items(posts){ post -> PostCard(post) } } }",
+      "BLOCK:HOME_ACTIONS": "@Composable fun HomeActions(onPostClick: ()->Unit){ Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){ Button(onClick = onPostClick){ Text(\\\"Post\\\") } } }",
+      "BLOCK:SPLASH_CONTENT": "@Composable fun SplashContent(){ Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){ Image(painter = painterResource(id = R.drawable.splash), contentDescription = null) } }",
+      "BLOCK:EMPTY_STATE": "@Composable fun EmptyState(){ Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()){ Icon(Icons.Default.Inbox, contentDescription = null) Text(\\\"No posts yet\\\") } }",
+      "BLOCK:ERROR_STATE": "@Composable fun ErrorState(message: String, onRetry: ()->Unit){ Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()){ Icon(Icons.Default.Error, contentDescription = null) Text(message) Button(onClick = onRetry){ Text(\\\"Retry\\\") } } }",
+      "BLOCK:DEBUG_PANEL": "@Composable fun DebugPanel(info: String){ Card(modifier = Modifier.fillMaxWidth().padding(8.dp)){ Text(info, style = MaterialTheme.typography.caption) } }",
+      "BLOCK:HEADER_AD_SLOT": "@Composable fun HeaderAdSlot(){ Box(modifier = Modifier.height(50.dp).fillMaxWidth()){ /* Ad placeholder */ } }",
+      "BLOCK:USER_PROFILE_CARD": "@Composable fun UserProfileCard(user: User){ Card{ Row(modifier = Modifier.padding(8.dp)){ Image(painter = painterResource(user.avatar), contentDescription = null, modifier = Modifier.size(48.dp)) Column{ Text(user.username, style = MaterialTheme.typography.h6) Text(user.bio, style = MaterialTheme.typography.body2) } } } }",
+      "BLOCK:SPONSORED_CARD": "@Composable fun SponsoredCard(ad: Ad){ Card{ Column(modifier = Modifier.padding(8.dp)){ Image(painter = painterResource(ad.image), contentDescription = null) Text(ad.title, style = MaterialTheme.typography.subtitle1) Text(ad.description, style = MaterialTheme.typography.body2) } } }",
+      "BLOCK:PROFILE_SECTION": "@Composable fun ProfileSection(){ Column{ UserProfileCard(user = currentUser) Button(onClick = { /* edit */ }) { Text(\\\"Edit Profile\\\") } } }",
+      "BLOCK:SETTINGS_SECTION": "@Composable fun SettingsSection(){ Column{ SettingItem(\\\"Notifications\\\", Icons.Default.Notifications) SettingItem(\\\"Privacy\\\", Icons.Default.PrivacyTip) } }",
+      "BLOCK:SETTINGS_SECTION:EXTRA": "@Composable fun SettingsExtra(){ Text(\\\"App version 1.0.0\\\", style = MaterialTheme.typography.caption) }",
+      "BLOCK:POST_COMPOSER": "@Composable fun PostComposer(onPost: (String, Uri?)->Unit){ var text by remember { mutableStateOf(\\\"\\\") } var imageUri by remember { mutableStateOf<Uri?>(null) } Column{ TextField(value = text, onValueChange = { text = it }, label = { Text(\\\"What's on your mind?\\\") }) Button(onClick = { onPost(text, imageUri) }) { Text(\\\"Share\\\") } } }",
+      "BLOCK:POST_CARD": "@Composable fun PostCard(post: Post){ Card(modifier = Modifier.padding(8.dp).fillMaxWidth()){ Column{ Row{ Image(painter = painterResource(post.author.avatar), contentDescription = null, modifier = Modifier.size(40.dp)) Column{ Text(post.author.username, style = MaterialTheme.typography.subtitle1) Text(post.timestamp, style = MaterialTheme.typography.caption) } } Text(post.content, style = MaterialTheme.typography.body1) if(post.imageUrl != null){ Image(painter = painterResource(post.imageUrl), contentDescription = null, modifier = Modifier.fillMaxWidth().height(200.dp)) } Row{ LikeButton(postId = post.id, liked = post.liked) CommentButton(postId = post.id) } } } }",
+      "BLOCK:FEED_LIST": "@Composable fun FeedList(posts: List<Post>){ LazyColumn{ items(posts){ post -> PostCard(post) } } }",
+      "BLOCK:POST_DETAIL": "@Composable fun PostDetail(postId: String){ val post = remember { fetchPost(postId) } Column{ PostCard(post) CommentsScreen(postId) } }",
+      "BLOCK:COMMENTS_SCREEN": "@Composable fun CommentsScreen(postId: String){ val comments = remember { fetchComments(postId) } LazyColumn{ items(comments){ comment -> CommentItem(comment) } } }",
+      "BLOCK:COMMENT_ITEM": "@Composable fun CommentItem(comment: Comment){ Row(modifier = Modifier.padding(8.dp)){ Image(painter = painterResource(comment.author.avatar), contentDescription = null, modifier = Modifier.size(32.dp)) Column{ Text(comment.author.username, style = MaterialTheme.typography.subtitle2) Text(comment.content, style = MaterialTheme.typography.body2) } } }",
+      "BLOCK:LIKE_BUTTON": "@Composable fun LikeButton(postId: String, liked: Boolean){ IconToggleButton(checked = liked, onCheckedChange = { toggleLike(postId) }){ Icon(if(liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder, contentDescription = null) } }",
+      "BLOCK:NOTIFICATIONS_SCREEN": "@Composable fun NotificationsScreen(){ val notifications = remember { fetchNotifications() } LazyColumn{ items(notifications){ n -> NotificationItem(n) } } }",
+      "BLOCK:EDIT_PROFILE_SCREEN": "@Composable fun EditProfileScreen(){ var username by remember { mutableStateOf(currentUser.username) } var bio by remember { mutableStateOf(currentUser.bio) } Column{ TextField(value = username, onValueChange = { username = it }, label = { Text(\\\"Username\\\") }) TextField(value = bio, onValueChange = { bio = it }, label = { Text(\\\"Bio\\\") }) Button(onClick = { saveProfile(username, bio) }) { Text(\\\"Save\\\") } } }",
+      "BLOCK:SEARCH_SCREEN": "@Composable fun SearchScreen(onSearch: (String)->Unit){ var query by remember { mutableStateOf(\\\"\\\") } Column{ TextField(value = query, onValueChange = { query = it }, label = { Text(\\\"Search\\\") }, keyboardActions = KeyboardActions(onSearch = { onSearch(query) })) } }",
+      "BLOCK:MEDIA_PICKER": "@Composable fun MediaPicker(onMediaSelected: (Uri)->Unit){ val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()){ uri -> if(uri != null) onMediaSelected(uri) } Button(onClick = { launcher.launch(\\\"image/*\\\") }){ Text(\\\"Pick Image\\\") } }"
+    },
+    "hook": {
+      "HOOK:INTENT_SHARE": "noop",
+      "HOOK:FILE_PROVIDER": "noop",
+      "HOOK:PERMISSIONS:ON_REQUEST": "noop",
+      "HOOK:PRE_COMMIT:HOOK": "noop",
+      "HOOK:POST_BUILD:HOOK": "noop",
+      "HOOK:AFTER_INSTALL:HOOK": "noop",
+      "HOOK:POST_SUBMIT": "noop",
+      "HOOK:FETCH_FEED": "noop",
+      "HOOK:FETCH_POST": "noop",
+      "HOOK:FETCH_COMMENTS": "noop",
+      "HOOK:COMMENT_SUBMIT": "noop",
+      "HOOK:LIKE_TOGGLE": "noop",
+      "HOOK:UPLOAD_MEDIA": "noop",
+      "HOOK:FETCH_NOTIFICATIONS": "noop"
+    }
+  },
+  "files": []
+}
