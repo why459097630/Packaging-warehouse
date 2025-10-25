@@ -1,0 +1,38 @@
+{
+  "template_key": "circle-basic",
+  "anchors": {
+    "NDJC:PRIMARY_BUTTON_TEXT": "Start"
+  },
+  "blocks": {},
+  "lists": {
+    "LIST:ROUTES": [
+      "home"
+    ]
+  },
+  "listKinds": {
+    "LIST:ROUTES": "other"
+  },
+  "conditions": {},
+  "hooks": {},
+  "hooksStructured": {},
+  "resources": {},
+  "companions": [],
+  "gradle": {
+    "applicationId": "",
+    "resConfigs": [],
+    "permissions": []
+  },
+  "meta": {},
+  "violations": [],
+  "coercions": [],
+  "anchorsGrouped": {
+    "text": {},
+    "block": {},
+    "list": {},
+    "if": {},
+    "hook": {},
+    "gradle": {
+      "applicationId": ""
+    }
+  }
+}
