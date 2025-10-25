@@ -1,10 +1,13 @@
 {
-  "runId": "ndjc-2025-10-25T03-35-57-957Z-0b2e4db6d39c",
-  "status": "pre-ci",
-  "template": "circle-basic",
-  "appTitle": "Circle Connect",
-  "packageName": "com.social.circleapp",
-  "note": "Apply result will be finalized in CI pipeline.",
-  "changes": [],
-  "warnings": []
+  "replaced_total": 56,
+  "replaced_text": 43,
+  "replaced_block": 0,
+  "replaced_list": 3,
+  "replaced_if": 10,
+  "hooks_applied": 0,
+  "missing_text": 5,
+  "missing_block": 0,
+  "missing_list": 3,
+  "missing_if": 5,
+  "generated_at": "2025-10-25T03:36:54Z"
 }
