@@ -1,0 +1,159 @@
+{
+  "metadata": {
+    "NDJC:BUILD_META:RUNID": "run_20231025_001"
+  },
+  "anchorsGrouped": {
+    "text": {
+      "NDJC:PACKAGE_NAME": "com.socialcircle.app",
+      "NDJC:APP_LABEL": "Social Circle",
+      "NDJC:HOME_TITLE": "Home Feed",
+      "NDJC:PRIMARY_BUTTON_TEXT": "Post",
+      "NDJC:THEME_NAME": "Light",
+      "NDJC:DARK_MODE": "true",
+      "NDJC:FONT_FAMILY_PRIMARY": "Roboto",
+      "NDJC:FONT_FAMILY_SECONDARY": "Roboto Slab",
+      "NDJC:I18N_ENABLED": "true",
+      "NDJC:ANIM_ENABLED": "true",
+      "NDJC:ANIM_DURATION_MS": "300",
+      "NDJC:LAYOUT_DENSITY": "mdpi",
+      "NDJC:DATA_SOURCE": "https://api.socialcircle.com",
+      "NDJC:SEED_ENABLED": "false",
+      "NDJC:FEED_SORT": "chronological",
+      "NDJC:PAGING_SIZE": "20",
+      "NDJC:OFFLINE_POLICY": "cacheFirst",
+      "NDJC:PRIVACY_POLICY": "https://socialcircle.com/privacy",
+      "NDJC:DRAFT_ENABLED": "true",
+      "NDJC:USE_APP_BUNDLE": "true",
+      "NDJC:BUILD_META:RUNID": "run_20231025_001",
+      "NDJC:FEATURE_TOGGLE:MIN": "1.0.0",
+      "NDJC:DEBUG_LOG_ENABLED": "false",
+      "NDJC:LOG_LEVEL": "INFO",
+      "NDJC:CRASHLYTICS_ENABLED": "true",
+      "NDJC:EXPERIMENT_BUCKET": "A",
+      "NDJC:THEME_COLORS": {
+        "primary": "#7C3AED",
+        "secondary": "#10B981"
+      },
+      "NDJC:TYPOCASE_OVERRIDES": "none",
+      "NDJC:STRINGS_EXTRA": {},
+      "NDJC:ROUTE_HOME": "home",
+      "NDJC:ROUTE_DETAIL": "detail",
+      "NDJC:ENABLE_POSTING": "true",
+      "NDJC:ENABLE_COMMENTS": "true",
+      "NDJC:ENABLE_LIKES": "true",
+      "NDJC:PROFILE_EDIT_ENABLED": "true",
+      "NDJC:NOTIFICATIONS_ENABLED": "true"
+    },
+    "list": {
+      "LIST:ROUTES": [
+        "home",
+        "detail",
+        "profile"
+      ],
+      "LIST:DEPENDENCY_SNIPPETS": [],
+      "LIST:PROGUARD_EXTRA": [],
+      "LIST:PACKAGING_RULES": [],
+      "LIST:POST_FIELDS": [
+        "text",
+        "image",
+        "video"
+      ],
+      "LIST:PLURAL_STRINGS": [],
+      "LIST:COMPONENT_STYLES": [],
+      "LIST:DEEPLINK_PATTERNS": [],
+      "LIST:NETWORK_CLEAR_TEXT": [],
+      "LIST:RES_CONFIGS_OVERRIDE": [],
+      "LIST:COMMENT_FIELDS": [
+        "text",
+        "image"
+      ],
+      "LIST:FEED_QUERY_PARAMS": [],
+      "LIST:PROFILE_FIELDS": [
+        "username",
+        "avatar",
+        "bio"
+      ],
+      "LIST:NOTIFICATION_TYPES": [
+        "like",
+        "comment",
+        "follow"
+      ],
+      "LIST:UPLOAD_MIME_TYPES": [
+        "image/jpeg",
+        "image/png",
+        "video/mp4"
+      ]
+    },
+    "if": {
+      "IF:NAV_TRANSITIONS": false,
+      "IF:BUILD_SUMMARY": false,
+      "IF:NATIVE_SPLITS": false,
+      "IF:AFTER_BUILD": false,
+      "IF:PRE_COMMIT": false,
+      "IF:AFTER_INSTALL": false,
+      "IF:BEFORE_BUILD": false,
+      "IF:POST_INJECT": false,
+      "IF:BEFORE_BUNDLE": false,
+      "IF:AFTER_BUNDLE": false,
+      "IF:ENABLE_POSTING": false,
+      "IF:ENABLE_COMMENTS": false,
+      "IF:ENABLE_LIKES": false,
+      "IF:REQUIRE_LOGIN": false,
+      "IF:SHOW_NOTIFICATIONS": false
+    },
+    "gradle": {
+      "applicationId": "com.socialcircle.app",
+      "resConfigs": [
+        "en",
+        "zh-rCN"
+      ],
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
+    },
+    "block": {
+      "BLOCK:HOME_HEADER": "@Composable fun HomeHeader() { Row(modifier = Modifier.fillMaxWidth().padding(16.dp)) { Text(text = \\\"Welcome\\\", style = MaterialTheme.typography.h5) } }",
+      "BLOCK:HOME_BODY": "@Composable fun HomeBody(posts: List<Post>) { LazyColumn { items(posts) { post -> PostCard(post) } } }",
+      "BLOCK:HOME_ACTIONS": "@Composable fun HomeActions(onPostClick: () -> Unit) { FloatingActionButton(onClick = onPostClick) { Icon(Icons.Default.Add, contentDescription = null) } }",
+      "BLOCK:SPLASH_CONTENT": "@Composable fun SplashContent() { Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(\\\"Social Circle\\\", style = MaterialTheme.typography.h3) } }",
+      "BLOCK:EMPTY_STATE": "@Composable fun EmptyState(message: String) { Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize().padding(32.dp)) { Icon(Icons.Default.Inbox, contentDescription = null) Text(message) } }",
+      "BLOCK:ERROR_STATE": "@Composable fun ErrorState(error: String, onRetry: () -> Unit) { Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize().padding(32.dp)) { Text(error, color = Color.Red) Button(onClick = onRetry) { Text(\\\"Retry\\\") } } }",
+      "BLOCK:DEBUG_PANEL": "@Composable fun DebugPanel(info: String) { Text(info, style = MaterialTheme.typography.caption) }",
+      "BLOCK:HEADER_AD_SLOT": "@Composable fun HeaderAdSlot() { Box(modifier = Modifier.height(50.dp).fillMaxWidth()) { /* Ad placeholder */ } }",
+      "BLOCK:USER_PROFILE_CARD": "@Composable fun UserProfileCard(user: User) { Card { Row(modifier = Modifier.padding(16.dp)) { Image(painter = rememberImagePainter(user.avatarUrl), contentDescription = null, modifier = Modifier.size(48.dp).clip(CircleShape)) Column(modifier = Modifier.padding(start = 8.dp)) { Text(user.username, style = MaterialTheme.typography.subtitle1) Text(user.bio, maxLines = 2, overflow = TextOverflow.Ellipsis) } } } }",
+      "BLOCK:SPONSORED_CARD": "@Composable fun SponsoredCard(ad: Ad) { Card { Column(modifier = Modifier.padding(8.dp)) { Image(painter = rememberImagePainter(ad.imageUrl), contentDescription = null, modifier = Modifier.fillMaxWidth().height(120.dp)) Text(ad.title, style = MaterialTheme.typography.body1) } } }",
+      "BLOCK:PROFILE_SECTION": "@Composable fun ProfileSection(user: User) { Column { UserProfileCard(user) /* Additional sections */ } }",
+      "BLOCK:SETTINGS_SECTION": "@Composable fun SettingsSection(settings: List<Setting>) { LazyColumn { items(settings) { setting -> SettingItem(setting) } } }",
+      "BLOCK:SETTINGS_SECTION:EXTRA": "@Composable fun SettingsExtra(extra: String) { Text(extra) }",
+      "BLOCK:POST_COMPOSER": "@Composable fun PostComposer(onPost: (String, Uri?) -> Unit) { var text by remember { mutableStateOf(\\\"\\\") } var imageUri by remember { mutableStateOf<Uri?>(null) } Column(modifier = Modifier.padding(16.dp)) { TextField(value = text, onValueChange = { text = it }, label = { Text(\\\"What's on your mind?\\\") }) Button(onClick = { onPost(text, imageUri) }) { Text(\\\"Post\\\") } } }",
+      "BLOCK:POST_CARD": "@Composable fun PostCard(post: Post) { Card(modifier = Modifier.padding(8.dp)) { Column(modifier = Modifier.padding(8.dp)) { Text(post.author, style = MaterialTheme.typography.subtitle2) Text(post.content) if (post.imageUrl != null) { Image(painter = rememberImagePainter(post.imageUrl), contentDescription = null, modifier = Modifier.fillMaxWidth().height(200.dp)) } Row { LikeButton(post.id, post.liked) CommentButton(post.id) } } } }",
+      "BLOCK:FEED_LIST": "@Composable fun FeedList(posts: List<Post>) { LazyColumn { items(posts) { post -> PostCard(post) } } }",
+      "BLOCK:POST_DETAIL": "@Composable fun PostDetail(postId: String) { /* Fetch and display post details */ }",
+      "BLOCK:COMMENTS_SCREEN": "@Composable fun CommentsScreen(postId: String) { /* UI for comments */ }",
+      "BLOCK:COMMENT_ITEM": "@Composable fun CommentItem(comment: Comment) { Row(modifier = Modifier.padding(8.dp)) { Image(painter = rememberImagePainter(comment.authorAvatar), contentDescription = null, modifier = Modifier.size(32.dp).clip(CircleShape)) Column(modifier = Modifier.padding(start = 8.dp)) { Text(comment.authorName, style = MaterialTheme.typography.subtitle2) Text(comment.text) } } }",
+      "BLOCK:LIKE_BUTTON": "@Composable fun LikeButton(postId: String, liked: Boolean) { IconButton(onClick = { /* toggle like */ }) { Icon(if (liked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder, contentDescription = null) } }",
+      "BLOCK:NOTIFICATIONS_SCREEN": "@Composable fun NotificationsScreen(notifications: List<Notification>) { LazyColumn { items(notifications) { notif -> NotificationItem(notif) } } }",
+      "BLOCK:EDIT_PROFILE_SCREEN": "@Composable fun EditProfileScreen(user: User, onSave: (User) -> Unit) { /* UI for editing profile */ }",
+      "BLOCK:SEARCH_SCREEN": "@Composable fun SearchScreen(onSearch: (String) -> Unit) { var query by remember { mutableStateOf(\\\"\\\") } Column { TextField(value = query, onValueChange = { query = it }, label = { Text(\\\"Search\\\") }) Button(onClick = { onSearch(query) }) { Text(\\\"Go\\\") } } }",
+      "BLOCK:MEDIA_PICKER": "@Composable fun MediaPicker(onMediaSelected: (Uri) -> Unit) { /* Integration with Android picker */ }"
+    },
+    "hook": {
+      "HOOK:INTENT_SHARE": "noop",
+      "HOOK:FILE_PROVIDER": "noop",
+      "HOOK:PERMISSIONS:ON_REQUEST": "noop",
+      "HOOK:PRE_COMMIT:HOOK": "noop",
+      "HOOK:POST_BUILD:HOOK": "noop",
+      "HOOK:AFTER_INSTALL:HOOK": "noop",
+      "HOOK:POST_SUBMIT": "noop",
+      "HOOK:FETCH_FEED": "noop",
+      "HOOK:FETCH_POST": "noop",
+      "HOOK:FETCH_COMMENTS": "noop",
+      "HOOK:COMMENT_SUBMIT": "noop",
+      "HOOK:LIKE_TOGGLE": "noop",
+      "HOOK:UPLOAD_MEDIA": "noop",
+      "HOOK:FETCH_NOTIFICATIONS": "noop"
+    }
+  },
+  "files": []
+}
