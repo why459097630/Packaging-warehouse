@@ -13,11 +13,11 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 // ===== 你当前环境的绝对路径（按你提供的为准，统一成带连字符版） =====
-const SETTINGS_GRADLE = "E:/NDJC/Packaging-warehouse/templates/Core-Templates/settings.gradle.kts";
-const APP_GRADLE      = "E:/NDJC/Packaging-warehouse/templates/Core-Templates/app/build.gradle.kts";
-const ASSEMBLY_JSON   = "E:/NDJC/Packaging-warehouse/lib/ndjc/assembly.local.json";
-const SST_CHECKER     = "E:/NDJC/Packaging-warehouse/scripts/ndjc-sst-checker.js";
-const SST_JSON        = "E:/NDJC/Packaging-warehouse/scripts/sst.json";
+const SETTINGS_GRADLE = "templates/Core-Templates/settings.gradle.kts";
+const APP_GRADLE      = "templates/Core-Templates/app/build.gradle.kts";
+const ASSEMBLY_JSON   = "lib/ndjc/assembly.local.json";
+const SST_CHECKER     = "scripts/ndjc-sst-checker.js";
+const SST_JSON        = "scripts/sst.json";
 
 // 模板根目录（由 settings.gradle.kts 所在目录反推）
 const TEMPLATE_DIR    = path.dirname(SETTINGS_GRADLE);           // .../templates/Core-Templates
