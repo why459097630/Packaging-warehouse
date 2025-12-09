@@ -15,13 +15,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout current repo (Packaging-warehouse)
+      # 1) Checkout Packaging-warehouse 仓库
       - name: Checkout (Packaging-warehouse)
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      # 2) Resolve inputs and print clickable summary
+      # 2) 解析 runId / template，准备环境变量 & summary 头部
       - name: Resolve inputs → env & summary
         id: resolve
         shell: bash
@@ -31,339 +29,195 @@ jobs:
           RUN_ID="${{ github.event.client_payload.runId || '' }}"
           TEMPLATE_IN="${{ github.event.client_payload.template || '' }}"
           [ -n "$TEMPLATE_IN" ] || TEMPLATE_IN="${TEMPLATE_DEFAULT}"
+
           if [ -z "$RUN_ID" ]; then
             RUN_ID="ndjc-$(date -u +%Y-%m-%dT%H-%M-%SZ)-${GITHUB_RUN_ID}"
           fi
 
           RUN_BRANCH="ndjc-run/${RUN_ID}"
           TEMPLATE="${TEMPLATE_IN}"
-          REQ_DIR="requests/${RUN_ID}"
-          APP_DIR="app"
 
+          REQ_DIR="requests/${RUN_ID}"
           PLAN_JSON="${REQ_DIR}/02_plan.json"
           PLAN_JSON_SAN="${REQ_DIR}/02_plan.sanitized.json"
-          APPLY_JSON="${REQ_DIR}/03_apply_result.json"
 
-          # Repo URL for clickable links in summary
-          REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
+          REPO_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
 
-          {
-            echo "RUN_ID=${RUN_ID}"
-            echo "RUN_BRANCH=${RUN_BRANCH}"
-            echo "TEMPLATE=${TEMPLATE}"
-            echo "REQ_DIR=${REQ_DIR}"
-            echo "APP_DIR=${APP_DIR}"
-            echo "PLAN_JSON=${PLAN_JSON}"
-            echo "PLAN_JSON_SAN=${PLAN_JSON_SAN}"
-            echo "APPLY_JSON=${APPLY_JSON}"
-            echo "NDJC_WORKDIR=${GITHUB_WORKSPACE}"
-            echo "REPO_URL=${REPO_URL}"
-          } >> "$GITHUB_ENV"
+          echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
+          echo "run-branch=${RUN_BRANCH}" >> "$GITHUB_OUTPUT"
+          echo "template=${TEMPLATE}" >> "$GITHUB_OUTPUT"
+          echo "req-dir=${REQ_DIR}" >> "$GITHUB_OUTPUT"
+          echo "plan-json=${PLAN_JSON}" >> "$GITHUB_OUTPUT"
+          echo "plan-json-san=${PLAN_JSON_SAN}" >> "$GITHUB_OUTPUT"
+          echo "repo-url=${REPO_URL}" >> "$GITHUB_OUTPUT"
 
           {
-            echo "### NDJC build inputs"
+            echo "## NDJC Android Build"
+            echo ""
             echo "- **Run ID:** \`${RUN_ID}\`"
-            echo "- **Run branch:** [\`${RUN_BRANCH}\`](${REPO_URL}/tree/${RUN_BRANCH})"
-            echo "- **Template:** \`${TEMPLATE}\`"
-            echo "- **Workspace app:** \`./app\`"
-            echo "- **Requests dir:** [\`${REQ_DIR}\`](${REPO_URL}/tree/${RUN_BRANCH}/${REQ_DIR})"
-            echo "- **Expect plan at:** [\`${PLAN_JSON}\`](${REPO_URL}/blob/${RUN_BRANCH}/${PLAN_JSON})"
+            echo "- **Template (hint):** \`${TEMPLATE}\`"
+            echo ""
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # 3) Prefer run branch (if exists), otherwise main
+      # 3) 尝试 checkout 现有 run 分支（如果不存在就保持在 main 上）
       - name: Checkout run branch (if exists)
-        id: checkout_run
         shell: bash
         run: |
           set -euo pipefail
-          RB="${RUN_BRANCH}"
-          if git ls-remote --exit-code origin "refs/heads/${RB}" >/dev/null 2>&1; then
-            git fetch origin "${RB}:${RB}" --depth=50
-            git checkout "${RB}"
-            echo "has_run_branch=true" >> "$GITHUB_OUTPUT"
+          RUN_BRANCH="${{ steps.resolve.outputs['run-branch'] }}"
+          if git ls-remote --exit-code origin "${RUN_BRANCH}" >/dev/null 2>&1; then
+            git fetch origin "${RUN_BRANCH}"
+            git checkout "${RUN_BRANCH}"
           else
-            echo "has_run_branch=false" >> "$GITHUB_OUTPUT"
+            echo "Run branch ${RUN_BRANCH} does not exist yet, stay on ${GITHUB_REF} and create later if needed."
           fi
 
-      - name: Fallback to main to locate plan
-        if: steps.checkout_run.outputs.has_run_branch == 'false'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch origin main --depth=50
-          git checkout main
-
+      # 4) 优先在 run 分支查找 02_plan.json，如无则退回 main
       - name: Locate 02_plan.json (prefer run branch, fallback to main)
         id: locate_plan
         shell: bash
         run: |
           set -euo pipefail
+          RUN_BRANCH="${{ steps.resolve.outputs['run-branch'] }}"
+          REQ_DIR="${{ steps.resolve.outputs['req-dir'] }}"
+          PLAN_JSON="${{ steps.resolve.outputs['plan-json'] }}"
+          PLAN_JSON_SAN="${{ steps.resolve.outputs['plan-json-san'] }}"
+
           if [ -f "${PLAN_JSON}" ]; then
-            found_at="$(git rev-parse --abbrev-ref HEAD)"
+            echo "Found plan on current branch at ${PLAN_JSON}"
           else
-            if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
-              git checkout -q main
-            fi
+            echo "Plan not found on current branch, trying main…"
+            git fetch origin main
+            git checkout main
             if [ -f "${PLAN_JSON}" ]; then
-              found_at="main"
+              echo "Found plan on main at ${PLAN_JSON}"
             else
-              echo "::error::Plan JSON NOT found at ${PLAN_JSON}"; exit 1
+              echo "ERROR: ${PLAN_JSON} not found on either run branch or main."
+              exit 1
             fi
           fi
-          echo "PLAN_BRANCH=${found_at}" >> "$GITHUB_ENV"
-          echo "- **Found 02_plan.json at:** \`${PLAN_JSON}\` *(from ${found_at})*" >> "$GITHUB_STEP_SUMMARY"
 
-      # 4) Prepare workspace app/ from template (safe: only wipes ./app, 不碰 requests/${RUN_ID})
-      - name: Prepare workspace app (copy template → ./app)
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf app
-          mkdir -p app
+          # 为后续步骤输出
+          echo "req-dir=${REQ_DIR}" >> "$GITHUB_OUTPUT"
+          echo "plan-json=${PLAN_JSON}" >> "$GITHUB_OUTPUT"
+          echo "plan-json-san=${PLAN_JSON_SAN}" >> "$GITHUB_OUTPUT"
 
-          if [ -d "templates/${TEMPLATE}/app" ]; then
-            cp -a "templates/${TEMPLATE}/app/." ./app/
-          else
-            echo "::error::templates/${TEMPLATE}/app not found"; exit 1
-          fi
+      # ====== 新模式：Core-Templates 组合装配 + 契约自检 ======
 
-          if [ -f "templates/${TEMPLATE}/settings.gradle.kts" ]; then
-            cp -a "templates/${TEMPLATE}/settings.gradle.kts" ./settings.gradle.kts
-            rm -f ./settings.gradle || true
-          elif [ -f "templates/${TEMPLATE}/settings.gradle" ]; then
-            cp -a "templates/${TEMPLATE}/settings.gradle" ./settings.gradle
-            rm -f ./settings.gradle.kts || true
-          fi
-
-          [ -f "templates/${TEMPLATE}/gradle.properties" ] && cp -a "templates/${TEMPLATE}/gradle.properties" ./ || true
-
-          echo "NDJC_WORKDIR=${GITHUB_WORKSPACE}" >> "$GITHUB_ENV"
-          echo "APP_DIR=app" >> "$GITHUB_ENV"
-
-      - name: Make ndjc-materialize.sh executable
-        shell: bash
-        run: chmod +x scripts/ndjc-materialize.sh
-
-      # 5) Checkout frontend repo to fetch registry (LLM anchor baseline)
+      # 5) （可选）Checkout 前端仓库，仅用于后续日志/链接（保持原有行为）
       - name: Checkout frontend repo (niandongjicheng)
         uses: actions/checkout@v4
         with:
           repository: why459097630/niandongjicheng
-          path: niandongjicheng
-          fetch-depth: 1
-          token: ${{ secrets.GITHUB_TOKEN }}
+          path: frontend
+        continue-on-error: true
 
-      # 6) Sanitize + Apply plan (pass correct registry path)
-      - name: NDJC | Materialize (sanitize + apply plan → workspace app)
+      # 6) 安装 Node.js（ndjc-assembly.sh 内部要跑 ndjc-sst-checker.js）
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 7) NDJC Core-Templates 组合装配（根据 lib/ndjc/assembly.local.json）
+      - name: NDJC | Core-Templates assembly
+        id: assembly
         shell: bash
-        env:
-          PLAN_JSON: ${{ env.PLAN_JSON }}
-          PLAN_JSON_SAN: ${{ env.PLAN_JSON_SAN }}
-          APPLY_JSON: ${{ env.APPLY_JSON }}
-          APP_DIR: ${{ env.APP_DIR }}
-          REQ_DIR: ${{ env.REQ_DIR }}
-          RUN_ID: ${{ env.RUN_ID }}
-          NDJC_WORKDIR: ${{ env.NDJC_WORKDIR }}
-          REGISTRY_FILE: ${{ github.workspace }}/niandongjicheng/lib/ndjc/anchors/registry.circle-basic.json
-          NDJC_REGISTRY_FILE: ${{ github.workspace }}/niandongjicheng/lib/ndjc/anchors/registry.circle-basic.json
-          NDJC_SANITIZE_FAIL_ON_EMPTY: "0"
         run: |
           set -euo pipefail
-          echo "PLAN_JSON=${PLAN_JSON}"
-          echo "PLAN_JSON_SAN=${PLAN_JSON_SAN}"
-          echo "APPLY_JSON=${APPLY_JSON}"
-          echo "APP_DIR=${APP_DIR}"
-          echo "NDJC_WORKDIR=${NDJC_WORKDIR}"
-          echo "REGISTRY_FILE=${REGISTRY_FILE}"
-          test -f "$REGISTRY_FILE" || { echo "::error::Registry not found at $REGISTRY_FILE"; exit 1; }
+          bash scripts/ndjc-assembly.sh
 
-          # scripts/ndjc-materialize.sh:
-          # - reads ${PLAN_JSON}
-          # - writes sanitized plan → ${PLAN_JSON_SAN}
-          # - mutates ./app with anchors from the plan
-          scripts/ndjc-materialize.sh "${APP_DIR}" "${RUN_ID}"
-
-          echo "---- 02_plan.json (first 120 lines) ----"
-          sed -n '1,120p' "${PLAN_JSON}" || true
-          echo "---- 02_plan.sanitized.json (first 120 lines) ----"
-          sed -n '1,120p' "${PLAN_JSON_SAN}" || true
-
-      # 6.5) Anchors Scan (non-blocking preflight)
+      # 8) （保持原有 anchors 扫描步骤，如果你后面不需要可以删掉）
       - name: NDJC | Anchors Scan (baseline=registry • non-blocking)
+        id: anchors_scan
         shell: bash
+        continue-on-error: true
         run: |
           set -euo pipefail
-          REGISTRY_PATH="${{ github.workspace }}/niandongjicheng/lib/ndjc/anchors/registry.circle-basic.json"
-          SANITIZED_PATH="${PLAN_JSON_SAN}"
-          TEMPLATE_DIR="templates/${TEMPLATE}"
-          OUT="${REQ_DIR}/anchors-scan.md"
+          if [ -f "scripts/anchors-registry.json" ]; then
+            echo "Running anchors scan against registry…"
+            node scripts/ndjc-anchors-scan.js \
+              --plan "${{ steps.locate_plan.outputs['plan-json-san'] || steps.locate_plan.outputs['plan-json'] }}" \
+              --registry "scripts/anchors-registry.json" \
+              || echo "Anchors scan reported issues (non-blocking)."
+          else
+            echo "anchors-registry.json not found, skip anchors scan."
+          fi
 
-          mkdir -p "${REQ_DIR}"
+      # ====== Gradle 构建（在 Core-Templates 工程内部） ======
 
-          echo "# Anchors Scan (baseline=registry.circle-basic.json)" > "${OUT}"
-          echo "" >> "${OUT}"
-          echo "template: ${TEMPLATE} | runId: ${RUN_ID}" >> "${OUT}"
-          echo "" >> "${OUT}"
-
-          # Build flattened list of (section,name,token)
-          mapfile -t ROWS < <(jq -r '
-            def emit(arr; prefix; section):
-              (arr // []) | if (type=="array") then .[] else empty end
-              | . as $name
-              | ( if (prefix == "" or ($name | startswith(prefix))) then $name else (prefix + $name) end ) as $token
-              | "\(section)|\($name)|\($token)";
-            emit(.text; ""; "text"),
-            emit(.block; "BLOCK:"; "block"),
-            emit(.list;  "LIST:";  "list"),
-            emit(.if;    "IF:";    "if"),
-            emit(.hook;  "HOOK:";  "hook")
-          ' "${REGISTRY_PATH}")
-
-          echo "| Anchor | InTemplate | InSanitized | File |" >> "${OUT}"
-          echo "|---|---|---|---|" >> "${OUT}"
-
-          total=0; hit=0; miss=0
-
-          for row in "${ROWS[@]}"; do
-            total=$((total+1))
-            section="${row%%|*}"; rest="${row#*|}"
-            name="${rest%%|*}"; token="${rest#*|}"
-
-            # Template presence: strict fixed-string grep
-            if grep -RIlF --line-number -e "$token" "${TEMPLATE_DIR}" >/tmp/_ndjc_hit 2>/dev/null; then
-              IN_TEMPLATE="HIT"
-              FILE=$(head -n1 /tmp/_ndjc_hit | sed 's|^'${TEMPLATE_DIR}'/||')
-              hit=$((hit+1))
-            else
-              IN_TEMPLATE="MISS"
-              FILE=""
-              miss=$((miss+1))
-            fi
-
-            # Sanitized plan presence: does sanitized plan still include this anchor?
-            if jq -e --arg sec "$section" --arg k "$name" '
-              def pick(sec):
-                if   sec=="text" then (.anchors    // {})
-                elif sec=="block" then (.blocks     // {})
-                elif sec=="list" then (.lists      // {})
-                elif sec=="if"   then (.conditions // {})
-                else                  (.hooks      // {})
-                end;
-              pick($sec) | has($k)
-            ' "${SANITIZED_PATH}" >/dev/null; then
-              IN_SAN="YES"
-            else
-              IN_SAN="NO"
-            fi
-
-            printf "| %s | %s | %s | %s |\n" "$token" "$IN_TEMPLATE" "$IN_SAN" "${FILE}" >> "${OUT}"
-          done
-
-          echo "" >> "${OUT}"
-          echo "Total: ${total} | HIT: ${hit} | MISS: ${miss}" >> "${OUT}"
-          echo "" >> "${OUT}"
-          echo "_Non-blocking preflight; this step never fails the build._" >> "${OUT}"
-
-      # 7) Show modified files after materialize
-      - name: Show modified files after materialize
-        shell: bash
-        run: |
-          set -euo pipefail
-          git add -N app || true
-          git status --porcelain
-          git diff --name-only | sed 's/^/ - /' || true
-          git diff --name-only > modified-files.txt || true
-
-      # 8) Commit & push app changes + updated request dir back to run branch
-      - name: Commit & push to run branch (append artifacts, keep 00_debug_two_phase.json)
-        if: steps.checkout_run.outputs.has_run_branch == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          # 这里**不**清空 ${REQ_DIR}，保留 route.ts 早先上传的:
-          # - 00_debug_two_phase.json (phase1/phase2原始返回+校验结果+token用量)
-          # - 01_contract.json
-          # - 02_plan.json
-          # - 03_apply_result.json
-          # 我们只是往同一目录里追加/覆盖:
-          # - 02_plan.sanitized.json
-          # - anchors-scan.md
-          # - any future scan/apply artifacts
-
-          git add app "${REQ_DIR}" modified-files.txt || true
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "NDJC materialize ${RUN_ID}" || echo "nothing to commit"
-          git push origin "${RUN_BRANCH}" || true
-
-      # 9) Pre-build sanity guards
-      - name: Guards (root settings & app module)
-        shell: bash
-        run: |
-          set -euo pipefail
-          [[ -f "./settings.gradle" || -f "./settings.gradle.kts" ]] || { echo "::error::settings.gradle(.kts) not found"; exit 1; }
-          [[ -f "app/build.gradle" || -f "app/build.gradle.kts" ]] || { echo "::error::app/build.gradle(.kts) not found"; exit 1; }
-
-      # 10) Build the debug APK with Gradle
+      # 9) Setup Java & Gradle cache
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: "17"
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
+      # 10) 预清理 Gradle
       - name: Pre-clean Gradle (stop daemons & clean)
+        working-directory: templates/Core-Templates
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x ./gradlew || true
           ./gradlew --stop || true
-          ./gradlew --no-daemon :app:clean
+          ./gradlew clean --no-daemon --stacktrace
 
+      # 11) 构建 Debug APK（你如果需要 Release 可以改成 assembleRelease）
       - name: Build (debug)
+        id: build_apk
+        working-directory: templates/Core-Templates
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x ./gradlew || true
           ./gradlew --no-daemon --stacktrace :app:assembleDebug
 
-      # 11) Upload artifacts (APK + logs) and surface them in summary
+      # ====== 上传 APK & 诊断信息 ======
+
+      # 12) 上传 APK 构建产物
       - name: Upload APK artifacts
-        if: always()
         id: upload_apk
         uses: actions/upload-artifact@v4
         with:
-          name: ndjc-apk-${{ env.RUN_ID }}
-          path: app/build/outputs/apk/**/*.apk
-          if-no-files-found: warn
+          name: ndjc-apk-${{ steps.resolve.outputs['run-id'] }}
+          path: |
+            templates/Core-Templates/app/build/outputs/**/*.apk
+          if-no-files-found: error
+          retention-days: 14
 
+      # 13) 上传诊断 / 日志（包括 requests 目录）
       - name: NDJC | Upload logs & plan
-        if: always()
         id: upload_diag
         uses: actions/upload-artifact@v4
         with:
-          name: ndjc-diag-${{ env.RUN_ID }}
+          name: ndjc-diag-${{ steps.resolve.outputs['run-id'] }}
           path: |
-            modified-files.txt
-            requests/${{ env.RUN_ID }}/00_debug_two_phase.json
-            requests/${{ env.RUN_ID }}/01_*.json
-            requests/${{ env.RUN_ID }}/02_plan.json
-            requests/${{ env.RUN_ID }}/02_plan.sanitized.json
-            requests/${{ env.RUN_ID }}/03_apply_result.json
-            requests/${{ env.RUN_ID }}/anchors-scan.md
-            build-logs/**/*
+            ${{ steps.locate_plan.outputs['req-dir'] || 'requests' }}/
+            templates/Core-Templates/app/build/reports/
+            templates/Core-Templates/app/build/outputs/mapping/
           if-no-files-found: warn
+          retention-days: 30
 
+      # 14) 将 artifact 链接追加到 Step Summary
       - name: Append artifact links to summary
-        if: always()
         shell: bash
         run: |
+          set -euo pipefail
+          RUN_ID="${{ steps.resolve.outputs['run-id'] }}"
+          RUN_BRANCH="${{ steps.resolve.outputs['run-branch'] }}"
+          REQ_DIR="${{ steps.locate_plan.outputs['req-dir'] }}"
+          PLAN_JSON="${{ steps.locate_plan.outputs['plan-json'] }}"
+          PLAN_JSON_SAN="${{ steps.locate_plan.outputs['plan-json-san'] }}"
+          REPO_URL="${{ steps.resolve.outputs['repo-url'] }}"
+          APK_URL="${{ steps.upload_apk.outputs.artifact-url || '' }}"
+          DIAG_URL="${{ steps.upload_diag.outputs.artifact-url || '' }}"
+
           {
-            echo "### Downloads"
-            echo "- **APK artifact:** ${{ steps.upload_apk.outputs.artifact-url || 'See Artifacts panel' }}"
-            echo "- **Logs artifact:** ${{ steps.upload_diag.outputs.artifact-url || 'See Artifacts panel' }}"
+            echo ""
+            echo "### Artifacts"
+            echo "- **APK artifact:** ${APK_URL:-See *Artifacts* panel}"
+            echo "- **Logs artifact:** ${DIAG_URL:-See *Artifacts* panel}"
             echo ""
             echo "### Browse in repo"
             echo "- **Run branch:** [\`${RUN_BRANCH}\`](${REPO_URL}/tree/${RUN_BRANCH})"
