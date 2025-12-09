@@ -3,6 +3,7 @@ name: Android Build (NDJC • workspace-app)
 on:
   repository_dispatch:
     types: [generate-apk]
+  workflow_dispatch:
 
 permissions:
   contents: write
