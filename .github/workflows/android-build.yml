@@ -1,162 +1,43 @@
-name: Android Build (NDJC • workspace-app)
+name: Android Build (NDJC • Core-Templates minimal)
 
 on:
-  repository_dispatch:
-    types: [generate-apk]
+  # 只保留手动触发，点 Run workflow 就能打包
   workflow_dispatch:
-
-permissions:
-  contents: write
-
-env:
-  TEMPLATE_DEFAULT: circle-basic
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout Packaging-warehouse 仓库
+      # 1) 拉取当前仓库代码
       - name: Checkout (Packaging-warehouse)
         uses: actions/checkout@v4
 
-      # 2) 解析 runId / template，准备环境变量 & summary 头部
-      - name: Resolve inputs → env & summary
-        id: resolve
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          RUN_ID="${{ github.event.client_payload.runId || '' }}"
-          TEMPLATE_IN="${{ github.event.client_payload.template || '' }}"
-          [ -n "$TEMPLATE_IN" ] || TEMPLATE_IN="${TEMPLATE_DEFAULT}"
-
-          if [ -z "$RUN_ID" ]; then
-            RUN_ID="ndjc-$(date -u +%Y-%m-%dT%H-%M-%SZ)-${GITHUB_RUN_ID}"
-          fi
-
-          RUN_BRANCH="ndjc-run/${RUN_ID}"
-          TEMPLATE="${TEMPLATE_IN}"
-
-          REQ_DIR="requests/${RUN_ID}"
-          PLAN_JSON="${REQ_DIR}/02_plan.json"
-          PLAN_JSON_SAN="${REQ_DIR}/02_plan.sanitized.json"
-
-          REPO_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
-
-          echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
-          echo "run-branch=${RUN_BRANCH}" >> "$GITHUB_OUTPUT"
-          echo "template=${TEMPLATE}" >> "$GITHUB_OUTPUT"
-          echo "req-dir=${REQ_DIR}" >> "$GITHUB_OUTPUT"
-          echo "plan-json=${PLAN_JSON}" >> "$GITHUB_OUTPUT"
-          echo "plan-json-san=${PLAN_JSON_SAN}" >> "$GITHUB_OUTPUT"
-          echo "repo-url=${REPO_URL}" >> "$GITHUB_OUTPUT"
-
-          {
-            echo "## NDJC Android Build"
-            echo ""
-            echo "- **Run ID:** \`${RUN_ID}\`"
-            echo "- **Template (hint):** \`${TEMPLATE}\`"
-            echo ""
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      # 3) 尝试 checkout 现有 run 分支（如果不存在就保持在 main 上）
-      - name: Checkout run branch (if exists)
-        shell: bash
-        run: |
-          set -euo pipefail
-          RUN_BRANCH="${{ steps.resolve.outputs['run-branch'] }}"
-          if git ls-remote --exit-code origin "${RUN_BRANCH}" >/dev/null 2>&1; then
-            git fetch origin "${RUN_BRANCH}"
-            git checkout "${RUN_BRANCH}"
-          else
-            echo "Run branch ${RUN_BRANCH} does not exist yet, stay on ${GITHUB_REF} and create later if needed."
-          fi
-
-      # 4) 优先在 run 分支查找 02_plan.json，如无则退回 main
-      - name: Locate 02_plan.json (prefer run branch, fallback to main)
-        id: locate_plan
-        shell: bash
-        run: |
-          set -euo pipefail
-          RUN_BRANCH="${{ steps.resolve.outputs['run-branch'] }}"
-          REQ_DIR="${{ steps.resolve.outputs['req-dir'] }}"
-          PLAN_JSON="${{ steps.resolve.outputs['plan-json'] }}"
-          PLAN_JSON_SAN="${{ steps.resolve.outputs['plan-json-san'] }}"
-
-          if [ -f "${PLAN_JSON}" ]; then
-            echo "Found plan on current branch at ${PLAN_JSON}"
-          else
-            echo "Plan not found on current branch, trying main…"
-            git fetch origin main
-            git checkout main
-            if [ -f "${PLAN_JSON}" ]; then
-              echo "Found plan on main at ${PLAN_JSON}"
-            else
-              echo "ERROR: ${PLAN_JSON} not found on either run branch or main."
-              exit 1
-            fi
-          fi
-
-          # 为后续步骤输出
-          echo "req-dir=${REQ_DIR}" >> "$GITHUB_OUTPUT"
-          echo "plan-json=${PLAN_JSON}" >> "$GITHUB_OUTPUT"
-          echo "plan-json-san=${PLAN_JSON_SAN}" >> "$GITHUB_OUTPUT"
-
-      # ====== 新模式：Core-Templates 组合装配 + 契约自检 ======
-
-      # 5) （可选）Checkout 前端仓库，仅用于后续日志/链接（保持原有行为）
-      - name: Checkout frontend repo (niandongjicheng)
-        uses: actions/checkout@v4
-        with:
-          repository: why459097630/niandongjicheng
-          path: frontend
-        continue-on-error: true
-
-      # 6) 安装 Node.js（ndjc-assembly.sh 内部要跑 ndjc-sst-checker.js）
+      # 2) 安装 Node.js（ndjc-assembly.sh 里要跑 ndjc-sst-checker.js）
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # 7) NDJC Core-Templates 组合装配（根据 lib/ndjc/assembly.local.json）
+      # 3) NDJC Core-Templates 组合装配 + 契约自检
       - name: NDJC | Core-Templates assembly
-        id: assembly
         shell: bash
         run: |
           set -euo pipefail
           bash scripts/ndjc-assembly.sh
 
-      # 8) （保持原有 anchors 扫描步骤，如果你后面不需要可以删掉）
-      - name: NDJC | Anchors Scan (baseline=registry • non-blocking)
-        id: anchors_scan
-        shell: bash
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          if [ -f "scripts/anchors-registry.json" ]; then
-            echo "Running anchors scan against registry…"
-            node scripts/ndjc-anchors-scan.js \
-              --plan "${{ steps.locate_plan.outputs['plan-json-san'] || steps.locate_plan.outputs['plan-json'] }}" \
-              --registry "scripts/anchors-registry.json" \
-              || echo "Anchors scan reported issues (non-blocking)."
-          else
-            echo "anchors-registry.json not found, skip anchors scan."
-          fi
-
-      # ====== Gradle 构建（在 Core-Templates 工程内部） ======
-
-      # 9) Setup Java & Gradle cache
+      # 4) 安装 JDK 17
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
+      # 5) 配置 Gradle 缓存（可加快构建速度）
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      # 10) 预清理 Gradle
+      # 6) 预清理 Gradle（在 Core-Templates 工程内）
       - name: Pre-clean Gradle (stop daemons & clean)
         working-directory: templates/Core-Templates
         shell: bash
@@ -165,8 +46,8 @@ jobs:
           ./gradlew --stop || true
           ./gradlew clean --no-daemon --stacktrace
 
-      # 11) 构建 Debug APK（你如果需要 Release 可以改成 assembleRelease）
-      - name: Build (debug)
+      # 7) 构建 Debug APK（需要 Release 的话把 assembleDebug 改成 assembleRelease）
+      - name: Build APK (debug)
         id: build_apk
         working-directory: templates/Core-Templates
         shell: bash
@@ -174,60 +55,13 @@ jobs:
           set -euo pipefail
           ./gradlew --no-daemon --stacktrace :app:assembleDebug
 
-      # ====== 上传 APK & 诊断信息 ======
-
-      # 12) 上传 APK 构建产物
+      # 8) 上传 APK 构建产物
       - name: Upload APK artifacts
-        id: upload_apk
         uses: actions/upload-artifact@v4
         with:
-          name: ndjc-apk-${{ steps.resolve.outputs['run-id'] }}
+          # 用 run id 区分每次构建
+          name: ndjc-apk-${{ github.run_id }}
           path: |
             templates/Core-Templates/app/build/outputs/**/*.apk
           if-no-files-found: error
           retention-days: 14
-
-      # 13) 上传诊断 / 日志（包括 requests 目录）
-      - name: NDJC | Upload logs & plan
-        id: upload_diag
-        uses: actions/upload-artifact@v4
-        with:
-          name: ndjc-diag-${{ steps.resolve.outputs['run-id'] }}
-          path: |
-            ${{ steps.locate_plan.outputs['req-dir'] || 'requests' }}/
-            templates/Core-Templates/app/build/reports/
-            templates/Core-Templates/app/build/outputs/mapping/
-          if-no-files-found: warn
-          retention-days: 30
-
-      # 14) 将 artifact 链接追加到 Step Summary
-      - name: Append artifact links to summary
-        shell: bash
-        run: |
-          set -euo pipefail
-          RUN_ID="${{ steps.resolve.outputs['run-id'] }}"
-          RUN_BRANCH="${{ steps.resolve.outputs['run-branch'] }}"
-          REQ_DIR="${{ steps.locate_plan.outputs['req-dir'] }}"
-          PLAN_JSON="${{ steps.locate_plan.outputs['plan-json'] }}"
-          PLAN_JSON_SAN="${{ steps.locate_plan.outputs['plan-json-san'] }}"
-          REPO_URL="${{ steps.resolve.outputs['repo-url'] }}"
-          APK_URL="${{ steps.upload_apk.outputs.artifact-url || '' }}"
-          DIAG_URL="${{ steps.upload_diag.outputs.artifact-url || '' }}"
-
-          {
-            echo ""
-            echo "### Artifacts"
-            echo "- **APK artifact:** ${APK_URL:-See *Artifacts* panel}"
-            echo "- **Logs artifact:** ${DIAG_URL:-See *Artifacts* panel}"
-            echo ""
-            echo "### Browse in repo"
-            echo "- **Run branch:** [\`${RUN_BRANCH}\`](${REPO_URL}/tree/${RUN_BRANCH})"
-            echo "- **Requests dir:** [\`${REQ_DIR}\`](${REPO_URL}/tree/${RUN_BRANCH}/${REQ_DIR})"
-            echo "- **Plan (raw):** [\`${PLAN_JSON}\`](${REPO_URL}/blob/${RUN_BRANCH}/${PLAN_JSON})"
-            echo "- **Plan (sanitized):** [\`${PLAN_JSON_SAN}\`](${REPO_URL}/blob/${RUN_BRANCH}/${PLAN_JSON_SAN})"
-            echo ""
-            echo "In \`${REQ_DIR}/00_debug_two_phase.json\` you will find:"
-            echo "- Phase1 raw + validated"
-            echo "- Phase2 raw + validated"
-            echo "- Token usage (phase1_in/phase1_out/phase2_in/phase2_out/total)"
-          } >> "$GITHUB_STEP_SUMMARY"
