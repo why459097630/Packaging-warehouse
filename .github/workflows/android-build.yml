@@ -43,6 +43,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          chmod +x ./gradlew
           ./gradlew --stop || true
           ./gradlew clean --no-daemon --stacktrace
 
