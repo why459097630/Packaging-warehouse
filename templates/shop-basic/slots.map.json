@@ -1,8 +1,0 @@
-{
-  "header": ["SearchBar"],
-  "productItem": ["ProductCard"],
-  "cart": ["CartView"],
-  "checkout": ["CheckoutForm"],
-  "orderList": ["OrderList"],
-  "orderDetail": ["OrderDetail"]
-}

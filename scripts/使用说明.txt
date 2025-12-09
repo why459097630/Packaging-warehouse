@@ -1,0 +1,5 @@
+ndjc-sst-checker.js       模板 UI包 模块 自检脚本
+sst.json                       单一真源
+ndjc-sync-sst-docs.js    同步单一真源和.ndjc下的文件
+ndjc-materialize.sh        把 02_plan.json 里的 anchors → 应用到模板 APP 里替换锚点
+ndjc-assembly.sh    专门做：读取 lib/ndjc/assembly.local.json调用 ndjc-sst-checker.js 校验组合重写 settings.gradle.kts / app/build.gradle.kts 的 NDJC-AUTO 区域，变更UI包的时候使用

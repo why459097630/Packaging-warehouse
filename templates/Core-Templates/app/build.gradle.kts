@@ -1,0 +1,47 @@
+plugins {
+    id("com.android.application")
+    kotlin("android")
+}
+
+android {
+    namespace = "com.ndjc.app"
+    compileSdk = (System.getenv("NDJC_COMPILE_SDK") ?: "34").toInt()
+
+    defaultConfig {
+        applicationId = "com.ndjc.app"
+        minSdk = (System.getenv("NDJC_MIN_SDK") ?: "24").toInt()
+        targetSdk = (System.getenv("NDJC_TARGET_SDK") ?: "34").toInt()
+        versionCode = 1
+        versionName = "1.0.0"
+    }
+
+    buildFeatures { compose = true }
+    composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlin {
+        jvmToolchain(17)
+    }
+}
+
+dependencies {
+    val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
+    implementation(composeBom)
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+
+    // 仅 App 层控制可见：导航 Compose（提供 NavHostController 类型）
+    implementation("androidx.navigation:navigation-compose:2.8.3")
+
+    // 骨架 & 示例模块（装配用；UI 包不依赖它们）
+    // NDJC-AUTO-DEPS-START
+    implementation(project(":core-skeleton"))
+    implementation(project("::feature-restaurant-menu-full"))
+    implementation(project(":ui-pack-neumorph"))
+// NDJC-AUTO-DEPS-END
+}

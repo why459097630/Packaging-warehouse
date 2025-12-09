@@ -1,0 +1,14 @@
+{
+  "kind": "ndjc-module",
+  "sst": {
+    "id": "ndjc-sst",
+    "version": "1.0.0"
+  },
+  "module": {
+    "moduleId": "feature-restaurant-menu",
+    "version": "1.0.0",
+    "type": "feature",
+    "manifest": "./module.manifest.json"
+  },
+  "notes": "AppCore + contract skeleton for restaurant menu feature module; UI is handled by UI pack."
+}

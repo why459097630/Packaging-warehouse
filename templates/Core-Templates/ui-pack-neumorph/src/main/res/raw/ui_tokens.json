@@ -1,0 +1,75 @@
+{
+  "meta": { "version": "ui-tokens.v1", "theme": "light", "density": "comfortable" },
+
+  "base": {
+    "color": {
+      "white": "#FFFFFF", "black": "#000000",
+      "neutral.0": "#0F0F12", "neutral.10": "#1A1A1E", "neutral.20": "#23232A",
+      "neutral.30": "#2E2E37", "neutral.40": "#3A3A46", "neutral.50": "#4A4A58",
+      "neutral.60": "#5C5C6B", "neutral.70": "#727283", "neutral.80": "#8F8FA0",
+      "neutral.90": "#B9B9C6", "neutral.95": "#E6E6EE", "neutral.99": "#FCFCFE",
+
+      "brand.50": "#E9DDFD", "brand.60": "#CDB8FA", "brand.70": "#A78AF2",
+      "brand.80": "#7C5BE7", "brand.90": "#5B3ECF", "brand.100": "#4A2EB5",
+
+      "green.60": "#3BBF7A", "yellow.60": "#E8B500", "red.60": "#E15555"
+    },
+
+    "space": { "xs": 4, "s": 8, "m": 12, "l": 16, "xl": 20, "xxl": 24, "xxxl": 32 },
+    "radius": { "xs": 6, "s": 10, "m": 14, "l": 20, "pill": 999 },
+    "elevation": { "level0": 0, "level1": 1, "level2": 3, "level3": 6, "level4": 12 },
+    "opacity": { "disabled": 0.38, "medium": 0.6, "overlay": 0.12 },
+    "duration": { "fast": 120, "normal": 200, "slow": 320 },
+
+    "typography": {
+      "display": { "size": 32, "line": 40, "weight": 700, "tracking": 0.0 },
+      "title":   { "size": 20, "line": 28, "weight": 600, "tracking": 0.0 },
+      "body":    { "size": 14, "line": 20, "weight": 400, "tracking": 0.0 },
+      "label":   { "size": 12, "line": 16, "weight": 600, "tracking": 0.0 }
+    }
+  },
+
+  "theme": {
+    "light": {
+      "surface": {
+        "bg": "{base.color.neutral.99}",
+        "card": "{base.color.white}",
+        "overlay": "{base.color.neutral.0} @0.12"
+      },
+      "text": {
+        "primary": "{base.color.neutral.20}",
+        "secondary": "{base.color.neutral.60}",
+        "inverse": "{base.color.white}"
+      },
+      "primary":   { "bg": "{base.color.brand.90}", "fg": "{base.color.white}" },
+      "secondary": { "bg": "{base.color.neutral.90}", "fg": "{base.color.neutral.20}" },
+      "success":   { "bg": "{base.color.green.60}",  "fg": "{base.color.white}" },
+      "warn":      { "bg": "{base.color.yellow.60}", "fg": "{base.color.neutral.20}" },
+      "danger":    { "bg": "{base.color.red.60}",    "fg": "{base.color.white}" }
+    },
+
+    "dark": {
+      "surface": {
+        "bg": "{base.color.neutral.10}",
+        "card": "{base.color.neutral.20}",
+        "overlay": "{base.color.black} @0.32"
+      },
+      "text": {
+        "primary": "{base.color.neutral.95}",
+        "secondary": "{base.color.neutral.80}",
+        "inverse": "{base.color.black}"
+      },
+      "primary":   { "bg": "{base.color.brand.70}", "fg": "{base.color.white}" },
+      "secondary": { "bg": "{base.color.neutral.40}","fg": "{base.color.neutral.95}" },
+      "success":   { "bg": "{base.color.green.60}", "fg": "{base.color.white}" },
+      "warn":      { "bg": "{base.color.yellow.60}","fg": "{base.color.neutral.20}" },
+      "danger":    { "bg": "{base.color.red.60}",   "fg": "{base.color.white}" }
+    }
+  },
+
+  "density": {
+    "compact":    { "controlHeight": 36, "tapTarget": 40, "icon": 18 },
+    "comfortable":{ "controlHeight": 44, "tapTarget": 48, "icon": 20 },
+    "spacious":   { "controlHeight": 52, "tapTarget": 56, "icon": 24 }
+  }
+}

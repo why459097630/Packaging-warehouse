@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 中性基底主题：不带具体外观，最终样式由 UI-Pack 的 NDJCThemePack 接管 -->
+    <style name="Theme.NDJCSkeleton" parent="Theme.Material3.DayNight">
+        <!-- 不在这里写配色/圆角/字号，保持模板中立（符合 Contract-UI v1） -->
+    </style>
+</resources>

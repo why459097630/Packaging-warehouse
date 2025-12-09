@@ -1,0 +1,36 @@
+{
+  "template": "pattern.liststream",
+  "uiPack": "ui-pack-demo@1.0.0",
+  "modules": [
+    {
+      "moduleId": "feature.demo",
+      "type": "feature-ui",
+      "supportedSlots": [
+        "primary",
+        "detail",
+        "settings"
+      ],
+      "routes": [
+        {
+          "routeId": "home",
+          "entry": true,
+          "returnPolicy": "back"
+        },
+        {
+          "routeId": "detail",
+          "entry": false,
+          "returnPolicy": "back"
+        },
+        {
+          "routeId": "settings",
+          "entry": false,
+          "returnPolicy": "close"
+        }
+      ]
+    }
+  ],
+  "routingEntry": "home",
+  "locale": "en-US",
+  "theme": "system",
+  "density": "comfortable"
+}

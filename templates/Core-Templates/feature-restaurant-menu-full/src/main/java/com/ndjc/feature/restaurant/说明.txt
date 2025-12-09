@@ -1,0 +1,5 @@
+RestaurantModels.kt —— 数据结构 + 本地存储
+RestaurantComposables.kt —— 具体界面（UI 组件）
+RestaurantViewModel.kt —— 逻辑大脑（业务 + 云端）
+RestaurantHomeScreen.kt —— 入口壳子（Screen 外壳）
+RestaurantUiContract.kt    ——汇总按钮业务模块接口

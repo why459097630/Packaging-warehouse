@@ -1,0 +1,75 @@
+{
+  "moduleId": "feature-restaurant-menu",
+  "version": "1.0.0",
+  "type": "feature",
+  "supportedSlots": [
+    "header",
+    "primary",
+    "detail",
+    "settings"
+  ],
+  "routes": [
+    {
+      "id": "restaurant_home",
+      "slot": "primary",
+      "layoutIntent": "list",
+      "scrollable": "vertical",
+      "priority": "high"
+    },
+    {
+      "id": "restaurant_detail",
+      "slot": "detail",
+      "layoutIntent": "stack",
+      "scrollable": "vertical",
+      "priority": "normal"
+    },
+    {
+      "id": "restaurant_admin_login",
+      "slot": "sheet",
+      "layoutIntent": "stack",
+      "scrollable": "none",
+      "priority": "normal"
+    },
+    {
+      "id": "restaurant_admin_dashboard",
+      "slot": "settings",
+      "layoutIntent": "list",
+      "scrollable": "vertical",
+      "priority": "normal"
+    }
+  ],
+  "capabilities": [
+    "restaurant.menu.browse",
+    "restaurant.menu.manage",
+    "routing.basic",
+    "components.core"
+  ],
+  "permissions": [],
+  "resources": {
+    "strings": {
+      "feature.restaurant.title": "Restaurant Menu",
+      "feature.restaurant.subtitle": "Browse our dishes",
+      "feature.restaurant.adminTitle": "Manage menu"
+    },
+    "media": {
+      "icon.feature.restaurant": "icon.action.restaurant"
+    }
+  },
+  "hooks": {},
+  "configSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "FeatureRestaurantMenuConfig",
+    "type": "object",
+    "properties": {
+      "defaultCurrency": {
+        "type": "string",
+        "description": "ISO currency code, e.g. CNY"
+      },
+      "showOriginalPriceWhenDiscounted": {
+        "type": "boolean",
+        "default": true
+      }
+    },
+    "additionalProperties": false
+  }
+}

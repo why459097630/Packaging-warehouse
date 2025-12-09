@@ -1,0 +1,25 @@
+{
+  "uiContract": {
+    "state": {
+      "categories": "List<UiCategory>",
+      "dishes": "List<UiDish>",
+      "selectedCategory": "String?",
+      "searchQuery": "String",
+      "isLoading": "Boolean"
+    },
+    "actions": {
+      "onRefresh": "()->Unit",
+      "onCategorySelected": "(String?)->Unit",
+      "onDishSelected": "(UiDish)->Unit",
+      "onProfileClick": "()->Unit",
+      "onSearchChanged": "(String)->Unit"
+    }
+  },
+  "slots": {
+    "homeTopBar": true,
+    "homeSearchBar": true,
+    "categoryRow": true,
+    "dishList": true,
+    "floatingActionButton": true
+  }
+}

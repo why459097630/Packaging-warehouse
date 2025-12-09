@@ -1,0 +1,522 @@
+{
+  "contract": {
+    "name": "ndjc-sst",
+    "version": "1.0.0",
+    "hash": "8243be3a27e134b4f7bf9748e0e96e4797293900da96b6cb8e1b29875d035341",
+    "issuedAt": "2025-11-09T00:00:00Z",
+    "owner": "NDJC",
+    "description": "Single Source of Truth for Template × UI Pack × Feature Modules"
+  },
+  "compatMatrix": {
+    "androidSdk": {
+      "min": 24,
+      "target": 34,
+      "tested": [
+        34,
+        35
+      ]
+    },
+    "agp": {
+      "min": "8.2.0",
+      "max": "8.7.x"
+    },
+    "gradle": {
+      "min": "8.2",
+      "max": "8.7"
+    },
+    "template": {
+      "min": "1.0.0"
+    },
+    "uiPack": {
+      "min": "1.0.0"
+    },
+    "module": {
+      "min": "1.0.0"
+    }
+  },
+  "slots": {
+    "standard": [
+      "header",
+      "hero",
+      "primary",
+      "secondary",
+      "detail",
+      "sheet",
+      "tabBar"
+    ],
+    "optional": [
+      "fab",
+      "dialog",
+      "settings"
+    ],
+    "meta": {
+      "layoutIntent": [
+        "stack",
+        "list",
+        "grid",
+        "staggered",
+        "tabs"
+      ],
+      "scrollable": [
+        "none",
+        "vertical",
+        "horizontal"
+      ],
+      "priority": [
+        "low",
+        "normal",
+        "high"
+      ],
+      "gestures": [
+        "pullToRefresh",
+        "swipeToDismiss",
+        "dragHandle"
+      ]
+    },
+    "overrideOrder": [
+      "template",
+      "uiPack",
+      "featureModule"
+    ]
+  },
+  "publicSurface": {
+    "components": {
+      "AppBar": {
+        "slot": "header",
+        "required": true,
+        "props": {
+          "title": "string",
+          "navigationIcon": "optional<Composable>",
+          "actions": "list<Composable>",
+          "dense": "boolean"
+        },
+        "semantics": [
+          "variant",
+          "size",
+          "intent",
+          "density",
+          "iconPlacement",
+          "state"
+        ]
+      },
+      "NavBar": {
+        "alias": "Tabs",
+        "slot": "tabBar",
+        "required": true,
+        "props": {
+          "items": "list<NavItem{id:string,label:string}>",
+          "selectedId": "string",
+          "onClick": "(id:string)=>void"
+        }
+      },
+      "Button": {
+        "required": true,
+        "props": {
+          "text": "string",
+          "variant": "enum(Filled|Tonal|Outlined|Elevated)",
+          "size": "enum(Sm|Md|Lg)",
+          "intent": "enum(Primary|Secondary|Neutral|Danger)",
+          "iconPlacement": "enum(Start|End|Only)",
+          "enabled": "boolean",
+          "onClick": "()=>void"
+        },
+        "defaults": {
+          "variant": "Filled",
+          "size": "Md",
+          "intent": "Primary",
+          "iconPlacement": "Start",
+          "enabled": true
+        }
+      },
+      "Card": {
+        "required": true,
+        "props": {
+          "headline": "string",
+          "subhead": "optional<string>",
+          "clickable": "boolean"
+        }
+      },
+      "ListItem": {
+        "required": true,
+        "props": {
+          "title": "string",
+          "subtitle": "optional<string>",
+          "leading": "optional<Composable>",
+          "trailing": "optional<Composable>"
+        }
+      },
+      "FormField": {
+        "required": true,
+        "props": {
+          "label": "string",
+          "value": "string",
+          "error": "optional<string>",
+          "onChange": "(v:string)=>void"
+        }
+      },
+      "Chip": {
+        "required": false,
+        "props": {
+          "text": "string",
+          "selected": "boolean",
+          "onToggle": "()=>void"
+        }
+      },
+      "Banner": {
+        "required": false,
+        "props": {
+          "text": "string",
+          "kind": "enum(info|warn|error|success)",
+          "dismissible": "boolean"
+        }
+      },
+      "Empty": {
+        "required": false,
+        "props": {
+          "title": "string",
+          "message": "optional<string>",
+          "illustration": "optional<resource.icon|image>"
+        }
+      },
+      "Skeleton": {
+        "required": false,
+        "props": {
+          "shape": "enum(rect|circle)",
+          "lines": "int"
+        }
+      },
+      "BottomSheet": {
+        "required": false,
+        "props": {
+          "open": "boolean",
+          "title": "optional<string>",
+          "content": "Composable",
+          "onClose": "()=>void"
+        }
+      },
+      "Toast": {
+        "required": false,
+        "props": {
+          "message": "string",
+          "durationMs": "int"
+        }
+      }
+    },
+    "themeAndTokens": {
+      "frozenAPI": {
+        "kotlinPackage": "com.ndjc.ui.m3",
+        "ThemePack": "@Composable NDJCThemePack(dark: Boolean = false, space: Spacing = Spacing(), opacity: Opacity = Opacity(), content: @Composable () -> Unit)",
+        "Tokens": "object Tokens { @Composable fun current(): TokenSet }",
+        "TokenSet": "data class TokenSet(val space: Spacing, val opacity: Opacity)",
+        "Spacing": "data class Spacing(val xs:Int=4,val sm:Int=8,val md:Int=12,val lg:Int=16,val xl:Int=20)",
+        "Opacity": "data class Opacity(val disabled:Float=0.38f,val medium:Float=0.60f,val high:Float=1.00f)",
+        "Locals": [
+          "LocalSpacing",
+          "LocalOpacity"
+        ],
+        "AppBar": "@Composable NDJCAppBar(title:String, modifier:Modifier=Modifier, navigationIcon:(@Composable ()->Unit)?=null, actions:@Composable RowScope.()->Unit = {})",
+        "TabBar": "@Composable NDJCTabBar(items: List<NavItem>, selectedId: String, onClick: (String)->Unit, modifier: Modifier = Modifier)",
+        "NavItem": "data class NavItem(val id:String, val label:String)",
+        "ButtonEnums": [
+          "enum ButtonVariant { Filled, Tonal, Outlined, Elevated }",
+          "enum ButtonSize { Sm, Md, Lg }",
+          "enum ButtonIntent { Primary, Secondary, Neutral, Danger }",
+          "enum IconPlacement { Start, End, Only }"
+        ],
+        "ButtonComposable": "@Composable NDJCButton(text:String, modifier:Modifier=Modifier, onClick:()->Unit={}, variant:ButtonVariant=Filled, size:ButtonSize=Md, intent:ButtonIntent=Primary, iconPlacement:IconPlacement=Start, enabled:Boolean=true)"
+      }
+    }
+  },
+  "tokens": {
+    "domains": {
+      "color": {
+        "required": true,
+        "keys": [
+          "brand.primary",
+          "brand.secondary",
+          "surface.bg",
+          "surface.card",
+          "text.primary",
+          "text.secondary",
+          "success",
+          "warn",
+          "danger"
+        ]
+      },
+      "space": {
+        "required": true,
+        "keys": [
+          "xs",
+          "sm",
+          "md",
+          "lg",
+          "xl"
+        ]
+      },
+      "radius": {
+        "required": true,
+        "keys": [
+          "none",
+          "sm",
+          "md",
+          "lg",
+          "pill"
+        ]
+      },
+      "elevation": {
+        "required": true,
+        "keys": [
+          "level0",
+          "level1",
+          "level2",
+          "level3",
+          "level4"
+        ]
+      },
+      "typography": {
+        "required": true,
+        "keys": [
+          "display",
+          "headline",
+          "title",
+          "body",
+          "label"
+        ]
+      },
+      "opacity": {
+        "required": true,
+        "keys": [
+          "disabled",
+          "medium",
+          "high"
+        ]
+      },
+      "duration": {
+        "required": false,
+        "keys": [
+          "fast",
+          "normal",
+          "slow"
+        ]
+      },
+      "density": {
+        "required": false,
+        "enum": [
+          "comfortable",
+          "compact",
+          "auto"
+        ]
+      },
+      "themeMode": {
+        "required": false,
+        "enum": [
+          "light",
+          "dark",
+          "system"
+        ]
+      }
+    },
+    "rules": {
+      "naming": "kebab.or.dot",
+      "validation": "all required domains & keys must exist; enums must match; values must be parseable"
+    },
+    "requiredTokens": [
+      "color.brand.primary",
+      "color.brand.secondary",
+      "color.surface.bg",
+      "color.surface.card",
+      "color.text.primary",
+      "color.text.secondary",
+      "color.success",
+      "color.warn",
+      "color.danger",
+      "space.xs",
+      "space.sm",
+      "space.md",
+      "space.lg",
+      "space.xl",
+      "radius.none",
+      "radius.sm",
+      "radius.md",
+      "radius.lg",
+      "radius.pill",
+      "elevation.level0",
+      "elevation.level1",
+      "elevation.level2",
+      "elevation.level3",
+      "elevation.level4",
+      "typography.display",
+      "typography.headline",
+      "typography.title",
+      "typography.body",
+      "typography.label",
+      "opacity.disabled",
+      "opacity.medium",
+      "opacity.high"
+    ]
+  },
+  "routing": {
+    "runtimeAbilities": [
+      "navigate(routeId,params)",
+      "openSheet(sheetId,args)",
+      "back()"
+    ],
+    "schema": {
+      "routes": [
+        {
+          "id": "home",
+          "params": {}
+        },
+        {
+          "id": "detail",
+          "params": {
+            "id": "string"
+          }
+        }
+      ],
+      "entry": "home",
+      "deepLinks": [
+        {
+          "pattern": "app://detail/{id}"
+        }
+      ],
+      "returnPolicy": "backstack"
+    }
+  },
+  "hooks": {
+    "required": [
+      "onAppStart",
+      "onForeground",
+      "onBackground",
+      "onEnterRoute",
+      "onLeaveRoute"
+    ],
+    "optional": [
+      "onLowMemory",
+      "onPermissionResult"
+    ]
+  },
+  "resources": {
+    "namespaces": {
+      "strings": "ui.* | feature.*",
+      "media": "img.* | icon.* | font.*"
+    },
+    "examples": {
+      "string": [
+        "ui.common.ok",
+        "ui.empty.title",
+        "feature.feed.title"
+      ],
+      "media": [
+        "img.logo.primary",
+        "icon.action.add"
+      ]
+    },
+    "conflictOrder": [
+      "template",
+      "uiPack",
+      "featureModule"
+    ]
+  },
+  "moduleManifest": {
+    "fields": {
+      "moduleId": "string",
+      "version": "semver",
+      "type": "enum(ui|feature|tooling)",
+      "supportedSlots": "list<slotId>",
+      "routes": "list<route>",
+      "capabilities": "list<string>",
+      "permissions": "list<string>",
+      "resources": "map<string,resourceKey>",
+      "hooks": "map<string,handler>",
+      "configSchema": "json-schema"
+    },
+    "rules": [
+      "module must not depend on a concrete template implementation; only depend on this contract"
+    ]
+  },
+  "assemblyManifest": {
+    "structure": {
+      "template": "templateId@version",
+      "uiPack": "uiPackId@version",
+      "modules": "list<moduleId@version>",
+      "routing": {
+        "entry": "routeId"
+      },
+      "featureFlags": "list<string>",
+      "locale": "string",
+      "theme": "tokensRef",
+      "density": "enum(comfortable|compact|auto)"
+    },
+    "auditRules": [
+      "slots coverage",
+      "permissions merge",
+      "resource conflicts",
+      "routing connectivity"
+    ]
+  },
+  "gradleManifest": {
+    "applicationId": "string",
+    "permissions": "list<string>",
+    "dependencies": "list<maven:group:artifact:version>",
+    "resConfigs": "list<string>",
+    "conflictResolution": "platformBOM; unresolved -> fail"
+  },
+  "capabilities": {
+    "required": [
+      "routing.basic",
+      "theme.base",
+      "components.core"
+    ],
+    "optional": [
+      "darkMode",
+      "rtl",
+      "density.compact"
+    ],
+    "provided": {
+      "uiPack": [
+        "routing.basic",
+        "theme.base",
+        "components.core",
+        "darkMode"
+      ]
+    }
+  },
+  "preflight": {
+    "requiredChecks": [
+      "slots.exist",
+      "resources.keysResolvable",
+      "tokens.complete",
+      "routing.connected"
+    ],
+    "failOn": "firstError"
+  },
+  "cdc": {
+    "cases": [
+      "case.appBar.basic",
+      "case.button.variants",
+      "case.tabBar.switch"
+    ],
+    "golden": {
+      "baselineVersion": "1.0.0",
+      "allowedDrift": "none"
+    }
+  },
+  "deprecationPolicy": {
+    "gracePeriods": {
+      "minor": "90d",
+      "major": "180d"
+    },
+    "expiredIsError": true,
+    "registry": []
+  },
+  "observability": {
+    "events": "module.<id>.<event>",
+    "kpi": [
+      "coldStart",
+      "firstPaint",
+      "crashRate",
+      "jankP95"
+    ]
+  }
+}

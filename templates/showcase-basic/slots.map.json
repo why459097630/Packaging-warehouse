@@ -1,7 +1,0 @@
-{
-  "header": ["SearchBar", "FilterBar"],
-  "listItem": ["CardBasic", "CardMedia"],
-  "footer": ["Paginator"],
-  "detailHeader": ["TitleBar"],
-  "detailBody": ["RichContent", "ActionBar"]
-}

@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<font-family xmlns:android="http://schemas.android.com/apk/res/android">
-  <!-- 占位：系统 sans-serif；后续可换成 primary.ttf -->
-  <font android:fontFamily="sans-serif" android:fontStyle="normal" android:fontWeight="400"/>
-</font-family>

@@ -1,0 +1,48 @@
+{
+  "moduleId": "feature-restaurant-menu",
+  "version": "1.0.0",
+  "type": "feature",
+  "supportedSlots": ["primary", "detail", "sheet", "settings"],
+  "routes": [
+    {
+      "id": "home",
+      "params": {}
+    },
+    {
+      "id": "detail",
+      "params": {
+        "id": "string"
+      }
+    }
+  ],
+  "capabilities": [
+    "feature.restaurant.menu"
+  ],
+  "permissions": [],
+  "resources": {
+    "strings": {
+      "feature.restaurant.title": "Restaurant Menu",
+      "feature.restaurant.subtitle": "Browse our dishes",
+      "feature.restaurant.adminTitle": "Manage menu"
+    },
+    "media": {
+      "icon.feature.restaurant": "icon.action.restaurant"
+    }
+  },
+  "hooks": {},
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "defaultCurrency": {
+        "type": "string",
+        "description": "ISO currency code, e.g. CNY"
+      },
+      "showOriginalPriceWhenDiscounted": {
+        "type": "boolean",
+        "description": "Whether to display original price when a discount price is set",
+        "default": true
+      }
+    },
+    "additionalProperties": false
+  }
+}

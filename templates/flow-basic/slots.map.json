@@ -1,6 +1,0 @@
-{
-  "stepHeader": ["StepIndicator"],
-  "stepBody": ["FormFields"],
-  "stepFooter": ["PrevNextBar"],
-  "resultPage": ["ResultSummary"]
-}

@@ -1,6 +1,0 @@
-{
-  "template": "form-template",
-  "prompt": "生成一个介绍菜品的安卓app，要可以上传照片和文字介绍，可以标价，要有登录系统",
-  "generatedAt": "2025-08-22T07:49:55.696Z",
-  "by": "api/generate-apk"
-}

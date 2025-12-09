@@ -1,0 +1,18 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-neumorph",
+  "modules": [
+    "feature-home-basic",
+    "feature-about-basic"
+  ],
+  "slots": {
+    "home": {
+      "hero": "feature-home-basic",
+      "primary": "feature-home-basic"
+    },
+    "detail": {
+      "detail": "feature-about-basic"
+    }
+  },
+  "startRoute": "home"
+}

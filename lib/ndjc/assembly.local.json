@@ -1,0 +1,7 @@
+{
+  "template": "circle-basic",
+  "uiPack": "ui-pack-neumorph",
+  "modules": [
+    ":feature-restaurant-menu-full"
+  ]
+}
