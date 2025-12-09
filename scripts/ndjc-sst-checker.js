@@ -61,9 +61,9 @@ const args = process.argv.slice(2);
 let mode = "--warn";
 
 // 按你目前项目的默认路径写死（可通过参数覆盖）
-let templateDir = "E:/NDJC/Packaging-warehouse/templates/Core-Templates/.ndjc";
-let uiDir       = "E:/NDJC/Packaging-warehouse/templates/Core-Templates/ui-pack-neumorph/.ndjc";
-let moduleDir   = "E:/NDJC/Packaging-warehouse/templates/Core-Templates/feature-restaurant-menu-full/.ndjc";
+let templateDir = "templates/Core-Templates/.ndjc";
+let uiDir       = "templates/Core-Templates/ui-pack-neumorph/.ndjc";
+let moduleDir   = "templates/Core-Templates/feature-restaurant-menu-full/.ndjc";
 
 // sst.json 默认放在 scripts 旁边（同目录）
 let sstPath     = path.join(__dirname, "sst.json");
