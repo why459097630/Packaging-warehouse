@@ -2,6 +2,6 @@
   "template": "circle-basic",
   "uiPack": "ui-pack-neumorph",
   "modules": [
-    ":feature-restaurant-menu-full"
+    ":ui-pack-restaurant-soft-pastel"
   ]
 }
