@@ -138,16 +138,14 @@ class RestaurantViewModel : ViewModel() {
         if (remote.isEmpty()) return local
         if (local.isEmpty()) return remote
 
-        val remoteById = remote.associateBy { it.id }
-        val merged = remote.toMutableList()
+        val remoteIds = remote.map { it.id }.toHashSet()
 
-        local.forEach { dish ->
-            val id = dish.id
-            if (id.isNotBlank() && remoteById[id] == null) {
-                merged.add(dish)
-            }
+        val extras = local.filter { dish ->
+            dish.id.isNotBlank() && !remoteIds.contains(dish.id)
         }
-        return merged
+
+        // remote 为主，extras 追加（避免把本地新增但云端未同步的菜冲掉）
+        return remote + extras
     }
 
     /**
@@ -163,34 +161,28 @@ class RestaurantViewModel : ViewModel() {
             statusMessage = "Loading from cloud..."
         )
 
-        // 1. 云端
+        // 1) 云端
         val fromCloud = tryLoadFromCloud()
-        // 2. 本地缓存文件（包含你之前 Save 的新增菜品）
+        // 2) 本地缓存（包含你之前 Save 的新增菜品）
         val stored = loadDishesFromStorage(context)
 
         val effectiveList: List<DemoDish>
         val status: String
 
-        if (fromCloud.isNotEmpty() && stored.isNotEmpty()) {
-            // ✅ 云端为主，把本地缓存里“云端没有的 id”补进去
-            val merged = mergeRemoteAndLocal(
-                remote = fromCloud,
-                local = stored
-            )
-            effectiveList = merged
-            status = "Loaded from cloud (merged with local cache)."
-        } else if (fromCloud.isNotEmpty()) {
-            // 只有云端有数据
-            effectiveList = fromCloud
-            status = "Loaded from cloud."
-        } else if (stored.isNotEmpty()) {
-            // 云端空、本地有缓存
-            effectiveList = stored
-            status = "Cloud unavailable, using local cache."
-        } else {
-            // 都没有，用兜底 demo
-            effectiveList = initialDishes
-            status = "Cloud unavailable, no dishes yet."
+        effectiveList = when {
+            fromCloud.isNotEmpty() -> {
+                // 云端成功返回时，以云端为准，避免把“云端已删除”的本地缓存又追加回来
+                status = "Loaded from cloud."
+                fromCloud
+            }
+            stored.isNotEmpty() -> {
+                status = "Loaded from local cache."
+                stored
+            }
+            else -> {
+                status = "No data."
+                emptyList()
+            }
         }
 
         uiState = uiState.copy(
@@ -199,7 +191,7 @@ class RestaurantViewModel : ViewModel() {
             statusMessage = status
         )
 
-        // 把最终列表再写回本地，保持一致
+        // 把最终列表再写回本地，保持一致（尤其是 image_url 替换后的 http url）
         saveDishesToStorage(context, effectiveList)
     }
 
@@ -234,17 +226,14 @@ class RestaurantViewModel : ViewModel() {
                 )
             }
 
-            // 2) 计算“只在 categories 表里”的分类名
-            val usedNames = dishList
-                .mapNotNull { it.category.takeIf { c -> c.isNotBlank() } }
-                .toSet()
-
-            val extraManual = categories
+// 2) categories 表全量分类名（首页/编辑页/管理页统一用这一份）
+            val allCategoryNames = categories
                 .map { it.name }
-                .filter { it.isNotBlank() && it !in usedNames }
+                .filter { it.isNotBlank() }
+                .distinct()
 
             uiState = uiState.copy(
-                manualCategories = extraManual
+                manualCategories = allCategoryNames
             )
 
             dishList
@@ -458,21 +447,31 @@ class RestaurantViewModel : ViewModel() {
      *
      * 注意：这里不立刻 upsert 云端，等 onEditSave() 统一提交。
      */
-    fun onEditImageSelected(
-        context: Context,
-        sourceUri: Uri
-    ) {
+    fun onEditImageSelected(context: Context, sourceUri: Uri) {
         viewModelScope.launch {
             val compressed = compressImage(context, sourceUri)
             if (compressed == null) {
-                uiState = uiState.copy(
-                    statusMessage = "Image compress failed."
-                )
+                uiState = uiState.copy(statusMessage = "Image compress failed.")
                 return@launch
             }
+
+            // 1) 写入编辑草稿
             updateEditDraft { it.copy(imageUri = compressed) }
+
+            // 2) 让 UI 立刻能预览
+            uiState = uiState.copy(statusMessage = "Image selected.")
         }
     }
+
+    // ✅ 注意：这个函数必须放在 onEditImageSelected() 结束大括号之后（同级）
+    fun onEditRemoveSelectedImage() {
+        updateEditDraft { it.copy(imageUri = null) }
+        uiState = uiState.copy(statusMessage = "Image removed.")
+    }
+
+
+
+
 
     /**
      * 编辑页点击“Create item / Save”：
@@ -539,7 +538,7 @@ class RestaurantViewModel : ViewModel() {
             isRecommended = draft.isRecommended,
             isSoldOut = draft.isSoldOut,
             imageResId = null,
-            imageUri = draft.imageUri ?: base.imageUri
+            imageUri = draft.imageUri
         )
 
         // ✅ 复用原有 updateDish：本地列表 + 本地存储 + 云端 upsert
@@ -566,26 +565,60 @@ class RestaurantViewModel : ViewModel() {
         } else {
             current.add(normalized)
         }
+
+        // 先本地落盘（哪怕云端失败也不丢）
         uiState = uiState.copy(
             dishes = current,
             statusMessage = "Saved locally (cloud sync later)."
         )
         saveDishesToStorage(context, current)
 
-        // 云端 upsert
+        // 云端 upsert（包含：如有本地图片，则先上传拿 publicUrl）
         viewModelScope.launch {
             try {
-                cloudRepository.upsertDishFromDemo(
+                var imageUrlToSave: String? = normalized.imageUri?.toString()
+
+                // 1) 若是本地 URI（content/file），先上传图片拿 publicUrl
+                val localUri = normalized.imageUri
+                if (localUri != null && isLocalImageUri(imageUrlToSave)) {
+                    val uploadedPublicUrl = uploadDishImageIfNeeded(
+                        context = context,
+                        uri = localUri,
+                    )
+
+                    if (!uploadedPublicUrl.isNullOrBlank()) {
+                        imageUrlToSave = uploadedPublicUrl
+
+                        // 2) 把内存态 + 本地存储里的 imageUri 也替换为 publicUrl（保证重启后还能显示）
+                        val refreshed = uiState.dishes.toMutableList()
+                        val idx = refreshed.indexOfFirst { it.id == normalized.id }
+                        if (idx >= 0) {
+                            refreshed[idx] = refreshed[idx].copy(imageUri = Uri.parse(uploadedPublicUrl))
+                            uiState = uiState.copy(dishes = refreshed)
+                            saveDishesToStorage(context, refreshed)
+
+                            // 让编辑页预览也立即从本地 file:// 切到云端 https://
+                            editDraft = editDraft?.copy(imageUri = Uri.parse(uploadedPublicUrl))
+                        }
+                    }
+                }
+
+                // 3) 最终写入 dishes 表：image_url 必须是可公开访问的 URL（或 null）
+                val ok = cloudRepository.upsertDishFromDemo(
                     id = normalized.id,
                     nameZh = normalized.nameZh,
                     nameEn = normalized.nameEn,
-                    descriptionEn = normalized.descriptionEn,  // 👈 用裁剪后的描述
+                    descriptionEn = normalized.descriptionEn,
                     category = normalized.category,
                     originalPrice = normalized.originalPrice.toInt(),
                     discountPrice = normalized.discountPrice?.toInt(),
                     isRecommended = normalized.isRecommended,
                     isSoldOut = normalized.isSoldOut,
-                    imageUri = normalized.imageUri?.toString()
+                    imageUri = imageUrlToSave
+                )
+
+                uiState = uiState.copy(
+                    statusMessage = if (ok) "Saved to cloud." else "Cloud sync failed, changes are saved locally."
                 )
             } catch (_: Exception) {
                 uiState = uiState.copy(
@@ -594,6 +627,35 @@ class RestaurantViewModel : ViewModel() {
             }
         }
     }
+
+    private fun isLocalImageUri(uriString: String?): Boolean {
+        if (uriString.isNullOrBlank()) return false
+        return uriString.startsWith("content://") || uriString.startsWith("file://")
+    }
+
+    private suspend fun uploadDishImageIfNeeded(
+        context: Context,
+        uri: Uri
+    ): String? = withContext(Dispatchers.IO) {
+        try {
+            val resolver = context.contentResolver
+            val bytes =
+                resolver.openInputStream(uri)?.use { it.readBytes() }
+                    ?: runCatching {
+                        val p = uri.path ?: return@runCatching null
+                        java.io.File(p).readBytes()
+                    }.getOrNull()
+                    ?: return@withContext null
+            cloudRepository.uploadDishImageBytes(
+                bytes = bytes,
+                fileExt = "jpg",
+                contentType = "image/jpeg"
+            )
+        } catch (_: Exception) {
+            null
+        }
+    }
+
 
     /**
      * 从编辑页选择了一张图片（老逻辑）：
@@ -705,62 +767,60 @@ class RestaurantViewModel : ViewModel() {
         val cat = category.trim()
         if (cat.isBlank()) return
 
-        // 1) 本地清空这个分类
-        val updatedDishes = uiState.dishes.map {
-            if (it.category == cat) it.copy(category = "") else it
-        }
-        val updatedManual = uiState.manualCategories.filterNot { it == cat }
-        val newSelected = uiState.selectedCategory.takeUnless { it == cat }
+        // ✅ 先做“云端引用检查”：只要还有 dish.category_id 引用该分类，就不允许删除
+        uiState = uiState.copy(statusMessage = "Checking category references...")
 
-        uiState = uiState.copy(
-            dishes = updatedDishes,
-            manualCategories = updatedManual,
-            selectedCategory = newSelected,
-            statusMessage = "Category \"$cat\" deleted."
-        )
-        // 本地持久化
-        saveDishesToStorage(context, updatedDishes)
-
-        // 2) 云端删掉 categories 表里的记录
         viewModelScope.launch {
             try {
-                cloudRepository.deleteCategoryByName(cat)
-            } catch (_: Exception) {
+                val catId = cloudRepository.getCategoryIdByName(cat)
+
+                // 找不到云端分类：视为“已不存在”，直接做本地移除即可
+                if (catId.isNullOrBlank()) {
+                    // 本地移除（不触发云端 delete）
+                    val updatedManual = uiState.manualCategories.filterNot { it == cat }
+                    val newSelected = uiState.selectedCategory.takeUnless { it == cat }
+
+                    uiState = uiState.copy(
+                        manualCategories = updatedManual,
+                        selectedCategory = newSelected,
+                        statusMessage = "Category \"$cat\" removed (not found in cloud)."
+                    )
+                    return@launch
+                }
+
+                val hasRef = cloudRepository.hasAnyDishReferencingCategoryId(catId)
+                if (hasRef) {
+                    // ✅ 你期望的策略：有菜品引用则禁止删除
+                    uiState = uiState.copy(
+                        statusMessage = "Cannot delete category \"$cat\": there are dishes under this category. Move them to another category first."
+                    )
+                    return@launch
+                }
+
+                // 走到这里说明：云端没有任何 dish 引用该 category_id，可以安全删除
+
+                // 1) 本地：移除 manualCategories + 选中项（不需要改 dishes，因为既然无引用，dishes 里也不会显示这个分类）
+                val updatedManual = uiState.manualCategories.filterNot { it == cat }
+                val newSelected = uiState.selectedCategory.takeUnless { it == cat }
+
                 uiState = uiState.copy(
-                    statusMessage = "Category deleted locally, but cloud delete failed."
+                    manualCategories = updatedManual,
+                    selectedCategory = newSelected,
+                    statusMessage = "Deleting category \"$cat\"..."
+                )
+
+                // 2) 云端：删除 categories 记录（按 name 找 id 再删）
+                val ok = cloudRepository.deleteCategoryByName(cat)
+
+                uiState = uiState.copy(
+                    statusMessage = if (ok) "Category \"$cat\" deleted." else "Category deleted locally, but cloud delete failed."
+                )
+            } catch (e: Exception) {
+                Log.e("RestaurantViewModel", "removeCategory: failed", e)
+                uiState = uiState.copy(
+                    statusMessage = "Delete failed: ${e.message ?: "unknown error"}"
                 )
             }
-        }
-
-        // 3) 云端同步被清空 category 的菜品
-        viewModelScope.launch {
-            updatedDishes
-                .filter { it.category.isBlank() } // 分类被清空的菜
-                .forEach { dish ->
-                    try {
-                        cloudRepository.upsertDishFromDemo(
-                            id = dish.id,
-                            nameZh = dish.nameZh,
-                            nameEn = dish.nameEn,
-                            descriptionEn = dish.descriptionEn,
-                            category = dish.category,
-                            originalPrice = dish.originalPrice.toInt(),
-                            discountPrice = dish.discountPrice?.toInt(),
-                            isRecommended = dish.isRecommended,
-                            isSoldOut = dish.isSoldOut,
-                            imageUri = dish.imageUri?.toString()
-                        )
-                    } catch (e: Exception) {
-                        Log.e(
-                            "RestaurantViewModel",
-                            "Failed to sync dish after category delete: ${dish.id}",
-                            e
-                        )
-                        uiState = uiState.copy(
-                            statusMessage = "Some dishes failed to sync to cloud. Local data is correct."
-                        )
-                    }
-                }
         }
     }
 }

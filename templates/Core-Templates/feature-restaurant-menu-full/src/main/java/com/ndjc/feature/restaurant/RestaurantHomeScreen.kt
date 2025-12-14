@@ -74,8 +74,10 @@ private fun DemoDish.toUiDishForUiPack(): RestaurantHomeDish {
         price = originalPrice.toDouble(),
         isRecommended = isRecommended,
         isSoldOut = isSoldOut,
+        imagePreviewUrl = imageUri?.toString()   // ✅ 新增
     )
 }
+
 
 @Composable
 fun RestaurantHomeScreen(
@@ -330,17 +332,21 @@ fun RestaurantHomeScreen(
                             onToggleRecommended = { vm.onEditToggleRecommended(it) },
                             onToggleSoldOut = { vm.onEditToggleSoldOut(it) },
                             onPickImage = {
-                                // 打开系统图片选择器，只允许选图片
                                 imagePickerLauncher.launch(
                                     PickVisualMediaRequest(
                                         ActivityResultContracts.PickVisualMedia.ImageOnly
                                     )
                                 )
                             },
+                            // ✅ 必填：补上这个参数（先占位，保证编译通过）
+                            onRemoveImage = { _ ->
+                                // TODO: 后续接入真正删除逻辑（清空 draft.imageUri 或从 draft.imageUris 移除）
+                            },
                             onSave = {
                                 vm.onEditSave(context)
-                            },
-                            onDelete = null
+                            }
+                            // 注意：如果你工程里的 RestaurantEditDishActions 没有 onDelete 参数，就别写 onDelete
+                            // 如果你工程里的契约有 onDelete（你上传的这份是有的），再按需加：, onDelete = null
                         )
                     }
 

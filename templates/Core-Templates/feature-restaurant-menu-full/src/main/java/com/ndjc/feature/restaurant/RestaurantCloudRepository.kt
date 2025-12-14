@@ -8,6 +8,8 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URLEncoder
 import java.net.URL
+import java.util.UUID
+
 
 /**
  * Supabase 云端访问仓库
@@ -160,6 +162,43 @@ class RestaurantCloudRepository {
      *    - 若 category 为空 → category_id = null
      *    - 若有分类名 → 在 categories 表中查找，不存在则自动新建后使用
      */
+    // === Storage 上传（最小可用）===
+// 你需要在 Supabase 创建 bucket，例如：dish-images，并设置为 public（否则 anon key 没法拿公开URL）
+    private val DISH_IMAGES_BUCKET = "dish-images"
+
+    suspend fun uploadDishImageBytes(
+        bytes: ByteArray,
+        fileExt: String = "jpg",
+        contentType: String = "image/jpeg"
+    ): String? = withContext(Dispatchers.IO) {
+        val apiKey = RestaurantCloudConfig.SUPABASE_ANON_KEY
+        if (apiKey.isBlank()) return@withContext null
+
+        try {
+            // 用时间戳生成文件名，避免覆盖
+            val objectPath = "dishes/${UUID.randomUUID()}.$fileExt"
+            val url = buildUrl("/storage/v1/object/$DISH_IMAGES_BUCKET/$objectPath")
+
+            val (code, body) = httpPutBytes(
+                urlString = url,
+                bytes = bytes,
+                contentType = contentType
+            )
+
+            if (code !in 200..299) {
+                Log.w("RestaurantCloud", "uploadDishImageBytes failed code=$code body=$body")
+                return@withContext null
+            }
+
+            // bucket public 的情况下，public URL 这样拼
+            val publicUrl = buildUrl("/storage/v1/object/public/$DISH_IMAGES_BUCKET/$objectPath")
+            publicUrl
+        } catch (e: Exception) {
+            Log.e("RestaurantCloud", "uploadDishImageBytes failed", e)
+            null
+        }
+    }
+
     suspend fun upsertDishFromDemo(
         id: String,
         nameZh: String,
@@ -200,28 +239,38 @@ class RestaurantCloudRepository {
                 }
                 put("recommended", isRecommended)
                 put("sold_out", isSoldOut)
-                if (!imageUri.isNullOrBlank()) {
-                    put("image_url", imageUri)
+
+// 方案 A：image_url 只保存云端可访问的 URL（http/https）；不允许把 content:// 或 file:// 写入云端
+                val imageUrl = imageUri?.trim()
+                val isHttpUrl = !imageUrl.isNullOrBlank() &&
+                        (imageUrl.startsWith("http://") || imageUrl.startsWith("https://"))
+
+                if (isHttpUrl) {
+                    put("image_url", imageUrl)
                 } else {
+                    if (!imageUrl.isNullOrBlank()) {
+                        Log.w("RestaurantCloud", "upsertDishFromDemo: ignore non-http image url: $imageUrl")
+                    }
                     put("image_url", JSONObject.NULL)
                 }
             }
 
-            // 3) upsert 逻辑：
-            //    - 如果 id 像 uuid（长度 > 10），按 id=eq.<id> 做 PATCH
-            //    - 否则视作新建：POST 插入一行
-            val looksLikeUuid = id.length > 10
+// 3) upsert 逻辑（方案 A：本地 UUID 是事实主键；任何写入都必须带 id，并且幂等 UPSERT）
+//    - 不允许走“让数据库生成 id”的分支，否则本地/云端会断链。
+            val trimmedId = id.trim()
+            require(trimmedId.isNotEmpty()) { "Scheme A requires local UUID id, but id is blank" }
 
-            val (code, responseBody) = if (looksLikeUuid) {
-                val encodedId = URLEncoder.encode(id, "UTF-8")
-                val url = buildUrl("/rest/v1/dishes?id=eq.$encodedId")
-                Log.d("RestaurantCloud", "upsertDishFromDemo: PATCH $url body=$payload")
-                httpPatch(url, payload)
-            } else {
-                val url = buildUrl("/rest/v1/dishes")
-                Log.d("RestaurantCloud", "upsertDishFromDemo: POST $url body=$payload")
-                httpPost(url, payload, prefer = "return=minimal")
-            }
+            payload.put("id", trimmedId)
+
+            val url = buildUrl("/rest/v1/dishes?on_conflict=id")
+            Log.d("RestaurantCloud", "upsertDishFromDemo: UPSERT(POST) $url body=$payload")
+            val (code, responseBody) = httpPost(
+                url,
+                payload,
+                prefer = "resolution=merge-duplicates,return=minimal"
+            )
+
+
 
             Log.d(
                 "RestaurantCloud",
@@ -236,10 +285,10 @@ class RestaurantCloudRepository {
     }
 
     /**
-     * 按 id 删除 Supabase public.dishes 里的一条记录。
+     * 按 UUID 删除 Supabase public.dishes 的一条记录（方案 A：本地 UUID 与云端主键一致）。
      *
-     * - 仅当 id 为云端返回的 uuid 且 UI 已刷新后，删除才会命中那条记录。
-     * - 如果是本地临时的数字 id（"1" / "2" 等），云端压根没有这条记录，DELETE 只是不起作用。
+     * - 本地与云端使用同一主键：id（UUID）
+     * - DELETE 是幂等的：云端不存在该 id 时，也视为删除成功（不会影响后续流程）
      */
     suspend fun deleteDishById(id: String): Boolean = withContext(Dispatchers.IO) {
         val apiKey = RestaurantCloudConfig.SUPABASE_ANON_KEY
@@ -268,6 +317,39 @@ class RestaurantCloudRepository {
             false
         }
     }
+    /**
+     * 根据分类名获取 categories.id（uuid）。
+     * - 不存在：返回 null
+     */
+    suspend fun getCategoryIdByName(name: String): String? = withContext(Dispatchers.IO) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return@withContext null
+        return@withContext try {
+            fetchCategories().firstOrNull { it.name == trimmed }?.id
+        } catch (e: Exception) {
+            Log.e("RestaurantCloud", "getCategoryIdByName: failed", e)
+            null
+        }
+    }
+
+    /**
+     * 检查是否存在任何菜品引用了某个分类 id（dishes.category_id）。
+     * 说明：
+     * - 这里用 fetchDishes() 拉全量后本地统计，数据量不大时最稳。
+     * - 若你后续需要规模化，可改成服务端 count 查询或 RPC。
+     */
+    suspend fun hasAnyDishReferencingCategoryId(categoryId: String): Boolean = withContext(Dispatchers.IO) {
+        val id = categoryId.trim()
+        if (id.isEmpty()) return@withContext false
+        return@withContext try {
+            fetchDishes().any { it.categoryId == id }
+        } catch (e: Exception) {
+            Log.e("RestaurantCloud", "hasAnyDishReferencingCategoryId: failed", e)
+            // 保守起见：出错时当作“有引用”，避免误删
+            true
+        }
+    }
+
 
     /**
      * 删除指定名称的分类（如果存在）。
@@ -485,6 +567,8 @@ class RestaurantCloudRepository {
         }
     }
 
+    // NOTE: Scheme A 禁止用 PATCH 做新增/更新 dishes；统一使用 UPSERT(POST on_conflict=id) 保证幂等落库。
+// 该方法保留仅用于历史代码/特定场景，业务写入请勿调用。
     private fun httpPatch(
         urlString: String,
         body: JSONObject,
@@ -557,5 +641,45 @@ class RestaurantCloudRepository {
         } finally {
             conn?.disconnect()
         }
+    }
+}
+private fun httpPutBytes(
+    urlString: String,
+    bytes: ByteArray,
+    contentType: String
+): Pair<Int, String?> {
+    var conn: HttpURLConnection? = null
+    return try {
+        val url = URL(urlString)
+        conn = (url.openConnection() as HttpURLConnection).apply {
+            requestMethod = "PUT"
+            doOutput = true
+            connectTimeout = 15_000
+            readTimeout = 15_000
+            setRequestProperty("apikey", RestaurantCloudConfig.SUPABASE_ANON_KEY)
+            setRequestProperty("Authorization", "Bearer ${RestaurantCloudConfig.SUPABASE_ANON_KEY}")
+            setRequestProperty("Content-Type", contentType)
+            setRequestProperty("x-upsert", "true") // 同路径时允许覆盖（可选）
+        }
+
+        conn.outputStream.use { os ->
+            os.write(bytes)
+            os.flush()
+        }
+
+        val code = conn.responseCode
+        val responseBody = try {
+            (if (code in 200..299) conn.inputStream else conn.errorStream)
+                ?.bufferedReader()
+                ?.use { it.readText() }
+        } catch (_: Exception) {
+            null
+        }
+        code to responseBody
+    } catch (e: Exception) {
+        Log.e("RestaurantCloud", "httpPutBytes failed for $urlString", e)
+        0 to null
+    } finally {
+        conn?.disconnect()
     }
 }
