@@ -3,17 +3,14 @@ package com.ndjc.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.remember
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.core.view.WindowCompat
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 
 import com.ndjc.core.skeleton.*
-import com.ndjc.ui.neu.theme.NDJCTheme as UiTheme
-import com.ndjc.ui.neu.theme.ThemeMode as UiThemeMode
-import com.ndjc.ui.neu.theme.Density as UiDensity
-import com.ndjc.ui.neu.components.NDJCTabBar as UiTabBar
-import com.ndjc.ui.neu.components.NDJCTopAppBar as UiTopAppBar
 
 class MainActivity : ComponentActivity() {
 
@@ -21,50 +18,33 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val assembly =
-            loadAssemblyFromAssets(this, "assembly/assembly.json")
+        // 路线一：让内容绘制到系统栏下方，并把状态栏设为透明
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = Color.Transparent.toArgb()
+
+        // 从 assets 加载 assembly 配置
+        val assembly = loadAssemblyFromAssets(this, "assembly/assembly.json")
 
         setContent {
-            UiTheme(
-                mode = UiThemeMode.Light,
-            ) {
-                NDJCAppHost(
-                    assembly = assembly,
-                    // 最简单的 hooks 实现，先全部 no-op
-                    hooks = object : Hooks {},
-                    header = { UiTopAppBar(title = "NDJC Skeleton") },
-                    tabBar = { navigator, currentRouteId ->
-                        val routes = remember(assembly) {
-                            resolveTabRoutesFromModules(
-                                modules = assembly.modules,
-                                // 新签名要求的 fallback，先给空列表兜底
-                                fallback = emptyList()
+            NDJCAppHost(
+                assembly = assembly,
+                // 当前先用一个 no-op hooks 实现
+                hooks = object : Hooks {},
+                content = { nav: NavHostController, startRoute: String, modifier: Modifier ->
+                    CoreNavHost(
+                        nav = nav,
+                        startRoute = startRoute,
+                        assembly = assembly,
+                        modifier = modifier,
+                        resolveScreen = { routeId, controller ->
+                            ResolveCoreScreen(
+                                routeId = routeId,
+                                nav = controller
                             )
                         }
-
-                        UiTabBar(
-                            items = routes,
-                            selectedId = currentRouteId,
-                            onClick = { id -> navigator.navigate(id) }
-                        )
-                    },
-                    content = { nav: NavHostController, startRoute: String, modifier: Modifier ->
-                        CoreNavHost(
-                            nav = nav,
-                            startRoute = startRoute,
-                            assembly = assembly,
-                            modifier = modifier,
-                            // ⭐ 这里把之前加在 Routes.kt 里的 resolveScreen 补上
-                            resolveScreen = { routeId, controller ->
-                                ResolveCoreScreen(
-                                    routeId = routeId,
-                                    nav = controller
-                                )
-                            }
-                        )
-                    }
-                )
-            }
+                    )
+                }
+            )
         }
     }
 }
