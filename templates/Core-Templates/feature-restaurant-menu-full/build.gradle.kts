@@ -46,5 +46,6 @@ dependencies {
 
     implementation("androidx.navigation:navigation-compose:2.8.3")
 
-
+    // 依赖的 UI 包（其内部已有 api 暴露 compose 依赖）
+    implementation(project(":ui-pack-restaurant-soft-pastel"))
 }
