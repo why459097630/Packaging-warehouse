@@ -3,6 +3,25 @@ name: Android Build (NDJC • Core-Templates minimal)
 on:
   # 只保留手动触发，点 Run workflow 就能打包
   workflow_dispatch:
+    inputs:
+      template:
+        description: "Core-Templates template id (default: core-skeleton)"
+        required: false
+        default: "core-skeleton"
+      uiPack:
+        description: "UI pack folder name under templates/Core-Templates (e.g. ui-pack-neumorph)"
+        required: true
+      modules:
+        description: 'JSON array string, e.g. ["feature-restaurant-menu-full"]'
+        required: true
+      appName:
+        description: "App display name (strings.xml app_name)"
+        required: false
+        default: "NDJC App"
+      iconBase64:
+        description: "Base64-encoded PNG (optional). If empty, keep template default icon."
+        required: false
+        default: ""
 
 jobs:
   build:
@@ -17,7 +36,86 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
+
+      # 2.5) 将前端/手动输入写入 assembly.local.json（ndjc-assembly.sh 读取这个文件）
+      - name: NDJC | Write lib/ndjc/assembly.local.json from workflow inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p lib/ndjc
+
+          TEMPLATE="${{ inputs.template }}"
+          UIPACK="${{ inputs.uiPack }}"
+          MODULES_JSON='${{ inputs.modules }}'
+
+          # 校验 modules 是合法 JSON 数组
+          node -e "const v=${MODULES_JSON}; if(!Array.isArray(v)) { console.error('inputs.modules must be a JSON array'); process.exit(1) }"
+
+          cat > lib/ndjc/assembly.local.json <<EOF
+          {
+            "template": "${TEMPLATE}",
+            "uiPack": "${UIPACK}",
+            "modules": ${MODULES_JSON}
+          }
+          EOF
+
+          echo "---- lib/ndjc/assembly.local.json ----"
+          cat lib/ndjc/assembly.local.json
+
+      # 2.6) 构建期注入：写入 appName（不改模板结构，只覆盖 strings.xml 的 app_name）
+      - name: NDJC | Inject appName into template
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          APP_NAME="${{ inputs.appName }}"
+          STRINGS="templates/Core-Templates/app/src/main/res/values/strings.xml"
+
+          if [ ! -f "$STRINGS" ]; then
+            echo "strings.xml not found at: $STRINGS"
+            exit 1
+          fi
+
+          python3 - <<'PY'
+          import os, re, pathlib
+          strings_path = pathlib.Path(os.environ["STRINGS"])
+          app_name = os.environ["APP_NAME"]
+          s = strings_path.read_text(encoding="utf-8")
+
+          # 替换 <string name="app_name">...</string>
+          pattern = r'(<string\\s+name="app_name"\\s*>)(.*?)(</string>)'
+          if not re.search(pattern, s, flags=re.S):
+            raise SystemExit('Cannot find <string name="app_name"> in strings.xml')
+
+          s2 = re.sub(pattern, r'\\1' + app_name + r'\\3', s, flags=re.S)
+          strings_path.write_text(s2, encoding="utf-8")
+          print("Updated app_name in strings.xml")
+          PY
+        env:
+          STRINGS: templates/Core-Templates/app/src/main/res/values/strings.xml
+          APP_NAME: ${{ inputs.appName }}
+
+      # 2.7) 构建期注入：写入 icon（可选；为空则跳过）
+      - name: NDJC | Inject icon into template (optional)
+        if: ${{ inputs.iconBase64 != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p tmp
+          echo "${{ inputs.iconBase64 }}" | base64 -d > tmp/icon.png
+
+          # 先做“最小可用覆盖”：至少覆盖一个 launcher 文件，让 APK 图标能变化
+          TARGET="templates/Core-Templates/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+          if [ ! -f "$TARGET" ]; then
+            echo "Target icon not found: $TARGET"
+            exit 1
+          fi
+
+          cp tmp/icon.png "$TARGET"
+          echo "Icon injected to $TARGET"
 
       # 3) NDJC Core-Templates 组合装配 + 契约自检
       - name: NDJC | Core-Templates assembly
@@ -30,8 +128,8 @@ jobs:
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: "temurin"
+          java-version: "17"
 
       # 5) 配置 Gradle 缓存（可加快构建速度）
       - name: Setup Gradle cache
