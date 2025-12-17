@@ -3,127 +3,91 @@ name: Android Build (NDJC • Core-Templates minimal)
 on:
   workflow_dispatch:
     inputs:
-      template:
-        description: "Core-Templates template id"
-        required: false
-        default: "core-skeleton"
-      uiPack:
-        description: "UI pack folder name"
+      run_id:
+        description: "NDJC run id (used for tracing)"
         required: true
-      modules:
-        description: 'JSON array string, e.g. ["feature-restaurant-menu-full"]'
-        required: true
-      appName:
+        type: string
+      app_name:
         description: "App display name"
+        required: true
+        type: string
+      template_key:
+        description: "Template key (e.g. shop-basic)"
+        required: true
+        type: string
+      ui_pack:
+        description: "UI pack (e.g. ui-pack-neumorph)"
         required: false
-        default: "NDJC App"
-      iconBase64:
-        description: "Base64 PNG (512x512 recommended)"
+        type: string
+      modules:
+        description: "Comma-separated feature modules"
         required: false
-        default: ""
+        type: string
+      icon_base64:
+        description: "Optional: dataURL or base64 for PNG/JPG"
+        required: false
+        type: string
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout (Packaging-warehouse)
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      # 写 assembly.local.json（装配合同）
-      - name: NDJC | Write assembly.local.json
+      # 关键新增：把 workflow inputs 写入 lib/ndjc/assembly.local.json
+      - name: NDJC | Write lib/ndjc/assembly.local.json from inputs
         shell: bash
         run: |
           set -euo pipefail
+
           mkdir -p lib/ndjc
 
-          TEMPLATE="${{ inputs.template }}"
-          UIPACK="${{ inputs.uiPack }}"
-          MODULES_JSON='${{ inputs.modules }}'
+          node - <<'NODE'
+          const fs = require("fs");
 
-          node -e "const v=${MODULES_JSON}; if(!Array.isArray(v)) process.exit(1)"
+          const runId = process.env.INPUT_RUN_ID || "";
+          const appName = process.env.INPUT_APP_NAME || "NDJC App";
+          const templateKey = process.env.INPUT_TEMPLATE_KEY || "shop-basic";
+          const uiPack = process.env.INPUT_UI_PACK || "";
+          const modulesRaw = process.env.INPUT_MODULES || "";
+          const iconBase64 = process.env.INPUT_ICON_BASE64 || "";
 
-          cat > lib/ndjc/assembly.local.json <<EOF
-          {
-            "template": "${TEMPLATE}",
-            "uiPack": "${UIPACK}",
-            "modules": ${MODULES_JSON}
-          }
-          EOF
+          const modules = modulesRaw
+            .split(",")
+            .map(s => s.trim())
+            .filter(Boolean);
 
+          const assembly = {
+            runId,
+            mode: "compose",
+            templateKey,
+            uiPack,
+            modules,
+            meta: {
+              appName,
+              iconBase64
+            }
+          };
+
+          fs.writeFileSync(
+            "lib/ndjc/assembly.local.json",
+            JSON.stringify(assembly, null, 2),
+            "utf8"
+          );
+
+          console.log("Wrote lib/ndjc/assembly.local.json");
+          NODE
+
+          echo "----- assembly.local.json -----"
           cat lib/ndjc/assembly.local.json
 
-      # 注入 appName
-      - name: NDJC | Inject appName
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import re, pathlib
-          p = pathlib.Path("templates/Core-Templates/app/src/main/res/values/strings.xml")
-          s = p.read_text(encoding="utf-8")
-          s = re.sub(
-            r'(<string\\s+name="app_name">)(.*?)(</string>)',
-            r'\\1' + "${{ inputs.appName }}" + r'\\3',
-            s,
-            flags=re.S
-          )
-          p.write_text(s, encoding="utf-8")
-          PY
-
-      # =========================
-      # 🔥 关键增强：完整 Icon 注入
-      # =========================
-      - name: NDJC | Inject FULL Android launcher icons
-        if: ${{ inputs.iconBase64 != '' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          sudo apt-get update
-          sudo apt-get install -y imagemagick
-
-          mkdir -p tmp/icons
-          echo "${{ inputs.iconBase64 }}" | base64 -d > tmp/icon.png
-
-          RES="templates/Core-Templates/app/src/main/res"
-
-          declare -A SIZES=(
-            ["mipmap-mdpi"]=48
-            ["mipmap-hdpi"]=72
-            ["mipmap-xhdpi"]=96
-            ["mipmap-xxhdpi"]=144
-            ["mipmap-xxxhdpi"]=192
-          )
-
-          for dir in "${!SIZES[@]}"; do
-            size="${SIZES[$dir]}"
-            mkdir -p "$RES/$dir"
-            convert tmp/icon.png -resize ${size}x${size} "$RES/$dir/ic_launcher.png"
-          done
-
-          # adaptive icon (Android 8+)
-          mkdir -p "$RES/mipmap-anydpi-v26"
-
-          cat > "$RES/mipmap-anydpi-v26/ic_launcher.xml" <<EOF
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-              <background android:drawable="@android:color/white"/>
-              <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
-          </adaptive-icon>
-          EOF
-
-          # foreground 图层
-          convert tmp/icon.png -resize 432x432 "$RES/mipmap-xxxhdpi/ic_launcher_foreground.png"
-
-          echo "✔ All launcher icons injected (mdpi → xxxhdpi + adaptive)"
-
-      # NDJC 装配
       - name: NDJC | Core-Templates assembly
         shell: bash
         run: |
@@ -139,23 +103,28 @@ jobs:
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Pre-clean Gradle
+      - name: Pre-clean Gradle (stop daemons & clean)
         working-directory: templates/Core-Templates
         shell: bash
         run: |
+          set -euo pipefail
           chmod +x ./gradlew
           ./gradlew --stop || true
-          ./gradlew clean --no-daemon
+          ./gradlew clean --no-daemon --stacktrace
 
       - name: Build APK (debug)
+        id: build_apk
         working-directory: templates/Core-Templates
         shell: bash
         run: |
-          ./gradlew --no-daemon :app:assembleDebug
+          set -euo pipefail
+          ./gradlew --no-daemon --stacktrace :app:assembleDebug
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ndjc-apk-${{ github.run_id }}
-          path: templates/Core-Templates/app/build/outputs/**/*.apk
+          path: |
+            templates/Core-Templates/app/build/outputs/**/*.apk
+          if-no-files-found: error
           retention-days: 14
