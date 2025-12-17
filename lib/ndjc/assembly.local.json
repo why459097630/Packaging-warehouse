@@ -1,11 +1,13 @@
 {
-  "runId": "ndjc-20251217T150937Z-ff4f",
-  "ts": "2025-12-17T15:09:37.236Z",
-  "appName": "牛大郎",
+  "run_id": "ndjc-20251217T153948Z",
+  "template_key": "shop-basic",
+  "app_label": "牛大郎",
   "modules": [
     "feature-restaurant-menu-full"
   ],
   "uiPacks": [
     "ui-pack-restaurant-soft-pastel"
-  ]
+  ],
+  "generated_at": "2025-12-17T15:39:48.851Z",
+  "source": "niandongjicheng /api/build"
 }
