@@ -1,7 +1,12 @@
 {
-  "template": "circle-basic",
-  "uiPack": "ui-pack-restaurant-soft-pastel",
+  "runId": "ndjc-20251217T125206Z",
+  "appName": "牛大郎",
   "modules": [
-    ":feature-restaurant-menu-full"
-  ]
+    "feature-restaurant-menu-full"
+  ],
+  "uiPacks": [
+    "ui-pack-restaurant-soft-pastel"
+  ],
+  "icon": null,
+  "createdAt": "2025-12-17T12:52:06.399Z"
 }
