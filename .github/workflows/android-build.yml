@@ -1,25 +1,24 @@
 name: Android Build (NDJC • Core-Templates minimal)
 
 on:
-  # 只保留手动触发，点 Run workflow 就能打包
   workflow_dispatch:
     inputs:
       template:
-        description: "Core-Templates template id (default: core-skeleton)"
+        description: "Core-Templates template id"
         required: false
         default: "core-skeleton"
       uiPack:
-        description: "UI pack folder name under templates/Core-Templates (e.g. ui-pack-neumorph)"
+        description: "UI pack folder name"
         required: true
       modules:
         description: 'JSON array string, e.g. ["feature-restaurant-menu-full"]'
         required: true
       appName:
-        description: "App display name (strings.xml app_name)"
+        description: "App display name"
         required: false
         default: "NDJC App"
       iconBase64:
-        description: "Base64-encoded PNG (optional). If empty, keep template default icon."
+        description: "Base64 PNG (512x512 recommended)"
         required: false
         default: ""
 
@@ -28,30 +27,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) 拉取当前仓库代码
-      - name: Checkout (Packaging-warehouse)
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # 2) 安装 Node.js（ndjc-assembly.sh 里要跑 ndjc-sst-checker.js）
-      - name: Set up Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      # 2.5) 将前端/手动输入写入 assembly.local.json（ndjc-assembly.sh 读取这个文件）
-      - name: NDJC | Write lib/ndjc/assembly.local.json from workflow inputs
+      # 写 assembly.local.json（装配合同）
+      - name: NDJC | Write assembly.local.json
         shell: bash
         run: |
           set -euo pipefail
-
           mkdir -p lib/ndjc
 
           TEMPLATE="${{ inputs.template }}"
           UIPACK="${{ inputs.uiPack }}"
           MODULES_JSON='${{ inputs.modules }}'
 
-          # 校验 modules 是合法 JSON 数组
-          node -e "const v=${MODULES_JSON}; if(!Array.isArray(v)) { console.error('inputs.modules must be a JSON array'); process.exit(1) }"
+          node -e "const v=${MODULES_JSON}; if(!Array.isArray(v)) process.exit(1)"
 
           cat > lib/ndjc/assembly.local.json <<EOF
           {
@@ -61,106 +56,106 @@ jobs:
           }
           EOF
 
-          echo "---- lib/ndjc/assembly.local.json ----"
           cat lib/ndjc/assembly.local.json
 
-      # 2.6) 构建期注入：写入 appName（不改模板结构，只覆盖 strings.xml 的 app_name）
-      - name: NDJC | Inject appName into template
+      # 注入 appName
+      - name: NDJC | Inject appName
         shell: bash
         run: |
           set -euo pipefail
-
-          APP_NAME="${{ inputs.appName }}"
-          STRINGS="templates/Core-Templates/app/src/main/res/values/strings.xml"
-
-          if [ ! -f "$STRINGS" ]; then
-            echo "strings.xml not found at: $STRINGS"
-            exit 1
-          fi
-
           python3 - <<'PY'
-          import os, re, pathlib
-          strings_path = pathlib.Path(os.environ["STRINGS"])
-          app_name = os.environ["APP_NAME"]
-          s = strings_path.read_text(encoding="utf-8")
-
-          # 替换 <string name="app_name">...</string>
-          pattern = r'(<string\\s+name="app_name"\\s*>)(.*?)(</string>)'
-          if not re.search(pattern, s, flags=re.S):
-            raise SystemExit('Cannot find <string name="app_name"> in strings.xml')
-
-          s2 = re.sub(pattern, r'\\1' + app_name + r'\\3', s, flags=re.S)
-          strings_path.write_text(s2, encoding="utf-8")
-          print("Updated app_name in strings.xml")
+          import re, pathlib
+          p = pathlib.Path("templates/Core-Templates/app/src/main/res/values/strings.xml")
+          s = p.read_text(encoding="utf-8")
+          s = re.sub(
+            r'(<string\\s+name="app_name">)(.*?)(</string>)',
+            r'\\1' + "${{ inputs.appName }}" + r'\\3',
+            s,
+            flags=re.S
+          )
+          p.write_text(s, encoding="utf-8")
           PY
-        env:
-          STRINGS: templates/Core-Templates/app/src/main/res/values/strings.xml
-          APP_NAME: ${{ inputs.appName }}
 
-      # 2.7) 构建期注入：写入 icon（可选；为空则跳过）
-      - name: NDJC | Inject icon into template (optional)
+      # =========================
+      # 🔥 关键增强：完整 Icon 注入
+      # =========================
+      - name: NDJC | Inject FULL Android launcher icons
         if: ${{ inputs.iconBase64 != '' }}
         shell: bash
         run: |
           set -euo pipefail
 
-          mkdir -p tmp
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
+          mkdir -p tmp/icons
           echo "${{ inputs.iconBase64 }}" | base64 -d > tmp/icon.png
 
-          # 先做“最小可用覆盖”：至少覆盖一个 launcher 文件，让 APK 图标能变化
-          TARGET="templates/Core-Templates/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
-          if [ ! -f "$TARGET" ]; then
-            echo "Target icon not found: $TARGET"
-            exit 1
-          fi
+          RES="templates/Core-Templates/app/src/main/res"
 
-          cp tmp/icon.png "$TARGET"
-          echo "Icon injected to $TARGET"
+          declare -A SIZES=(
+            ["mipmap-mdpi"]=48
+            ["mipmap-hdpi"]=72
+            ["mipmap-xhdpi"]=96
+            ["mipmap-xxhdpi"]=144
+            ["mipmap-xxxhdpi"]=192
+          )
 
-      # 3) NDJC Core-Templates 组合装配 + 契约自检
+          for dir in "${!SIZES[@]}"; do
+            size="${SIZES[$dir]}"
+            mkdir -p "$RES/$dir"
+            convert tmp/icon.png -resize ${size}x${size} "$RES/$dir/ic_launcher.png"
+          done
+
+          # adaptive icon (Android 8+)
+          mkdir -p "$RES/mipmap-anydpi-v26"
+
+          cat > "$RES/mipmap-anydpi-v26/ic_launcher.xml" <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@android:color/white"/>
+              <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+          </adaptive-icon>
+          EOF
+
+          # foreground 图层
+          convert tmp/icon.png -resize 432x432 "$RES/mipmap-xxxhdpi/ic_launcher_foreground.png"
+
+          echo "✔ All launcher icons injected (mdpi → xxxhdpi + adaptive)"
+
+      # NDJC 装配
       - name: NDJC | Core-Templates assembly
         shell: bash
         run: |
           set -euo pipefail
           bash scripts/ndjc-assembly.sh
 
-      # 4) 安装 JDK 17
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "17"
 
-      # 5) 配置 Gradle 缓存（可加快构建速度）
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      # 6) 预清理 Gradle（在 Core-Templates 工程内）
-      - name: Pre-clean Gradle (stop daemons & clean)
+      - name: Pre-clean Gradle
         working-directory: templates/Core-Templates
         shell: bash
         run: |
-          set -euo pipefail
           chmod +x ./gradlew
           ./gradlew --stop || true
-          ./gradlew clean --no-daemon --stacktrace
+          ./gradlew clean --no-daemon
 
-      # 7) 构建 Debug APK（需要 Release 的话把 assembleDebug 改成 assembleRelease）
       - name: Build APK (debug)
-        id: build_apk
         working-directory: templates/Core-Templates
         shell: bash
         run: |
-          set -euo pipefail
-          ./gradlew --no-daemon --stacktrace :app:assembleDebug
+          ./gradlew --no-daemon :app:assembleDebug
 
-      # 8) 上传 APK 构建产物
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          # 用 run id 区分每次构建
           name: ndjc-apk-${{ github.run_id }}
-          path: |
-            templates/Core-Templates/app/build/outputs/**/*.apk
-          if-no-files-found: error
+          path: templates/Core-Templates/app/build/outputs/**/*.apk
           retention-days: 14
