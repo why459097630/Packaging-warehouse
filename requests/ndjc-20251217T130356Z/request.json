@@ -1,0 +1,10 @@
+{
+  "runId": "ndjc-20251217T130356Z",
+  "modules": [
+    "feature-restaurant-menu-full"
+  ],
+  "appName": "牛大郎",
+  "uiPacks": [
+    "ui-pack-restaurant-soft-pastel"
+  ]
+}
