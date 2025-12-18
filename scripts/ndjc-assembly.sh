@@ -1,23 +1,29 @@
 #!/usr/bin/env bash
 # NDJC: 组合装配脚本（绝对路径版）
 # 说明：
-#   - 读取 E:/NDJC/Packaging-warehouse/lib/ndjc/assembly.local.json
+#   - 读取 lib/ndjc/assembly.local.json
 #   - 根据组合更新：
-#       E:/NDJC/Packaging-warehouse/templates/Core-Templates/settings.gradle.kts
-#       E:/NDJC/Packaging-warehouse/templates/Core-Templates/app/build.gradle.kts
-#   - 调用 E:/NDJC/Packaging-warehouse/scripts/ndjc-sst-checker.js 做契约自检
+#       templates/Core-Templates/settings.gradle.kts
+#       templates/Core-Templates/app/build.gradle.kts
+#   - 写入 App 名称 + 图标到模板（strings.xml / AndroidManifest.xml / mipmap 图标）
+#   - 调用 scripts/ndjc-sst-checker.js 做契约自检
 
 node - <<'NODE'
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
-// ===== 你当前环境的绝对路径（按你提供的为准，统一成带连字符版） =====
+// ===== 路径常量 =====
 const SETTINGS_GRADLE = "templates/Core-Templates/settings.gradle.kts";
 const APP_GRADLE      = "templates/Core-Templates/app/build.gradle.kts";
 const ASSEMBLY_JSON   = "lib/ndjc/assembly.local.json";
 const SST_CHECKER     = "scripts/ndjc-sst-checker.js";
 const SST_JSON        = "scripts/sst.json";
+
+// ✅ 新增：把前端传来的 appName / icon 落地到模板
+const STRINGS_XML     = "templates/Core-Templates/app/src/main/res/values/strings.xml";
+const MANIFEST_XML    = "templates/Core-Templates/app/src/main/AndroidManifest.xml";
+const RES_DIR         = "templates/Core-Templates/app/src/main/res";
 
 // 模板根目录（由 settings.gradle.kts 所在目录反推）
 const TEMPLATE_DIR    = path.dirname(SETTINGS_GRADLE);           // .../templates/Core-Templates
@@ -42,15 +48,12 @@ function readText(p) {
 }
 
 function writeText(p, content) {
+  fs.mkdirSync(path.dirname(p), { recursive: true });
   fs.writeFileSync(p, content, "utf8");
 }
 
 /**
  * 替换起止标记之间的内容
- * @param {string} content 原始文本
- * @param {string} startMarker 起始标记整行
- * @param {string} endMarker 结束标记整行
- * @param {string} newBlock   新内容（不含起止标记）
  */
 function replaceBlock(content, startMarker, endMarker, newBlock) {
   content = content.replace(/\r\n/g, "\n");
@@ -67,6 +70,15 @@ function replaceBlock(content, startMarker, endMarker, newBlock) {
   const middle = "\n" + newBlock.replace(/\r\n/g, "\n") + "\n";
 
   return before + middle + after;
+}
+
+function escapeXml(v) {
+  return String(v)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
 // ---------- 1) 校验基础文件存在 ----------
@@ -95,21 +107,106 @@ const modules    = Array.isArray(assembly.modules)
   ? assembly.modules.filter(Boolean)
   : [];
 
+// ✅ 新增：App 名称
+const appLabel = (assembly.appName || assembly.app_label || "NDJC App").toString().trim();
+
+// ✅ 新增：图标输入（iconPath 或 iconBase64）
+const iconPathFromJson = (assembly.iconPath || assembly.icon_path || "").toString().trim();
+const iconBase64       = (assembly.iconBase64 || assembly.icon_base64 || "").toString().trim();
+const ICON_FALLBACK    = "lib/ndjc/icon.png"; // 约定：route.ts 可把上传图标落盘到这里
+const iconPngPath      = iconPathFromJson || ICON_FALLBACK;
+
 console.log("[NDJC-assembly] 使用组合：");
 console.log("  template :", templateId);
 console.log("  uiPack   :", uiPackId);
 console.log("  modules  :", modules.length ? modules.join(", ") : "(无模块，只有骨架 + UI 包)");
 
+// ---------- 2.5) 写入 App 名称到模板 ----------
+function upsertAppNameToStrings(stringsXmlPath, label) {
+  if (!fs.existsSync(stringsXmlPath)) return false;
+  let s = readText(stringsXmlPath);
+
+  const re = /<string\s+name="app_name">([\s\S]*?)<\/string>/m;
+  if (re.test(s)) {
+    s = s.replace(re, `<string name="app_name">${escapeXml(label)}</string>`);
+  } else {
+    const insert = `  <string name="app_name">${escapeXml(label)}</string>\n`;
+    s = s.replace(/<\/resources>\s*$/m, insert + "</resources>");
+  }
+  writeText(stringsXmlPath, s);
+  return true;
+}
+
+function patchManifestLabel(manifestPath) {
+  if (!fs.existsSync(manifestPath)) return false;
+  let m = readText(manifestPath);
+
+  // 把 android:label 固定指向 @string/app_name（最稳）
+  if (/android:label="/.test(m)) {
+    m = m.replace(/android:label="[^"]*"/, `android:label="@string/app_name"`);
+  } else {
+    // application 节点没有 label 的话，插入一个（尽量保守插入）
+    m = m.replace(/<application\b([^>]*)>/, `<application$1 android:label="@string/app_name">`);
+  }
+
+  writeText(manifestPath, m);
+  return true;
+}
+
+console.log("[NDJC-assembly] 写入 App 名称:", appLabel);
+const wroteStrings = upsertAppNameToStrings(STRINGS_XML, appLabel);
+if (!wroteStrings) {
+  warn(`strings.xml 不存在或写入失败：${STRINGS_XML}，将仅确保 AndroidManifest.xml 的 label 指向 @string/app_name`);
+}
+patchManifestLabel(MANIFEST_XML);
+
+// ---------- 2.6) 写入 Launcher 图标到模板 ----------
+function writeLauncherIcons(resDir, pngPath, base64Maybe) {
+  // 如果提供了 base64，则解码落盘到 pngPath
+  if (base64Maybe) {
+    const cleaned = base64Maybe.replace(/^data:image\/png;base64,/, "");
+    const buf = Buffer.from(cleaned, "base64");
+    fs.mkdirSync(path.dirname(pngPath), { recursive: true });
+    fs.writeFileSync(pngPath, buf);
+  }
+
+  if (!fs.existsSync(pngPath)) {
+    warn(`未找到图标 png：${pngPath}（将继续使用模板默认图标）`);
+    return false;
+  }
+
+  if (!fs.existsSync(resDir)) {
+    warn(`res 目录不存在：${resDir}（将继续使用模板默认图标）`);
+    return false;
+  }
+
+  const entries = fs.readdirSync(resDir, { withFileTypes: true })
+    .filter(d => d.isDirectory() && d.name.startsWith("mipmap-"))
+    .map(d => path.join(resDir, d.name));
+
+  if (!entries.length) {
+    warn(`未找到任何 mipmap-* 目录：${resDir}（将继续使用模板默认图标）`);
+    return false;
+  }
+
+  for (const dir of entries) {
+    const target1 = path.join(dir, "ic_launcher.png");
+    const target2 = path.join(dir, "ic_launcher_round.png");
+    try {
+      fs.copyFileSync(pngPath, target1);
+      fs.copyFileSync(pngPath, target2);
+    } catch (e) {
+      warn(`写入图标失败：${dir} -> ${e.message}`);
+    }
+  }
+
+  return true;
+}
+
+console.log("[NDJC-assembly] 写入 App 图标:", iconPathFromJson ? iconPngPath : `${iconPngPath} (fallback)`);
+writeLauncherIcons(RES_DIR, iconPngPath, iconBase64);
+
 // ---------- 3) 更新 settings.gradle.kts ----------
-/**
- * include(
- *     ":app",
- *     ":core-skeleton",
- *     ":feature-home-basic",
- *     ":feature-about-basic",
- *     ":ui-pack-neumorph"
- * )
- */
 const moduleNames = ["app", "core-skeleton", ...modules, uiPackId];
 
 const includeLines = [
@@ -133,14 +230,6 @@ writeText(SETTINGS_GRADLE, settingsContent);
 console.log("[NDJC-assembly] 已更新 settings.gradle.kts 的 NDJC-AUTO-INCLUDE 区域");
 
 // ---------- 4) 更新 app/build.gradle.kts ----------
-/**
- *     // NDJC-AUTO-DEPS-START
- *     implementation(project(":core-skeleton"))
- *     implementation(project(":feature-home-basic"))
- *     implementation(project(":feature-about-basic"))
- *     implementation(project(":ui-pack-neumorph"))
- *     // NDJC-AUTO-DEPS-END
- */
 const depsLines = [
   `    implementation(project(":core-skeleton"))`,
   ...modules.map((m) => `    implementation(project(":${m}"))`),
@@ -202,6 +291,8 @@ if (typeof result.status === "number" && result.status !== 0) {
 }
 
 console.log("[NDJC-assembly] 完成：");
+console.log("  - App 名称已写入 strings.xml + manifest label 指向 @string/app_name");
+console.log("  - App 图标已写入 res/mipmap-*/ic_launcher(.png) 与 ic_launcher_round(.png)");
 console.log("  - settings.gradle.kts 已根据 assembly.local.json 更新");
 console.log("  - app/build.gradle.kts 已根据 assembly.local.json 更新");
 console.log("  - 契约自检已执行（ndjc-sst-checker.js）");

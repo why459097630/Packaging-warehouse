@@ -1,7 +1,7 @@
 {
-  "template": "circle-basic",
+  "template": "core-skeleton",
   "uiPack": "ui-pack-restaurant-soft-pastel",
-  "modules": [
-    ":feature-restaurant-menu-full"
-  ]
+  "modules": ["feature-restaurant-menu-full"],
+  "appName": "牛大郎",
+  "iconPath": "lib/ndjc/icon.png"
 }

@@ -4,28 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       run_id:
-        description: "NDJC run id (used for tracing)"
+        description: "NDJC request run id (e.g. ndjc-20251217T193539Z)"
         required: true
-        type: string
-      app_name:
-        description: "App display name"
-        required: true
-        type: string
-      template_key:
-        description: "Template key (e.g. shop-basic)"
-        required: true
-        type: string
-      ui_pack:
-        description: "UI pack (e.g. ui-pack-neumorph)"
-        required: false
-        type: string
-      modules:
-        description: "Comma-separated feature modules"
-        required: false
-        type: string
-      icon_base64:
-        description: "Optional: dataURL or base64 for PNG/JPG"
-        required: false
         type: string
 
 jobs:
@@ -33,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout (Packaging-warehouse)
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -41,52 +21,43 @@ jobs:
         with:
           node-version: "20"
 
-      # 关键新增：把 workflow inputs 写入 lib/ndjc/assembly.local.json
-      - name: NDJC | Write lib/ndjc/assembly.local.json from inputs
+      # 关键：把 requests/<run_id>/assembly.local.json 变成后面脚本会读的 lib/ndjc/assembly.local.json
+      - name: NDJC | Materialize request -> lib/ndjc/assembly.local.json
         shell: bash
         run: |
           set -euo pipefail
+          RUN_ID="${{ inputs.run_id }}"
+          SRC="requests/${RUN_ID}/assembly.local.json"
+          DST="lib/ndjc/assembly.local.json"
 
-          mkdir -p lib/ndjc
+          if [ ! -f "$SRC" ]; then
+            echo "Missing request file: $SRC"
+            ls -la "requests/${RUN_ID}" || true
+            exit 1
+          fi
 
-          node - <<'NODE'
-          const fs = require("fs");
+          mkdir -p "$(dirname "$DST")"
+          cp -f "$SRC" "$DST"
+          echo "Wrote $DST from $SRC"
+          ls -la "$DST" || true
 
-          const runId = process.env.INPUT_RUN_ID || "";
-          const appName = process.env.INPUT_APP_NAME || "NDJC App";
-          const templateKey = process.env.INPUT_TEMPLATE_KEY || "shop-basic";
-          const uiPack = process.env.INPUT_UI_PACK || "";
-          const modulesRaw = process.env.INPUT_MODULES || "";
-          const iconBase64 = process.env.INPUT_ICON_BASE64 || "";
+      # 可选：把 requests/<run_id>/icon.png 变成 lib/ndjc/icon.png
+      - name: NDJC | Materialize icon -> lib/ndjc/icon.png (optional)
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUN_ID="${{ inputs.run_id }}"
+          SRC="requests/${RUN_ID}/icon.png"
+          DST="lib/ndjc/icon.png"
 
-          const modules = modulesRaw
-            .split(",")
-            .map(s => s.trim())
-            .filter(Boolean);
-
-          const assembly = {
-            runId,
-            mode: "compose",
-            templateKey,
-            uiPack,
-            modules,
-            meta: {
-              appName,
-              iconBase64
-            }
-          };
-
-          fs.writeFileSync(
-            "lib/ndjc/assembly.local.json",
-            JSON.stringify(assembly, null, 2),
-            "utf8"
-          );
-
-          console.log("Wrote lib/ndjc/assembly.local.json");
-          NODE
-
-          echo "----- assembly.local.json -----"
-          cat lib/ndjc/assembly.local.json
+          if [ -f "$SRC" ]; then
+            mkdir -p "$(dirname "$DST")"
+            cp -f "$SRC" "$DST"
+            echo "Wrote $DST from $SRC"
+            ls -la "$DST" || true
+          else
+            echo "No icon uploaded for $RUN_ID (skip)"
+          fi
 
       - name: NDJC | Core-Templates assembly
         shell: bash
@@ -94,37 +65,32 @@ jobs:
           set -euo pipefail
           bash scripts/ndjc-assembly.sh
 
-      - name: Setup Java 17
+      - name: Install dependencies (if needed)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f package.json ]; then
+            npm ci
+          else
+            echo "No package.json, skip npm ci"
+          fi
+
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "17"
 
-      - name: Setup Gradle cache
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Pre-clean Gradle (stop daemons & clean)
-        working-directory: templates/Core-Templates
+      - name: Build APK (Debug)
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x ./gradlew
-          ./gradlew --stop || true
-          ./gradlew clean --no-daemon --stacktrace
+          ./gradlew :app:assembleDebug --no-daemon
 
-      - name: Build APK (debug)
-        id: build_apk
-        working-directory: templates/Core-Templates
-        shell: bash
-        run: |
-          set -euo pipefail
-          ./gradlew --no-daemon --stacktrace :app:assembleDebug
-
-      - name: Upload APK artifacts
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ndjc-apk-${{ github.run_id }}
-          path: |
-            templates/Core-Templates/app/build/outputs/**/*.apk
+          name: apk-debug
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
