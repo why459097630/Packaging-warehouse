@@ -1,0 +1,12 @@
+{
+  "runId": "ndjc-20251218T043353Z",
+  "createdAt": "2025-12-18T04:33:56.855Z",
+  "appLabel": "叶大郎",
+  "templateKey": "circle-basic",
+  "modules": [
+    "feature-restaurant-menu-full"
+  ],
+  "uiPacks": [
+    "ui-pack-restaurant-soft-pastel"
+  ]
+}
