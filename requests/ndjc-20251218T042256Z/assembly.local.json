@@ -1,0 +1,9 @@
+{
+  "template": "circle-basic",
+  "uiPack": "ui-pack-restaurant-soft-pastel",
+  "modules": [
+    "feature-restaurant-menu-full"
+  ],
+  "appLabel": "叶大郎",
+  "iconPath": null
+}
