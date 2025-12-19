@@ -92,6 +92,22 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "17"
+          
+      - name: Debug | show settings.gradle(.kts)
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "===== settings.gradle ====="
+          if [ -f settings.gradle ]; then sed -n '1,200p' settings.gradle; else echo "no settings.gradle"; fi
+          echo "===== settings.gradle.kts ====="
+          if [ -f settings.gradle.kts ]; then sed -n '1,240p' settings.gradle.kts; else echo "no settings.gradle.kts"; fi
+
+      - name: Debug | list projects & tasks
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew projects --no-daemon
+          ./gradlew tasks --all --no-daemon | sed -n '1,200p'
 
       - name: Build APK (Debug)
         shell: bash
