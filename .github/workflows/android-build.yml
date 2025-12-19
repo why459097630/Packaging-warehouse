@@ -14,50 +14,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      # 关键：把 requests/<run_id>/assembly.local.json 变成后面脚本会读的 lib/ndjc/assembly.local.json
-      - name: NDJC | Materialize request -> lib/ndjc/assembly.local.json
-        shell: bash
-        run: |
-          set -euo pipefail
-          RUN_ID="${{ inputs.run_id }}"
-          SRC="requests/${RUN_ID}/assembly.local.json"
-          DST="lib/ndjc/assembly.local.json"
-
-          if [ ! -f "$SRC" ]; then
-            echo "Missing request file: $SRC"
-            ls -la "requests/${RUN_ID}" || true
-            exit 1
-          fi
-
-          mkdir -p "$(dirname "$DST")"
-          cp -f "$SRC" "$DST"
-          echo "Wrote $DST from $SRC"
-          ls -la "$DST" || true
-
-      # 可选：把 requests/<run_id>/icon.png 变成 lib/ndjc/icon.png
-      - name: NDJC | Materialize icon -> lib/ndjc/icon.png (optional)
-        shell: bash
-        run: |
-          set -euo pipefail
-          RUN_ID="${{ inputs.run_id }}"
-          SRC="requests/${RUN_ID}/icon.png"
-          DST="lib/ndjc/icon.png"
-
-          if [ -f "$SRC" ]; then
-            mkdir -p "$(dirname "$DST")"
-            cp -f "$SRC" "$DST"
-            echo "Wrote $DST from $SRC"
-            ls -la "$DST" || true
-          else
-            echo "No icon uploaded for $RUN_ID (skip)"
-          fi
+...
 
       - name: NDJC | Core-Templates assembly
         shell: bash
@@ -70,9 +27,14 @@ jobs:
         run: |
           set -euo pipefail
           if [ -f package.json ]; then
-            npm ci
+            corepack enable
+            if [ -f pnpm-lock.yaml ]; then
+              pnpm install --frozen-lockfile
+            else
+              pnpm install --no-frozen-lockfile
+            fi
           else
-            echo "No package.json, skip npm ci"
+            echo "No package.json, skip dependency install"
           fi
 
       - name: Set up JDK
