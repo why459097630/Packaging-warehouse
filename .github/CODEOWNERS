@@ -1,4 +1,0 @@
-# 关键目录强制评审人（把 @your-github-id 替换成你的账号或团队）
-templates/**  @your-github-id
-anchors/**    @your-github-id
-Tools/**      @your-github-id
