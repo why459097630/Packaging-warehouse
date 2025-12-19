@@ -1,4 +1,4 @@
-name: Android Build (NDJC • Core-Templates minimal)
+name: Android Build (NDJC • Core-Templates minimal) 
 
 on:
   workflow_dispatch:
@@ -14,7 +14,50 @@ jobs:
 
     steps:
       - name: Checkout
-...
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # 关键：把 requests/<run_id>/assembly.local.json 变成后面脚本会读的 lib/ndjc/assembly.local.json
+      - name: NDJC | Materialize request -> lib/ndjc/assembly.local.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUN_ID="${{ inputs.run_id }}"
+          SRC="requests/${RUN_ID}/assembly.local.json"
+          DST="lib/ndjc/assembly.local.json"
+
+          if [ ! -f "$SRC" ]; then
+            echo "Missing request file: $SRC"
+            ls -la "requests/${RUN_ID}" || true
+            exit 1
+          fi
+
+          mkdir -p "$(dirname "$DST")"
+          cp -f "$SRC" "$DST"
+          echo "Wrote $DST from $SRC"
+          ls -la "$DST" || true
+
+      # 可选：把 requests/<run_id>/icon.png 变成 lib/ndjc/icon.png
+      - name: NDJC | Materialize icon -> lib/ndjc/icon.png (optional)
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUN_ID="${{ inputs.run_id }}"
+          SRC="requests/${RUN_ID}/icon.png"
+          DST="lib/ndjc/icon.png"
+
+          if [ -f "$SRC" ]; then
+            mkdir -p "$(dirname "$DST")"
+            cp -f "$SRC" "$DST"
+            echo "Wrote $DST from $SRC"
+            ls -la "$DST" || true
+          else
+            echo "No icon uploaded for $RUN_ID (skip)"
+          fi
 
       - name: NDJC | Core-Templates assembly
         shell: bash
@@ -26,15 +69,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ -f package.json ]; then
+
+          if [ ! -f package.json ]; then
+            echo "No package.json, skip node deps"
+            exit 0
+          fi
+
+          # 只在需要 node 工具链时安装依赖；根据锁文件选择正确的安装方式
+          if [ -f pnpm-lock.yaml ]; then
             corepack enable
-            if [ -f pnpm-lock.yaml ]; then
-              pnpm install --frozen-lockfile
-            else
-              pnpm install --no-frozen-lockfile
-            fi
+            pnpm --version
+            pnpm install --frozen-lockfile
+          elif [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            npm ci
+          elif [ -f yarn.lock ]; then
+            corepack enable
+            yarn --version
+            yarn install --frozen-lockfile
           else
-            echo "No package.json, skip dependency install"
+            echo "No lockfile found; fallback to npm install"
+            npm install
           fi
 
       - name: Set up JDK
