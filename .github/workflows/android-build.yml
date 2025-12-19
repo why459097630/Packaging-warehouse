@@ -75,21 +75,17 @@ jobs:
             exit 0
           fi
 
-          # 只在需要 node 工具链时安装依赖；根据锁文件选择正确的安装方式
+          # NDJC APK 构建主链路不依赖 node_modules。
+          # 只有当锁文件存在时才安装，避免 npm install 造成不确定性和 registry 问题。
           if [ -f pnpm-lock.yaml ]; then
             corepack enable
             pnpm --version
             pnpm install --frozen-lockfile
-          elif [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
-            npm ci
-          elif [ -f yarn.lock ]; then
-            corepack enable
-            yarn --version
-            yarn install --frozen-lockfile
           else
-            echo "No lockfile found; fallback to npm install"
-            npm install
+            echo "No pnpm-lock.yaml found; skip installing node deps."
+            ls -la
           fi
+
 
       - name: Set up JDK
         uses: actions/setup-java@v4
