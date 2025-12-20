@@ -180,69 +180,43 @@ function writeLauncherIcons(resDir, pngPath, base64Maybe) {
     return false;
   }
 
-const entries = fs.readdirSync(resDir, { withFileTypes: true })
-  .filter(d => d.isDirectory() && d.name.startsWith("mipmap-"))
-  .map(d => path.join(resDir, d.name));
+  const entries = fs.readdirSync(resDir, { withFileTypes: true })
+    .filter(d => d.isDirectory() && d.name.startsWith("mipmap-"))
+    .map(d => path.join(resDir, d.name));
 
-if (!entries.length) {
-  warn(`未找到任何 mipmap-* 目录：${resDir}（将继续使用模板默认图标）`);
-  return false;
-}
+  if (!entries.length) {
+    warn(`未找到任何 mipmap-* 目录：${resDir}（将继续使用模板默认图标）`);
+    return false;
+  }
 
 for (const dir of entries) {
   const base = path.basename(dir);
 
-  // 1) 明确跳过 adaptive icon 目录（这里应当只写 xml，不要写同名 png）
+  // 1) adaptive icon 目录只放 xml，跳过
   if (base === "mipmap-anydpi-v26") {
     continue;
   }
 
-  // 2) 如果目录里存在 adaptive icon 的 xml，也跳过（保险）
-  const hasAdaptiveXml =
-    fs.existsSync(path.join(dir, "ic_launcher.xml")) ||
-    fs.existsSync(path.join(dir, "ic_launcher_round.xml"));
+  // 2) 写入所有常见 launcher 图标文件名（含 adaptive icon 的前景/背景资源）
+  const targets = [
+    "ic_launcher.png",
+    "ic_launcher_round.png",
+    "ic_launcher_foreground.png",
+    "ic_launcher_background.png",
+  ];
 
-  if (hasAdaptiveXml) {
-    continue;
-  }
-
-  const target1 = path.join(dir, "ic_launcher.png");
-  const target2 = path.join(dir, "ic_launcher_round.png");
-
-  try {
-    fs.copyFileSync(pngPath, target1);
-    fs.copyFileSync(pngPath, target2);
-  } catch (e) {
-    warn(`写入图标失败: ${dir} -> ${e.message}`);
+  for (const f of targets) {
+    const target = path.join(dir, f);
+    try {
+      fs.copyFileSync(pngPath, target);
+    } catch (e) {
+      warn(`写入图标失败: ${dir}/${f} -> ${e.message}`);
+    }
   }
 }
-// 3) 关键：改写 adaptive icon xml，使其引用你刚写入的 mipmap png
-const anydpiDir = path.join(resDir, "mipmap-anydpi-v26");
-const xml1 = path.join(anydpiDir, "ic_launcher.xml");
-const xml2 = path.join(anydpiDir, "ic_launcher_round.xml");
 
-const adaptiveXml = (fgName) => `<?xml version="1.0" encoding="utf-8"?>
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-  <background android:drawable="@color/ic_launcher_background"/>
-  <foreground android:drawable="@mipmap/${fgName}"/>
-</adaptive-icon>
-`;
+return true;
 
-try {
-  if (fs.existsSync(anydpiDir)) {
-    fs.writeFileSync(xml1, adaptiveXml("ic_launcher"), "utf8");
-    fs.writeFileSync(xml2, adaptiveXml("ic_launcher_round"), "utf8");
-  } else {
-    warn(`未找到 ${anydpiDir}，跳过 adaptive icon xml 改写`);
-  }
-} catch (e) {
-  warn(`改写 adaptive icon xml 失败: ${e.message}`);
-}
-
-
-
-  return true;
-}
 
 console.log("[NDJC-assembly] 写入 App 图标:", iconPathFromJson ? iconPngPath : `${iconPngPath} (fallback)`);
 writeLauncherIcons(RES_DIR, iconPngPath, iconBase64);
