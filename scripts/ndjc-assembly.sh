@@ -216,6 +216,8 @@ for (const dir of entries) {
 }
 
 return true;
+}
+
 
 
 console.log("[NDJC-assembly] 写入 App 图标:", iconPathFromJson ? iconPngPath : `${iconPngPath} (fallback)`);
