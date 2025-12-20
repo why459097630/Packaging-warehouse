@@ -189,16 +189,33 @@ function writeLauncherIcons(resDir, pngPath, base64Maybe) {
     return false;
   }
 
-  for (const dir of entries) {
-    const target1 = path.join(dir, "ic_launcher.png");
-    const target2 = path.join(dir, "ic_launcher_round.png");
-    try {
-      fs.copyFileSync(pngPath, target1);
-      fs.copyFileSync(pngPath, target2);
-    } catch (e) {
-      warn(`写入图标失败：${dir} -> ${e.message}`);
-    }
+for (const dir of entries) {
+  const base = path.basename(dir);
+
+  // 1) 明确跳过 adaptive icon 目录（这里应当只有 xml，不要写同名 png）
+  if (base === "mipmap-anydpi-v26") {
+    continue;
   }
+
+  // 2) 只要目录里存在同名 xml（adaptive icon），绝对不能再写同名 png
+  const hasAdaptiveXml =
+    fs.existsSync(path.join(dir, "ic_launcher.xml")) ||
+    fs.existsSync(path.join(dir, "ic_launcher_round.xml"));
+
+  if (hasAdaptiveXml) {
+    continue;
+  }
+
+  const target1 = path.join(dir, "ic_launcher.png");
+  const target2 = path.join(dir, "ic_launcher_round.png");
+  try {
+    fs.copyFileSync(pngPath, target1);
+    fs.copyFileSync(pngPath, target2);
+  } catch (e) {
+    warn(`写入图标失败: ${dir} -> ${e.message}`);
+  }
+}
+
 
   return true;
 }
