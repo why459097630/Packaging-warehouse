@@ -117,10 +117,40 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleDebug --no-daemon
 
+      - name: Rename APK to user app name (and prepare artifact name)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          APK_SRC="$(ls -1 templates/Core-Templates/app/build/outputs/apk/debug/*.apk | head -n 1)"
+          if [ -z "${APK_SRC:-}" ]; then
+            echo "No APK produced at templates/Core-Templates/app/build/outputs/apk/debug/"
+            ls -la templates/Core-Templates/app/build/outputs/apk/debug/ || true
+            exit 1
+          fi
+
+          # 从 lib/ndjc/assembly.local.json 读取用户输入的 appName
+          APP_NAME="$(node -e "const a=require('./lib/ndjc/assembly.local.json'); console.log((a.appName||a.app_label||'NDJC App').toString());")"
+
+          # 文件名安全化：空格->-，去掉特殊字符
+          SAFE_NAME="$(echo "$APP_NAME" | tr ' ' '-' | tr -cd 'A-Za-z0-9._-')"
+          if [ -z "${SAFE_NAME:-}" ]; then
+            SAFE_NAME="NDJC-App"
+          fi
+
+          APK_OUT="templates/Core-Templates/app/build/outputs/apk/debug/${SAFE_NAME}.apk"
+          cp -f "$APK_SRC" "$APK_OUT"
+
+          echo "NDJC_SAFE_NAME=$SAFE_NAME" >> "$GITHUB_ENV"
+          echo "NDJC_APK_OUT=$APK_OUT" >> "$GITHUB_ENV"
+
+          echo "Renamed APK: $APK_SRC -> $APK_OUT"
+          ls -la "templates/Core-Templates/app/build/outputs/apk/debug/" || true
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: apk-debug
-          path: templates/Core-Templates/app/build/outputs/apk/debug/*.apk
+          name: ${{ env.NDJC_SAFE_NAME }}
+          path: ${{ env.NDJC_APK_OUT }}
           if-no-files-found: error
           retention-days: 14
