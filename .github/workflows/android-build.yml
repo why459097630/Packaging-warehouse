@@ -86,7 +86,6 @@ jobs:
             ls -la
           fi
 
-
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -117,42 +116,51 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleDebug --no-daemon
 
-           - name: Rename APK to user app name (and prepare artifact name)
-
+      - name: Rename APK to user app name (and prepare artifact name)
+        shell: bash
+        run: |
           set -euo pipefail
 
           APK_SRC="$(ls -1 templates/Core-Templates/app/build/outputs/apk/debug/*.apk | head -n 1)"
+          if [ -z "${APK_SRC:-}" ]; then
+            echo "No APK produced at templates/Core-Templates/app/build/outputs/apk/debug/"
+            ls -la templates/Core-Templates/app/build/outputs/apk/debug/ || true
+            exit 1
+          fi
 
-          # 从 lib/ndjc/assembly.local.json 里取 appName；取不到就用 NDJC-App
-          APP_NAME="$(node -e "const fs=require('fs'); try{const j=JSON.parse(fs.readFileSync('lib/ndjc/assembly.local.json','utf8')); process.stdout.write((j.appName||j.app_name||'').trim());}catch(e){process.stdout.write('');}")"
-          if [ -z "$APP_NAME" ]; then APP_NAME="NDJC-App"; fi
-
-          SAFE_NAME="$(echo "$APP_NAME" | tr -cd '[:alnum:]._ -' | sed 's/[[:space:]]\+/_/g' | sed 's/^_\\+//; s/_\\+$//')"
-          if [ -z "$SAFE_NAME" ]; then SAFE_NAME="NDJC-App"; fi
+          # 允许中文等 Unicode，只替换 Windows/zip 不允许字符
+          SAFE_NAME="$(node -e "
+          const a=require('./lib/ndjc/assembly.local.json');
+          let s=(a.appName||a.app_label||'NDJC-App').toString().trim();
+          s=s.replace(/[\\\\\\/\\:\\*\\?\\\"\\<\\>\\|]/g,'-'); // 禁止字符 -> -
+          s=s.replace(/\\s+/g,'-');                            // 空白 -> -
+          s=s.replace(/-+/g,'-');                              // 连续 -
+          s=s.replace(/^[-\\.]+|[-\\.]+$/g,'');                // 去掉首尾 - .
+          if(!s) s='NDJC-App';
+          process.stdout.write(s);
+          ")"
 
           OUT_DIR="templates/Core-Templates/app/build/outputs/apk/debug"
           APK_OUT="${OUT_DIR}/${SAFE_NAME}.apk"
           ZIP_OUT="${OUT_DIR}/${SAFE_NAME}.zip"
 
-          mv -f "$APK_SRC" "$APK_OUT"
+          cp -f "$APK_SRC" "$APK_OUT"
 
-          # 生成“用户命名”的 zip：下载的压缩包名 = SAFE_NAME.zip；解压后 APK 名 = SAFE_NAME.apk
+          # 生成同名 zip：下载 zip 名 = SAFE_NAME.zip；解压后 apk 名 = SAFE_NAME.apk
           (cd "$OUT_DIR" && rm -f "${SAFE_NAME}.zip" && zip -q -j "${SAFE_NAME}.zip" "${SAFE_NAME}.apk")
 
           echo "NDJC_SAFE_NAME=$SAFE_NAME" >> "$GITHUB_ENV"
           echo "NDJC_APK_OUT=$APK_OUT" >> "$GITHUB_ENV"
           echo "NDJC_ZIP_OUT=$ZIP_OUT" >> "$GITHUB_ENV"
 
-          echo "Renamed APK: $APK_SRC -> $APK_OUT"
-          echo "Prepared ZIP: $ZIP_OUT"
-          ls -la "$OUT_DIR" || true
+          echo "SAFE_NAME=$SAFE_NAME"
+          echo "APK_OUT=$APK_OUT"
+          echo "ZIP_OUT=$ZIP_OUT"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          # artifact 名（用户下载时看到的 zip 名）也会是 SAFE_NAME
           name: ${{ env.NDJC_SAFE_NAME }}
-          # 上传我们自己生成的 zip，而不是 apk
           path: ${{ env.NDJC_ZIP_OUT }}
           if-no-files-found: error
           retention-days: 14
