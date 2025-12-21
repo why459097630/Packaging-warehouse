@@ -202,6 +202,7 @@ function cleanupDrawableDuplicates(resDir) {
 }
 
 function writeLauncherIcons(pngPath) {
+  const ROOT = process.cwd();
   const resDir = path.join(ROOT, "templates/Core-Templates/app/src/main/res");
   if (!fs.existsSync(resDir)) {
     warn(`res dir not found: ${resDir}`);
