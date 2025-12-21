@@ -201,96 +201,54 @@ function cleanupDrawableDuplicates(resDir) {
   }
 }
 
-function writeLauncherIcons(resDir, pngPath, base64Maybe) {
-  // 如果提供了 base64，则解码落盘到 pngPath
-  if (base64Maybe) {
-    const cleaned = base64Maybe.replace(/^data:image\/png;base64,/, "");
-    const buf = Buffer.from(cleaned, "base64");
-    fs.mkdirSync(path.dirname(pngPath), { recursive: true });
-    fs.writeFileSync(pngPath, buf);
-  }
-
-  if (!fs.existsSync(pngPath)) {
-    warn(`未找到图标 png：${pngPath}（将继续使用模板默认图标）`);
-    return false;
-  }
-
+function writeLauncherIcons(pngPath) {
+  const resDir = path.join(ROOT, "templates/Core-Templates/app/src/main/res");
   if (!fs.existsSync(resDir)) {
-    warn(`res 目录不存在：${resDir}（将继续使用模板默认图标）`);
+    warn(`res dir not found: ${resDir}`);
     return false;
   }
 
-  // ✅ 关键修复：先清理 drawable 下可能残留的同名 png，避免 Duplicate resources
-  cleanupDrawableDuplicates(resDir);
-
-  // ✅ 关键修复（路线1）：确保存在可写入 PNG 的 mipmap 密度目录
-  const REQUIRED_MIPMAP_DIRS = [
-    "mipmap-mdpi",
-    "mipmap-hdpi",
-    "mipmap-xhdpi",
-    "mipmap-xxhdpi",
-    "mipmap-xxxhdpi",
-  ];
-
-  // 先收集现有 mipmap-* 目录
-  const existingMipmapDirs = fs.readdirSync(resDir, { withFileTypes: true })
-    .filter(d => d.isDirectory() && d.name.startsWith("mipmap-"))
-    .map(d => d.name);
-
-  // 如果缺少密度目录，就创建（最小实现：同一张 png 复制多份）
-  for (const d of REQUIRED_MIPMAP_DIRS) {
-    if (!existingMipmapDirs.includes(d)) {
+  // 关键修复点 A：
+  // mipmap-anydpi-v26 只允许 XML（adaptive icon 描述文件），若里面有同名 png 会触发 Duplicate resources
+  const anydpiDir = path.join(resDir, "mipmap-anydpi-v26");
+  if (fs.existsSync(anydpiDir)) {
+    for (const f of ["ic_launcher.png", "ic_launcher_round.png"]) {
+      const p = path.join(anydpiDir, f);
       try {
-        fs.mkdirSync(path.join(resDir, d), { recursive: true });
+        if (fs.existsSync(p)) fs.rmSync(p);
       } catch (e) {
-        warn(`创建目录失败：${d} -> ${e.message}`);
+        warn(`清理 anydpi 冲突文件失败: ${p} -> ${e.message}`);
       }
     }
   }
 
-  // 重新获取 mipmap-* 目录（含新建的）
-  const mipmapDirs = fs.readdirSync(resDir, { withFileTypes: true })
-    .filter(d => d.isDirectory() && d.name.startsWith("mipmap-"))
-    .map(d => path.join(resDir, d.name));
+  // 关键修复点 B：
+  // 只往 mipmap-*dpi 写 png，不要遍历 drawable/ 等目录，否则会和模板自带 drawable/ic_launcher_foreground.xml 撞名
+  const mipmapBases = ["mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi"];
+  const mipmapDirs = mipmapBases.map((b) => path.join(resDir, b));
 
-  if (!mipmapDirs.length) {
-    warn(`未找到任何 mipmap-* 目录：${resDir}（将继续使用模板默认图标）`);
-    return false;
+  // 如果目录不存在则创建（满足“只要一张图也能跑”的最小实现）
+  for (const d of mipmapDirs) {
+    try { fs.mkdirSync(d, { recursive: true }); } catch {}
   }
 
-  // 1x1 透明 PNG（前景用这个，避免“前景再套一圈/双层”）
-  const TRANSPARENT_1X1_PNG_BASE64 =
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/6X9q0cAAAAASUVORK5CYII=";
-  const transparentBuf = Buffer.from(TRANSPARENT_1X1_PNG_BASE64, "base64");
+  const targets = [
+    "ic_launcher.png",
+    "ic_launcher_round.png",
+    "ic_launcher_foreground.png",
+    "ic_launcher_background.png",
+  ];
 
-  // 写入所有 mipmap-* 目录
   for (const dir of mipmapDirs) {
-    const bg = path.join(dir, "ic_launcher_background.png");
-    const fg = path.join(dir, "ic_launcher_foreground.png");
-    const legacy = path.join(dir, "ic_launcher.png");
-    const legacyRound = path.join(dir, "ic_launcher_round.png");
-
-    try {
-      // ✅ 方案1：上传图做 background（铺满）
-      fs.copyFileSync(pngPath, bg);
-
-      // ✅ foreground 用透明（避免前景再叠一层造成“圈/双层”）
-      fs.writeFileSync(fg, transparentBuf);
-
-      // ✅ legacy 仍写上传图，兼容部分场景不走 adaptive
-      fs.copyFileSync(pngPath, legacy);
-      fs.copyFileSync(pngPath, legacyRound);
-    } catch (e) {
-      warn(`写入图标失败: ${dir} -> ${e.message}`);
+    for (const f of targets) {
+      const target = path.join(dir, f);
+      try {
+        fs.copyFileSync(pngPath, target);
+      } catch (e) {
+        warn(`写入图标失败: ${dir}/${f} -> ${e.message}`);
+      }
     }
   }
-
-  // ✅ 让 adaptive icon xml 指向 @mipmap/...（确保系统启动器使用你写入的图标）
-  const anydpi = path.join(resDir, "mipmap-anydpi-v26");
-  const ic1 = path.join(anydpi, "ic_launcher.xml");
-  const ic2 = path.join(anydpi, "ic_launcher_round.xml");
-  patchAdaptiveIconXmlFile(ic1, "@mipmap/ic_launcher_foreground", "@mipmap/ic_launcher_background");
-  patchAdaptiveIconXmlFile(ic2, "@mipmap/ic_launcher_foreground", "@mipmap/ic_launcher_background");
 
   return true;
 }
