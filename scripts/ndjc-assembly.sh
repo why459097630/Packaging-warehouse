@@ -384,7 +384,7 @@ if (typeof result.status === "number" && result.status !== 0) {
 
 console.log("[NDJC-assembly] 完成：");
 console.log("  - App 名称已写入 strings.xml + manifest label 指向 @string/app_name");
-cconsole.log("  - App 图标已写入 res/mipmap-*/ic_launcher_foreground/background(.png) 以及 ic_launcher(.png) / ic_launcher_round(.png)");
+console.log("  - App 图标已写入 res/mipmap-*/ic_launcher_foreground/background(.png) 以及 ic_launcher(.png) / ic_launcher_round(.png)");
 console.log("  - settings.gradle.kts 已根据 assembly.local.json 更新");
 console.log("  - app/build.gradle.kts 已根据 assembly.local.json 更新");
 console.log("  - 契约自检已执行（ndjc-sst-checker.js）");
