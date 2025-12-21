@@ -209,30 +209,57 @@ function writeLauncherIcons(pngPath) {
     return false;
   }
 
-  // 关键修复点 A：
-  // mipmap-anydpi-v26 只允许 XML（adaptive icon 描述文件），若里面有同名 png 会触发 Duplicate resources
+  // A) 任何情况下：mipmap-anydpi-v26 只能放 adaptive icon 的 XML，绝对不能出现同名 PNG
   const anydpiDir = path.join(resDir, "mipmap-anydpi-v26");
   if (fs.existsSync(anydpiDir)) {
-    for (const f of ["ic_launcher.png", "ic_launcher_round.png"]) {
+    for (const f of [
+      "ic_launcher.png",
+      "ic_launcher_round.png",
+      "ic_launcher_foreground.png",
+      "ic_launcher_background.png",
+    ]) {
       const p = path.join(anydpiDir, f);
-      try {
-        if (fs.existsSync(p)) fs.rmSync(p);
-      } catch (e) {
-        warn(`清理 anydpi 冲突文件失败: ${p} -> ${e.message}`);
+      try { if (fs.existsSync(p)) fs.rmSync(p, { force: true }); } catch {}
+    }
+  }
+
+  // B) 清理“同名 xml + png”冲突（这是 Duplicate resources 的最常见根因）
+  //    例如：你曾经生成过 mipmap-anydpi-v26/ic_launcher.png 或 drawable/ic_launcher_foreground.png 等
+  for (const dirent of fs.readdirSync(resDir, { withFileTypes: true })) {
+    if (!dirent.isDirectory()) continue;
+
+    const d = path.join(resDir, dirent.name);
+
+    // 只处理 drawable* 与 mipmap*（避免误删其它资源）
+    if (!dirent.name.startsWith("drawable") && !dirent.name.startsWith("mipmap")) continue;
+
+    const names = ["ic_launcher", "ic_launcher_round", "ic_launcher_foreground", "ic_launcher_background"];
+    for (const n of names) {
+      const xml = path.join(d, `${n}.xml`);
+      const png = path.join(d, `${n}.png`);
+
+      // 规则：如果同名 xml 与 png 同时存在 -> 删除 png（保留 xml）
+      // 这样可确保你模板已有 xml 不会和 png 冲突；真正需要 png 的目录我们会在下方明确写入
+      if (fs.existsSync(xml) && fs.existsSync(png)) {
+        try {
+          fs.rmSync(png, { force: true });
+          warn(`已清理冲突资源：${png}（保留 ${xml}）`);
+        } catch (e) {
+          warn(`清理冲突资源失败：${png} -> ${e.message}`);
+        }
       }
     }
   }
 
-  // 关键修复点 B：
-  // 只往 mipmap-*dpi 写 png，不要遍历 drawable/ 等目录，否则会和模板自带 drawable/ic_launcher_foreground.xml 撞名
+  // C) 只往 mipmap-*dpi 写 PNG（这才符合你现在 manifest: android:icon="@mipmap/ic_launcher" 的引用方式）
   const mipmapBases = ["mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi"];
-  const mipmapDirs = mipmapBases.map((b) => path.join(resDir, b));
-
-  // 如果目录不存在则创建（满足“只要一张图也能跑”的最小实现）
+  const mipmapDirs = mipmapBases.map(b => path.join(resDir, b));
   for (const d of mipmapDirs) {
     try { fs.mkdirSync(d, { recursive: true }); } catch {}
   }
 
+  // 关键点：为了实现“上传一张图 -> adaptive icon 背景铺满”，我们把这张图同时写入 foreground/background
+  // 这样 launcher 的 mask 不会露出一圈纯色底（你之前那圈就是 background 纯色导致的观感差异）
   const targets = [
     "ic_launcher.png",
     "ic_launcher_round.png",
@@ -254,8 +281,21 @@ function writeLauncherIcons(pngPath) {
   return true;
 }
 
+
 console.log("[NDJC-assembly] 写入 App 图标:", iconPathFromJson ? iconPngPath : `${iconPngPath} (fallback)`);
-writeLauncherIcons(RES_DIR, iconPngPath, iconBase64);
+writeLauncherIcons(iconPngPath);
+// 把 adaptive icon 的 foreground/background 都指向 @mipmap（与我们写入的 png 目录一致）
+patchAdaptiveIconXmlFile(
+  "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+  "@mipmap/ic_launcher_foreground",
+  "@mipmap/ic_launcher_background"
+);
+patchAdaptiveIconXmlFile(
+  "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+  "@mipmap/ic_launcher_foreground",
+  "@mipmap/ic_launcher_background"
+);
+
 
 // ---------- 3) 更新 settings.gradle.kts ----------
 const moduleNames = ["app", "core-skeleton", ...modules, uiPackId];
