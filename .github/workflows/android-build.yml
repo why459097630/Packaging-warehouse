@@ -118,8 +118,7 @@ jobs:
           ./gradlew assembleDebug --no-daemon
 
            - name: Rename APK to user app name (and prepare artifact name)
-        shell: bash
-        run: |
+
           set -euo pipefail
 
           APK_SRC="$(ls -1 templates/Core-Templates/app/build/outputs/apk/debug/*.apk | head -n 1)"
