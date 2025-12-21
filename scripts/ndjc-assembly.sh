@@ -223,7 +223,34 @@ function writeLauncherIcons(resDir, pngPath, base64Maybe) {
   // ✅ 关键修复：先清理 drawable 下可能残留的同名 png，避免 Duplicate resources
   cleanupDrawableDuplicates(resDir);
 
-  // ✅ 关键修复：只写 mipmap-*，不再写 drawable*（drawable 常常有同名 xml，会冲突）
+  // ✅ 关键修复（路线1）：确保存在可写入 PNG 的 mipmap 密度目录
+  // 有些模板只有 mipmap-anydpi-v26（只放 xml），没有 mipmap-mdpi/hdpi/...，
+  // 这会导致 @mipmap/ic_launcher_foreground/background 引用找不到资源。
+  const REQUIRED_MIPMAP_DIRS = [
+    "mipmap-mdpi",
+    "mipmap-hdpi",
+    "mipmap-xhdpi",
+    "mipmap-xxhdpi",
+    "mipmap-xxxhdpi",
+  ];
+
+  // 先收集现有 mipmap-* 目录
+  const existingMipmapDirs = fs.readdirSync(resDir, { withFileTypes: true })
+    .filter(d => d.isDirectory() && d.name.startsWith("mipmap-"))
+    .map(d => d.name);
+
+  // 如果缺少密度目录，就创建（最小实现：同一张 png 复制多份）
+  for (const d of REQUIRED_MIPMAP_DIRS) {
+    if (!existingMipmapDirs.includes(d)) {
+      try {
+        fs.mkdirSync(path.join(resDir, d), { recursive: true });
+      } catch (e) {
+        warn(`创建目录失败：${d} -> ${e.message}`);
+      }
+    }
+  }
+
+  // 重新获取 mipmap-* 目录（含新建的）
   const mipmapDirs = fs.readdirSync(resDir, { withFileTypes: true })
     .filter(d => d.isDirectory() && d.name.startsWith("mipmap-"))
     .map(d => path.join(resDir, d.name));
@@ -236,10 +263,17 @@ function writeLauncherIcons(resDir, pngPath, base64Maybe) {
   for (const dir of mipmapDirs) {
     const base = path.basename(dir);
 
-    // adaptive icon 目录只放 xml，先跳过 png 写入（后面会 patch xml）
+    // adaptive icon 目录只放 xml，跳过 png 写入（后面会 patch xml）
     if (base === "mipmap-anydpi-v26") continue;
 
-    const targets = ["ic_launcher.png", "ic_launcher_round.png", "ic_launcher_foreground.png", "ic_launcher_background.png"];
+    // ✅ 必须包含 foreground/background（因为 anydpi xml 引用 @mipmap/ic_launcher_foreground/background）
+    const targets = [
+      "ic_launcher_foreground.png",
+      "ic_launcher_background.png",
+      // 兼容一些 launcher/旧路径：仍写 ic_launcher / round
+      "ic_launcher.png",
+      "ic_launcher_round.png",
+    ];
 
     for (const f of targets) {
       const target = path.join(dir, f);
