@@ -181,41 +181,43 @@ function writeLauncherIcons(resDir, pngPath, base64Maybe) {
   }
 
   const entries = fs.readdirSync(resDir, { withFileTypes: true })
-    .filter(d => d.isDirectory() && d.name.startsWith("mipmap-"))
+    .filter(d => d.isDirectory() && (d.name.startsWith("mipmap-") || d.name.startsWith("drawable")))
     .map(d => path.join(resDir, d.name));
 
   if (!entries.length) {
-    warn(`未找到任何 mipmap-* 目录：${resDir}（将继续使用模板默认图标）`);
+    warn(`未找到任何 mipmap-* / drawable* 目录：${resDir}（将继续使用模板默认图标）`);
     return false;
   }
 
-for (const dir of entries) {
-  const base = path.basename(dir);
+  for (const dir of entries) {
+    const base = path.basename(dir);
 
-  // 1) adaptive icon 目录只放 xml，跳过
-  if (base === "mipmap-anydpi-v26") {
-    continue;
-  }
+    // adaptive icon 目录只放 xml，跳过
+    if (base === "mipmap-anydpi-v26") continue;
 
-  // 2) 写入所有常见 launcher 图标文件名（含 adaptive icon 的前景/背景资源）
-  const targets = [
-    "ic_launcher.png",
-    "ic_launcher_round.png",
-    "ic_launcher_foreground.png",
-    "ic_launcher_background.png",
-  ];
+    const isMipmap = base.startsWith("mipmap-");
 
-  for (const f of targets) {
-    const target = path.join(dir, f);
-    try {
-      fs.copyFileSync(pngPath, target);
-    } catch (e) {
-      warn(`写入图标失败: ${dir}/${f} -> ${e.message}`);
+    // mipmap：常见 launcher 图标名（含 adaptive 前景/背景资源）
+    // drawable：兜底覆盖（有些模板 adaptive xml 指向 @drawable/...）
+    const targets = isMipmap
+      ? ["ic_launcher.png", "ic_launcher_round.png", "ic_launcher_foreground.png", "ic_launcher_background.png"]
+      : ["ic_launcher_foreground.png", "ic_launcher_background.png", "ic_launcher.png", "ic_launcher_round.png"];
+
+    for (const f of targets) {
+      const target = path.join(dir, f);
+
+      // 如果目标路径已存在且是 .xml（例如 drawable/ic_launcher_foreground.xml），不要覆盖它
+      if (fs.existsSync(target) && target.endsWith(".xml")) continue;
+
+      try {
+        fs.copyFileSync(pngPath, target);
+      } catch (e) {
+        warn(`写入图标失败: ${dir}/${f} -> ${e.message}`);
+      }
     }
   }
-}
 
-return true;
+  return true;
 }
 
 
