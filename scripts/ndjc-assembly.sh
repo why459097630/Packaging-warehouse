@@ -224,8 +224,6 @@ function writeLauncherIcons(resDir, pngPath, base64Maybe) {
   cleanupDrawableDuplicates(resDir);
 
   // ✅ 关键修复（路线1）：确保存在可写入 PNG 的 mipmap 密度目录
-  // 有些模板只有 mipmap-anydpi-v26（只放 xml），没有 mipmap-mdpi/hdpi/...，
-  // 这会导致 @mipmap/ic_launcher_foreground/background 引用找不到资源。
   const REQUIRED_MIPMAP_DIRS = [
     "mipmap-mdpi",
     "mipmap-hdpi",
@@ -260,28 +258,30 @@ function writeLauncherIcons(resDir, pngPath, base64Maybe) {
     return false;
   }
 
+  // 1x1 透明 PNG（前景用这个，避免“前景再套一圈/双层”）
+  const TRANSPARENT_1X1_PNG_BASE64 =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/6X9q0cAAAAASUVORK5CYII=";
+  const transparentBuf = Buffer.from(TRANSPARENT_1X1_PNG_BASE64, "base64");
+
+  // 写入所有 mipmap-* 目录
   for (const dir of mipmapDirs) {
-    const base = path.basename(dir);
+    const bg = path.join(dir, "ic_launcher_background.png");
+    const fg = path.join(dir, "ic_launcher_foreground.png");
+    const legacy = path.join(dir, "ic_launcher.png");
+    const legacyRound = path.join(dir, "ic_launcher_round.png");
 
-    // adaptive icon 目录只放 xml，跳过 png 写入（后面会 patch xml）
-    if (base === "mipmap-anydpi-v26") continue;
+    try {
+      // ✅ 方案1：上传图做 background（铺满）
+      fs.copyFileSync(pngPath, bg);
 
-    // ✅ 必须包含 foreground/background（因为 anydpi xml 引用 @mipmap/ic_launcher_foreground/background）
-    const targets = [
-      "ic_launcher_foreground.png",
-      "ic_launcher_background.png",
-      // 兼容一些 launcher/旧路径：仍写 ic_launcher / round
-      "ic_launcher.png",
-      "ic_launcher_round.png",
-    ];
+      // ✅ foreground 用透明（避免前景再叠一层造成“圈/双层”）
+      fs.writeFileSync(fg, transparentBuf);
 
-    for (const f of targets) {
-      const target = path.join(dir, f);
-      try {
-        fs.copyFileSync(pngPath, target);
-      } catch (e) {
-        warn(`写入图标失败: ${dir}/${f} -> ${e.message}`);
-      }
+      // ✅ legacy 仍写上传图，兼容部分场景不走 adaptive
+      fs.copyFileSync(pngPath, legacy);
+      fs.copyFileSync(pngPath, legacyRound);
+    } catch (e) {
+      warn(`写入图标失败: ${dir} -> ${e.message}`);
     }
   }
 
