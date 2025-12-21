@@ -121,42 +121,34 @@ jobs:
         run: |
           set -euo pipefail
 
-          OUT_DIR="templates/Core-Templates/app/build/outputs/apk/debug"
-          APK_SRC="$(ls -1 "$OUT_DIR"/*.apk | head -n 1)"
+          # 读 assembly.local.json 里的 appName（用于 APK 文件名）
+          APP_NAME_RAW="$(node -e "const fs=require('fs'); const p='lib/ndjc/assembly.local.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write((j.appName||'NDJC App').trim());")"
 
-          # 从 lib/ndjc/assembly.local.json 里取 appName；取不到就用 NDJC-App
-          APP_NAME="$(
-            node -e "const fs=require('fs');
-              try{
-                const p='lib/ndjc/assembly.local.json';
-                const j=JSON.parse(fs.readFileSync(p,'utf8'));
-                const v=(j.appName || j.app_name || '').toString().trim();
-                process.stdout.write(v);
-              }catch(e){ process.stdout.write(''); }"
-          )"
-          if [ -z "$APP_NAME" ]; then APP_NAME="NDJC-App"; fi
+          # APK 文件名：允许中文，但至少要去掉路径分隔符等危险字符（/ 和 \ 必须处理）
+          SAFE_APK_NAME="$(printf '%s' "$APP_NAME_RAW" | sed 's#[/\\]#_#g')"
+          if [ -z "$SAFE_APK_NAME" ]; then SAFE_APK_NAME="NDJC App"; fi
 
-          # 文件名尽量保留原字符；只去掉 Windows/常见不允许字符：\/:*?\"<>|
-          SAFE_NAME="$(echo "$APP_NAME" | sed 's/[\\\/:\*\?"<>\|]/_/g' | sed 's/[[:space:]]\+/_/g' | sed 's/^_\+//; s/_\+$//')"
-          if [ -z "$SAFE_NAME" ]; then SAFE_NAME="NDJC-App"; fi
+          APK_DIR="templates/Core-Templates/app/build/outputs/apk/debug"
+          APK_SRC="$(ls -1 "$APK_DIR"/*.apk | head -n 1)"
+          APK_OUT="$APK_DIR/${SAFE_APK_NAME}.apk"
 
-          APK_OUT="${OUT_DIR}/${SAFE_NAME}.apk"
-          mv -f "$APK_SRC" "$APK_OUT"
+          cp -f "$APK_SRC" "$APK_OUT"
 
-          echo "NDJC_SAFE_NAME=$SAFE_NAME" >> "$GITHUB_ENV"
-          echo "NDJC_APK_OUT=$APK_OUT"   >> "$GITHUB_ENV"
+          # 固定 artifact 名（最终下载到的就是 NDJC-app.zip）
+          echo "NDJC_ARTIFACT_NAME=NDJC-app" >> "$GITHUB_ENV"
+          echo "NDJC_APK_OUT=$APK_OUT" >> "$GITHUB_ENV"
 
-          echo "Renamed APK: $APK_SRC -> $APK_OUT"
-          ls -la "$OUT_DIR" || true
+          echo "Renamed APK -> $APK_OUT"
+          ls -la "$APK_DIR"
+
 
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          # 用户下载时看到的 artifact 名（GitHub 仍会以 zip 形式提供下载）
-          name: ${{ env.NDJC_SAFE_NAME }}
-          # 直接上传 apk，避免 “zip 套 zip”
+          name: ${{ env.NDJC_ARTIFACT_NAME }}
           path: ${{ env.NDJC_APK_OUT }}
           if-no-files-found: error
           retention-days: 14
+
 
