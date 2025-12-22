@@ -113,7 +113,6 @@ jobs:
           set -euo pipefail
           ASSEMBLY="lib/ndjc/assembly.local.json"
 
-          # Try read keystore from request (optional)
           KS_B64="$(ASSEMBLY="$ASSEMBLY" node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.env.ASSEMBLY,'utf8')); process.stdout.write(((j.keystoreBase64||j.signing?.keystoreBase64||'')+'').trim());")"
           KS_PASS="$(ASSEMBLY="$ASSEMBLY" node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.env.ASSEMBLY,'utf8')); process.stdout.write(((j.keystorePassword||j.signing?.keystorePassword||'')+'').trim());")"
           KEY_ALIAS="$(ASSEMBLY="$ASSEMBLY" node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.env.ASSEMBLY,'utf8')); process.stdout.write(((j.keyAlias||j.signing?.keyAlias||'ndjc_upload')+'').trim());")"
@@ -148,7 +147,8 @@ jobs:
           echo "NDJC_KEY_PASSWORD=$KEY_PASS" >> "$GITHUB_ENV"
 
           ls -la "$KS_PATH"
-            - name: NDJC | Write signing-info.txt (handoff)
+
+      - name: NDJC | Write signing-info.txt (handoff)
         shell: bash
         run: |
           set -euo pipefail
@@ -170,12 +170,10 @@ jobs:
             keytool -list -v -keystore "${NDJC_KEYSTORE_PATH}" -storepass "${NDJC_KEYSTORE_PASSWORD}" -alias "${NDJC_KEY_ALIAS}" | sed -n '1,200p'
           } > "${SIGNING_INFO}"
 
-          # 确保 publish-info 存在（理论上 ndjc-assembly.sh 已生成）
           if [ ! -f "${PUBLISH_INFO}" ]; then
             echo "NDJC Publish Info" > "${PUBLISH_INFO}"
           fi
 
-          # 追加签名摘要到 publish-info（方便用户一眼看到）
           {
             echo
             echo "(Signing summary)"
