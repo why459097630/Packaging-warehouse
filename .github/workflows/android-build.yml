@@ -253,17 +253,31 @@ jobs:
           echo "Renamed AAB -> $AAB_OUT"
           ls -la "$APK_DIR"
           ls -la "$AAB_DIR"
+            - name: NDJC | Collect deliverables (flatten)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+
+          # APK / AAB（按你现有 env 指向的输出文件拷贝）
+          cp -f "${{ env.NDJC_APK_OUT }}" dist/ || true
+          cp -f "${{ env.NDJC_AAB_OUT }}" dist/ || true
+
+          # Keystore & info files
+          cp -f lib/ndjc/ndjc-upload-keystore.jks dist/ || true
+          cp -f lib/ndjc/publish-info.txt dist/ || true
+          cp -f lib/ndjc/signing-info.txt dist/ || true
+
+          echo "[NDJC] dist contents:"
+          ls -la dist
+
 
       - name: Upload Release artifacts (APK + AAB + keystore + publish-info)
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.NDJC_ARTIFACT_NAME }}
-          path: |
-            ${{ env.NDJC_APK_OUT }}
-            ${{ env.NDJC_AAB_OUT }}
-            lib/ndjc/ndjc-upload-keystore.jks
-            lib/ndjc/publish-info.txt
-            lib/ndjc/signing-info.txt
+          path: dist/**
           if-no-files-found: error
           retention-days: 14
+
 
