@@ -109,6 +109,32 @@ const modules    = Array.isArray(assembly.modules)
 
 // ✅ 新增：App 名称
 const appLabel = (assembly.appName || assembly.app_label || "NDJC App").toString().trim();
+// ===== NDJC: Versioning (per App) =====
+// 约定：assembly.local.json 中包含 versionCode/versionName
+let versionCode = Number(assembly.versionCode);
+let versionName = (assembly.versionName || "").toString().trim();
+
+// 缺省策略：若未提供，则默认 v1，并写回（方便后续“更新构建”沿用并递增）
+if (!Number.isInteger(versionCode) || versionCode <= 0) {
+  versionCode = 1;
+  assembly.versionCode = versionCode;
+  if (!versionName) {
+    versionName = "1.0.0";
+    assembly.versionName = versionName;
+  }
+  try {
+    writeText(ASSEMBLY_JSON, JSON.stringify(assembly, null, 2));
+    console.log("[NDJC-assembly] 生成并写回默认 versionCode/versionName:", versionCode, versionName);
+  } catch (e) {
+    warn(`写回 assembly.local.json 失败（不影响本次构建）：${e.message}`);
+  }
+} else {
+  // versionName 可空；空则给一个与 versionCode 不冲突的默认显示值
+  if (!versionName) versionName = "1.0.0";
+  console.log("[NDJC-assembly] 复用 assembly 中的 versionCode/versionName:", versionCode, versionName);
+}
+// ===== END NDJC: Versioning =====
+
 
 // ===== NDJC: Unique applicationId (per App) =====
 // 约定：assembly.local.json 中可包含 packageName/applicationId，用于“同一 App 后续复构建可更新”
@@ -384,6 +410,15 @@ appGradleContent = replaceBlock(
   `applicationId = "${packageName}"`
 );
 console.log("[NDJC-assembly] 已更新 app/build.gradle.kts 的 NDJC-AUTO-APPID 区域:", packageName);
+// ①.5 注入版本号（用于 Play 更新：versionCode 必须递增）
+appGradleContent = replaceBlock(
+  appGradleContent,
+  "// NDJC-AUTO-VERSION-START",
+  "// NDJC-AUTO-VERSION-END",
+  `versionCode = ${versionCode}\n        versionName = "${versionName}"`
+);
+console.log("[NDJC-assembly] 已更新 app/build.gradle.kts 的 NDJC-AUTO-VERSION 区域:", versionCode, versionName);
+
 
 // ② 注入依赖组合（模块 + UI 包）
 appGradleContent = replaceBlock(
