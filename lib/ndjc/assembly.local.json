@@ -2,7 +2,9 @@
   "template": "core-skeleton",
   "uiPack": "ui-pack-restaurant-soft-pastel",
   "modules": ["feature-restaurant-menu-full"],
-  "appName": "牛大郎",
+  "appName": "牛大哥",
   "iconPath": "lib/ndjc/icon.png",
-  "packageName": "com.ndjc.apps.niudaige.12ab3c"
+  "packageName": "com.ndjc.apps.niudaige.12ab3c",
+  "versionCode": 1,
+  "versionName": "1.0.0"
 }
