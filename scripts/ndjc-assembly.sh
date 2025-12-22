@@ -458,9 +458,13 @@ try {
 - modules: ${modules.join(", ")}
 
 (For Google Play)
-- Upload Key: provided separately in artifact (ndjc-upload-keystore.jks) if enabled in workflow
-- versionCode/versionName: from Gradle
+- Release AAB: (see artifact *.aab)
+- Test APK: (see artifact *.apk)
+- Upload Keystore: lib/ndjc/ndjc-upload-keystore.jks (in artifact)
+- Signing details: lib/ndjc/signing-info.txt (in artifact)
+- versionCode/versionName: from Gradle (v1 default)
 `;
+
   writeText(PUBLISH_INFO, info);
   console.log("[NDJC-assembly] 已生成:", PUBLISH_INFO);
 } catch (e) {
