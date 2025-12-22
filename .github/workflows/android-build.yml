@@ -55,9 +55,36 @@ jobs:
             cp -f "$SRC" "$DST"
             echo "Wrote $DST from $SRC"
             ls -la "$DST" || true
+
+            # --- NDJC: Force-convert to a valid PNG to avoid AAPT2 compile failures ---
+            # Ensure ImageMagick exists
+            if ! command -v magick >/dev/null 2>&1 && ! command -v convert >/dev/null 2>&1; then
+              echo "[NDJC] Installing ImageMagick..."
+              sudo apt-get update -y
+              sudo apt-get install -y imagemagick
+            fi
+
+            echo "[NDJC] icon file type before convert:"
+            file "$DST" || true
+
+            TMP="${DST}.tmp.png"
+            if command -v magick >/dev/null 2>&1; then
+              magick "$DST" -strip PNG32:"$TMP"
+            else
+              convert "$DST" -strip PNG32:"$TMP"
+            fi
+
+            mv -f "$TMP" "$DST"
+
+            echo "[NDJC] icon file type after convert:"
+            file "$DST" || true
+            ls -la "$DST" || true
+            # Quick signature check (must start with 89 50 4E 47)
+            head -c 8 "$DST" | xxd || true
           else
             echo "No icon uploaded for $RUN_ID (skip)"
           fi
+
 
       - name: NDJC | Core-Templates assembly
         shell: bash
