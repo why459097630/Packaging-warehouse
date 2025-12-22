@@ -110,11 +110,57 @@ const modules    = Array.isArray(assembly.modules)
 // ✅ 新增：App 名称
 const appLabel = (assembly.appName || assembly.app_label || "NDJC App").toString().trim();
 
+// ===== NDJC: Unique applicationId (per App) =====
+// 约定：assembly.local.json 中可包含 packageName/applicationId，用于“同一 App 后续复构建可更新”
+let packageName = (assembly.packageName || assembly.applicationId || "").toString().trim();
+
+function slugifyForAppId(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 20);
+}
+
+function isValidApplicationId(id) {
+  // 保守规则：多段，每段字母开头，后续字母/数字/下划线
+  return /^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+$/.test(id);
+}
+
+function generateApplicationId(label) {
+  const crypto = require("crypto");
+  const slug0 = slugifyForAppId(label) || "app";
+  const slug  = /^[a-z]/.test(slug0) ? slug0 : `a_${slug0}`;
+  const rand  = crypto.randomBytes(3).toString("hex"); // 6 chars
+  return `com.ndjc.apps.${slug}.${rand}`;
+}
+
+if (!packageName) {
+  packageName = generateApplicationId(appLabel);
+
+  // 写回 assembly.local.json（目的：下次复构建复用同一包名，确保可上架/可更新）
+  assembly.packageName = packageName;
+  try {
+    writeText(ASSEMBLY_JSON, JSON.stringify(assembly, null, 2));
+    console.log("[NDJC-assembly] 生成并写回唯一 applicationId:", packageName);
+  } catch (e) {
+    warn(`写回 assembly.local.json 失败（不影响本次构建）：${e.message}`);
+  }
+} else {
+  console.log("[NDJC-assembly] 复用 assembly 中的 applicationId:", packageName);
+}
+
+if (!isValidApplicationId(packageName)) {
+  fail(`applicationId 不合法：${packageName}`);
+}
+// ===== END NDJC: Unique applicationId =====
+
 // ✅ 新增：图标输入（iconPath 或 iconBase64）
 const iconPathFromJson = (assembly.iconPath || assembly.icon_path || "").toString().trim();
 const iconBase64       = (assembly.iconBase64 || assembly.icon_base64 || "").toString().trim();
 const ICON_FALLBACK    = "lib/ndjc/icon.png"; // 约定：route.ts 可把上传图标落盘到这里
 const iconPngPath      = iconPathFromJson || ICON_FALLBACK;
+
 
 console.log("[NDJC-assembly] 使用组合：");
 console.log("  template :", templateId);
@@ -329,12 +375,24 @@ const depsLines = [
 const depsBlock = depsLines.join("\n");
 
 let appGradleContent = readText(APP_GRADLE);
+
+// ① 注入唯一 applicationId（每个 App 唯一；同一 App 后续复用）
+appGradleContent = replaceBlock(
+  appGradleContent,
+  "// NDJC-AUTO-APPID-START",
+  "// NDJC-AUTO-APPID-END",
+  `applicationId = "${packageName}"`
+);
+console.log("[NDJC-assembly] 已更新 app/build.gradle.kts 的 NDJC-AUTO-APPID 区域:", packageName);
+
+// ② 注入依赖组合（模块 + UI 包）
 appGradleContent = replaceBlock(
   appGradleContent,
   "// NDJC-AUTO-DEPS-START",
   "// NDJC-AUTO-DEPS-END",
   depsBlock
 );
+
 writeText(APP_GRADLE, appGradleContent);
 console.log("[NDJC-assembly] 已更新 app/build.gradle.kts 的 NDJC-AUTO-DEPS 区域");
 
