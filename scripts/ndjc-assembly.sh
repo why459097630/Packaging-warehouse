@@ -158,7 +158,8 @@ function generateApplicationId(label) {
   const slug0 = slugifyForAppId(label) || "app";
   const slug  = /^[a-z]/.test(slug0) ? slug0 : `a_${slug0}`;
   const rand  = crypto.randomBytes(3).toString("hex"); // 6 chars
-  return `com.ndjc.apps.${slug}.${rand}`;
+  // 最后一段必须以字母开头，避免出现 ".2181ca" 这种不合法段
+  return `com.ndjc.apps.${slug}.a${rand}`;
 }
 
 if (!packageName) {
