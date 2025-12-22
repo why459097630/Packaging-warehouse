@@ -3,5 +3,6 @@
   "uiPack": "ui-pack-restaurant-soft-pastel",
   "modules": ["feature-restaurant-menu-full"],
   "appName": "牛大郎",
-  "iconPath": "lib/ndjc/icon.png"
+  "iconPath": "lib/ndjc/icon.png",
+  "packageName": "com.ndjc.apps.niudaige.12ab3c"
 }
