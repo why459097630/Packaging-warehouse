@@ -148,6 +148,45 @@ jobs:
           echo "NDJC_KEY_PASSWORD=$KEY_PASS" >> "$GITHUB_ENV"
 
           ls -la "$KS_PATH"
+            - name: NDJC | Write signing-info.txt (handoff)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SIGNING_INFO="lib/ndjc/signing-info.txt"
+          PUBLISH_INFO="lib/ndjc/publish-info.txt"
+
+          mkdir -p "lib/ndjc"
+
+          {
+            echo "NDJC Signing Info (handoff)"
+            echo "- keystoreFile: ndjc-upload-keystore.jks"
+            echo "- keystorePath: ${NDJC_KEYSTORE_PATH}"
+            echo "- keyAlias: ${NDJC_KEY_ALIAS}"
+            echo "- storePassword: ${NDJC_KEYSTORE_PASSWORD}"
+            echo "- keyPassword: ${NDJC_KEY_PASSWORD}"
+            echo
+            echo "Certificate fingerprints:"
+            keytool -list -v -keystore "${NDJC_KEYSTORE_PATH}" -storepass "${NDJC_KEYSTORE_PASSWORD}" -alias "${NDJC_KEY_ALIAS}" | sed -n '1,200p'
+          } > "${SIGNING_INFO}"
+
+          # 确保 publish-info 存在（理论上 ndjc-assembly.sh 已生成）
+          if [ ! -f "${PUBLISH_INFO}" ]; then
+            echo "NDJC Publish Info" > "${PUBLISH_INFO}"
+          fi
+
+          # 追加签名摘要到 publish-info（方便用户一眼看到）
+          {
+            echo
+            echo "(Signing summary)"
+            echo "- keystoreFile: ndjc-upload-keystore.jks"
+            echo "- keyAlias: ${NDJC_KEY_ALIAS}"
+            echo "- (Passwords in signing-info.txt)"
+          } >> "${PUBLISH_INFO}"
+
+          echo "[NDJC] Wrote ${SIGNING_INFO}"
+          ls -la "${SIGNING_INFO}" || true
+
 
       - name: Build Release (APK + AAB)
         shell: bash
@@ -199,5 +238,7 @@ jobs:
             ${{ env.NDJC_AAB_OUT }}
             lib/ndjc/ndjc-upload-keystore.jks
             lib/ndjc/publish-info.txt
+            lib/ndjc/signing-info.txt
           if-no-files-found: error
           retention-days: 14
+
