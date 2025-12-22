@@ -18,8 +18,36 @@ android {
         versionName = "1.0.0"
     }
 
-    buildFeatures { compose = true }
-    composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
+    // NDJC-AUTO-SIGNING-START
+    signingConfigs {
+        // Upload key for Google Play (Play App Signing)
+        create("release") {
+            val ksPath = System.getenv("NDJC_KEYSTORE_PATH") ?: ""
+            if (ksPath.isNotBlank()) {
+                storeFile = file(ksPath)
+            }
+            storePassword = System.getenv("NDJC_KEYSTORE_PASSWORD") ?: ""
+            keyAlias = System.getenv("NDJC_KEY_ALIAS") ?: ""
+            keyPassword = System.getenv("NDJC_KEY_PASSWORD") ?: ""
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            // Keep stable for MVP; enable R8/Proguard later if needed
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+    // NDJC-AUTO-SIGNING-END
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
