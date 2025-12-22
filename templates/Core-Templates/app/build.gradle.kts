@@ -14,8 +14,11 @@ android {
 
         minSdk = (System.getenv("NDJC_MIN_SDK") ?: "24").toInt()
         targetSdk = (System.getenv("NDJC_TARGET_SDK") ?: "34").toInt()
+
+        // NDJC-AUTO-VERSION-START
         versionCode = 1
         versionName = "1.0.0"
+        // NDJC-AUTO-VERSION-END
     }
 
     // NDJC-AUTO-SIGNING-START
