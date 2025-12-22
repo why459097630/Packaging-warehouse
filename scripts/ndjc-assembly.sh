@@ -446,6 +446,26 @@ console.log("  - settings.gradle.kts 已根据 assembly.local.json 更新");
 console.log("  - app/build.gradle.kts 已根据 assembly.local.json 更新");
 console.log("  - 契约自检已执行（ndjc-sst-checker.js）");
 console.log();
+// ----- NDJC publish info (for handoff) -----
+const PUBLISH_INFO = "lib/ndjc/publish-info.txt";
+try {
+  const info =
+`NDJC Publish Info
+- appLabel: ${appLabel}
+- applicationId: ${packageName}
+- template: ${templateId}
+- uiPack: ${uiPackId}
+- modules: ${modules.join(", ")}
+
+(For Google Play)
+- Upload Key: provided separately in artifact (ndjc-upload-keystore.jks) if enabled in workflow
+- versionCode/versionName: from Gradle
+`;
+  writeText(PUBLISH_INFO, info);
+  console.log("[NDJC-assembly] 已生成:", PUBLISH_INFO);
+} catch (e) {
+  warn("生成 publish-info.txt 失败（非致命）：" + e.message);
+}
 console.log("现在可以运行 Gradle 构建，例如：");
 console.log("  ./gradlew assembleDebug");
 NODE
