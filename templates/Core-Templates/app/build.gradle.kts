@@ -7,13 +7,16 @@ android {
     namespace = "com.ndjc.app"
     compileSdk = (System.getenv("NDJC_COMPILE_SDK") ?: "34").toInt()
 
-    defaultConfig {
-        applicationId = "com.ndjc.app"
-        minSdk = (System.getenv("NDJC_MIN_SDK") ?: "24").toInt()
-        targetSdk = (System.getenv("NDJC_TARGET_SDK") ?: "34").toInt()
-        versionCode = 1
-        versionName = "1.0.0"
-    }
+defaultConfig {
+    // NDJC-AUTO-APPID-START
+    applicationId = "com.ndjc.app"
+    // NDJC-AUTO-APPID-END
+
+    minSdk = (System.getenv("NDJC_MIN_SDK") ?: "24").toInt()
+    targetSdk = (System.getenv("NDJC_TARGET_SDK") ?: "34").toInt()
+    versionCode = 1
+    versionName = "1.0.0"
+}
 
     buildFeatures { compose = true }
     composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
