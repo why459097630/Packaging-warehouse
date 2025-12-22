@@ -78,8 +78,7 @@ jobs:
           # NDJC APK 构建主链路不依赖 node_modules。
           # 只有当锁文件存在时才安装，避免 npm install 造成不确定性和 registry 问题。
           if [ -f pnpm-lock.yaml ]; then
-            corepack enable
-            pnpm --version
+            corepack enable || true
             pnpm install --frozen-lockfile
           else
             echo "No pnpm-lock.yaml found; skip installing node deps."
@@ -108,47 +107,97 @@ jobs:
           ./gradlew projects --no-daemon
           ./gradlew tasks --all --no-daemon | sed -n '1,200p'
 
-      - name: Build APK (Debug)
+      - name: NDJC | Prepare Release Keystore (generate or decode)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ASSEMBLY="lib/ndjc/assembly.local.json"
+
+          # Try read keystore from request (optional)
+          KS_B64="$(ASSEMBLY="$ASSEMBLY" node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.env.ASSEMBLY,'utf8')); process.stdout.write(((j.keystoreBase64||j.signing?.keystoreBase64||'')+'').trim());")"
+          KS_PASS="$(ASSEMBLY="$ASSEMBLY" node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.env.ASSEMBLY,'utf8')); process.stdout.write(((j.keystorePassword||j.signing?.keystorePassword||'')+'').trim());")"
+          KEY_ALIAS="$(ASSEMBLY="$ASSEMBLY" node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.env.ASSEMBLY,'utf8')); process.stdout.write(((j.keyAlias||j.signing?.keyAlias||'ndjc_upload')+'').trim());")"
+          KEY_PASS="$(ASSEMBLY="$ASSEMBLY" node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.env.ASSEMBLY,'utf8')); process.stdout.write(((j.keyPassword||j.signing?.keyPassword||'')+'').trim());")"
+
+          KS_PATH="$GITHUB_WORKSPACE/lib/ndjc/ndjc-upload-keystore.jks"
+
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$KS_PATH"
+            echo "[NDJC] Using provided keystore from assembly"
+            if [ -z "$KS_PASS" ] || [ -z "$KEY_PASS" ]; then
+              echo "::error::Keystore provided but password missing (keystorePassword/keyPassword)."
+              exit 1
+            fi
+          else
+            echo "[NDJC] No keystore provided; generating a new upload keystore for this build"
+            if [ -z "$KS_PASS" ]; then KS_PASS="$(openssl rand -hex 12)"; fi
+            if [ -z "$KEY_PASS" ]; then KEY_PASS="$KS_PASS"; fi
+
+            keytool -genkeypair \
+              -keystore "$KS_PATH" \
+              -storepass "$KS_PASS" \
+              -keypass "$KEY_PASS" \
+              -alias "$KEY_ALIAS" \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=NDJC, OU=NDJC, O=NDJC, L=NA, ST=NA, C=US"
+          fi
+
+          echo "NDJC_KEYSTORE_PATH=$KS_PATH" >> "$GITHUB_ENV"
+          echo "NDJC_KEYSTORE_PASSWORD=$KS_PASS" >> "$GITHUB_ENV"
+          echo "NDJC_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "NDJC_KEY_PASSWORD=$KEY_PASS" >> "$GITHUB_ENV"
+
+          ls -la "$KS_PATH"
+
+      - name: Build Release (APK + AAB)
         shell: bash
         run: |
           set -euo pipefail
           cd templates/Core-Templates
           chmod +x ./gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleRelease bundleRelease --no-daemon
 
-      - name: Rename APK to user app name (and prepare artifact name)
+      - name: Rename outputs to user app name (APK + AAB) and prepare artifact name
         shell: bash
         run: |
           set -euo pipefail
 
-          # 读 assembly.local.json 里的 appName（用于 APK 文件名）
-          APP_NAME_RAW="$(node -e "const fs=require('fs'); const p='lib/ndjc/assembly.local.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write((j.appName||'NDJC App').trim());")"
+          # 读 assembly.local.json 里的 appName（用于文件名）
+          APP_NAME_RAW="$(node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync('lib/ndjc/assembly.local.json','utf8')); process.stdout.write(((j.appName||j.app_label||'NDJC App')+'').trim());")"
 
-          # APK 文件名：允许中文，但至少要去掉路径分隔符等危险字符（/ 和 \ 必须处理）
+          # 文件名：允许中文，但至少要去掉路径分隔符等危险字符（/ 和 \\ 必须处理）
           SAFE_APK_NAME="$(printf '%s' "$APP_NAME_RAW" | sed 's#[/\\]#_#g')"
           if [ -z "$SAFE_APK_NAME" ]; then SAFE_APK_NAME="NDJC App"; fi
 
-          APK_DIR="templates/Core-Templates/app/build/outputs/apk/debug"
+          APK_DIR="templates/Core-Templates/app/build/outputs/apk/release"
           APK_SRC="$(ls -1 "$APK_DIR"/*.apk | head -n 1)"
           APK_OUT="$APK_DIR/${SAFE_APK_NAME}.apk"
 
+          AAB_DIR="templates/Core-Templates/app/build/outputs/bundle/release"
+          AAB_SRC="$(ls -1 "$AAB_DIR"/*.aab | head -n 1)"
+          AAB_OUT="$AAB_DIR/${SAFE_APK_NAME}.aab"
+
           cp -f "$APK_SRC" "$APK_OUT"
+          cp -f "$AAB_SRC" "$AAB_OUT"
 
           # 固定 artifact 名（最终下载到的就是 NDJC-app.zip）
           echo "NDJC_ARTIFACT_NAME=NDJC-app" >> "$GITHUB_ENV"
           echo "NDJC_APK_OUT=$APK_OUT" >> "$GITHUB_ENV"
+          echo "NDJC_AAB_OUT=$AAB_OUT" >> "$GITHUB_ENV"
 
           echo "Renamed APK -> $APK_OUT"
+          echo "Renamed AAB -> $AAB_OUT"
           ls -la "$APK_DIR"
+          ls -la "$AAB_DIR"
 
-
-
-      - name: Upload APK artifact
+      - name: Upload Release artifacts (APK + AAB + keystore + publish-info)
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.NDJC_ARTIFACT_NAME }}
-          path: ${{ env.NDJC_APK_OUT }}
+          path: |
+            ${{ env.NDJC_APK_OUT }}
+            ${{ env.NDJC_AAB_OUT }}
+            lib/ndjc/ndjc-upload-keystore.jks
+            lib/ndjc/publish-info.txt
           if-no-files-found: error
           retention-days: 14
-
-
