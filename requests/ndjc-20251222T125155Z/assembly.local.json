@@ -1,0 +1,9 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-restaurant-soft-pastel",
+  "modules": [
+    "feature-restaurant-menu-full"
+  ],
+  "appName": "泰友民",
+  "iconPath": "lib/ndjc/icon.png"
+}
