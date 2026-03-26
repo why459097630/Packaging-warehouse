@@ -1,17 +1,16 @@
 {
   "template": "core-skeleton",
-  "uiPack": "ui-pack-neumorph",
+  "uiPack": "ui-greenpowder",
   "modules": [
-    "feature-home-basic",
-    "feature-about-basic"
+    "feature-showcase"
   ],
   "slots": {
     "home": {
-      "hero": "feature-home-basic",
-      "primary": "feature-home-basic"
+      "hero": "feature-showcase",
+      "primary": "feature-showcase"
     },
     "detail": {
-      "detail": "feature-about-basic"
+      "detail": "feature-showcase"
     }
   },
   "startRoute": "home"

@@ -106,6 +106,36 @@ const uiPackId   = assembly.uiPack  || "ui-pack-neumorph";
 const modules    = Array.isArray(assembly.modules)
   ? assembly.modules.filter(Boolean)
   : [];
+// ---------- 2.1) 生成运行时 assembly.json（供 Android Studio / 运行时读取）----------
+// 目标：让 app/src/main/assets/assembly/assembly.json 永远由 assembly.local.json 派生，避免本地/线上分裂
+const RUNTIME_ASSEMBLY_JSON = "templates/Core-Templates/app/src/main/assets/assembly/assembly.json";
+
+try {
+  const firstModule = modules[0] || "__default__";
+
+  // 运行时最小可用结构：template/uiPack/modules/slots/startRoute
+  // slots 先按“一个模块兜底”生成，后续你要做更复杂的 slots 再扩展
+  const runtimeAssembly = {
+    template: templateId,
+    uiPack: uiPackId,
+    modules,
+    slots: {
+      home: {
+        hero: firstModule,
+        primary: firstModule
+      },
+      detail: {
+        detail: firstModule
+      }
+    },
+    startRoute: "home"
+  };
+
+  writeText(RUNTIME_ASSEMBLY_JSON, JSON.stringify(runtimeAssembly, null, 2));
+  console.log("[NDJC-assembly] 已生成运行时 assembly.json:", RUNTIME_ASSEMBLY_JSON);
+} catch (e) {
+  warn(`生成运行时 assembly.json 失败（不影响本次构建）：${e.message}`);
+}
 
 // ✅ 新增：App 名称
 const appLabel = (assembly.appName || assembly.app_label || "NDJC App").toString().trim();

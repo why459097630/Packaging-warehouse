@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
-    kotlin("android")
+    id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -9,16 +10,16 @@ android {
 
     defaultConfig {
         // NDJC-AUTO-APPID-START
-        applicationId = "com.ndjc.app"
-        // NDJC-AUTO-APPID-END
+applicationId = "com.ndjc.apps.niudaige.id12ab3c"
+// NDJC-AUTO-APPID-END
 
         minSdk = (System.getenv("NDJC_MIN_SDK") ?: "24").toInt()
         targetSdk = (System.getenv("NDJC_TARGET_SDK") ?: "34").toInt()
 
         // NDJC-AUTO-VERSION-START
-        versionCode = 1
+versionCode = 1
         versionName = "1.0.0"
-        // NDJC-AUTO-VERSION-END
+// NDJC-AUTO-VERSION-END
     }
 
     // NDJC-AUTO-SIGNING-START
@@ -68,15 +69,19 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
+    implementation("io.coil-kt:coil:2.7.0")
+    implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.compose.ui:ui-tooling-preview")
 
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
     // 仅 App 层控制可见：导航 Compose（提供 NavHostController 类型）
     implementation("androidx.navigation:navigation-compose:2.8.3")
-
+    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
+    implementation("com.google.firebase:firebase-messaging")
     // 骨架 & 示例模块（装配用：UI 包不依赖它们）
     // NDJC-AUTO-DEPS-START
     implementation(project(":core-skeleton"))
-    implementation(project(":feature-restaurant-menu-full"))
-    implementation(project(":ui-pack-neumorph"))
-    // NDJC-AUTO-DEPS-END
+    implementation(project(":feature-showcase"))
+  
+// NDJC-AUTO-DEPS-END
 }

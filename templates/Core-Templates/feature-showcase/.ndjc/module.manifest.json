@@ -1,0 +1,53 @@
+{
+  "moduleId": "feature-showcase",
+  "version": "1.0.0",
+  "type": "feature",
+  "supportedSlots": ["primary", "detail", "sheet", "settings"],
+  "routes": [
+    {
+      "id": "home",
+      "params": {}
+    },
+    {
+      "id": "detail",
+      "params": {
+        "id": "string"
+      }
+    }
+  ],
+  "capabilities": [
+    "feature.showcase"
+  ],
+  "permissions": [],
+  "resources": {
+    "strings": {
+      "feature.showcase.title": "Showcase",
+      "feature.showcase.subtitle": "Present your work and capture leads",
+      "feature.showcase.adminTitle": "Manage content & leads"
+    },
+    "media": {
+      "icon.feature.showcase": "icon.action.showcase"
+    }
+  },
+  "hooks": {},
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "leadCaptureEnabled": {
+        "type": "boolean",
+        "description": "Whether to enable lead capture form entry points",
+        "default": true
+      },
+      "leadFormFields": {
+        "type": "array",
+        "description": "Fields enabled for lead capture form, in display order",
+        "items": {
+          "type": "string",
+          "enum": ["name", "phone", "email", "message"]
+        },
+        "default": ["name", "phone", "email", "message"]
+      }
+    },
+    "additionalProperties": false
+  }
+}

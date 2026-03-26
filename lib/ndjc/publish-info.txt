@@ -1,0 +1,13 @@
+NDJC Publish Info
+- appLabel: 牛大哥
+- applicationId: com.ndjc.apps.niudaige.id12ab3c
+- template: core-skeleton
+- uiPack: ui-greenpowder
+- modules: feature-showcase
+
+(For Google Play)
+- Release AAB: (see artifact *.aab)
+- Test APK: (see artifact *.apk)
+- Upload Keystore: lib/ndjc/ndjc-upload-keystore.jks (in artifact)
+- Signing details: lib/ndjc/signing-info.txt (in artifact)
+- versionCode/versionName: from Gradle (v1 default)

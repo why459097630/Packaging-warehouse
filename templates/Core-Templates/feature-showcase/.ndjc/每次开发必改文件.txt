@@ -1,0 +1,7 @@
+module.manifest.json 
+
+provided.capabilities.md 
+
+routing.map.md 
+
+slots.map.md

@@ -1,9 +1,0 @@
-{
-  "template": "core-skeleton",
-  "uiPack": "ui-pack-restaurant-soft-pastel",
-  "modules": [
-    "feature-restaurant-menu-full"
-  ],
-  "appName": "桥亭活鱼小镇",
-  "iconPath": "lib/ndjc/icon.png"
-}

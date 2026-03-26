@@ -1,0 +1,95 @@
+{
+  "moduleId": "feature-showcase",
+  "version": "1.0.0",
+  "type": "feature",
+  "supportedSlots": [
+    "header",
+    "primary",
+    "detail",
+    "settings"
+  ],
+  "routes": [
+    {
+      "id": "home",
+      "slot": "primary",
+      "layoutIntent": "stack",
+      "scrollable": "vertical",
+      "priority": "high"
+    },
+    {
+      "id": "detail",
+      "slot": "detail",
+      "layoutIntent": "stack",
+      "scrollable": "vertical",
+      "priority": "normal"
+    },
+    {
+      "id": "lead_form",
+      "slot": "sheet",
+      "layoutIntent": "stack",
+      "scrollable": "vertical",
+      "priority": "normal"
+    },
+    {
+      "id": "admin",
+      "slot": "settings",
+      "layoutIntent": "list",
+      "scrollable": "vertical",
+      "priority": "normal"
+    }
+  ],
+  "capabilities": [
+    "feature.showcase",
+    "routing.basic",
+    "components.core"
+  ],
+  "permissions": [],
+  "resources": {
+    "strings": {
+      "feature.showcase.title": "Showcase",
+      "feature.showcase.subtitle": "Present your work and capture leads",
+      "feature.showcase.adminTitle": "Manage content & leads"
+    },
+    "media": {
+      "icon.feature.showcase": "icon.action.showcase"
+    }
+  },
+  "hooks": {},
+  "configSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "FeatureShowcaseConfig",
+    "type": "object",
+    "properties": {
+      "leadCaptureEnabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "Whether to enable lead capture entry points (buttons / CTA) and the lead form."
+      },
+      "leadFormFields": {
+        "type": "array",
+        "description": "Fields enabled for lead capture form, in display order.",
+        "items": {
+          "type": "string",
+          "enum": [
+            "name",
+            "phone",
+            "email",
+            "message"
+          ]
+        },
+        "default": [
+          "name",
+          "phone",
+          "email",
+          "message"
+        ]
+      },
+      "adminEnabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "Whether to expose admin entry in settings slot for managing content & leads."
+      }
+    },
+    "additionalProperties": false
+  }
+}

@@ -20,8 +20,8 @@ rootProject.name = "NDJC-BaseSkeleton"
 include(
     ":app",
     ":core-skeleton",
-    "::feature-restaurant-menu-full",
-    ":ui-pack-neumorph"
+    ":feature-showcase"
+    
 )
 // NDJC-AUTO-INCLUDE-END
 

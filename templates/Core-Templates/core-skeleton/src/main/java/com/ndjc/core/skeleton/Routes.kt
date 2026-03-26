@@ -9,18 +9,18 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.ndjc.core.skeleton.resolveTabRoutesFromModules
 
 /**
  * NDJC 核心 NavHost。
  *
- * 真正的“模块 → 具体页面”映射不再直接依赖 feature 模块，
- * 而是通过上层传入的 resolveScreen 回调来完成：
+ * 规则：
+ * - startDestination 必须是 NavGraph 的 direct child，否则会直接崩溃。
+ * - 因为模块/UI 包是可装配的，CoreNavHost 不能用 “modules 条件注册 home/about” 的方式来注册 startRoute，
+ *   否则一旦装配的 modules 不包含某个模块，startRoute 就会缺失导致闪退。
  *
- * - CoreNavHost 只负责：
- *   - 读取 assembly.modules
- *   - 决定是否启用某个 route（"home" / "about"）
- * - 具体用哪个 Screen（HomeScreen / AboutScreen），由 app 层实现 resolveScreen。
+ * 结论：
+ * - 永远注册 startRoute（以及你希望稳定存在的公共路由，如 about）
+ * - 具体页面由上层 resolveScreen 决定；如果上层找不到 renderer，应自行跳 missing 或显示占位，但不应 crash。
  */
 @Composable
 fun CoreNavHost(
@@ -30,28 +30,22 @@ fun CoreNavHost(
     modifier: Modifier = Modifier,
     resolveScreen: @Composable (routeId: String, nav: NavHostController) -> Unit,
 ) {
-    val modules = assembly.modules
-
     NavHost(
         navController = nav,
         startDestination = startRoute,
         modifier = modifier
     ) {
-        // ---------- home ----------
-        if ("feature-home-basic" in modules) {
-            composable("home") {
-                resolveScreen("home", nav)
-            }
+        // ✅ 必须：永远注册 startRoute，避免 “startDestination 不是 direct child” 崩溃
+        composable(startRoute) {
+            resolveScreen(startRoute, nav)
         }
 
-        // ---------- about ----------
-        if ("feature-about-basic" in modules) {
-            composable("about") {
-                resolveScreen("about", nav)
-            }
+        // ✅ 可选：如果你希望 about 作为稳定公共路由存在，也永远注册（由 resolveScreen 决定显示什么）
+        composable("about") {
+            resolveScreen("about", nav)
         }
 
-        // ---------- fallback ----------
+        // ✅ fallback
         composable("missing") {
             Box(
                 modifier = Modifier.fillMaxSize(),

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "708657523559",
+    "project_id": "ndjc-366c8",
+    "storage_bucket": "ndjc-366c8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:708657523559:android:8f921c1732fcbd46069dc2",
+        "android_client_info": {
+          "package_name": "com.ndjc.apps.niudaige.id12ab3c"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCedBZa46v9_20aUa8RYFqc59m3boZX_Nw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

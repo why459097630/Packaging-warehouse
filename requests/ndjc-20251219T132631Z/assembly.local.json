@@ -1,9 +1,0 @@
-{
-  "template": "core-skeleton",
-  "uiPack": "ui-pack-restaurant-soft-pastel",
-  "modules": [
-    "feature-restaurant-menu-full"
-  ],
-  "appName": "NDJC App",
-  "iconPath": "lib/ndjc/icon.png"
-}
