@@ -1,51 +1,51 @@
 # Tokens Requirements for Template
-# 本模板所需的 Design Tokens 域与必备键（**Required**）。
-# 本文件完全由 scripts/sst.json 的 `tokens.requiredTokens` 推导而来；缺任意一项 → 构建失败。
+本模板所需的 Design Tokens 域与必备键（**Required**）。
 
 ---
+### color
+- brand.primary
+- brand.secondary
+- danger
+- success
+- surface.bg
+- surface.card
+- text.primary
+- text.secondary
+- warn
 
-### required tokens (from SST.requiredTokens)
+### space
+- lg
+- md
+- sm
+- xl
+- xs
 
-- color.brand.primary
-- color.brand.secondary
-- color.surface.bg
-- color.surface.card
-- color.text.primary
-- color.text.secondary
-- color.success
-- color.warn
-- color.danger
+### radius
+- lg
+- md
+- none
+- pill
+- sm
 
-- space.xs
-- space.sm
-- space.md
-- space.lg
-- space.xl
+### elevation
+- level0
+- level1
+- level2
+- level3
+- level4
 
-- radius.none
-- radius.sm
-- radius.md
-- radius.lg
-- radius.pill
+### typography
+- body
+- display
+- headline
+- label
+- title
 
-- elevation.level0
-- elevation.level1
-- elevation.level2
-- elevation.level3
-- elevation.level4
-
-- typography.display
-- typography.headline
-- typography.title
-- typography.body
-- typography.label
-
-- opacity.disabled
-- opacity.medium
-- opacity.high
-
+### opacity
+- disabled
+- high
+- medium
 ---
-
-# 使用规则（SST 合规说明）
-# - 以上 required 列表完全来自 sst.json 的 `requiredTokens`
-# - UI 包可以提供更多 Token，但不得比 required 列表少
+## 使用规则（SST 合规说明）
+- 上述 required 列表完全来自 sst.json 的 `required.tokens`，缺任意 key → 构建失败。
+- UI 包可提供更多 Token，但不得比 required 列表少。

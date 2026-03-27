@@ -49,7 +49,7 @@ const UI_NDJC_DIR = path.join(
   ROOT,
   "templates",
   "Core-Templates",
-  "ui-pack-neumorph",
+  "ui-pack-showcase-greenpink",
   ".ndjc"
 );
 
