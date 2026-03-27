@@ -47,5 +47,6 @@
 - medium
 ---
 ## 使用规则（SST 合规说明）
-- 上述 required 列表完全来自 sst.json 的 `required.tokens`，缺任意 key → 构建失败。
+- 上述 required 列表来自 `sst.tokens.domains` 中 `required = true` 的域及其 keys。
+- 缺任意 required key → 构建失败。
 - UI 包可提供更多 Token，但不得比 required 列表少。
