@@ -177,12 +177,26 @@ PY
 
   printf '%s' "$CREATE_BODY" > "$CREATE_JSON"
 
-  CREATE_RESP="$(curl -sS -X POST \
+  CREATE_RESP_FILE="${TMP_DIR}/android-app-create-response.txt"
+  CREATE_HTTP_CODE="$(curl -sS -o "$CREATE_RESP_FILE" -w "%{http_code}" -X POST \
     -H "Authorization: Bearer ${ACCESS_TOKEN}" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
     -d @"$CREATE_JSON" \
     "https://firebase.googleapis.com/v1beta1/projects/${FIREBASE_PROJECT_ID}/androidApps")"
+
+  CREATE_RESP="$(cat "$CREATE_RESP_FILE")"
+
+  echo "[NDJC_FIREBASE] androidApps.create http=${CREATE_HTTP_CODE}"
+  echo "[NDJC_FIREBASE] androidApps.create raw response begin"
+  cat "$CREATE_RESP_FILE"
+  echo
+  echo "[NDJC_FIREBASE] androidApps.create raw response end"
+
+  if [ "$CREATE_HTTP_CODE" -lt 200 ] || [ "$CREATE_HTTP_CODE" -ge 300 ]; then
+    echo "::error::Firebase androidApps.create http=${CREATE_HTTP_CODE}"
+    exit 1
+  fi
 
   CREATE_ERROR="$(printf '%s' "$CREATE_RESP" | python3 - <<'PY'
 import sys, json
