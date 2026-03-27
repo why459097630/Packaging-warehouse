@@ -52,6 +52,71 @@ function writeText(p, content) {
   fs.writeFileSync(p, content, "utf8");
 }
 
+function removeDirChildren(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    return;
+  }
+  for (const name of fs.readdirSync(dir)) {
+    const full = path.join(dir, name);
+    fs.rmSync(full, { recursive: true, force: true });
+  }
+}
+
+function copyUiPackSourcesToFeatureUi(uiPackId, modules) {
+  if (!modules.length) {
+    warn("没有模块可注入 UI，跳过 UI 包复制");
+    return;
+  }
+
+  const targetModule = modules[0];
+  const uiPackDir = path.join(TEMPLATE_DIR, uiPackId);
+  const featureUiDir = path.join(
+    TEMPLATE_DIR,
+    targetModule,
+    "src",
+    "main",
+    "java",
+    "com",
+    "ndjc",
+    "feature",
+    "showcase",
+    "ui"
+  );
+
+  if (!fs.existsSync(uiPackDir)) {
+    fail(`找不到 UI 包目录：${uiPackDir}`);
+  }
+
+  const uiSourceFiles = fs.readdirSync(uiPackDir, { withFileTypes: true })
+    .filter((d) => d.isFile())
+    .map((d) => d.name)
+    .filter((name) => {
+      const lower = name.toLowerCase();
+      return (
+        lower.endsWith(".kt") ||
+        lower.endsWith(".java")
+      );
+    });
+
+  if (!uiSourceFiles.length) {
+    fail(`UI 包目录下没有可复制的源码文件：${uiPackDir}`);
+  }
+
+  removeDirChildren(featureUiDir);
+
+  for (const fileName of uiSourceFiles) {
+    const src = path.join(uiPackDir, fileName);
+    const dst = path.join(featureUiDir, fileName);
+    fs.copyFileSync(src, dst);
+  }
+
+  console.log("[NDJC-assembly] 已将 UI 包源码复制到逻辑模块 UI 目录:");
+  console.log("  from:", uiPackDir);
+  console.log("  to  :", featureUiDir);
+  console.log("  files:", uiSourceFiles.join(", "));
+}
+
 /**
  * 替换起止标记之间的内容
  */
@@ -399,9 +464,11 @@ patchAdaptiveIconXmlFile(
   "@mipmap/ic_launcher_background"
 );
 
+// ---------- 2.7) 复制 UI 包源码到逻辑模块 UI 目录 ----------
+copyUiPackSourcesToFeatureUi(uiPackId, modules);
 
 // ---------- 3) 更新 settings.gradle.kts ----------
-const moduleNames = ["app", "core-skeleton", ...modules, uiPackId];
+const moduleNames = ["app", "core-skeleton", ...modules];
 
 const includeLines = [
   "include(",
@@ -426,8 +493,7 @@ console.log("[NDJC-assembly] 已更新 settings.gradle.kts 的 NDJC-AUTO-INCLUDE
 // ---------- 4) 更新 app/build.gradle.kts ----------
 const depsLines = [
   `    implementation(project(":core-skeleton"))`,
-  ...modules.map((m) => `    implementation(project(":${m}"))`),
-  `    implementation(project(":${uiPackId}"))`
+  ...modules.map((m) => `    implementation(project(":${m}"))`)
 ];
 const depsBlock = depsLines.join("\n");
 
@@ -508,8 +574,9 @@ if (typeof result.status === "number" && result.status !== 0) {
 console.log("[NDJC-assembly] 完成：");
 console.log("  - App 名称已写入 strings.xml + manifest label 指向 @string/app_name");
 console.log("  - App 图标已写入 res/mipmap-*/ic_launcher_foreground/background(.png) 以及 ic_launcher(.png) / ic_launcher_round(.png)");
-console.log("  - settings.gradle.kts 已根据 assembly.local.json 更新");
-console.log("  - app/build.gradle.kts 已根据 assembly.local.json 更新");
+console.log("  - UI 包源码已复制到 feature 模块 ui 目录");
+console.log("  - settings.gradle.kts 已根据 assembly.local.json 更新（不再 include UI 包）");
+console.log("  - app/build.gradle.kts 已根据 assembly.local.json 更新（不再依赖 UI 包 Gradle module）");
 console.log("  - 契约自检已执行（ndjc-sst-checker.js）");
 console.log();
 // ----- NDJC publish info (for handoff) -----
