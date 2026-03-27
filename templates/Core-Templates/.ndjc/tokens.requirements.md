@@ -1,52 +1,32 @@
-# Tokens Requirements for Template
-本模板所需的 Design Tokens 域与必备键（**Required**）。
-
----
-### color
-- brand.primary
-- brand.secondary
-- danger
-- success
-- surface.bg
-- surface.card
-- text.primary
-- text.secondary
-- warn
-
-### space
-- lg
-- md
-- sm
-- xl
-- xs
-
-### radius
-- lg
-- md
-- none
-- pill
-- sm
-
-### elevation
-- level0
-- level1
-- level2
-- level3
-- level4
-
-### typography
-- body
-- display
-- headline
-- label
-- title
-
-### opacity
-- disabled
-- high
-- medium
----
-## 使用规则（SST 合规说明）
-- 上述 required 列表来自 `sst.tokens.domains` 中 `required = true` 的域及其 keys。
-- 缺任意 required key → 构建失败。
-- UI 包可提供更多 Token，但不得比 required 列表少。
+- color.brand.primary
+- color.brand.secondary
+- color.danger
+- color.success
+- color.surface.bg
+- color.surface.card
+- color.text.primary
+- color.text.secondary
+- color.warn
+- elevation.level0
+- elevation.level1
+- elevation.level2
+- elevation.level3
+- elevation.level4
+- opacity.disabled
+- opacity.high
+- opacity.medium
+- radius.lg
+- radius.md
+- radius.none
+- radius.pill
+- radius.sm
+- space.lg
+- space.md
+- space.sm
+- space.xl
+- space.xs
+- typography.body
+- typography.display
+- typography.headline
+- typography.label
+- typography.title
