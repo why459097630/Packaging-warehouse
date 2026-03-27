@@ -1,0 +1,9 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "华莱士",
+  "iconPath": "lib/ndjc/icon.png"
+}
