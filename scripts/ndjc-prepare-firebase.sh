@@ -198,8 +198,6 @@ PY
     -d @"$CREATE_JSON" \
     "https://firebase.googleapis.com/v1beta1/projects/${FIREBASE_PROJECT_ID}/androidApps")"
 
-  CREATE_RESP="$(cat "$CREATE_RESP_FILE")"
-
   echo "[NDJC_FIREBASE] androidApps.create http=${CREATE_HTTP_CODE}"
   echo "[NDJC_FIREBASE] androidApps.create raw response begin"
   cat "$CREATE_RESP_FILE"
@@ -211,9 +209,11 @@ PY
     exit 1
   fi
 
-  CREATE_ERROR="$(printf '%s' "$CREATE_RESP" | python3 - <<'PY'
+  CREATE_ERROR="$(python3 - "$CREATE_RESP_FILE" <<'PY'
 import sys, json
-raw = sys.stdin.read().strip()
+path = sys.argv[1]
+with open(path, "r", encoding="utf-8") as f:
+    raw = f.read().strip()
 if not raw:
     print("EMPTY_RESPONSE")
     sys.exit(0)
@@ -234,9 +234,11 @@ PY
     exit 1
   fi
 
-  OP_NAME="$(printf '%s' "$CREATE_RESP" | python3 - <<'PY'
+  OP_NAME="$(python3 - "$CREATE_RESP_FILE" <<'PY'
 import sys, json
-data = json.loads(sys.stdin.read())
+path = sys.argv[1]
+with open(path, "r", encoding="utf-8") as f:
+    data = json.load(f)
 print(data.get("name", ""))
 PY
 )"
