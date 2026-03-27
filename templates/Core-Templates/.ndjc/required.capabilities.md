@@ -1,6 +1,3 @@
 - components.core
-- darkMode
-- density.compact
 - routing.basic
-- rtl
 - theme.base
