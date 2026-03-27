@@ -1,0 +1,9 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "将和风",
+  "iconPath": "lib/ndjc/icon.png"
+}
