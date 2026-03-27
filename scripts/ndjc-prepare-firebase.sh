@@ -45,6 +45,19 @@ echo "[NDJC_FIREBASE] project=${FIREBASE_PROJECT_ID}"
 echo "[NDJC_FIREBASE] packageName=${PACKAGE_NAME}"
 echo "[NDJC_FIREBASE] appLabel=${APP_LABEL}"
 
+echo "[NDJC_FIREBASE] active gcloud account"
+gcloud auth list
+
+echo "[NDJC_FIREBASE] active gcloud project"
+gcloud config get-value project || true
+
+echo "[NDJC_FIREBASE] service account from ADC"
+gcloud auth application-default print-access-token >/dev/null 2>&1 && echo "[NDJC_FIREBASE] application-default credentials available" || echo "[NDJC_FIREBASE] application-default credentials unavailable"
+
+echo "[NDJC_FIREBASE] token identity"
+curl -sS -H "Authorization: Bearer ${ACCESS_TOKEN}" "https://oauth2.googleapis.com/tokeninfo?access_token=${ACCESS_TOKEN}" || true
+echo
+
 TMP_DIR="$(mktemp -d)"
 LIST_JSON="${TMP_DIR}/android-apps-list.json"
 CREATE_JSON="${TMP_DIR}/android-app-create.json"
