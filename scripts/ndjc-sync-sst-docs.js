@@ -2,7 +2,7 @@
 /**
  * NDJC SST → 文档同步脚本（全集版）
  *
- * 统一从 scripts/sst.json 推导出两个 .ndjc 目录下的所有“契约 / 自检说明”文档：
+ * 统一从 scripts/sst.json 推导出三个 .ndjc 目录下的所有“契约 / 自检说明”文档：
  *
  * 模板侧 Core-Templates/.ndjc
  *   - required.capabilities.md
@@ -30,6 +30,20 @@
  *   - cdc.runner.md
  *   - deprecation.policy.md
  *   - golden.snapshots.md
+ *
+ * 模块侧 Core-Templates/feature-showcase/.ndjc
+ *   - provided.capabilities.md
+ *   - theme.tokens.api.md
+ *   - slots.usage.map.md
+ *   - routes.provided.map.md
+ *   - resources.usage.map.md
+ *   - preflight.provider.md
+ *   - sst.lock.json
+ *   - cdc.runner.md
+ *   - deprecation.policy.md
+ *   - golden.snapshots.md
+ *   - tokens.keys.conformance.md
+ *   - public-surface.freeze.md
  *
  * 说明：
  *   - 所有内容全部从 sst.json 读取，.md / .json 文件视为“下游产物”，不再手写。
@@ -59,6 +73,15 @@ const UI_NDJC_DIR = path.join(
   "templates",
   "Core-Templates",
   "ui-pack-showcase-greenpink",
+  ".ndjc"
+);
+
+// 模块 .ndjc 目录
+const MODULE_NDJC_DIR = path.join(
+  ROOT,
+  "templates",
+  "Core-Templates",
+  "feature-showcase",
   ".ndjc"
 );
 
@@ -129,29 +152,60 @@ function normalizeRequiredTokens(raw) {
 }
 
 function mdList(items, formatter = (v) => `- ${v}`) {
-  if (!Array.isArray(items) || items.length === 0) return "- (none)";
+  if (!Array.isArray(items) || items.length === 0) return "";
   return items.map(formatter).join("\n");
-}
-
-function renderTokenDomainsAndKeys(domains) {
-  const parts = [];
-  for (const domain of Object.keys(domains)) {
-    const keys = domains[domain] || [];
-    parts.push(`## ${domain}`);
-    parts.push("");
-    parts.push(keys.length ? keys.map((k) => `- ${k}`).join("\n") : "- (none)");
-    parts.push("");
-  }
-  return parts.join("\n");
 }
 
 function renderJsonPretty(obj) {
   return JSON.stringify(obj, null, 2) + "\n";
 }
 
-const requiredCapabilities =
+function uniqSorted(items) {
+  return Array.from(new Set((items || []).filter(Boolean))).sort();
+}
+
+function mdSimpleList(items) {
+  const list = uniqSorted(items);
+  return list.length ? list.map((v) => `- ${v}`).join("\n") + "\n" : "";
+}
+
+function flattenRequiredTokens(domainsMap) {
+  const out = [];
+  for (const domain of Object.keys(domainsMap || {})) {
+    const keys = domainsMap[domain] || [];
+    for (const key of keys) {
+      out.push(`${domain}.${key}`);
+    }
+  }
+  return uniqSorted(out);
+}
+
+function extractRequiredTokensFromDomains(domainsObj) {
+  if (!domainsObj || typeof domainsObj !== "object") return {};
+  const out = {};
+  for (const domain of Object.keys(domainsObj)) {
+    const def = domainsObj[domain] || {};
+    const required = def.required === true;
+    const keys = Array.isArray(def.keys) ? def.keys : [];
+    if (required) {
+      out[domain] = Array.from(new Set(keys)).sort();
+    }
+  }
+  return out;
+}
+
+const capabilities = sst.capabilities || {};
+
+const templateRequiredCapabilities =
+  capabilities.required ||
   sst.requiredCapabilities ||
   sst.template?.requiredCapabilities ||
+  [];
+
+const templateOptionalCapabilities =
+  capabilities.optional ||
+  sst.optionalCapabilities ||
+  sst.template?.optionalCapabilities ||
   [];
 
 const rawRequiredTokens =
@@ -159,13 +213,14 @@ const rawRequiredTokens =
   sst.required?.tokens ||
   sst.tokens?.required ||
   sst.tokens?.requiredTokens ||
+  extractRequiredTokensFromDomains(sst.tokens?.domains) ||
   null;
 
 const requiredTokens = normalizeRequiredTokens(rawRequiredTokens);
 
 const requiredChecks =
-  sst.requiredChecks ||
-  sst.preflight?.requiredChecks || [
+  sst.preflight?.requiredChecks ||
+  sst.requiredChecks || [
     "slots.exist",
     "resources.keysResolvable",
     "tokens.complete",
@@ -177,189 +232,26 @@ const requiredChecks =
 /* ------------- 1) required.capabilities.md ------------- */
 
 function genRequiredCapabilitiesMd() {
-  const caps = requiredCapabilities || [];
-
-  const header = `# Required Capabilities (Template → must be provided by UI Pack + Modules)
-
-本模板运行所需的最低能力（required）。缺任一项，构建必须失败。
-
----
-`;
-
-  const requiredSection =
-    "## required（来自 SST·requiredCapabilities）\n\n" +
-    "以下为模板**强依赖**的能力，UI 包和模块必须共同提供：\n\n" +
-    (caps.length
-      ? caps.map((c) => `- ${c}`).join("\n")
-      : "- (none)") +
-    "\n\n---\n";
-
-  const optionalSection = `## optional（模板可以使用，但不得依赖）
-
-以下能力若 UI 包提供，模板可以选择性使用，但不得依赖：
-
-- layout.responsive
-- components.card
-- components.modal
-
----
-
-## 说明
-- required 列表 = 完全取自 \`sst.json\` 的 \`requiredCapabilities\`。
-- optional 仅作提示，不影响构建结果。
-`;
-
-  return header + "\n" + requiredSection + "\n" + optionalSection;
+  const required = templateRequiredCapabilities || [];
+  return mdSimpleList(required);
 }
 
 /* ------------- 2) tokens.requirements.md ------------- */
 
 function genTokensRequirementsMd() {
-  const domains = requiredTokens || {};
-
-  const header = `# Tokens Requirements for Template
-本模板所需的 Design Tokens 域与必备键（**Required**）。
-
----
-`;
-
-  const bodyParts = [];
-
-  for (const domain of Object.keys(domains)) {
-    const keys = domains[domain] || [];
-    bodyParts.push(`### ${domain}`);
-    if (keys.length) {
-      bodyParts.push(keys.map((k) => `- ${k}`).join("\n"));
-    } else {
-      bodyParts.push("- (none)");
-    }
-    bodyParts.push(""); // 空行分隔
-  }
-
-  const tail = `---
-## 使用规则（SST 合规说明）
-- 上述 required 列表完全来自 sst.json 的 \`required.tokens\`，缺任意 key → 构建失败。
-- UI 包可提供更多 Token，但不得比 required 列表少。
-`;
-
-  return header + bodyParts.join("\n") + tail;
+  return mdSimpleList(flattenRequiredTokens(requiredTokens));
 }
 
 /* ------------- 3) theme.tokens.api.md（只改 Tokens 段落） ------------- */
 
 function genUiThemeTokensApiMd() {
-  const domains = requiredTokens || {};
-  const frozenApi = sst.publicSurface?.themeAndTokens?.frozenAPI || {};
-
-  const header = `# Theme Tokens API（UI Pack）
-
-本文件由 \`sst.json\` 自动生成，用于声明 UI Pack 对主题 / Tokens / Frozen API 的实现契约。
-
----
-
-## 1. Required Token Domains & Keys
-
-本 UI Pack 至少需要提供以下 Design Tokens。可扩展更多键，但不能缺少这些键。
-
-`;
-
-  const domainsSection = renderTokenDomainsAndKeys(domains);
-
-  const frozenParts = [];
-  frozenParts.push("## 2. Frozen Theme API");
-  frozenParts.push("");
-
-  for (const key of Object.keys(frozenApi)) {
-    const value = frozenApi[key];
-    frozenParts.push(`### ${key}`);
-    if (Array.isArray(value)) {
-      frozenParts.push(mdList(value, (v) => `- \`${v}\``));
-    } else {
-      frozenParts.push(`- \`${String(value)}\``);
-    }
-    frozenParts.push("");
-  }
-
-  const rules = sst.tokens?.rules || {};
-  const rulesSection = `## 3. Token Rules
-
-- naming: \`${rules.naming || "(unspecified)"}\`
-- validation: \`${rules.validation || "(unspecified)"}\`
-
----
-
-## 说明
-- 此处 domain & key 与 \`Core-Templates/.ndjc/tokens.requirements.md\` 保持一一对应。
-- UI Pack 可以提供更多 Token，但不得比 required 列表少。
-- Frozen API 来自 \`sst.publicSurface.themeAndTokens.frozenAPI\`，UI 层实现不得私自漂移。
-`;
-
-  return header + domainsSection + "\n" + frozenParts.join("\n") + "\n" + rulesSection;
+  return mdSimpleList(flattenRequiredTokens(requiredTokens));
 }
 
 /* ------------- 4) preflight.checklist.md ------------- */
 
 function genPreflightChecklistMd() {
-  // 这里认为 requiredChecks 就是一串标识符，直接映射到标准文案。
-  const CHECK_TEXT = {
-    "slots.exist": {
-      title: "slots.exist",
-      desc: "模板声明的全部插槽存在且命名正确",
-      onFail: "[Preflight] Slot missing or mismatched",
-    },
-    "resources.keysResolvable": {
-      title: "resources.keysResolvable",
-      desc: "所有资源 key 可解析，无悬空",
-      onFail: "[Preflight] Resource key unresolved",
-    },
-    "tokens.complete": {
-      title: "tokens.complete",
-      desc: "满足 `tokens.requirements.md` 中全部必需键",
-      onFail: "[Preflight] Missing required Token keys",
-    },
-    "routing.connected": {
-      title: "routing.connected",
-      desc: "所有路由可达、entry 可达、deep link 合法",
-      onFail: "[Preflight] Routing not fully connected",
-    },
-    "capabilities.satisfied": {
-      title: "capabilities.satisfied",
-      desc: "UI 包 + 模块完全覆盖 `required.capabilities.md`",
-      onFail: "[Preflight] Required capability missing",
-    },
-    "sst.contract.basic": {
-      title: "sst.contract.basic",
-      desc: "基础契约字段必须符合 `sst.json`",
-      onFail: "[Preflight] SST contract mismatch",
-    },
-  };
-
-  const header =
-    "# Preflight Checklist (MUST PASS Before Build)\n" +
-    "构建前必须全部通过，否则构建失败。\n\n---\n\n";
-
-  const bodyParts = [];
-
-  requiredChecks.forEach((id, idx) => {
-    const info = CHECK_TEXT[id] || {
-      title: id,
-      desc: "(未在脚本中定义的检查，请手动补充说明)",
-      onFail: `[Preflight] Check failed: ${id}`,
-    };
-
-    bodyParts.push(`## ${idx + 1}. ${info.title}`);
-    bodyParts.push(info.desc);
-    bodyParts.push(
-      `- onFail: ❌ \`${info.onFail.replace(/`/g, "\\`")}\``
-    );
-    bodyParts.push("\n---\n");
-  });
-
-  const tail =
-    "## 执行顺序\n" +
-    "按上述列出的顺序依次执行，一旦失败立即停止构建。\n";
-
-  return header + bodyParts.join("\n") + tail;
+  return mdSimpleList(requiredChecks);
 }
 
 /* ------------- 5) slots.contract.md ------------- */
@@ -414,7 +306,11 @@ function genSlotsContractMd() {
 
   return header + stdSection + optSection + metaSection + overrideSection;
 }
-
+function genTemplateSlotsMapMd() {
+  const standard = sst.slots?.standard || [];
+  const optional = sst.slots?.optional || [];
+  return mdSimpleList([...standard, ...optional]);
+}
 /* ------------- 6) routing.schema.md ------------- */
 
 function genRoutingSchemaMd() {
@@ -531,6 +427,15 @@ function genResourcesRulesMd() {
     "## 说明\n- 冲突顺序用于当同一个资源 key 在模板 / UI / 模块多处声明时的决策顺序。\n";
 
   return header + nsSection + exSection + conflictSection;
+}
+function genTemplateResourcesMapMd() {
+  const examples = sst.resources?.examples || {};
+  const out = [];
+  for (const key of Object.keys(examples)) {
+    const list = examples[key] || [];
+    if (Array.isArray(list)) out.push(...list);
+  }
+  return mdSimpleList(out);
 }
 
 /* ------------- 8) gradle.manifest.md ------------- */
@@ -653,111 +558,29 @@ function genCompatMatrixMd() {
 /* ------------- 10) UI provided.capabilities.md ------------- */
 
 function genUiProvidedCapabilitiesMd() {
-  const caps = sst.capabilities || {};
-  const required = caps.required || [];
-  const optional = caps.optional || [];
-  const providedUi = (caps.provided && caps.provided.uiPack) || [];
-
-  const header = `# Provided Capabilities（UI Pack 声明提供的能力）
-
-本文件由 \`sst.capabilities\` 自动生成，用于与模板侧 \`required.capabilities.md\` 对齐。
-
----
-`;
-
-  const reqSection =
-    "## 1. Template Required（来自 SST·capabilities.required）\n\n" +
-    (required.length
-      ? required.map((c) => `- ${c}`).join("\n")
-      : "- (none)") +
-    "\n\n";
-
-  const optSection =
-    "## 2. Optional（来自 SST·capabilities.optional）\n\n" +
-    (optional.length
-      ? optional.map((c) => `- ${c}`).join("\n")
-      : "- (none)") +
-    "\n\n";
-
-  const provSection =
-    "## 3. UI Pack Provided（来自 SST·capabilities.provided.uiPack）\n\n" +
-    (providedUi.length
-      ? providedUi.map((c) => `- ${c}`).join("\n")
-      : "- (none)") +
-    "\n\n---\n" +
-    "## 说明\n- 模板构建期可检查：Template.required ⊆ UI.provided ∪ Modules.provided。\n";
-
-  return header + reqSection + optSection + provSection;
+  const providedUi = (sst.capabilities?.provided && sst.capabilities.provided.uiPack) || [];
+  return mdSimpleList(providedUi);
 }
 
 function genUiRoutesProvidedMapMd() {
-  const routes = sst.routing?.schema?.routes || [];
-  const deepLinks = sst.routing?.schema?.deepLinks || [];
-  const entry = sst.routing?.schema?.entry || "(none)";
-
-  const routeLines = routes.map((route) => {
-    const params = route.params || {};
-    const paramKeys = Object.keys(params);
-    return [
-      `### route: ${route.id}`,
-      `- id: ${route.id}`,
-      `- params: ${paramKeys.length ? paramKeys.map((k) => `\`${k}:${params[k]}\``).join(", ") : "(none)"}`,
-      `- entry: ${entry === route.id ? "true" : "false"}`,
-      "",
-    ].join("\n");
-  });
-
-  return `# Routes Provided Map（UI Pack）
-
-本文件由 \`sst.routing.schema\` 自动生成，用于声明 UI Pack 可承载的路由与基础导航能力。
-
----
-
-## Runtime Abilities
-
-${mdList(sst.routing?.runtimeAbilities || [], (v) => `- \`${v}\``)}
-
-## Routes
-
-${routeLines.length ? routeLines.join("\n") : "- (none)"}
-
-## Deep Links
-
-${mdList(deepLinks.map((d) => d.pattern || ""), (v) => `- \`${v}\``)}
-`;
+  const routes = (sst.routing?.schema?.routes || []).map((r) => r.id).filter(Boolean);
+  const deepLinks = (sst.routing?.schema?.deepLinks || []).map((d) => d.pattern).filter(Boolean);
+  return mdSimpleList([...routes, ...deepLinks]);
 }
 
 function genUiResourcesProvidedMapMd() {
-  const namespaces = sst.resources?.namespaces || {};
   const examples = sst.resources?.examples || {};
-
-  const nsParts = [];
-  for (const key of Object.keys(namespaces)) {
-    nsParts.push(`### namespace: ${key}`);
-    nsParts.push(`- pattern: \`${namespaces[key]}\``);
-    const ex = examples[key] || [];
-    nsParts.push(`- examples: ${ex.length ? ex.map((v) => `\`${v}\``).join(", ") : "(none)"}`);
-    nsParts.push("");
+  const out = [];
+  for (const key of Object.keys(examples)) {
+    const list = examples[key] || [];
+    if (Array.isArray(list)) out.push(...list);
   }
-
-  return `# Resources Provided Map（UI Pack）
-
-本文件由 \`sst.resources\` 自动生成，用于声明 UI Pack 资源命名空间与可解析 key 约定。
-
----
-
-## Namespaces
-
-${nsParts.length ? nsParts.join("\n") : "- (none)"}
-
-## Conflict Resolution Order
-
-${mdList(sst.resources?.conflictOrder || [], (v, i) => `- ${v}`)}
-`;
+  return mdSimpleList(out);
 }
 
 function genUiSstLockJson() {
   return {
+sstId: sst.contract?.hash || "",
     contract: sst.contract?.name || "ndjc-sst",
     version: sst.contract?.version || "1.0.0",
     hash: sst.contract?.hash || "",
@@ -920,6 +743,166 @@ function genUiGoldenSnapshotsMd() {
 `;
 }
 
+function genTemplateRoutesMapMd() {
+  const routes = (sst.routing?.schema?.routes || []).map((r) => r.id).filter(Boolean);
+  const deepLinks = (sst.routing?.schema?.deepLinks || []).map((d) => d.pattern).filter(Boolean);
+  return mdSimpleList([...routes, ...deepLinks]);
+}
+
+function genTemplateSstLockJson() {
+  return {
+sstId: sst.contract?.hash || "",
+    contract: sst.contract?.name || "ndjc-sst",
+    version: sst.contract?.version || "1.0.0",
+    hash: sst.contract?.hash || "",
+    issuedAt: sst.contract?.issuedAt || "",
+    templateMinVersion: sst.compatMatrix?.template?.min || "1.0.0"
+  };
+}
+function genModuleSlotsUsageMapMd() {
+  const standard = sst.slots?.standard || [];
+  const optional = sst.slots?.optional || [];
+  return mdSimpleList([...standard, ...optional]);
+}
+
+function genModuleRoutesProvidedMapMd() {
+  const routes = (sst.routing?.schema?.routes || []).map((r) => r.id).filter(Boolean);
+  const deepLinks = (sst.routing?.schema?.deepLinks || []).map((d) => d.pattern).filter(Boolean);
+  return mdSimpleList([...routes, ...deepLinks]);
+}
+
+function genModuleResourcesUsageMapMd() {
+  const examples = sst.resources?.examples || {};
+  const out = [];
+  for (const key of Object.keys(examples)) {
+    const list = examples[key] || [];
+    if (Array.isArray(list)) out.push(...list);
+  }
+  return mdSimpleList(out);
+}
+
+function genModulePreflightProviderMd() {
+  const checks = sst.preflight?.requiredChecks || [];
+  return `# Preflight Provider（Feature Module）
+
+本文件由 \`sst.preflight.requiredChecks\` 自动生成，用于声明模块参与实现的预检能力。
+
+---
+
+## Required Checks
+
+${checks.length ? checks.map((v) => `- ${v}`).join("\n") : "- (none)"}
+
+## Module Provider Notes
+
+- 模块需与模板 / UI Pack 共同覆盖上述 requiredChecks。
+- 若某项主要由 UI 承担，模块侧也应声明其已知的协作边界。
+`;
+}
+
+function genModuleSstLockJson() {
+  return {
+    sstId: sst.contract?.hash || "",
+    contract: sst.contract?.name || "ndjc-sst",
+    version: sst.contract?.version || "1.0.0",
+    hash: sst.contract?.hash || "",
+    issuedAt: sst.contract?.issuedAt || "",
+    moduleMinVersion: sst.compatMatrix?.module?.min || "1.0.0"
+  };
+}
+function genModuleProvidedCapabilitiesMd() {
+  const providedModule = (sst.capabilities?.provided && sst.capabilities.provided.module) || [];
+  return mdSimpleList(providedModule);
+}
+
+function genModuleThemeTokensApiMd() {
+  return mdSimpleList(flattenRequiredTokens(requiredTokens));
+}
+
+function genModuleCdcRunnerMd() {
+  const cases = sst.cdc?.cases || [];
+  return mdSimpleList(cases);
+}
+
+function genModuleDeprecationPolicyMd() {
+  const policy = sst.deprecationPolicy || {};
+  const grace = policy.gracePeriods || {};
+  const registry = policy.registry || [];
+
+  return `# Deprecation Policy（Feature Module）
+
+## Grace Periods
+- minor=${grace.minor || "(unspecified)"}
+- major=${grace.major || "(unspecified)"}
+
+## Expired Behavior
+- expiredIsError=${policy.expiredIsError === true ? "true" : "false"}
+
+## Registry
+${registry.length ? registry.map((v) => `- ${JSON.stringify(v)}`).join("\n") : ""}
+`;
+}
+
+function genModuleGoldenSnapshotsMd() {
+  const golden = sst.cdc?.golden || {};
+  return `# Golden Snapshots（Feature Module）
+
+- baselineVersion=${golden.baselineVersion || "(unspecified)"}
+- allowedDrift=${golden.allowedDrift || "(unspecified)"}
+`;
+}
+
+function genModuleTokensKeysConformanceMd() {
+  const rules = sst.tokens?.rules || {};
+  const domains = sst.tokens?.domains || {};
+
+  const lines = [];
+  lines.push(`# Tokens Keys Conformance（Feature Module）`);
+  lines.push(`- naming=${rules.naming || "(unspecified)"}`);
+  lines.push(`- validation=${rules.validation || "(unspecified)"}`);
+
+  for (const key of Object.keys(domains)) {
+    const item = domains[key] || {};
+    lines.push(`- domain=${key}`);
+    lines.push(`- required=${item.required === true ? "true" : "false"}`);
+    if (Array.isArray(item.keys)) {
+      for (const tokenKey of item.keys) {
+        lines.push(`- ${key}.${tokenKey}`);
+      }
+    }
+  }
+
+  return lines.join("\n") + "\n";
+}
+
+function genModulePublicSurfaceFreezeMd() {
+  const components = sst.publicSurface?.components || {};
+  const frozenApi = sst.publicSurface?.themeAndTokens?.frozenAPI || {};
+
+  const lines = [];
+  lines.push(`# Public Surface Freeze（Feature Module）`);
+
+  for (const key of Object.keys(components)) {
+    const item = components[key] || {};
+    lines.push(`- component=${key}`);
+    if (item.alias) lines.push(`- alias=${item.alias}`);
+    if (item.slot) lines.push(`- slot=${item.slot}`);
+    lines.push(`- required=${item.required === true ? "true" : "false"}`);
+  }
+
+  for (const key of Object.keys(frozenApi)) {
+    const value = frozenApi[key];
+    if (Array.isArray(value)) {
+      for (const v of value) {
+        lines.push(`- ${key}.${v}`);
+      }
+    } else {
+      lines.push(`- ${key}=${String(value)}`);
+    }
+  }
+
+  return lines.join("\n") + "\n";
+}
 /* ------------- 11) moduleManifest.contract.md ------------- */
 
 function genModuleManifestContractMd() {
@@ -1088,6 +1071,12 @@ writeFilePretty(
   genSlotsContractMd()
 );
 
+/* 5.1) slots.map.md */
+writeFilePretty(
+  path.join(TEMPLATE_NDJC_DIR, "slots.map.md"),
+  genTemplateSlotsMapMd()
+);
+
 /* 6) routing.schema.md */
 writeFilePretty(
   path.join(TEMPLATE_NDJC_DIR, "routing.schema.md"),
@@ -1098,6 +1087,12 @@ writeFilePretty(
 writeFilePretty(
   path.join(TEMPLATE_NDJC_DIR, "resources.rules.md"),
   genResourcesRulesMd()
+);
+
+/* 7.1) resources.map.md */
+writeFilePretty(
+  path.join(TEMPLATE_NDJC_DIR, "resources.map.md"),
+  genTemplateResourcesMapMd()
 );
 
 /* 8) gradle.manifest.md */
@@ -1196,4 +1191,88 @@ writeFilePretty(
   genDeprecationPolicyMd()
 );
 
-console.log("✅ 同步完成。模板侧与 UI 包侧 .ndjc 已重新生成。现在可以重新跑：node scripts/ndjc-sst-checker.js --strict");
+/* 🔥 新增：template routes.map.md */
+writeFilePretty(
+  path.join(TEMPLATE_NDJC_DIR, "routes.map.md"),
+  genTemplateRoutesMapMd()
+);
+
+/* 🔥 新增：template sst.lock.json */
+writeFilePretty(
+  path.join(TEMPLATE_NDJC_DIR, "sst.lock.json"),
+  renderJsonPretty(genTemplateSstLockJson())
+);
+
+/* 🔥 新增：module provided.capabilities.md */
+writeFilePretty(
+  path.join(MODULE_NDJC_DIR, "provided.capabilities.md"),
+  genModuleProvidedCapabilitiesMd()
+);
+
+/* 🔥 新增：module theme.tokens.api.md */
+writeFilePretty(
+  path.join(MODULE_NDJC_DIR, "theme.tokens.api.md"),
+  genModuleThemeTokensApiMd()
+);
+
+/* 🔥 新增：module slots.usage.map.md */
+writeFilePretty(
+  path.join(MODULE_NDJC_DIR, "slots.usage.map.md"),
+  genModuleSlotsUsageMapMd()
+);
+
+/* 🔥 新增：module routes.provided.map.md */
+writeFilePretty(
+  path.join(MODULE_NDJC_DIR, "routes.provided.map.md"),
+  genModuleRoutesProvidedMapMd()
+);
+
+/* 🔥 新增：module resources.usage.map.md */
+writeFilePretty(
+  path.join(MODULE_NDJC_DIR, "resources.usage.map.md"),
+  genModuleResourcesUsageMapMd()
+);
+
+/* 🔥 新增：module preflight.provider.md */
+writeFilePretty(
+  path.join(MODULE_NDJC_DIR, "preflight.provider.md"),
+  genModulePreflightProviderMd()
+);
+
+/* 🔥 新增：module sst.lock.json */
+writeFilePretty(
+  path.join(MODULE_NDJC_DIR, "sst.lock.json"),
+  renderJsonPretty(genModuleSstLockJson())
+);
+
+/* 🔥 新增：module cdc.runner.md */
+writeFilePretty(
+  path.join(MODULE_NDJC_DIR, "cdc.runner.md"),
+  genModuleCdcRunnerMd()
+);
+
+/* 🔥 新增：module deprecation.policy.md */
+writeFilePretty(
+  path.join(MODULE_NDJC_DIR, "deprecation.policy.md"),
+  genModuleDeprecationPolicyMd()
+);
+
+/* 🔥 新增：module golden.snapshots.md */
+writeFilePretty(
+  path.join(MODULE_NDJC_DIR, "golden.snapshots.md"),
+  genModuleGoldenSnapshotsMd()
+);
+
+/* 🔥 新增：module tokens.keys.conformance.md */
+writeFilePretty(
+  path.join(MODULE_NDJC_DIR, "tokens.keys.conformance.md"),
+  genModuleTokensKeysConformanceMd()
+);
+
+/* 🔥 新增：module public-surface.freeze.md */
+writeFilePretty(
+  path.join(MODULE_NDJC_DIR, "public-surface.freeze.md"),
+  genModulePublicSurfaceFreezeMd()
+);
+
+console.log("✅ 同步完成。模板侧、UI 包侧、模块侧 .ndjc 已重新生成。现在可以重新跑：node scripts/ndjc-sst-checker.js --strict");
