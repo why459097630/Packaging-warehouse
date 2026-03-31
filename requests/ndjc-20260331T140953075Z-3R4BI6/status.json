@@ -1,11 +1,11 @@
 {
   "runId": "ndjc-20260331T140953075Z-3R4BI6",
-  "status": "running",
-  "stage": "building_apk",
+  "status": "success",
+  "stage": "success",
   "step": 6,
-  "message": "Building and packaging APK",
-  "artifactUrl": null,
-  "downloadUrl": null,
+  "message": "Build completed",
+  "artifactUrl": "https://github.com/why459097630/Packaging-warehouse/actions/runs/23801773322",
+  "downloadUrl": "https://github.com/why459097630/Packaging-warehouse/actions/runs/23801773322",
   "error": null,
-  "updatedAt": "2026-03-31T14:12:03Z"
+  "updatedAt": "2026-03-31T14:17:22Z"
 }
