@@ -285,6 +285,7 @@ fun ShowcaseHomeScreen(
     val adminState = remember(
         uiState.isLoading,
         uiState.statusMessage,
+        uiState.cloudStatus,
 
         // ✅ AdminItems 相关：必须加入，否则筛选/排序/搜索/价格区间输入不刷新
         uiState.adminItemsSortMode,
@@ -344,9 +345,30 @@ fun ShowcaseHomeScreen(
             )
         }
 
+        val adminCloudStatus = uiState.cloudStatus.takeIf { it.storeId.isNotBlank() }?.let { cloud ->
+            ShowcaseCloudStatusUi(
+                storeId = cloud.storeId,
+                planLabel = when (cloud.planType) {
+                    ShowcaseCloudPlanType.Trial -> "Trial"
+                    ShowcaseCloudPlanType.Paid -> "Paid"
+                    ShowcaseCloudPlanType.Unknown -> "Unknown"
+                },
+                statusLabel = when (cloud.serviceStatus) {
+                    ShowcaseCloudServiceStatus.Active -> "Active"
+                    ShowcaseCloudServiceStatus.ReadOnly -> "Read only"
+                    ShowcaseCloudServiceStatus.Deleted -> "Deleted"
+                    ShowcaseCloudServiceStatus.Unknown -> "Unknown"
+                },
+                serviceEndAt = cloud.serviceEndAt?.trim().orEmpty(),
+                deleteAt = cloud.deleteAt?.trim().orEmpty(),
+                canWrite = cloud.canWrite
+            )
+        }
+
         ShowcaseAdminUiState(
             isLoading = uiState.isLoading,
             statusMessage = uiState.statusMessage,
+            cloudStatus = adminCloudStatus,
             itemsSortMode = uiState.adminItemsSortMode,
             itemsSortAscending = uiState.adminItemsSortAscending,
             itemsSearchQuery = uiState.adminItemsSearchQuery,

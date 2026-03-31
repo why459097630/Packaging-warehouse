@@ -6943,6 +6943,72 @@ internal fun ShowcaseAdmin(
                         color = Color.Black
                     )
 
+                    uiState.cloudStatus?.let { cloud ->
+                        Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp8))
+
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(NdjcCommonTokens.Dp.Dp16),
+                            tonalElevation = 0.dp,
+                            shadowElevation = 0.dp,
+                            color = Color(0xFFF8FAFC),
+                            border = BorderStroke(1.dp, Color(0xFFE5E7EB))
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(NdjcCommonTokens.Dp.Dp14),
+                                verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp6)
+                            ) {
+                                Text(
+                                    text = "Cloud",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = Color.Black
+                                )
+
+                                Text(
+                                    text = "Store ID: ${cloud.storeId}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.Black
+                                )
+
+                                Text(
+                                    text = "Plan: ${cloud.planLabel}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.Black
+                                )
+
+                                Text(
+                                    text = "Status: ${cloud.statusLabel}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.Black
+                                )
+
+                                Text(
+                                    text = "Write access: ${if (cloud.canWrite) "Enabled" else "Read only"}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.Black
+                                )
+
+                                if (cloud.serviceEndAt.isNotBlank()) {
+                                    Text(
+                                        text = "Service end: ${cloud.serviceEndAt}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.Black
+                                    )
+                                }
+
+                                if (cloud.deleteAt.isNotBlank()) {
+                                    Text(
+                                        text = "Delete at: ${cloud.deleteAt}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.Black
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
 
                     // 主次：Quick action（把最常用动作单独放一组）

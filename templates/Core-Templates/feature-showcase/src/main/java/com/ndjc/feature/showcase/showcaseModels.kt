@@ -24,6 +24,28 @@ enum class ShowcaseSortMode {
     Name
 }
 
+enum class ShowcaseCloudPlanType {
+    Trial,
+    Paid,
+    Unknown
+}
+
+enum class ShowcaseCloudServiceStatus {
+    Active,
+    ReadOnly,
+    Deleted,
+    Unknown
+}
+
+data class ShowcaseCloudStatus(
+    val storeId: String = "",
+    val planType: ShowcaseCloudPlanType = ShowcaseCloudPlanType.Unknown,
+    val serviceStatus: ShowcaseCloudServiceStatus = ShowcaseCloudServiceStatus.Unknown,
+    val serviceEndAt: String? = null,
+    val deleteAt: String? = null,
+    val canWrite: Boolean = true,
+    val lastSyncAtMs: Long? = null
+)
 
 /**
  * 展示型“店铺/项目”信息：用于 About/Contact/Map/营业时间/社媒链接 等

@@ -146,6 +146,69 @@ function escapeXml(v) {
     .replace(/'/g, "&apos;");
 }
 
+function injectStoreIdIntoModuleSources(modules, injectedStoreId) {
+  if (!modules.length) {
+    warn("没有模块可注入 storeId，跳过 storeId 锚点注入");
+    return;
+  }
+
+  for (const moduleName of modules) {
+    const moduleJavaDir = path.join(
+      TEMPLATE_DIR,
+      moduleName,
+      "src",
+      "main",
+      "java"
+    );
+
+    if (!fs.existsSync(moduleJavaDir)) {
+      warn(`模块源码目录不存在，跳过 storeId 注入：${moduleJavaDir}`);
+      continue;
+    }
+
+    const targetFiles = [];
+
+    function walk(dir) {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walk(fullPath);
+          continue;
+        }
+        if (!entry.isFile()) continue;
+
+        const lower = entry.name.toLowerCase();
+        if (lower.endsWith(".kt") || lower.endsWith(".java")) {
+          targetFiles.push(fullPath);
+        }
+      }
+    }
+
+    walk(moduleJavaDir);
+
+    let replacedCount = 0;
+
+    for (const filePath of targetFiles) {
+      const original = readText(filePath);
+      if (!original.includes("__NDJC_STORE_ID__")) continue;
+
+      const updated = original.replaceAll("__NDJC_STORE_ID__", injectedStoreId);
+      writeText(filePath, updated);
+      replacedCount += 1;
+    }
+
+    if (replacedCount <= 0) {
+      warn(`未在模块源码中找到 __NDJC_STORE_ID__ 锚点：${moduleName}`);
+    } else {
+      console.log("[NDJC-assembly] 已注入 storeId 到逻辑模块源码:");
+      console.log("  module :", moduleName);
+      console.log("  storeId:", injectedStoreId);
+      console.log("  files  :", replacedCount);
+    }
+  }
+}
+
 // ---------- 1) 校验基础文件存在 ----------
 ensureFile(ASSEMBLY_JSON, "装配清单 assembly.local.json");
 ensureFile(SETTINGS_GRADLE, "settings.gradle.kts");
@@ -204,6 +267,11 @@ try {
 
 // ✅ 新增：App 名称
 const appLabel = (assembly.appName || assembly.app_label || "NDJC App").toString().trim();
+const storeId = (assembly.storeId || assembly.store_id || "").toString().trim();
+
+if (!storeId) {
+  fail("assembly.local.json 缺少 storeId，无法注入逻辑模块锚点");
+}
 // ===== NDJC: Versioning (per App) =====
 // 约定：assembly.local.json 中包含 versionCode/versionName
 let versionCode = Number(assembly.versionCode);
@@ -467,6 +535,9 @@ patchAdaptiveIconXmlFile(
 // ---------- 2.7) 复制 UI 包源码到逻辑模块 UI 目录 ----------
 copyUiPackSourcesToFeatureUi(uiPackId, modules);
 
+// ---------- 2.8) 注入 storeId 到逻辑模块源码 ----------
+injectStoreIdIntoModuleSources(modules, storeId);
+
 // ---------- 3) 更新 settings.gradle.kts ----------
 const moduleNames = ["app", "core-skeleton", ...modules];
 
@@ -575,6 +646,7 @@ console.log("[NDJC-assembly] 完成：");
 console.log("  - App 名称已写入 strings.xml + manifest label 指向 @string/app_name");
 console.log("  - App 图标已写入 res/mipmap-*/ic_launcher_foreground/background(.png) 以及 ic_launcher(.png) / ic_launcher_round(.png)");
 console.log("  - UI 包源码已复制到 feature 模块 ui 目录");
+console.log(`  - storeId 已注入逻辑模块源码：${storeId}`);
 console.log("  - settings.gradle.kts 已根据 assembly.local.json 更新（不再 include UI 包）");
 console.log("  - app/build.gradle.kts 已根据 assembly.local.json 更新（不再依赖 UI 包 Gradle module）");
 console.log("  - 契约自检已执行（ndjc-sst-checker.js）");

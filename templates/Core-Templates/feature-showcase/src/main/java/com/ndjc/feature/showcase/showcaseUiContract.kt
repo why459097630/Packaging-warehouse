@@ -45,6 +45,16 @@ data class ShowcaseStoreProfileDraft(
     val mapUrl: String = "",
     val isDirty: Boolean = false
 )
+
+data class ShowcaseCloudStatusUi(
+    val storeId: String = "",
+    val planLabel: String = "",
+    val statusLabel: String = "",
+    val serviceEndAt: String = "",
+    val deleteAt: String = "",
+    val canWrite: Boolean = true
+)
+
 data class ShowcaseHomeDish(
     val clickCount: Int = 0,
     val id: String,
@@ -236,6 +246,7 @@ data class ShowcaseLoginActions(
 data class ShowcaseAdminUiState(
     val isLoading: Boolean = false,
     val statusMessage: String? = null,
+    val cloudStatus: ShowcaseCloudStatusUi? = null,
     val itemsSortMode: ShowcaseHomeSortMode = ShowcaseHomeSortMode.Default,
     val itemsSortAscending: Boolean = true,
     val itemsSearchQuery: String = "",

@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream
 class ShowcaseChatCloudRepository(
     private val logTag: String = "ChatTrace"
 ) {
+    private val storeStatusRepository = ShowcaseCloudRepository()
 
 
     data class CloudMsg(
@@ -845,6 +846,14 @@ class ShowcaseChatCloudRepository(
                 ShowcaseCloudConfig.AuthActor.MERCHANT
             } else {
                 ShowcaseCloudConfig.AuthActor.PUBLIC
+            }
+
+            if (actor == ShowcaseCloudConfig.AuthActor.MERCHANT) {
+                val canWrite = storeStatusRepository.isStoreWriteAllowed(msg.storeId)
+                if (!canWrite) {
+                    Log.e(logTag, "[$tid] insertMessage blocked: store is read-only storeId=${msg.storeId}")
+                    return@withContext false
+                }
             }
 
             var conn = openConn(

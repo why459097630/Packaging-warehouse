@@ -117,7 +117,14 @@ class ShowcaseCloudRepository {
         val authUserId: String,
         val loginName: String?,
     )
-
+    data class CloudStoreServiceStatus(
+        val storeId: String,
+        val planType: String,
+        val serviceStatus: String,
+        val serviceEndAt: String?,
+        val deleteAt: String?,
+        val isWriteAllowed: Boolean
+    )
     data class CategoryWriteResult(
         val ok: Boolean,
         val errorMessage: String? = null,
@@ -215,6 +222,14 @@ class ShowcaseCloudRepository {
             ShowcaseCloudConfig.TABLE_ANNOUNCEMENTS
         } catch (_: Throwable) {
             "announcements"
+        }
+    }
+
+    private fun storesTable(): String {
+        return try {
+            ShowcaseCloudConfig.TABLE_STORES
+        } catch (_: Throwable) {
+            "stores"
         }
     }
 
@@ -1356,6 +1371,50 @@ class ShowcaseCloudRepository {
      * 拉取店铺信息（约定：只取一条，按 updated_at desc）
      * - 需要你云端 store_profile 表存在相应字段（字段名参考 payload）
      */
+    suspend fun fetchStoreServiceStatus(
+        storeId: String
+    ): CloudStoreServiceStatus? = withContext(Dispatchers.IO) {
+        try {
+            val currentStoreId = ShowcaseCloudConfig.requireStoreId(storeId)
+            val table = storesTable()
+            val url = ShowcaseCloudConfig.restUrl(
+                "$table?select=store_id,plan_type,service_status,service_end_at,delete_at,is_write_allowed&store_id=eq.${urlEncode(currentStoreId)}&limit=1"
+            )
+
+            val (code, body) = httpGet(
+                urlString = url,
+                actor = ShowcaseCloudConfig.AuthActor.PUBLIC,
+                scopeStoreId = currentStoreId
+            )
+            if (code !in 200..299 || body.isNullOrBlank()) return@withContext null
+
+            val arr = JSONArray(body)
+            if (arr.length() <= 0) return@withContext null
+
+            val obj = arr.optJSONObject(0) ?: return@withContext null
+            CloudStoreServiceStatus(
+                storeId = obj.optString("store_id", "").trim(),
+                planType = obj.optString("plan_type", "").trim(),
+                serviceStatus = obj.optString("service_status", "").trim(),
+                serviceEndAt = obj.optString("service_end_at", "").trim().ifBlank { null },
+                deleteAt = obj.optString("delete_at", "").trim().ifBlank { null },
+                isWriteAllowed = obj.optBoolean("is_write_allowed", true)
+            )
+        } catch (e: Exception) {
+            Log.e("ShowcaseCloud", "fetchStoreServiceStatus failed", e)
+            null
+        }
+    }
+
+    suspend fun isStoreWriteAllowed(
+        storeId: String
+    ): Boolean = withContext(Dispatchers.IO) {
+        val status = fetchStoreServiceStatus(storeId) ?: return@withContext true
+        status.isWriteAllowed &&
+                !status.serviceStatus.equals("read_only", ignoreCase = true) &&
+                !status.serviceStatus.equals("deleted", ignoreCase = true)
+    }
+
     suspend fun fetchStoreProfile(
         storeId: String
     ): CloudStoreProfile? = withContext(Dispatchers.IO) {

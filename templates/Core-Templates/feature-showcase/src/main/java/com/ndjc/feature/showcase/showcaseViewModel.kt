@@ -1852,6 +1852,10 @@ class ShowcaseViewModel : ViewModel() {
         }
     }
     init {
+        viewModelScope.launch {
+            refreshCloudServiceStatus()
+        }
+
         // 1) domain -> uiState
         viewModelScope.launch {
             chatDomain.uiStateFlow
@@ -2395,9 +2399,51 @@ class ShowcaseViewModel : ViewModel() {
         chatPollingJob?.cancel()
         chatPollingJob = null
     }
-    // 现阶段先固定测试店铺；逻辑模块统一只从 Session 取当前 storeId
+    // 逻辑模块统一只从 Session 取当前 storeId
     private val chatStoreId: String
         get() = ShowcaseStoreSession.requireStoreId()
+
+    private fun mapCloudPlanType(raw: String): ShowcaseCloudPlanType {
+        return when (raw.trim().lowercase()) {
+            "trial" -> ShowcaseCloudPlanType.Trial
+            "paid" -> ShowcaseCloudPlanType.Paid
+            else -> ShowcaseCloudPlanType.Unknown
+        }
+    }
+
+    private fun mapCloudServiceStatus(raw: String): ShowcaseCloudServiceStatus {
+        return when (raw.trim().lowercase()) {
+            "active" -> ShowcaseCloudServiceStatus.Active
+            "read_only" -> ShowcaseCloudServiceStatus.ReadOnly
+            "deleted" -> ShowcaseCloudServiceStatus.Deleted
+            else -> ShowcaseCloudServiceStatus.Unknown
+        }
+    }
+
+    private suspend fun refreshCloudServiceStatus() {
+        val result = showcaseCloudRepository.fetchStoreServiceStatus(chatStoreId)
+        if (result == null) {
+            uiState = uiState.copy(
+                cloudStatus = uiState.cloudStatus.copy(
+                    storeId = chatStoreId,
+                    lastSyncAtMs = System.currentTimeMillis()
+                )
+            )
+            return
+        }
+
+        uiState = uiState.copy(
+            cloudStatus = ShowcaseCloudStatus(
+                storeId = result.storeId,
+                planType = mapCloudPlanType(result.planType),
+                serviceStatus = mapCloudServiceStatus(result.serviceStatus),
+                serviceEndAt = result.serviceEndAt,
+                deleteAt = result.deleteAt,
+                canWrite = result.isWriteAllowed,
+                lastSyncAtMs = System.currentTimeMillis()
+            )
+        )
+    }
 
     // 当前发送角色
     private enum class ChatMode {
@@ -5911,6 +5957,8 @@ private fun parseCoverList(raw: String?): MutableList<String> {
             } else {
                 clearStoredMerchantSession(context, clearRememberMe = false)
             }
+
+            refreshCloudServiceStatus()
 
             uiState = uiState.copy(
                 isLoading = false,

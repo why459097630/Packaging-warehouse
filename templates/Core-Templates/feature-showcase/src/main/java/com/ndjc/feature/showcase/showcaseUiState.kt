@@ -97,6 +97,7 @@ data class ShowcaseUiState(
     val isSavingEditDish: Boolean = false,
     val isBlockingEditDish: Boolean = false,
     val statusMessage: String? = null,
+    val cloudStatus: ShowcaseCloudStatus = ShowcaseCloudStatus(),
     val editValidationError: String? = null,
     val loginError: String? = null,
     val selectedDish: DemoDish? = null,

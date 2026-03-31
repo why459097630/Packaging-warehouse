@@ -1,7 +1,7 @@
 package com.ndjc.feature.showcase
 
 object ShowcaseStoreSession {
-    private const val FIXED_TEST_STORE_ID = "store_test_001"
+    private const val FIXED_TEST_STORE_ID = "__NDJC_STORE_ID__"
 
     @Volatile
     private var merchantAccessToken: String? = null
