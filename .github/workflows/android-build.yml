@@ -1,4 +1,4 @@
-name: Android Build (NDJC • Core-Templates minimal) 
+name: Android Build (NDJC • Core-Templates minimal)
 
 on:
   workflow_dispatch:
@@ -8,6 +8,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,6 +18,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: NDJC | Init build status
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RUN_ID="${{ inputs.run_id }}"
+          STATUS_FILE="requests/${RUN_ID}/status.json"
+
+          mkdir -p "requests/${RUN_ID}"
+
+          cat > "$STATUS_FILE" <<EOF
+          {
+            "runId": "${RUN_ID}",
+            "status": "running",
+            "stage": "preparing_request",
+            "step": 1,
+            "message": "Preparing build request",
+            "artifactUrl": null,
+            "downloadUrl": null,
+            "error": null,
+            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          EOF
+
+          git config user.name "ndjc-bot"
+          git config user.email "ndjc-bot@users.noreply.github.com"
+
+          git add "$STATUS_FILE"
+          git commit -m "NDJC: init status for ${RUN_ID}" || echo "no changes"
+          git push || true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -85,12 +119,89 @@ jobs:
             echo "No icon uploaded for $RUN_ID (skip)"
           fi
 
+      - name: NDJC | Update status - processing identity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RUN_ID="${{ inputs.run_id }}"
+          STATUS_FILE="requests/${RUN_ID}/status.json"
+
+          cat > "$STATUS_FILE" <<EOF
+          {
+            "runId": "${RUN_ID}",
+            "status": "running",
+            "stage": "processing_identity",
+            "step": 2,
+            "message": "Processing app identity",
+            "artifactUrl": null,
+            "downloadUrl": null,
+            "error": null,
+            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          EOF
+
+          git add "$STATUS_FILE"
+          git commit -m "NDJC: step2 ${RUN_ID}" || echo "no changes"
+          git push || true
+
+      - name: NDJC | Update status - matching logic module
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RUN_ID="${{ inputs.run_id }}"
+          STATUS_FILE="requests/${RUN_ID}/status.json"
+
+          cat > "$STATUS_FILE" <<EOF
+          {
+            "runId": "${RUN_ID}",
+            "status": "running",
+            "stage": "matching_logic_module",
+            "step": 3,
+            "message": "Matching logic module",
+            "artifactUrl": null,
+            "downloadUrl": null,
+            "error": null,
+            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          EOF
+
+          git add "$STATUS_FILE"
+          git commit -m "NDJC: step3 ${RUN_ID}" || echo "no changes"
+          git push || true
 
       - name: NDJC | Core-Templates assembly
         shell: bash
         run: |
           set -euo pipefail
           bash scripts/ndjc-assembly.sh
+
+      - name: NDJC | Update status - applying ui pack
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RUN_ID="${{ inputs.run_id }}"
+          STATUS_FILE="requests/${RUN_ID}/status.json"
+
+          cat > "$STATUS_FILE" <<EOF
+          {
+            "runId": "${RUN_ID}",
+            "status": "running",
+            "stage": "applying_ui_pack",
+            "step": 4,
+            "message": "Applying UI pack",
+            "artifactUrl": null,
+            "downloadUrl": null,
+            "error": null,
+            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          EOF
+
+          git add "$STATUS_FILE"
+          git commit -m "NDJC: step4 ${RUN_ID}" || echo "no changes"
+          git push || true
 
       - name: Google Cloud auth
         uses: google-github-actions/auth@v2
@@ -149,6 +260,32 @@ jobs:
           set -euo pipefail
           ./gradlew projects --no-daemon
           ./gradlew tasks --all --no-daemon | sed -n '1,200p'
+
+      - name: NDJC | Update status - preparing services
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RUN_ID="${{ inputs.run_id }}"
+          STATUS_FILE="requests/${RUN_ID}/status.json"
+
+          cat > "$STATUS_FILE" <<EOF
+          {
+            "runId": "${RUN_ID}",
+            "status": "running",
+            "stage": "preparing_services",
+            "step": 5,
+            "message": "Preparing app services and signing",
+            "artifactUrl": null,
+            "downloadUrl": null,
+            "error": null,
+            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          EOF
+
+          git add "$STATUS_FILE"
+          git commit -m "NDJC: step5 ${RUN_ID}" || echo "no changes"
+          git push || true
 
       - name: NDJC | Prepare Release Keystore (generate or decode)
         shell: bash
@@ -228,7 +365,31 @@ jobs:
           echo "[NDJC] Wrote ${SIGNING_INFO}"
           ls -la "${SIGNING_INFO}" || true
 
+      - name: NDJC | Update status - building apk
+        shell: bash
+        run: |
+          set -euo pipefail
 
+          RUN_ID="${{ inputs.run_id }}"
+          STATUS_FILE="requests/${RUN_ID}/status.json"
+
+          cat > "$STATUS_FILE" <<EOF
+          {
+            "runId": "${RUN_ID}",
+            "status": "running",
+            "stage": "building_apk",
+            "step": 6,
+            "message": "Building and packaging APK",
+            "artifactUrl": null,
+            "downloadUrl": null,
+            "error": null,
+            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          EOF
+
+          git add "$STATUS_FILE"
+          git commit -m "NDJC: step6 ${RUN_ID}" || echo "no changes"
+          git push || true
       - name: Build Release (APK + AAB)
         shell: bash
         run: |
@@ -291,6 +452,65 @@ jobs:
           path: dist/**
           if-no-files-found: error
           retention-days: 14
+      - name: NDJC | Update status - success
+        shell: bash
+        run: |
+          set -euo pipefail
 
+          RUN_ID="${{ inputs.run_id }}"
+          STATUS_FILE="requests/${RUN_ID}/status.json"
+
+          cat > "$STATUS_FILE" <<EOF
+          {
+            "runId": "${RUN_ID}",
+            "status": "success",
+            "stage": "success",
+            "step": 6,
+            "message": "Build completed",
+            "artifactUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "downloadUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "error": null,
+            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          EOF
+
+          git add "$STATUS_FILE"
+          git commit -m "NDJC: success ${RUN_ID}" || echo "no changes"
+          git push || true
+
+      - name: NDJC | Update status - failed
+        if: ${{ failure() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RUN_ID="${{ inputs.run_id }}"
+          STATUS_FILE="requests/${RUN_ID}/status.json"
+
+          CURRENT_STEP="1"
+          CURRENT_STAGE="preparing_request"
+
+          if [ -f "$STATUS_FILE" ]; then
+            CURRENT_STEP="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.step || '1'));" "$STATUS_FILE")"
+            CURRENT_STAGE="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.stage || 'preparing_request'));" "$STATUS_FILE")"
+          fi
+
+          cat > "$STATUS_FILE" <<EOF
+          {
+            "runId": "${RUN_ID}",
+            "status": "failed",
+            "stage": "${CURRENT_STAGE}",
+            "step": ${CURRENT_STEP},
+            "message": "Build failed",
+            "artifactUrl": null,
+            "downloadUrl": null,
+            "error": "Packaging workflow failed. Check GitHub Actions logs.",
+            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          EOF
+
+          git add "$STATUS_FILE"
+          git commit -m "NDJC: failed ${RUN_ID}" || echo "no changes"
+          git push || true
 
 
