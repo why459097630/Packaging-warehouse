@@ -1,11 +1,14 @@
 {
   "runId": "ndjc-20260402T055853788Z-6QCHLY",
-  "status": "running",
-  "stage": "building_apk",
+  "status": "success",
+  "stage": "success",
   "step": 6,
-  "message": "Building and packaging APK",
+  "message": "Build completed",
+  "artifactName": "NDJC-app",
+  "workflowRunId": "23886375567",
+  "workflowUrl": "https://github.com/why459097630/Packaging-warehouse/actions/runs/23886375567",
   "artifactUrl": null,
-  "downloadUrl": null,
+  "downloadUrl": "/api/download-artifact?runId=ndjc-20260402T055853788Z-6QCHLY",
   "error": null,
-  "updatedAt": "2026-04-02T06:00:16Z"
+  "updatedAt": "2026-04-02T06:05:31Z"
 }
