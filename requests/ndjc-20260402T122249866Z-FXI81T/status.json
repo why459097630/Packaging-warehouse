@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260402T122249866Z-FXI81T",
+  "appName": "大鱼寿司",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000008",
+  "adminName": "11111111@qq.com",
+  "createdAt": "2026-04-02T12:22:49.867Z",
+  "updatedAt": "2026-04-02T12:22:49.867Z",
+  "status": "running",
+  "stage": "preparing_request",
+  "message": "Build request accepted. Waiting for packaging workflow.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260402T122249866Z-FXI81T/status.json"
+}
