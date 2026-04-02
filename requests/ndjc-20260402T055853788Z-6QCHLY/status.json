@@ -1,11 +1,11 @@
 {
   "runId": "ndjc-20260402T055853788Z-6QCHLY",
   "status": "running",
-  "stage": "applying_ui_pack",
-  "step": 4,
-  "message": "Applying UI pack",
+  "stage": "preparing_services",
+  "step": 5,
+  "message": "Preparing app services and signing",
   "artifactUrl": null,
   "downloadUrl": null,
   "error": null,
-  "updatedAt": "2026-04-02T05:59:11Z"
+  "updatedAt": "2026-04-02T06:00:14Z"
 }
