@@ -1,22 +1,11 @@
 {
   "runId": "ndjc-20260402T143221065Z-RD52NX",
-  "appName": "全家",
-  "moduleName": "feature-showcase",
-  "uiPackName": "ui-pack-showcase-greenpink",
-  "plan": "free",
-  "storeId": "store_showcase_trial_000009",
-  "adminName": "55555555@qq.com",
-  "createdAt": "2026-04-02T14:32:21.651Z",
-  "updatedAt": "2026-04-02T14:32:21.651Z",
   "status": "running",
   "stage": "preparing_request",
-  "message": "Build request accepted. Waiting for packaging workflow.",
+  "step": 1,
+  "message": "Preparing build request",
   "artifactUrl": null,
   "downloadUrl": null,
   "error": null,
-  "workflowRunId": null,
-  "workflowStatus": "queued",
-  "workflowConclusion": null,
-  "workflowUrl": null,
-  "requestPath": "requests/ndjc-20260402T143221065Z-RD52NX/status.json"
+  "updatedAt": "2026-04-02T14:32:35Z"
 }
