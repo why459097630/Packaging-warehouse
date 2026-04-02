@@ -467,8 +467,11 @@ jobs:
             "stage": "success",
             "step": 6,
             "message": "Build completed",
-            "artifactUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "downloadUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "artifactName": "${{ env.NDJC_ARTIFACT_NAME }}",
+            "workflowRunId": "${{ github.run_id }}",
+            "workflowUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "artifactUrl": null,
+            "downloadUrl": "/api/download-artifact?runId=${RUN_ID}",
             "error": null,
             "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
           }
