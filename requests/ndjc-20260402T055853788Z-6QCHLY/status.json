@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260402T055853788Z-6QCHLY",
+  "appName": "海鲜自助餐",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000007",
+  "adminName": "77777777@qq.com",
+  "createdAt": "2026-04-02T05:58:53.789Z",
+  "updatedAt": "2026-04-02T05:58:53.789Z",
+  "status": "running",
+  "stage": "preparing_request",
+  "message": "Build request accepted. Waiting for packaging workflow.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260402T055853788Z-6QCHLY/status.json"
+}
