@@ -1,11 +1,11 @@
 {
   "runId": "ndjc-20260403T034154336Z-XL3EPQ",
   "status": "running",
-  "stage": "processing_identity",
-  "step": 2,
-  "message": "Processing app identity",
+  "stage": "matching_logic_module",
+  "step": 3,
+  "message": "Matching logic module",
   "artifactUrl": null,
   "downloadUrl": null,
   "error": null,
-  "updatedAt": "2026-04-03T03:42:29Z"
+  "updatedAt": "2026-04-03T03:42:30Z"
 }
