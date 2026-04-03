@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260403T044805777Z-NA1AM7",
+  "appName": "大龙火锅",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000011",
+  "adminName": "66666666@qq.com",
+  "createdAt": "2026-04-03T04:48:05.891Z",
+  "updatedAt": "2026-04-03T04:48:05.891Z",
+  "status": "running",
+  "stage": "preparing_request",
+  "message": "Build request accepted. Waiting for packaging workflow.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260403T044805777Z-NA1AM7/status.json"
+}
