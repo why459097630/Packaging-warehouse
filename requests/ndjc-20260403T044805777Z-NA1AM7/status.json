@@ -1,9 +1,9 @@
 {
   "runId": "ndjc-20260403T044805777Z-NA1AM7",
   "status": "running",
-  "stage": "processing_identity",
-  "step": 2,
-  "message": "Processing app identity",
+  "stage": "matching_logic_module",
+  "step": 3,
+  "message": "Matching logic module",
   "artifactUrl": null,
   "downloadUrl": null,
   "error": null,
