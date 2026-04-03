@@ -1,11 +1,11 @@
 {
   "runId": "ndjc-20260403T044805777Z-NA1AM7",
   "status": "running",
-  "stage": "preparing_request",
-  "step": 1,
-  "message": "Preparing build request",
+  "stage": "processing_identity",
+  "step": 2,
+  "message": "Processing app identity",
   "artifactUrl": null,
   "downloadUrl": null,
   "error": null,
-  "updatedAt": "2026-04-03T04:48:18Z"
+  "updatedAt": "2026-04-03T04:48:46Z"
 }
