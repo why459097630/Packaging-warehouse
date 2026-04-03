@@ -1,22 +1,11 @@
 {
   "runId": "ndjc-20260403T034154336Z-XL3EPQ",
-  "appName": "四方桌",
-  "moduleName": "feature-showcase",
-  "uiPackName": "ui-pack-showcase-greenpink",
-  "plan": "free",
-  "storeId": "store_showcase_trial_000010",
-  "adminName": "11112222@qq.com",
-  "createdAt": "2026-04-03T03:41:54.513Z",
-  "updatedAt": "2026-04-03T03:41:54.513Z",
   "status": "running",
   "stage": "preparing_request",
-  "message": "Build request accepted. Waiting for packaging workflow.",
+  "step": 1,
+  "message": "Preparing build request",
   "artifactUrl": null,
   "downloadUrl": null,
   "error": null,
-  "workflowRunId": null,
-  "workflowStatus": "queued",
-  "workflowConclusion": null,
-  "workflowUrl": null,
-  "requestPath": "requests/ndjc-20260403T034154336Z-XL3EPQ/status.json"
+  "updatedAt": "2026-04-03T03:42:05Z"
 }
