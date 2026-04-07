@@ -47,10 +47,10 @@ jobs:
           PLAN_NAME="$PLAN_NAME" \
           STORE_ID="$STORE_ID" \
           ADMIN_NAME="$ADMIN_NAME" \
-          BUILD_STATUS="queued" \
-          BUILD_STAGE="queued" \
-          BUILD_STEP="0" \
-          BUILD_MESSAGE="Build request accepted. Waiting for an available build slot." \
+          BUILD_STATUS="running" \
+          BUILD_STAGE="preparing_request" \
+          BUILD_STEP="1" \
+          BUILD_MESSAGE="Preparing build request" \
           node .github/scripts/write-status.js
 
           git config user.name "ndjc-bot"
