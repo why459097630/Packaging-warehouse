@@ -7,9 +7,9 @@
   "storeId": "store_showcase_trial_000018",
   "adminName": "741852963@qq.com",
   "status": "running",
-  "stage": "processing_identity",
-  "step": 2,
-  "message": "Processing app identity",
+  "stage": "matching_logic_module",
+  "step": 3,
+  "message": "Matching logic module",
   "artifactName": null,
   "workflowRunId": null,
   "workflowUrl": null,
@@ -17,5 +17,5 @@
   "downloadUrl": null,
   "error": null,
   "failedStep": null,
-  "updatedAt": "2026-04-07T13:49:15.090Z"
+  "updatedAt": "2026-04-07T13:49:16.010Z"
 }
