@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260407T110518318Z-QGHB9T",
+  "appName": "美利坚",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000016",
+  "adminName": "951753@qq.com",
+  "createdAt": "2026-04-07T11:05:18.440Z",
+  "updatedAt": "2026-04-07T11:05:18.440Z",
+  "status": "running",
+  "stage": "preparing_request",
+  "message": "Preparing build request",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260407T110518318Z-QGHB9T/status.json"
+}
