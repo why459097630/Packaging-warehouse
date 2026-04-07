@@ -38,25 +38,20 @@ jobs:
           STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$ASSEMBLY_FILE")"
           ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$REQUEST_FILE")"
 
-          cat > "$STATUS_FILE" <<EOF
-          {
-            "runId": "${RUN_ID}",
-            "appName": ${APP_NAME@Q},
-            "moduleName": ${MODULE_NAME@Q},
-            "uiPackName": ${UI_PACK_NAME@Q},
-            "plan": ${PLAN_NAME@Q},
-            "storeId": ${STORE_ID@Q},
-            "adminName": ${ADMIN_NAME@Q},
-            "status": "queued",
-            "stage": "queued",
-            "step": 0,
-            "message": "Build request accepted. Waiting for an available build slot.",
-            "artifactUrl": null,
-            "downloadUrl": null,
-            "error": null,
-            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          }
-          EOF
+          RUN_ID="$RUN_ID" \
+          STATUS_FILE="$STATUS_FILE" \
+          SOURCE_FILE="$REQUEST_FILE" \
+          APP_NAME="$APP_NAME" \
+          MODULE_NAME="$MODULE_NAME" \
+          UI_PACK_NAME="$UI_PACK_NAME" \
+          PLAN_NAME="$PLAN_NAME" \
+          STORE_ID="$STORE_ID" \
+          ADMIN_NAME="$ADMIN_NAME" \
+          BUILD_STATUS="queued" \
+          BUILD_STAGE="queued" \
+          BUILD_STEP="0" \
+          BUILD_MESSAGE="Build request accepted. Waiting for an available build slot." \
+          node .github/scripts/write-status.js
 
           git config user.name "ndjc-bot"
           git config user.email "ndjc-bot@users.noreply.github.com"
@@ -69,6 +64,64 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+
+      - name: NDJC | Install status writer
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p .github/scripts
+
+          cat > .github/scripts/write-status.js <<'EOF'
+          const fs = require("fs");
+
+          function readJson(path, fallback = {}) {
+            try {
+              return JSON.parse(fs.readFileSync(path, "utf8"));
+            } catch {
+              return fallback;
+            }
+          }
+
+          const runId = process.env.RUN_ID || "";
+          const statusFile = process.env.STATUS_FILE || "";
+          const sourceFile = process.env.SOURCE_FILE || statusFile;
+
+          if (!runId) {
+            throw new Error("RUN_ID is required.");
+          }
+
+          if (!statusFile) {
+            throw new Error("STATUS_FILE is required.");
+          }
+
+          const source = readJson(sourceFile, {});
+          const current = readJson(statusFile, {});
+
+          const data = {
+            runId,
+            appName: String(process.env.APP_NAME || current.appName || source.appName || "Untitled App"),
+            moduleName: String(process.env.MODULE_NAME || current.moduleName || source.moduleName || source.module || "feature-showcase"),
+            uiPackName: String(process.env.UI_PACK_NAME || current.uiPackName || source.uiPackName || source.uiPack || "ui-pack-showcase-greenpink"),
+            plan: String(process.env.PLAN_NAME || current.plan || source.plan || "pro"),
+            storeId: String(process.env.STORE_ID || current.storeId || source.storeId || ""),
+            adminName: String(process.env.ADMIN_NAME || current.adminName || source.adminName || ""),
+            status: String(process.env.BUILD_STATUS || current.status || "queued"),
+            stage: String(process.env.BUILD_STAGE || current.stage || "queued"),
+            step: Number(process.env.BUILD_STEP || current.step || 0),
+            message: String(process.env.BUILD_MESSAGE || current.message || ""),
+            artifactName: process.env.ARTIFACT_NAME ? String(process.env.ARTIFACT_NAME) : current.artifactName ?? null,
+            workflowRunId: process.env.WORKFLOW_RUN_ID ? String(process.env.WORKFLOW_RUN_ID) : current.workflowRunId ?? null,
+            workflowUrl: process.env.WORKFLOW_URL ? String(process.env.WORKFLOW_URL) : current.workflowUrl ?? null,
+            artifactUrl: process.env.ARTIFACT_URL ? String(process.env.ARTIFACT_URL) : current.artifactUrl ?? null,
+            downloadUrl: process.env.DOWNLOAD_URL ? String(process.env.DOWNLOAD_URL) : current.downloadUrl ?? null,
+            error: process.env.BUILD_ERROR ? String(process.env.BUILD_ERROR) : current.error ?? null,
+            failedStep: process.env.FAILED_STEP ? String(process.env.FAILED_STEP) : current.failedStep ?? null,
+            updatedAt: new Date().toISOString(),
+          };
+
+          fs.writeFileSync(statusFile, JSON.stringify(data, null, 2) + "\n", "utf8");
+          EOF
 
       # 关键：把 requests/<run_id>/assembly.local.json 变成后面脚本会读的 lib/ndjc/assembly.local.json
       - name: NDJC | Materialize request -> lib/ndjc/assembly.local.json
@@ -142,32 +195,13 @@ jobs:
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
 
-          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
-          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
-          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
-          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
-          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
-          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
-
-          cat > "$STATUS_FILE" <<EOF
-          {
-            "runId": "${RUN_ID}",
-            "appName": ${APP_NAME@Q},
-            "moduleName": ${MODULE_NAME@Q},
-            "uiPackName": ${UI_PACK_NAME@Q},
-            "plan": ${PLAN_NAME@Q},
-            "storeId": ${STORE_ID@Q},
-            "adminName": ${ADMIN_NAME@Q},
-            "status": "running",
-            "stage": "processing_identity",
-            "step": 2,
-            "message": "Processing app identity",
-            "artifactUrl": null,
-            "downloadUrl": null,
-            "error": null,
-            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          }
-          EOF
+          RUN_ID="$RUN_ID" \
+          STATUS_FILE="$STATUS_FILE" \
+          BUILD_STATUS="running" \
+          BUILD_STAGE="processing_identity" \
+          BUILD_STEP="2" \
+          BUILD_MESSAGE="Processing app identity" \
+          node .github/scripts/write-status.js
 
           git add "$STATUS_FILE"
           git commit -m "NDJC: step2 ${RUN_ID}" || echo "no changes"
@@ -181,32 +215,13 @@ jobs:
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
 
-          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
-          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
-          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
-          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
-          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
-          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
-
-          cat > "$STATUS_FILE" <<EOF
-          {
-            "runId": "${RUN_ID}",
-            "appName": ${APP_NAME@Q},
-            "moduleName": ${MODULE_NAME@Q},
-            "uiPackName": ${UI_PACK_NAME@Q},
-            "plan": ${PLAN_NAME@Q},
-            "storeId": ${STORE_ID@Q},
-            "adminName": ${ADMIN_NAME@Q},
-            "status": "running",
-            "stage": "matching_logic_module",
-            "step": 3,
-            "message": "Matching logic module",
-            "artifactUrl": null,
-            "downloadUrl": null,
-            "error": null,
-            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          }
-          EOF
+          RUN_ID="$RUN_ID" \
+          STATUS_FILE="$STATUS_FILE" \
+          BUILD_STATUS="running" \
+          BUILD_STAGE="matching_logic_module" \
+          BUILD_STEP="3" \
+          BUILD_MESSAGE="Matching logic module" \
+          node .github/scripts/write-status.js
 
           git add "$STATUS_FILE"
           git commit -m "NDJC: step3 ${RUN_ID}" || echo "no changes"
@@ -226,32 +241,13 @@ jobs:
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
 
-          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
-          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
-          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
-          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
-          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
-          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
-
-          cat > "$STATUS_FILE" <<EOF
-          {
-            "runId": "${RUN_ID}",
-            "appName": ${APP_NAME@Q},
-            "moduleName": ${MODULE_NAME@Q},
-            "uiPackName": ${UI_PACK_NAME@Q},
-            "plan": ${PLAN_NAME@Q},
-            "storeId": ${STORE_ID@Q},
-            "adminName": ${ADMIN_NAME@Q},
-            "status": "running",
-            "stage": "applying_ui_pack",
-            "step": 4,
-            "message": "Applying UI pack",
-            "artifactUrl": null,
-            "downloadUrl": null,
-            "error": null,
-            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          }
-          EOF
+          RUN_ID="$RUN_ID" \
+          STATUS_FILE="$STATUS_FILE" \
+          BUILD_STATUS="running" \
+          BUILD_STAGE="applying_ui_pack" \
+          BUILD_STEP="4" \
+          BUILD_MESSAGE="Applying UI pack" \
+          node .github/scripts/write-status.js
 
           git add "$STATUS_FILE"
           git commit -m "NDJC: step4 ${RUN_ID}" || echo "no changes"
@@ -323,32 +319,13 @@ jobs:
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
 
-          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
-          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
-          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
-          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
-          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
-          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
-
-          cat > "$STATUS_FILE" <<EOF
-          {
-            "runId": "${RUN_ID}",
-            "appName": ${APP_NAME@Q},
-            "moduleName": ${MODULE_NAME@Q},
-            "uiPackName": ${UI_PACK_NAME@Q},
-            "plan": ${PLAN_NAME@Q},
-            "storeId": ${STORE_ID@Q},
-            "adminName": ${ADMIN_NAME@Q},
-            "status": "running",
-            "stage": "preparing_services",
-            "step": 5,
-            "message": "Preparing app services and signing",
-            "artifactUrl": null,
-            "downloadUrl": null,
-            "error": null,
-            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          }
-          EOF
+          RUN_ID="$RUN_ID" \
+          STATUS_FILE="$STATUS_FILE" \
+          BUILD_STATUS="running" \
+          BUILD_STAGE="preparing_services" \
+          BUILD_STEP="5" \
+          BUILD_MESSAGE="Preparing app services and signing" \
+          node .github/scripts/write-status.js
 
           git add "$STATUS_FILE"
           git commit -m "NDJC: step5 ${RUN_ID}" || echo "no changes"
@@ -440,32 +417,13 @@ jobs:
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
 
-          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
-          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
-          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
-          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
-          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
-          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
-
-          cat > "$STATUS_FILE" <<EOF
-          {
-            "runId": "${RUN_ID}",
-            "appName": ${APP_NAME@Q},
-            "moduleName": ${MODULE_NAME@Q},
-            "uiPackName": ${UI_PACK_NAME@Q},
-            "plan": ${PLAN_NAME@Q},
-            "storeId": ${STORE_ID@Q},
-            "adminName": ${ADMIN_NAME@Q},
-            "status": "running",
-            "stage": "building_apk",
-            "step": 6,
-            "message": "Building and packaging APK",
-            "artifactUrl": null,
-            "downloadUrl": null,
-            "error": null,
-            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          }
-          EOF
+          RUN_ID="$RUN_ID" \
+          STATUS_FILE="$STATUS_FILE" \
+          BUILD_STATUS="running" \
+          BUILD_STAGE="building_apk" \
+          BUILD_STEP="6" \
+          BUILD_MESSAGE="Building and packaging APK" \
+          node .github/scripts/write-status.js
 
           git add "$STATUS_FILE"
           git commit -m "NDJC: step6 ${RUN_ID}" || echo "no changes"
@@ -540,35 +498,19 @@ jobs:
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
 
-          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
-          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
-          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
-          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
-          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
-          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
-
-          cat > "$STATUS_FILE" <<EOF
-          {
-            "runId": "${RUN_ID}",
-            "appName": ${APP_NAME@Q},
-            "moduleName": ${MODULE_NAME@Q},
-            "uiPackName": ${UI_PACK_NAME@Q},
-            "plan": ${PLAN_NAME@Q},
-            "storeId": ${STORE_ID@Q},
-            "adminName": ${ADMIN_NAME@Q},
-            "status": "success",
-            "stage": "success",
-            "step": 6,
-            "message": "Build completed",
-            "artifactName": "${{ env.NDJC_ARTIFACT_NAME }}",
-            "workflowRunId": "${{ github.run_id }}",
-            "workflowUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "artifactUrl": null,
-            "downloadUrl": "/api/download-artifact?runId=${RUN_ID}",
-            "error": null,
-            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          }
-          EOF
+          RUN_ID="$RUN_ID" \
+          STATUS_FILE="$STATUS_FILE" \
+          BUILD_STATUS="success" \
+          BUILD_STAGE="success" \
+          BUILD_STEP="6" \
+          BUILD_MESSAGE="Build completed" \
+          ARTIFACT_NAME="${{ env.NDJC_ARTIFACT_NAME }}" \
+          WORKFLOW_RUN_ID="${{ github.run_id }}" \
+          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+          DOWNLOAD_URL="/api/download-artifact?runId=${RUN_ID}" \
+          BUILD_ERROR="" \
+          FAILED_STEP="" \
+          node .github/scripts/write-status.js
 
           git add "$STATUS_FILE"
           git commit -m "NDJC: success ${RUN_ID}" || echo "no changes"
@@ -585,44 +527,23 @@ jobs:
 
           CURRENT_STEP="1"
           CURRENT_STAGE="preparing_request"
-          APP_NAME="Untitled App"
-          MODULE_NAME="feature-showcase"
-          UI_PACK_NAME="ui-pack-showcase-greenpink"
-          PLAN_NAME="pro"
-          STORE_ID=""
-          ADMIN_NAME=""
 
           if [ -f "$STATUS_FILE" ]; then
-            CURRENT_STEP="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.step || '1'));" "$STATUS_FILE")"
-            CURRENT_STAGE="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.stage || 'preparing_request'));" "$STATUS_FILE")"
-            APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
-            MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
-            UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
-            PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
-            STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
-            ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
+            CURRENT_STEP="$(node -e "const fs=require('fs'); const p=process.argv[1]; try { const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.step || '1')); } catch { process.stdout.write('1'); }" "$STATUS_FILE")"
+            CURRENT_STAGE="$(node -e "const fs=require('fs'); const p=process.argv[1]; try { const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.stage || 'preparing_request')); } catch { process.stdout.write('preparing_request'); }" "$STATUS_FILE")"
           fi
 
-          cat > "$STATUS_FILE" <<EOF
-          {
-            "runId": "${RUN_ID}",
-            "appName": ${APP_NAME@Q},
-            "moduleName": ${MODULE_NAME@Q},
-            "uiPackName": ${UI_PACK_NAME@Q},
-            "plan": ${PLAN_NAME@Q},
-            "storeId": ${STORE_ID@Q},
-            "adminName": ${ADMIN_NAME@Q},
-            "status": "failed",
-            "stage": "failed",
-            "failedStep": "${CURRENT_STAGE}",
-            "step": ${CURRENT_STEP},
-            "message": "Build failed",
-            "artifactUrl": null,
-            "downloadUrl": null,
-            "error": "Packaging workflow failed. Check GitHub Actions logs.",
-            "updatedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          }
-          EOF
+          RUN_ID="$RUN_ID" \
+          STATUS_FILE="$STATUS_FILE" \
+          BUILD_STATUS="failed" \
+          BUILD_STAGE="failed" \
+          BUILD_STEP="$CURRENT_STEP" \
+          BUILD_MESSAGE="Build failed" \
+          BUILD_ERROR="Packaging workflow failed. Check GitHub Actions logs." \
+          FAILED_STEP="$CURRENT_STAGE" \
+          ARTIFACT_NAME="" \
+          DOWNLOAD_URL="" \
+          node .github/scripts/write-status.js
 
           git add "$STATUS_FILE"
           git commit -m "NDJC: failed ${RUN_ID}" || echo "no changes"
