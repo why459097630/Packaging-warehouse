@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260407T092512116Z-8J795A",
+  "appName": "打火锅",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000015",
+  "adminName": "124578@qq.com",
+  "createdAt": "2026-04-07T09:25:12.226Z",
+  "updatedAt": "2026-04-07T09:25:12.226Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Build request accepted. Waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260407T092512116Z-8J795A/status.json"
+}
