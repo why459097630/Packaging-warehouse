@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260407T134829223Z-NQUAQB",
+  "appName": "火车头",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000018",
+  "adminName": "741852963@qq.com",
+  "createdAt": "2026-04-07T13:48:29.422Z",
+  "updatedAt": "2026-04-07T13:48:29.422Z",
+  "status": "running",
+  "stage": "preparing_request",
+  "message": "Preparing build request",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260407T134829223Z-NQUAQB/status.json"
+}
