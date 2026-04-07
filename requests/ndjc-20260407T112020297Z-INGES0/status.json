@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260407T112020297Z-INGES0",
+  "appName": "英格兰",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000017",
+  "adminName": "12369@qq.com",
+  "createdAt": "2026-04-07T11:20:20.426Z",
+  "updatedAt": "2026-04-07T11:20:20.426Z",
+  "status": "running",
+  "stage": "preparing_request",
+  "message": "Preparing build request",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260407T112020297Z-INGES0/status.json"
+}
