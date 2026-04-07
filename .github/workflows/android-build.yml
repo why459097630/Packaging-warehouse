@@ -26,16 +26,31 @@ jobs:
 
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
+          ASSEMBLY_FILE="requests/${RUN_ID}/assembly.local.json"
+          REQUEST_FILE="requests/${RUN_ID}/request.json"
 
           mkdir -p "requests/${RUN_ID}"
+
+          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$ASSEMBLY_FILE")"
+          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); const arr=Array.isArray(j.modules)?j.modules:[]; process.stdout.write(String(arr[0] || 'feature-showcase'));" "$ASSEMBLY_FILE")"
+          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPack || 'ui-pack-showcase-greenpink'));" "$ASSEMBLY_FILE")"
+          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$REQUEST_FILE")"
+          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$ASSEMBLY_FILE")"
+          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$REQUEST_FILE")"
 
           cat > "$STATUS_FILE" <<EOF
           {
             "runId": "${RUN_ID}",
-            "status": "running",
-            "stage": "preparing_request",
-            "step": 1,
-            "message": "Preparing build request",
+            "appName": ${APP_NAME@Q},
+            "moduleName": ${MODULE_NAME@Q},
+            "uiPackName": ${UI_PACK_NAME@Q},
+            "plan": ${PLAN_NAME@Q},
+            "storeId": ${STORE_ID@Q},
+            "adminName": ${ADMIN_NAME@Q},
+            "status": "queued",
+            "stage": "queued",
+            "step": 0,
+            "message": "Build request accepted. Waiting for an available build slot.",
             "artifactUrl": null,
             "downloadUrl": null,
             "error": null,
@@ -127,9 +142,22 @@ jobs:
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
 
+          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
+          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
+          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
+          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
+          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
+          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
+
           cat > "$STATUS_FILE" <<EOF
           {
             "runId": "${RUN_ID}",
+            "appName": ${APP_NAME@Q},
+            "moduleName": ${MODULE_NAME@Q},
+            "uiPackName": ${UI_PACK_NAME@Q},
+            "plan": ${PLAN_NAME@Q},
+            "storeId": ${STORE_ID@Q},
+            "adminName": ${ADMIN_NAME@Q},
             "status": "running",
             "stage": "processing_identity",
             "step": 2,
@@ -153,9 +181,22 @@ jobs:
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
 
+          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
+          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
+          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
+          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
+          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
+          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
+
           cat > "$STATUS_FILE" <<EOF
           {
             "runId": "${RUN_ID}",
+            "appName": ${APP_NAME@Q},
+            "moduleName": ${MODULE_NAME@Q},
+            "uiPackName": ${UI_PACK_NAME@Q},
+            "plan": ${PLAN_NAME@Q},
+            "storeId": ${STORE_ID@Q},
+            "adminName": ${ADMIN_NAME@Q},
             "status": "running",
             "stage": "matching_logic_module",
             "step": 3,
@@ -185,9 +226,22 @@ jobs:
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
 
+          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
+          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
+          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
+          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
+          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
+          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
+
           cat > "$STATUS_FILE" <<EOF
           {
             "runId": "${RUN_ID}",
+            "appName": ${APP_NAME@Q},
+            "moduleName": ${MODULE_NAME@Q},
+            "uiPackName": ${UI_PACK_NAME@Q},
+            "plan": ${PLAN_NAME@Q},
+            "storeId": ${STORE_ID@Q},
+            "adminName": ${ADMIN_NAME@Q},
             "status": "running",
             "stage": "applying_ui_pack",
             "step": 4,
@@ -269,9 +323,22 @@ jobs:
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
 
+          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
+          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
+          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
+          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
+          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
+          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
+
           cat > "$STATUS_FILE" <<EOF
           {
             "runId": "${RUN_ID}",
+            "appName": ${APP_NAME@Q},
+            "moduleName": ${MODULE_NAME@Q},
+            "uiPackName": ${UI_PACK_NAME@Q},
+            "plan": ${PLAN_NAME@Q},
+            "storeId": ${STORE_ID@Q},
+            "adminName": ${ADMIN_NAME@Q},
             "status": "running",
             "stage": "preparing_services",
             "step": 5,
@@ -373,9 +440,22 @@ jobs:
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
 
+          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
+          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
+          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
+          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
+          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
+          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
+
           cat > "$STATUS_FILE" <<EOF
           {
             "runId": "${RUN_ID}",
+            "appName": ${APP_NAME@Q},
+            "moduleName": ${MODULE_NAME@Q},
+            "uiPackName": ${UI_PACK_NAME@Q},
+            "plan": ${PLAN_NAME@Q},
+            "storeId": ${STORE_ID@Q},
+            "adminName": ${ADMIN_NAME@Q},
             "status": "running",
             "stage": "building_apk",
             "step": 6,
@@ -460,9 +540,22 @@ jobs:
           RUN_ID="${{ inputs.run_id }}"
           STATUS_FILE="requests/${RUN_ID}/status.json"
 
+          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
+          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
+          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
+          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
+          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
+          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
+
           cat > "$STATUS_FILE" <<EOF
           {
             "runId": "${RUN_ID}",
+            "appName": ${APP_NAME@Q},
+            "moduleName": ${MODULE_NAME@Q},
+            "uiPackName": ${UI_PACK_NAME@Q},
+            "plan": ${PLAN_NAME@Q},
+            "storeId": ${STORE_ID@Q},
+            "adminName": ${ADMIN_NAME@Q},
             "status": "success",
             "stage": "success",
             "step": 6,
@@ -492,17 +585,36 @@ jobs:
 
           CURRENT_STEP="1"
           CURRENT_STAGE="preparing_request"
+          APP_NAME="Untitled App"
+          MODULE_NAME="feature-showcase"
+          UI_PACK_NAME="ui-pack-showcase-greenpink"
+          PLAN_NAME="pro"
+          STORE_ID=""
+          ADMIN_NAME=""
 
           if [ -f "$STATUS_FILE" ]; then
             CURRENT_STEP="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.step || '1'));" "$STATUS_FILE")"
             CURRENT_STAGE="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.stage || 'preparing_request'));" "$STATUS_FILE")"
+            APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$STATUS_FILE")"
+            MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.moduleName || 'feature-showcase'));" "$STATUS_FILE")"
+            UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPackName || 'ui-pack-showcase-greenpink'));" "$STATUS_FILE")"
+            PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$STATUS_FILE")"
+            STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$STATUS_FILE")"
+            ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$STATUS_FILE")"
           fi
 
           cat > "$STATUS_FILE" <<EOF
           {
             "runId": "${RUN_ID}",
+            "appName": ${APP_NAME@Q},
+            "moduleName": ${MODULE_NAME@Q},
+            "uiPackName": ${UI_PACK_NAME@Q},
+            "plan": ${PLAN_NAME@Q},
+            "storeId": ${STORE_ID@Q},
+            "adminName": ${ADMIN_NAME@Q},
             "status": "failed",
-            "stage": "${CURRENT_STAGE}",
+            "stage": "failed",
+            "failedStep": "${CURRENT_STAGE}",
             "step": ${CURRENT_STEP},
             "message": "Build failed",
             "artifactUrl": null,
