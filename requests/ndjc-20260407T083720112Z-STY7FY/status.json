@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260407T083720112Z-STY7FY",
+  "appName": "破店",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000014",
+  "adminName": "44444444@qq.com",
+  "createdAt": "2026-04-07T08:37:20.297Z",
+  "updatedAt": "2026-04-07T08:37:20.297Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Build request accepted. Waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260407T083720112Z-STY7FY/status.json"
+}
