@@ -19,47 +19,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: NDJC | Init build status
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          RUN_ID="${{ inputs.run_id }}"
-          STATUS_FILE="requests/${RUN_ID}/status.json"
-          ASSEMBLY_FILE="requests/${RUN_ID}/assembly.local.json"
-          REQUEST_FILE="requests/${RUN_ID}/request.json"
-
-          mkdir -p "requests/${RUN_ID}"
-
-          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$ASSEMBLY_FILE")"
-          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); const arr=Array.isArray(j.modules)?j.modules:[]; process.stdout.write(String(arr[0] || 'feature-showcase'));" "$ASSEMBLY_FILE")"
-          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPack || 'ui-pack-showcase-greenpink'));" "$ASSEMBLY_FILE")"
-          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$REQUEST_FILE")"
-          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$ASSEMBLY_FILE")"
-          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$REQUEST_FILE")"
-
-          RUN_ID="$RUN_ID" \
-          STATUS_FILE="$STATUS_FILE" \
-          SOURCE_FILE="$REQUEST_FILE" \
-          APP_NAME="$APP_NAME" \
-          MODULE_NAME="$MODULE_NAME" \
-          UI_PACK_NAME="$UI_PACK_NAME" \
-          PLAN_NAME="$PLAN_NAME" \
-          STORE_ID="$STORE_ID" \
-          ADMIN_NAME="$ADMIN_NAME" \
-          BUILD_STATUS="running" \
-          BUILD_STAGE="preparing_request" \
-          BUILD_STEP="1" \
-          BUILD_MESSAGE="Preparing build request" \
-          node .github/scripts/write-status.js
-
-          git config user.name "ndjc-bot"
-          git config user.email "ndjc-bot@users.noreply.github.com"
-
-          git add "$STATUS_FILE"
-          git commit -m "NDJC: init status for ${RUN_ID}" || echo "no changes"
-          git push || true
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -122,6 +81,47 @@ jobs:
 
           fs.writeFileSync(statusFile, JSON.stringify(data, null, 2) + "\n", "utf8");
           EOF
+
+      - name: NDJC | Init build status
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RUN_ID="${{ inputs.run_id }}"
+          STATUS_FILE="requests/${RUN_ID}/status.json"
+          ASSEMBLY_FILE="requests/${RUN_ID}/assembly.local.json"
+          REQUEST_FILE="requests/${RUN_ID}/request.json"
+
+          mkdir -p "requests/${RUN_ID}"
+
+          APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$ASSEMBLY_FILE")"
+          MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); const arr=Array.isArray(j.modules)?j.modules:[]; process.stdout.write(String(arr[0] || 'feature-showcase'));" "$ASSEMBLY_FILE")"
+          UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPack || 'ui-pack-showcase-greenpink'));" "$ASSEMBLY_FILE")"
+          PLAN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro'));" "$REQUEST_FILE")"
+          STORE_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.storeId || ''));" "$ASSEMBLY_FILE")"
+          ADMIN_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.adminName || ''));" "$REQUEST_FILE")"
+
+          RUN_ID="$RUN_ID" \
+          STATUS_FILE="$STATUS_FILE" \
+          SOURCE_FILE="$REQUEST_FILE" \
+          APP_NAME="$APP_NAME" \
+          MODULE_NAME="$MODULE_NAME" \
+          UI_PACK_NAME="$UI_PACK_NAME" \
+          PLAN_NAME="$PLAN_NAME" \
+          STORE_ID="$STORE_ID" \
+          ADMIN_NAME="$ADMIN_NAME" \
+          BUILD_STATUS="running" \
+          BUILD_STAGE="preparing_request" \
+          BUILD_STEP="1" \
+          BUILD_MESSAGE="Preparing build request" \
+          node .github/scripts/write-status.js
+
+          git config user.name "ndjc-bot"
+          git config user.email "ndjc-bot@users.noreply.github.com"
+
+          git add "$STATUS_FILE"
+          git commit -m "NDJC: init status for ${RUN_ID}" || echo "no changes"
+          git push || true
 
       # 关键：把 requests/<run_id>/assembly.local.json 变成后面脚本会读的 lib/ndjc/assembly.local.json
       - name: NDJC | Materialize request -> lib/ndjc/assembly.local.json
