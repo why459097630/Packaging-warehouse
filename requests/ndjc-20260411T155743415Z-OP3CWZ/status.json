@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260411T155743415Z-OP3CWZ",
+  "appName": "额得得得",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "pro",
+  "storeId": "store_showcase_paid_000001",
+  "adminName": "159753@qq.com",
+  "createdAt": "2026-04-11T15:57:43.652Z",
+  "updatedAt": "2026-04-11T15:57:43.652Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260411T155743415Z-OP3CWZ/status.json"
+}
