@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260412T140949535Z-IDIZCE",
+  "appName": "如题如题",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "pro",
+  "storeId": "store_showcase_paid_000002",
+  "adminName": "41545521@qq.com",
+  "createdAt": "2026-04-12T14:10:16.313Z",
+  "updatedAt": "2026-04-12T14:10:16.313Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260412T140949535Z-IDIZCE/status.json"
+}
