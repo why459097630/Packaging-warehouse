@@ -1,0 +1,12 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "请按照",
+  "packageName": "com.ndjc.apps.app.etrial000020",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_trial_000020"
+}
