@@ -94,6 +94,34 @@ jobs:
 
           mkdir -p "requests/${RUN_ID}"
 
+          git config user.name "ndjc-bot"
+          git config user.email "ndjc-bot@users.noreply.github.com"
+
+          if [ ! -f "$ASSEMBLY_FILE" ] || [ ! -f "$REQUEST_FILE" ]; then
+            echo "Missing request payload file."
+            echo "ASSEMBLY_FILE=$ASSEMBLY_FILE"
+            echo "REQUEST_FILE=$REQUEST_FILE"
+            ls -la "requests" || true
+            ls -la "requests/${RUN_ID}" || true
+
+            RUN_ID="$RUN_ID" \
+            STATUS_FILE="$STATUS_FILE" \
+            SOURCE_FILE="$REQUEST_FILE" \
+            BUILD_STATUS="failed" \
+            BUILD_STAGE="failed" \
+            BUILD_STEP="1" \
+            BUILD_MESSAGE="Build request files are missing in repository." \
+            BUILD_ERROR="Missing request payload file: requests/${RUN_ID}/assembly.local.json or request.json" \
+            FAILED_STEP="preparing_request" \
+            node .github/scripts/write-status.js
+
+            git add "$STATUS_FILE"
+            git commit -m "NDJC: fail init status for ${RUN_ID}" || echo "no changes"
+            git push || true
+
+            exit 1
+          fi
+
           APP_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Untitled App'));" "$ASSEMBLY_FILE")"
           MODULE_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); const arr=Array.isArray(j.modules)?j.modules:[]; process.stdout.write(String(arr[0] || 'feature-showcase'));" "$ASSEMBLY_FILE")"
           UI_PACK_NAME="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.uiPack || 'ui-pack-showcase-greenpink'));" "$ASSEMBLY_FILE")"
@@ -115,9 +143,6 @@ jobs:
           BUILD_STEP="1" \
           BUILD_MESSAGE="Preparing build request" \
           node .github/scripts/write-status.js
-
-          git config user.name "ndjc-bot"
-          git config user.email "ndjc-bot@users.noreply.github.com"
 
           git add "$STATUS_FILE"
           git commit -m "NDJC: init status for ${RUN_ID}" || echo "no changes"
