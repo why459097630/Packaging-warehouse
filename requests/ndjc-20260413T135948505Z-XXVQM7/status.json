@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260413T135948505Z-XXVQM7",
+  "appName": "豆腐干岁的法国",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "pro",
+  "storeId": "store_showcase_paid_000004",
+  "adminName": "459097630@qq.com",
+  "createdAt": "2026-04-13T14:00:09.884Z",
+  "updatedAt": "2026-04-13T14:00:09.884Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260413T135948505Z-XXVQM7/status.json"
+}
