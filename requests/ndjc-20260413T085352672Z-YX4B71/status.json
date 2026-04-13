@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260413T085352672Z-YX4B71",
+  "appName": "官方公告",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "pro",
+  "storeId": "store_showcase_paid_000003",
+  "adminName": "5415415642@qq.com",
+  "createdAt": "2026-04-13T08:54:14.520Z",
+  "updatedAt": "2026-04-13T08:54:14.520Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260413T085352672Z-YX4B71/status.json"
+}
