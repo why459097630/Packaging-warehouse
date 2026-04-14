@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260414T090855700Z-VULOYB",
+  "appName": "罗纳尔多",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "pro",
+  "storeId": "store_showcase_paid_000005",
+  "adminName": "459097630@qq.com",
+  "createdAt": "2026-04-14T09:09:53.611Z",
+  "updatedAt": "2026-04-14T09:09:53.611Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260414T090855700Z-VULOYB/status.json"
+}
