@@ -7,9 +7,9 @@
   "storeId": "store_showcase_paid_000005",
   "adminName": "459097630@qq.com",
   "status": "running",
-  "stage": "preparing_services",
-  "step": 5,
-  "message": "Preparing app services and signing",
+  "stage": "building_apk",
+  "step": 6,
+  "message": "Building and packaging APK",
   "artifactName": null,
   "workflowRunId": null,
   "workflowUrl": null,
@@ -17,5 +17,5 @@
   "downloadUrl": null,
   "error": null,
   "failedStep": null,
-  "updatedAt": "2026-04-14T09:11:41.606Z"
+  "updatedAt": "2026-04-14T09:11:43.860Z"
 }
