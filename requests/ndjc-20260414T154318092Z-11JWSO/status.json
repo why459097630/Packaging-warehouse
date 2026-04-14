@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260414T154318092Z-11JWSO",
+  "appName": "fail_test_001",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "pro",
+  "storeId": "store_showcase_paid_000007",
+  "adminName": "459097630@qq.com",
+  "createdAt": "2026-04-14T15:44:45.873Z",
+  "updatedAt": "2026-04-14T15:44:45.873Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260414T154318092Z-11JWSO/status.json"
+}
