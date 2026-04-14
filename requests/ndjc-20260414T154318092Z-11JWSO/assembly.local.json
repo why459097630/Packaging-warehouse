@@ -1,0 +1,12 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "fail_test_001",
+  "packageName": "com.ndjc.apps.failtest001.sepaid000007",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_paid_000007"
+}
