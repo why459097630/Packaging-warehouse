@@ -40,12 +40,9 @@ import com.ndjc.feature.showcase.ui.ShowcaseBottomBar
 import com.ndjc.feature.showcase.ui.ShowcaseBottomBarTab
 import com.ndjc.feature.showcase.ui.ShowcaseMerchantChatListScreen
 import com.ndjc.feature.showcase.ui.ShowcaseUiRenderer
-
-
-
-
-
-
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 /**
  * feature-showcase 的 UI 接线层（wiring）
@@ -53,6 +50,110 @@ import com.ndjc.feature.showcase.ui.ShowcaseUiRenderer
  * - 只保留 VM 的状态机（ShowcaseUiState.screen / selectedDish / pendingDeleteIndex）
  * - wiring 层不再维护第二套 Screen/screenState，也不直接写 vm.uiState（因为 VM 是 private set）
  */
+private fun parseCloudIsoMillis(raw: String): Long? {
+    val value = raw.trim()
+    if (value.isBlank()) return null
+
+    val patterns = listOf(
+        "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+        "yyyy-MM-dd'T'HH:mm:ssXXX",
+        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+        "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    )
+
+    for (pattern in patterns) {
+        runCatching {
+            val sdf = SimpleDateFormat(pattern, Locale.US).apply {
+                timeZone = TimeZone.getTimeZone("UTC")
+            }
+            val parsed = sdf.parse(value)
+            if (parsed != null) return parsed.time
+        }
+    }
+
+    return null
+}
+
+private fun formatCloudDateTimeLabel(raw: String): String {
+    val millis = parseCloudIsoMillis(raw) ?: return raw.trim()
+    val output = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US).apply {
+        timeZone = TimeZone.getDefault()
+    }
+    return output.format(millis)
+}
+
+private fun buildCloudDaysRemainingLabel(serviceEndAt: String): String {
+    val endAtMs = parseCloudIsoMillis(serviceEndAt) ?: return ""
+    val nowMs = System.currentTimeMillis()
+    val diffMs = endAtMs - nowMs
+    val oneDayMs = 24L * 60L * 60L * 1000L
+
+    if (diffMs <= 0L) {
+        return "Expired"
+    }
+
+    val dayFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US).apply {
+        timeZone = TimeZone.getDefault()
+    }
+
+    val todayStartMs = dayFormat.parse(dayFormat.format(nowMs))?.time ?: nowMs
+    val endDayStartMs = dayFormat.parse(dayFormat.format(endAtMs))?.time ?: endAtMs
+    val days = ((endDayStartMs - todayStartMs) / oneDayMs).toInt()
+
+    return when {
+        days <= 0 -> "Expires today"
+        days == 1 -> "1 day left"
+        else -> "$days days left"
+    }
+}
+
+private fun buildCloudStatusLabel(
+    status: ShowcaseCloudServiceStatus,
+    canWrite: Boolean
+): String {
+    return when (status) {
+        ShowcaseCloudServiceStatus.Active -> {
+            if (canWrite) "Running · Writable" else "Running · Not writable"
+        }
+        ShowcaseCloudServiceStatus.ReadOnly -> {
+            "Read-only · Not writable"
+        }
+        ShowcaseCloudServiceStatus.Deleted -> {
+            "Deleted · Not writable"
+        }
+        ShowcaseCloudServiceStatus.Unknown -> {
+            if (canWrite) "Unknown · Writable" else "Unknown · Not writable"
+        }
+    }
+}
+
+private fun buildAdminSyncNoticeLabel(
+    state: ShowcaseSyncOverviewState,
+    pendingCount: Int,
+    errorMessage: String?
+): String {
+    return when (state) {
+        ShowcaseSyncOverviewState.Idle -> ""
+        ShowcaseSyncOverviewState.HasPending -> {
+            if (pendingCount > 0) {
+                "Sync: $pendingCount changes pending"
+            } else {
+                ""
+            }
+        }
+        ShowcaseSyncOverviewState.Syncing -> {
+            if (pendingCount > 0) {
+                "Syncing: $pendingCount changes pending"
+            } else {
+                "Syncing..."
+            }
+        }
+        ShowcaseSyncOverviewState.Failed -> {
+            errorMessage?.takeIf { it.isNotBlank() }?.let { "Sync failed: $it" } ?: "Sync failed"
+        }
+    }
+}
+
 @Composable
 fun ShowcaseHomeScreen(
     nav: NavHostController,
@@ -346,6 +447,9 @@ fun ShowcaseHomeScreen(
         }
 
         val adminCloudStatus = uiState.cloudStatus.takeIf { it.storeId.isNotBlank() }?.let { cloud ->
+            val serviceEndAtRaw = cloud.serviceEndAt?.trim().orEmpty()
+            val deleteAtRaw = cloud.deleteAt?.trim().orEmpty()
+
             ShowcaseCloudStatusUi(
                 storeId = cloud.storeId,
                 planLabel = when (cloud.planType) {
@@ -353,14 +457,13 @@ fun ShowcaseHomeScreen(
                     ShowcaseCloudPlanType.Paid -> "Paid"
                     ShowcaseCloudPlanType.Unknown -> "Unknown"
                 },
-                statusLabel = when (cloud.serviceStatus) {
-                    ShowcaseCloudServiceStatus.Active -> "Active"
-                    ShowcaseCloudServiceStatus.ReadOnly -> "Read only"
-                    ShowcaseCloudServiceStatus.Deleted -> "Deleted"
-                    ShowcaseCloudServiceStatus.Unknown -> "Unknown"
-                },
-                serviceEndAt = cloud.serviceEndAt?.trim().orEmpty(),
-                deleteAt = cloud.deleteAt?.trim().orEmpty(),
+                statusLabel = buildCloudStatusLabel(
+                    status = cloud.serviceStatus,
+                    canWrite = cloud.canWrite
+                ),
+                daysRemainingLabel = buildCloudDaysRemainingLabel(serviceEndAtRaw),
+                serviceEndAtLabel = if (serviceEndAtRaw.isNotBlank()) formatCloudDateTimeLabel(serviceEndAtRaw) else "",
+                deleteAtLabel = if (deleteAtRaw.isNotBlank()) formatCloudDateTimeLabel(deleteAtRaw) else "",
                 canWrite = cloud.canWrite
             )
         }
@@ -391,6 +494,11 @@ fun ShowcaseHomeScreen(
             pendingSyncCount = uiState.pendingSyncCount,
             syncOverviewState = mapSyncOverviewState(uiState.syncOverviewState),
             syncErrorMessage = uiState.syncErrorMessage,
+            syncNoticeLabel = buildAdminSyncNoticeLabel(
+                state = mapSyncOverviewState(uiState.syncOverviewState),
+                pendingCount = uiState.pendingSyncCount,
+                errorMessage = uiState.syncErrorMessage
+            ),
 
             // ✅ store profile (admin path 2)
             storeProfile = adminProfile,
@@ -444,7 +552,7 @@ fun ShowcaseHomeScreen(
                 tags = selectedDish.tags,
                 externalLink = selectedDish.externalLink,
 
-            )
+                )
 
         }
     }
@@ -614,7 +722,7 @@ fun ShowcaseHomeScreen(
         onApplyPriceRange = { vm.onHomeApplyPriceRange() },
         onClearPriceRange = { vm.onHomeClearPriceRange() },
 
-    )
+        )
     val loginActions = ShowcaseLoginActions(
         onUsernameDraftChange = { vm.onLoginUsernameDraftChange(it) },
         onPasswordDraftChange = { vm.onLoginPasswordDraftChange(it) },

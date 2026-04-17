@@ -50,8 +50,9 @@ data class ShowcaseCloudStatusUi(
     val storeId: String = "",
     val planLabel: String = "",
     val statusLabel: String = "",
-    val serviceEndAt: String = "",
-    val deleteAt: String = "",
+    val daysRemainingLabel: String = "",
+    val serviceEndAtLabel: String = "",
+    val deleteAtLabel: String = "",
     val canWrite: Boolean = true
 )
 
@@ -277,6 +278,7 @@ data class ShowcaseAdminUiState(
     val pendingSyncCount: Int = 0,
     val syncErrorMessage: String? = null,
     val syncOverviewState: ShowcaseSyncOverviewState = ShowcaseSyncOverviewState.Idle,
+    val syncNoticeLabel: String = "",
     // ✅ Admin credentials 草稿（UI 包不再 remember）
     val adminUsernameDraft: String = "",
     val adminPasswordDraft: String = "",
