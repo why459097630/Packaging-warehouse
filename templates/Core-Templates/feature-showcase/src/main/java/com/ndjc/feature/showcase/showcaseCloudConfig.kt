@@ -143,8 +143,8 @@ object ShowcaseCloudConfig {
         const val CONTENT_TYPE = "Content-Type"
         const val ACCEPT = "Accept"
 
-        const val NDJC_STORE_ID = "X-NDJC-Store-Id"
-        const val NDJC_CLIENT_ID = "X-NDJC-Client-Id"
+        const val NDJC_STORE_ID = "x-ndjc-store-id"
+        const val NDJC_CLIENT_ID = "x-ndjc-client-id"
     }
 
     /**
