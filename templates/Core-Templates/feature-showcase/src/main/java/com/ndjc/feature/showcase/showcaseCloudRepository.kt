@@ -2076,10 +2076,13 @@ class ShowcaseCloudRepository {
                 }
             }
             setRequestProperty(ShowcaseCloudConfig.Headers.API_KEY, ShowcaseCloudConfig.SUPABASE_ANON_KEY)
-            setRequestProperty(
-                ShowcaseCloudConfig.Headers.AUTHORIZATION,
-                "Bearer $token"
-            )
+
+            if (actor == ShowcaseCloudConfig.AuthActor.MERCHANT && token.isNotBlank()) {
+                setRequestProperty(
+                    ShowcaseCloudConfig.Headers.AUTHORIZATION,
+                    "Bearer $token"
+                )
+            }
 
             ShowcaseCloudConfig.requestScopeHeaders(
                 storeId = scopeStoreId,
@@ -2444,7 +2447,7 @@ class ShowcaseCloudRepository {
 
         Log.d(
             "NDJC_PUSH",
-            "upsertPushDevice actor=${if (usePublicActor) "PUBLIC" else "MERCHANT"} scopeStoreId=${device.storeId} scopeClientId=${if (usePublicActor) device.clientId else null}"
+            "upsertPushDevice actor=${if (usePublicActor) "PUBLIC" else "MERCHANT"} scopeStoreId=${device.storeId} scopeClientId=${if (device.audience == "chat_client" && usePublicActor) device.clientId else null}"
         )
         Log.d("NDJC_PUSH", "upsertPushDevice code=$code")
         Log.d("NDJC_PUSH", "upsertPushDevice resp=$resp")
