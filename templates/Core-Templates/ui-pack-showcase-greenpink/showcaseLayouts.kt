@@ -6919,94 +6919,76 @@ internal fun ShowcaseAdmin(
                         color = Color.Black
                     )
 
-                    // 状态信息（纯展示：店铺名 / 条目数 / 分类数 / 同步状态）
-                    val storeName =
-                        uiState.storeProfile?.displayName?.takeIf { it.isNotBlank() } ?: "Store"
-                    val itemsCount = uiState.dishes.size
-                    val categoriesCount = uiState.manualCategories.size
-                    val syncLabel = when (uiState.syncOverviewState) {
-                        ShowcaseSyncOverviewState.Idle -> "Up to date"
-                        ShowcaseSyncOverviewState.HasPending -> "Pending"
-                        ShowcaseSyncOverviewState.Syncing -> "Syncing"
-                        ShowcaseSyncOverviewState.Failed -> "Error"
+                    if (uiState.syncNoticeLabel.isNotBlank()) {
+                        Text(
+                            text = uiState.syncNoticeLabel,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Black
+                        )
                     }
-
-                    Text(
-                        text = "$storeName  •  Items $itemsCount  •  Categories $categoriesCount",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Black
-                    )
-
-                    Text(
-                        text = "Sync: $syncLabel  •  Pending ${uiState.pendingSyncCount}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Black
-                    )
 
                     uiState.cloudStatus?.let { cloud ->
                         Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp8))
 
-                        Surface(
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(NdjcCommonTokens.Dp.Dp16),
-                            tonalElevation = 0.dp,
-                            shadowElevation = 0.dp,
-                            color = Color(0xFFF8FAFC),
-                            border = BorderStroke(1.dp, Color(0xFFE5E7EB))
+                            verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp10)
                         ) {
+                            Text(
+                                text = "Cloud",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.Black
+                            )
+
+                            Text(
+                                text = "${cloud.planLabel} · ${cloud.storeId}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF475467)
+                            )
+
                             Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(NdjcCommonTokens.Dp.Dp14),
-                                verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp6)
+                                verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp4)
                             ) {
                                 Text(
-                                    text = "Cloud",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = Color.Black
-                                )
-
-                                Text(
-                                    text = "Store ID: ${cloud.storeId}",
+                                    text = cloud.statusLabel,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Black
+                                    color = Color(0xFF344054)
                                 )
 
-                                Text(
-                                    text = "Plan: ${cloud.planLabel}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Black
-                                )
-
-                                Text(
-                                    text = "Status: ${cloud.statusLabel}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Black
-                                )
-
-                                Text(
-                                    text = "Write access: ${if (cloud.canWrite) "Enabled" else "Read only"}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Black
-                                )
-
-                                if (cloud.serviceEndAt.isNotBlank()) {
+                                if (cloud.daysRemainingLabel.isNotBlank()) {
                                     Text(
-                                        text = "Service end: ${cloud.serviceEndAt}",
+                                        text = cloud.daysRemainingLabel,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF101828)
+                                    )
+                                }
+                            }
+
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp4)
+                            ) {
+                                if (cloud.serviceEndAtLabel.isNotBlank()) {
+                                    Text(
+                                        text = "Expires · ${cloud.serviceEndAtLabel}",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = Color.Black
+                                        color = Color(0xFF667085)
                                     )
                                 }
 
-                                if (cloud.deleteAt.isNotBlank()) {
+                                if (cloud.deleteAtLabel.isNotBlank()) {
                                     Text(
-                                        text = "Delete at: ${cloud.deleteAt}",
+                                        text = "Deletes · ${cloud.deleteAtLabel}",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = Color.Black
+                                        color = Color(0xFF667085)
                                     )
                                 }
                             }
                         }
+
+                        Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
+                        HorizontalDivider()
                     }
 
                     Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
@@ -11219,12 +11201,12 @@ internal fun ShowcaseMerchantChatListScreen(
                     },
                     confirmEnabled = renameText.trim().isNotBlank(),
                     textContent = {
-                        androidx.compose.material3.OutlinedTextField(
+                        NdjcTextField(
                             value = renameText,
                             onValueChange = { renameText = it },
                             modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            label = { Text("Name") }
+                            label = "Name",
+                            singleLine = true
                         )
                     }
                 )
