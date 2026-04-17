@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260417T134256798Z-2ITYBB",
+  "appName": "水晶宫5",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000025",
+  "adminName": "123456789@qq.com",
+  "createdAt": "2026-04-17T13:42:56.975Z",
+  "updatedAt": "2026-04-17T13:42:56.975Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260417T134256798Z-2ITYBB/status.json"
+}
