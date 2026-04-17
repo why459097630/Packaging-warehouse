@@ -22,7 +22,7 @@ object ShowcaseCloudConfig {
 
     fun authToken(actor: AuthActor): String {
         return when (actor) {
-            AuthActor.PUBLIC -> SUPABASE_ANON_KEY
+            AuthActor.PUBLIC -> ""
             AuthActor.MERCHANT -> {
                 ShowcaseStoreSession.requireMerchantAccessToken()
             }
