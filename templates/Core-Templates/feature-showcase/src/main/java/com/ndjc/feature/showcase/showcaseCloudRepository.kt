@@ -1,4 +1,4 @@
-﻿package com.ndjc.feature.showcase
+package com.ndjc.feature.showcase
 
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
@@ -2415,11 +2415,12 @@ class ShowcaseCloudRepository {
         Log.d("NDJC_PUSH", "upsertPushDevice url=$url")
         Log.d("NDJC_PUSH", "upsertPushDevice body=$body")
 
-        val isPublicAudience =
-            device.audience == "chat_client" || device.audience == "announcement_subscriber"
-
         val usePublicActor =
-            isPublicAudience && !device.clientId.isNullOrBlank()
+            when (device.audience) {
+                "announcement_subscriber" -> true
+                "chat_client" -> !device.clientId.isNullOrBlank()
+                else -> false
+            }
 
         val codeAndBody = httpPost(
             urlString = url,
@@ -2431,7 +2432,11 @@ class ShowcaseCloudRepository {
                 ShowcaseCloudConfig.AuthActor.MERCHANT
             },
             scopeStoreId = device.storeId,
-            scopeClientId = if (usePublicActor) device.clientId else null
+            scopeClientId = if (device.audience == "chat_client" && usePublicActor) {
+                device.clientId
+            } else {
+                null
+            }
         )
 
         val code = codeAndBody.first
