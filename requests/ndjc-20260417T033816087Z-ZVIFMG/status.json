@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260417T033816087Z-ZVIFMG",
+  "appName": "akk",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000021",
+  "adminName": "123456789@qq.com",
+  "createdAt": "2026-04-17T03:38:16.218Z",
+  "updatedAt": "2026-04-17T03:38:16.218Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260417T033816087Z-ZVIFMG/status.json"
+}
