@@ -160,35 +160,39 @@ if [ -z "$RESOURCE_NAME" ]; then
   exit 1
 fi
 
-DELETE_URL="https://firebase.googleapis.com/v1beta1/${RESOURCE_NAME}"
+REMOVE_URL="https://firebase.googleapis.com/v1beta1/${RESOURCE_NAME}:remove"
+REMOVE_BODY='{"allowMissing":false,"validateOnly":false,"immediate":true}'
 
 echo "[NDJC_FIREBASE_DELETE] package=${PACKAGE_NAME}"
 echo "[NDJC_FIREBASE_DELETE] matched_package_name=${MATCHED_PACKAGE_NAME}"
 echo "[NDJC_FIREBASE_DELETE] resource_name=${RESOURCE_NAME}"
 echo "[NDJC_FIREBASE_DELETE] app_id=${APP_ID}"
-echo "[NDJC_FIREBASE_DELETE] delete_url=${DELETE_URL}"
+echo "[NDJC_FIREBASE_DELETE] remove_url=${REMOVE_URL}"
+echo "[NDJC_FIREBASE_DELETE] remove_body=${REMOVE_BODY}"
 
-HTTP_CODE="$(curl -sS -o /tmp/ndjc-firebase-delete-response.txt -w "%{http_code}" -X DELETE \
+HTTP_CODE="$(curl -sS -o /tmp/ndjc-firebase-delete-response.txt -w "%{http_code}" -X POST \
   -H "Authorization: Bearer ${ACCESS_TOKEN}" \
   -H "Accept: application/json" \
-  "$DELETE_URL")"
+  -H "Content-Type: application/json" \
+  -d "${REMOVE_BODY}" \
+  "$REMOVE_URL")"
 
-echo "[NDJC_FIREBASE_DELETE] delete http=${HTTP_CODE}"
+echo "[NDJC_FIREBASE_DELETE] remove http=${HTTP_CODE}"
 cat /tmp/ndjc-firebase-delete-response.txt || true
 echo
 
 if [ "$HTTP_CODE" = "404" ]; then
-  echo "::error::Firebase androidApps.delete returned 404; resource not found"
+  echo "::error::Firebase androidApps.remove returned 404; resource not found"
   echo "[NDJC_FIREBASE_DELETE] list_json follows"
   cat "$LIST_JSON" || true
   exit 1
 fi
 
 if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-  echo "::error::Firebase androidApps.delete http=${HTTP_CODE}"
+  echo "::error::Firebase androidApps.remove http=${HTTP_CODE}"
   echo "[NDJC_FIREBASE_DELETE] list_json follows"
   cat "$LIST_JSON" || true
   exit 1
 fi
 
-echo "[NDJC_FIREBASE_DELETE] deleted package=${PACKAGE_NAME} resource_name=${RESOURCE_NAME} appId=${APP_ID}"
+echo "[NDJC_FIREBASE_DELETE] removed package=${PACKAGE_NAME} resource_name=${RESOURCE_NAME} appId=${APP_ID}"
