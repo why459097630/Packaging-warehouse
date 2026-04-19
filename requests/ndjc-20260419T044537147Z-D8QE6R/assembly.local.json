@@ -1,0 +1,15 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "英格兰",
+  "packageName": "com.ndjc.apps.app.sepaid000009",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_paid_000009",
+  "plan": "pro",
+  "firebaseProjectId": "ndjc-paid-01",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_01"
+}
