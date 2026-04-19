@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260419T081215364Z-O5K9L2",
+  "appName": "法兰西",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000032",
+  "adminName": "123456789@qq.com",
+  "createdAt": "2026-04-19T08:12:15.919Z",
+  "updatedAt": "2026-04-19T08:12:15.919Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260419T081215364Z-O5K9L2/status.json"
+}
