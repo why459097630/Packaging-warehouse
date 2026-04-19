@@ -117,60 +117,53 @@ find_existing_app_resource_name() {
 import sys, json
 path = sys.argv[1]
 target = sys.argv[2]
+
 with open(path, "r", encoding="utf-8") as f:
     data = json.load(f)
 
 for app in data.get("apps", []):
-    if app.get("packageName") == target:
+    if (app.get("packageName") or "").strip() == target:
         resource_name = (app.get("name") or "").strip()
         app_id = (app.get("appId") or "").strip()
         package_name = (app.get("packageName") or "").strip()
-        print(json.dumps({
-            "resource_name": resource_name,
-            "app_id": app_id,
-            "package_name": package_name,
-            "app": app,
-        }, ensure_ascii=False))
-        break
-else:
-    print("")
+        print(resource_name)
+        print(app_id)
+        print(package_name)
+        sys.exit(0)
+
+sys.exit(0)
 PY
 }
 
 printf '%s' "$(fetch_android_apps)" > "$LIST_JSON"
 
-APP_MATCH_JSON="$(find_existing_app_resource_name "$LIST_JSON")"
+MATCH_LINES="$(find_existing_app_resource_name "$LIST_JSON")"
 
-if [ -z "$APP_MATCH_JSON" ]; then
+if [ -z "$MATCH_LINES" ]; then
   echo "[NDJC_FIREBASE_DELETE] app not found, treat as already deleted"
+  echo "[NDJC_FIREBASE_DELETE] package=${PACKAGE_NAME}"
+  echo "[NDJC_FIREBASE_DELETE] list_json follows"
+  cat "$LIST_JSON" || true
   exit 0
 fi
 
-RESOURCE_NAME="$(printf '%s' "$APP_MATCH_JSON" | python3 - <<'PY'
-import sys, json
-raw = sys.stdin.read().strip()
-data = json.loads(raw)
-print((data.get("resource_name") or "").strip())
-PY
-)"
-
-APP_ID="$(printf '%s' "$APP_MATCH_JSON" | python3 - <<'PY'
-import sys, json
-raw = sys.stdin.read().strip()
-data = json.loads(raw)
-print((data.get("app_id") or "").strip())
-PY
-)"
+RESOURCE_NAME="$(printf '%s\n' "$MATCH_LINES" | sed -n '1p')"
+APP_ID="$(printf '%s\n' "$MATCH_LINES" | sed -n '2p')"
+MATCHED_PACKAGE_NAME="$(printf '%s\n' "$MATCH_LINES" | sed -n '3p')"
 
 if [ -z "$RESOURCE_NAME" ]; then
   echo "::error::Matched Firebase app is missing resource name"
-  echo "[NDJC_FIREBASE_DELETE] match_json=${APP_MATCH_JSON}"
+  echo "[NDJC_FIREBASE_DELETE] package=${PACKAGE_NAME}"
+  echo "[NDJC_FIREBASE_DELETE] match_lines=${MATCH_LINES}"
+  echo "[NDJC_FIREBASE_DELETE] list_json follows"
+  cat "$LIST_JSON" || true
   exit 1
 fi
 
 DELETE_URL="https://firebase.googleapis.com/v1beta1/${RESOURCE_NAME}"
 
 echo "[NDJC_FIREBASE_DELETE] package=${PACKAGE_NAME}"
+echo "[NDJC_FIREBASE_DELETE] matched_package_name=${MATCHED_PACKAGE_NAME}"
 echo "[NDJC_FIREBASE_DELETE] resource_name=${RESOURCE_NAME}"
 echo "[NDJC_FIREBASE_DELETE] app_id=${APP_ID}"
 echo "[NDJC_FIREBASE_DELETE] delete_url=${DELETE_URL}"
