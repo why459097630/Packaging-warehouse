@@ -1789,15 +1789,10 @@ class ShowcaseViewModel : ViewModel() {
                 return@launch
             }
 
-            if (
-                lastRegisteredPushOk &&
-                token == lastRegisteredPushToken &&
-                audience == lastRegisteredPushAudience &&
-                conversationId == lastRegisteredPushConversationId
-            ) {
-                Log.d("NDJC_PUSH", "skip push registration because token/audience/conversation unchanged and last registration succeeded")
-                return@launch
-            }
+            Log.d(
+                "NDJC_PUSH",
+                "push registration continue even if token/audience/conversation unchanged; skip optimization disabled"
+            )
 
             val clientId =
                 if (audience == "chat_client" || audience == "announcement_subscriber") {
