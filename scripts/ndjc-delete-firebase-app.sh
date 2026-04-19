@@ -111,7 +111,7 @@ PY
   printf '%s' "$merged"
 }
 
-find_existing_app_id() {
+find_existing_app_resource_name() {
   local json_file="$1"
   python3 - "$json_file" "$PACKAGE_NAME" <<'PY'
 import sys, json
@@ -122,12 +122,15 @@ with open(path, "r", encoding="utf-8") as f:
 
 for app in data.get("apps", []):
     if app.get("packageName") == target:
-        app_id = app.get("appId", "").strip()
-        if not app_id:
-            name = app.get("name", "").strip()
-            if name:
-                app_id = name.split("/")[-1]
-        print(app_id)
+        resource_name = (app.get("name") or "").strip()
+        app_id = (app.get("appId") or "").strip()
+        package_name = (app.get("packageName") or "").strip()
+        print(json.dumps({
+            "resource_name": resource_name,
+            "app_id": app_id,
+            "package_name": package_name,
+            "app": app,
+        }, ensure_ascii=False))
         break
 else:
     print("")
@@ -136,14 +139,42 @@ PY
 
 printf '%s' "$(fetch_android_apps)" > "$LIST_JSON"
 
-APP_ID="$(find_existing_app_id "$LIST_JSON")"
+APP_MATCH_JSON="$(find_existing_app_resource_name "$LIST_JSON")"
 
-if [ -z "$APP_ID" ]; then
+if [ -z "$APP_MATCH_JSON" ]; then
   echo "[NDJC_FIREBASE_DELETE] app not found, treat as already deleted"
   exit 0
 fi
 
-DELETE_URL="https://firebase.googleapis.com/v1beta1/projects/${FIREBASE_PROJECT_ID}/androidApps/${APP_ID}"
+RESOURCE_NAME="$(printf '%s' "$APP_MATCH_JSON" | python3 - <<'PY'
+import sys, json
+raw = sys.stdin.read().strip()
+data = json.loads(raw)
+print((data.get("resource_name") or "").strip())
+PY
+)"
+
+APP_ID="$(printf '%s' "$APP_MATCH_JSON" | python3 - <<'PY'
+import sys, json
+raw = sys.stdin.read().strip()
+data = json.loads(raw)
+print((data.get("app_id") or "").strip())
+PY
+)"
+
+if [ -z "$RESOURCE_NAME" ]; then
+  echo "::error::Matched Firebase app is missing resource name"
+  echo "[NDJC_FIREBASE_DELETE] match_json=${APP_MATCH_JSON}"
+  exit 1
+fi
+
+DELETE_URL="https://firebase.googleapis.com/v1beta1/${RESOURCE_NAME}"
+
+echo "[NDJC_FIREBASE_DELETE] package=${PACKAGE_NAME}"
+echo "[NDJC_FIREBASE_DELETE] resource_name=${RESOURCE_NAME}"
+echo "[NDJC_FIREBASE_DELETE] app_id=${APP_ID}"
+echo "[NDJC_FIREBASE_DELETE] delete_url=${DELETE_URL}"
+
 HTTP_CODE="$(curl -sS -o /tmp/ndjc-firebase-delete-response.txt -w "%{http_code}" -X DELETE \
   -H "Authorization: Bearer ${ACCESS_TOKEN}" \
   -H "Accept: application/json" \
@@ -154,13 +185,17 @@ cat /tmp/ndjc-firebase-delete-response.txt || true
 echo
 
 if [ "$HTTP_CODE" = "404" ]; then
-  echo "::error::Firebase androidApps.delete returned 404; treat as delete failure, not success"
+  echo "::error::Firebase androidApps.delete returned 404; resource not found"
+  echo "[NDJC_FIREBASE_DELETE] list_json follows"
+  cat "$LIST_JSON" || true
   exit 1
 fi
 
 if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
   echo "::error::Firebase androidApps.delete http=${HTTP_CODE}"
+  echo "[NDJC_FIREBASE_DELETE] list_json follows"
+  cat "$LIST_JSON" || true
   exit 1
 fi
 
-echo "[NDJC_FIREBASE_DELETE] deleted package=${PACKAGE_NAME} appId=${APP_ID}"
+echo "[NDJC_FIREBASE_DELETE] deleted package=${PACKAGE_NAME} resource_name=${RESOURCE_NAME} appId=${APP_ID}"
