@@ -14,15 +14,18 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.ndjc.feature.showcase.ShowcaseChatCloudRepository
 import com.ndjc.feature.showcase.ShowcaseChatRepository
 import com.ndjc.feature.showcase.ShowcaseCloudConfig
 import com.ndjc.feature.showcase.ShowcaseCloudRepository
+import com.ndjc.feature.showcase.ShowcaseRuntimeState
 import com.ndjc.feature.showcase.ShowcaseStoreSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 class NdjcFirebaseMessagingService : FirebaseMessagingService() {
 
@@ -77,8 +80,6 @@ class NdjcFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
-        createChannelIfNeeded()
-
         val payloadTitle = message.data["title"]
             ?: message.notification?.title
             ?: "NDJC"
@@ -100,7 +101,30 @@ class NdjcFirebaseMessagingService : FirebaseMessagingService() {
             ?.trim()
             ?.lowercase()
 
-        val finalTitle = payloadTitle
+        val normalizedPushType = pushType?.trim()?.lowercase()
+        val normalizedConversationId = conversationId?.trim()
+
+        // ✅ 当前前台正在看同一条 chat 会话，或者刚刚看完这条会话且仍在宽限窗口内：直接吞掉，不展示推送条
+        if (normalizedPushType == "chat" &&
+            ShowcaseRuntimeState.shouldSuppressChatPush(normalizedConversationId)
+        ) {
+            Log.d(
+                "NDJC_PUSH",
+                "suppress chat push conversationId=$normalizedConversationId"
+            )
+            return
+        }
+
+        createChannelIfNeeded()
+
+        val finalTitle = runBlocking {
+            resolveNotificationTitle(
+                payloadTitle = payloadTitle,
+                pushType = pushType,
+                conversationId = conversationId,
+                openAs = openAs
+            )
+        }
 
         val intent = Intent(this, MainActivity::class.java).apply {
             flags =
@@ -148,15 +172,48 @@ class NdjcFirebaseMessagingService : FirebaseMessagingService() {
 
         val hasPermission =
             Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-                ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED
+                    ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) == PackageManager.PERMISSION_GRANTED
 
         if (hasPermission) {
             NotificationManagerCompat.from(this)
                 .notify((System.currentTimeMillis() % Int.MAX_VALUE).toInt(), notification)
         }
+    }
+
+    private suspend fun resolveNotificationTitle(
+        payloadTitle: String,
+        pushType: String?,
+        conversationId: String?,
+        openAs: String?
+    ): String = withContext(Dispatchers.IO) {
+        val normalizedPushType = pushType?.trim()?.lowercase().orEmpty()
+        val normalizedOpenAs = openAs?.trim()?.lowercase().orEmpty()
+        val normalizedConversationId = conversationId?.trim().orEmpty()
+
+        if (normalizedPushType != "chat") {
+            return@withContext payloadTitle
+        }
+
+        if (normalizedOpenAs != "merchant") {
+            return@withContext payloadTitle
+        }
+
+        if (normalizedConversationId.isBlank()) {
+            return@withContext payloadTitle
+        }
+
+        return@withContext runCatching {
+            val storeId = ShowcaseStoreSession.requireStoreId()
+            val repository = ShowcaseChatRepository(ShowcaseChatCloudRepository())
+            repository.resolveMerchantThreadPushDisplayName(
+                context = applicationContext,
+                storeId = storeId,
+                conversationId = normalizedConversationId
+            )
+        }.getOrDefault(payloadTitle)
     }
 
     private fun createChannelIfNeeded() {
