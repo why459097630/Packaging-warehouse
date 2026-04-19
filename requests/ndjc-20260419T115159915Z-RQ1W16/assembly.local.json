@@ -1,0 +1,15 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "巴黎圣日耳曼",
+  "packageName": "com.ndjc.apps.app.etrial000041",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_trial_000041",
+  "plan": "free",
+  "firebaseProjectId": "ndjc-free-03",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_03"
+}
