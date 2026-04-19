@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260419T082007177Z-ODTFF6",
+  "appName": "阿根廷",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "pro",
+  "storeId": "store_showcase_paid_000010",
+  "adminName": "123456789@qq.com",
+  "createdAt": "2026-04-19T08:20:32.081Z",
+  "updatedAt": "2026-04-19T08:20:32.081Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260419T082007177Z-ODTFF6/status.json"
+}
