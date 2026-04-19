@@ -278,10 +278,59 @@ jobs:
           git commit -m "NDJC: step4 ${RUN_ID}" || echo "no changes"
           git push || true
 
+      - name: NDJC | Resolve Firebase credentials
+        id: resolve_firebase_credentials
+        shell: bash
+        env:
+          FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_01: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_01 }}
+          FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_02: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_02 }}
+          FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_03: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_03 }}
+          FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_01: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_01 }}
+          FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_02: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_02 }}
+          FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_03: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_03 }}
+        run: |
+          set -euo pipefail
+
+          RUN_ID="${{ inputs.run_id }}"
+          REQUEST_FILE="requests/${RUN_ID}/request.json"
+
+          if [ ! -f "$REQUEST_FILE" ]; then
+            echo "::error::Missing $REQUEST_FILE"
+            exit 1
+          fi
+
+          FIREBASE_PROJECT_ID="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.firebaseProjectId || '').trim());" "$REQUEST_FILE")"
+          FIREBASE_CREDENTIALS_ENV_KEY="$(node -e "const fs=require('fs'); const p=process.argv[1]; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.firebaseCredentialsEnvKey || '').trim());" "$REQUEST_FILE")"
+
+          if [ -z "$FIREBASE_PROJECT_ID" ]; then
+            echo "::error::firebaseProjectId missing in $REQUEST_FILE"
+            exit 1
+          fi
+
+          if [ -z "$FIREBASE_CREDENTIALS_ENV_KEY" ]; then
+            echo "::error::firebaseCredentialsEnvKey missing in $REQUEST_FILE"
+            exit 1
+          fi
+
+          FIREBASE_CREDENTIALS_JSON="${!FIREBASE_CREDENTIALS_ENV_KEY:-}"
+
+          if [ -z "$FIREBASE_CREDENTIALS_JSON" ]; then
+            echo "::error::No workflow env value found for $FIREBASE_CREDENTIALS_ENV_KEY"
+            exit 1
+          fi
+
+          echo "firebase_project_id=$FIREBASE_PROJECT_ID" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "credentials_json<<EOF"
+            printf '%s\n' "$FIREBASE_CREDENTIALS_JSON"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Google Cloud auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY_JSON }}
+          credentials_json: ${{ steps.resolve_firebase_credentials.outputs.credentials_json }}
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
@@ -289,7 +338,7 @@ jobs:
       - name: NDJC | Prepare Firebase Config
         shell: bash
         env:
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_PROJECT_ID: ${{ steps.resolve_firebase_credentials.outputs.firebase_project_id }}
         run: |
           set -euo pipefail
           bash scripts/ndjc-prepare-firebase.sh
