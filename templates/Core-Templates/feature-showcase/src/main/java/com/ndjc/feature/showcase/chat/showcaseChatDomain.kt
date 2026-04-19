@@ -176,16 +176,9 @@ class ShowcaseChatDomain(
         val conversationId = buildConversationId(storeId = idt.storeId, clientId = idt.clientId)
 
         try {
-// ✅ 云端/relay 模式：保证会话存在 + 把云端消息落到本地 Room（统一从 Room 读）
+// ✅ 云端/relay 模式：只拉已有消息落本地；不要在“仅打开 chat”时就提前创建 conversation
             if (isCloud()) {
                 withContext(Dispatchers.IO) {
-                    // conversations 仍然要 upsert（用于 chatlist / thread summaries）
-                    cloudRepo!!.upsertConversation(
-                        conversationId = conversationId,
-                        storeId = idt.storeId,
-                        clientId = idt.clientId
-                    )
-
                     if (repo.isChatRelayEnabled()) {
                         val traceId = "T${System.currentTimeMillis()}_openClient"
                         repo.consumeRelayForClient(
@@ -857,17 +850,17 @@ class ShowcaseChatDomain(
                                 else -> "incoming"
                             }
 
-// is_read：同样用“商家是否已读”语义（MVP 最小可用）
-// - 用户发来的：商家未读 => false
-// - 商家发出的：商家已读 => true
-                            val cloudIsRead = (role == "merchant")
+// is_read：统一改成“接收方是否已读”语义
+// - 新发消息一律先是未读
+// - 后续由用户打开会话 / 商家打开会话 / read_receipt 再把对应消息改成 true
+                            val cloudIsRead = false
 
 // 1) 解析 NDJC 图片段
                             val parsed = parseNdjcImages(msgUi.text)
                             var finalText = msgUi.text
 
-// 2) Relay 模式下：把本地图片 URI（content:// / file://）上传 Storage，替换成 publicUrl
-                            if (repo.isChatRelayEnabled() && parsed.imageUris.isNotEmpty()) {
+// 2) 云端 chat 模式下：只要消息里带本地图片 URI（content:// / file://），都必须先上传 Storage，再替换成 publicUrl
+                            if (isCloud() && parsed.imageUris.any { isLocalImageUri(it) }) {
                                 val uploaded = parsed.imageUris.mapIndexed { idx, u ->
                                     if (!isLocalImageUri(u)) {
                                         u
@@ -1397,7 +1390,7 @@ class ShowcaseChatDomain(
                     val unread = repo.countUnread(context, conversationId)
                     list to unread
                 } else {
-                    repo.markAllOutgoingRead(context, conversationId)
+                    repo.markMerchantMessagesRead(context, conversationId)
                     val list = repo.listLocal(context, conversationId)
                     val unread = repo.countUnreadForUserEntry(context, conversationId)
                     list to unread
@@ -1654,9 +1647,24 @@ class ShowcaseChatDomain(
             ""
         }
     }
+    suspend fun acknowledgeClientVisibleConversation(
+        context: Context,
+        conversationId: String
+    ) {
+        daoMarkClientRead(context, conversationId)
+    }
+
+    suspend fun acknowledgeMerchantVisibleConversation(
+        context: Context,
+        storeId: String,
+        conversationId: String
+    ) {
+        daoMarkMerchantRead(context, storeId, conversationId)
+    }
+
     private suspend fun daoMarkClientRead(context: Context, conversationId: String) {
-        // 1) 本地：把 out 置已读
-        repo.markAllOutgoingRead(context, conversationId)
+        // 1) 本地：只把“商家发来的消息”置已读
+        repo.markMerchantMessagesRead(context, conversationId)
 
         val idt = identity ?: return
         val storeId = idt.storeId
@@ -1673,7 +1681,6 @@ class ShowcaseChatDomain(
                 traceId = traceId
             )
         } else {
-            // cloud-only：走你原来的 PATCH（如果你后续真写 chat_messages 云表，这条就生效）
             cloudRepo?.markMerchantMessagesRead(
                 storeId = storeId,
                 conversationId = conversationId,
@@ -1681,6 +1688,24 @@ class ShowcaseChatDomain(
             )
         }
     }
+
+    private suspend fun daoMarkMerchantRead(
+        context: Context,
+        storeId: String,
+        conversationId: String
+    ) {
+        // 1) 本地：把“游客发来的消息”置已读
+        repo.markAllRead(context, conversationId)
+
+        // 2) cloud 模式：把云端游客消息置已读，让游客自己发出的气泡能变 Read
+        if (!repo.isChatRelayEnabled()) {
+            cloudRepo?.markUserMessagesRead(
+                storeId = storeId,
+                conversationId = conversationId
+            )
+        }
+    }
+
     fun ensureClientId(context: Context): String {
         val sp = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 

@@ -389,6 +389,10 @@ class ShowcaseViewModel : ViewModel() {
     private val _chatEntryDot = MutableStateFlow(false)
     val chatEntryDotFlow: StateFlow<Boolean> = _chatEntryDot.asStateFlow()
 
+    // ✅ Home 底栏 Announcements 入口红点：独立状态，不再依赖 Announcements 页面 UI 态
+    private val _announcementsEntryDot = MutableStateFlow(false)
+    val announcementsEntryDotFlow: StateFlow<Boolean> = _announcementsEntryDot.asStateFlow()
+
     // ✅ 兼容你现有大量写法：favoriteIds = favoriteIds + id / favoriteIds.contains(id)
     private var favoriteIds: Set<String>
         get() = _favoriteIds.value
@@ -596,7 +600,7 @@ class ShowcaseViewModel : ViewModel() {
         }
     }
 
-    private fun syncPublicAnnouncementsFromCloud() {
+    private fun syncPublicAnnouncementsFromCloud(markViewedAfterSync: Boolean = false) {
         viewModelScope.launch {
             val safeContext = appContext
             val cloudItems = showcaseCloudRepository.fetchAnnouncements(
@@ -621,7 +625,7 @@ class ShowcaseViewModel : ViewModel() {
                 adminAnnouncements.clear()
                 adminAnnouncements.addAll(entities)
 
-                if (uiState.screen == ShowcaseScreen.Announcements) {
+                if (markViewedAfterSync) {
                     markAnnouncementsViewedLocally(
                         entities
                             .filter { it.status == AnnouncementStatus.Published }
@@ -635,7 +639,7 @@ class ShowcaseViewModel : ViewModel() {
                 adminAnnouncements.clear()
                 adminAnnouncements.addAll(cachedEntities)
 
-                if (uiState.screen == ShowcaseScreen.Announcements) {
+                if (markViewedAfterSync) {
                     markAnnouncementsViewedLocally(
                         cachedEntities
                             .filter { it.status == AnnouncementStatus.Published }
@@ -666,13 +670,7 @@ class ShowcaseViewModel : ViewModel() {
 
         uiState = uiState.copy(screen = ShowcaseScreen.Announcements)
 
-        val publishedIds = adminAnnouncements
-            .filter { it.status == AnnouncementStatus.Published }
-            .map { it.id }
-
-        markAnnouncementsViewedLocally(publishedIds)
-
-        syncPublicAnnouncementsFromCloud()
+        syncPublicAnnouncementsFromCloud(markViewedAfterSync = true)
         rebuildAnnouncementsList()
     }
 
@@ -681,7 +679,15 @@ class ShowcaseViewModel : ViewModel() {
     }
 
     fun refreshAnnouncements() {
-        syncPublicAnnouncementsFromCloud()
+        syncPublicAnnouncementsFromCloud(
+            markViewedAfterSync = uiState.screen == ShowcaseScreen.Announcements
+        )
+        rebuildAnnouncementsList()
+    }
+
+    fun onAnnouncementPushArrived() {
+        _announcementsEntryDot.value = true
+        syncPublicAnnouncementsFromCloud(markViewedAfterSync = false)
         rebuildAnnouncementsList()
     }
 
@@ -731,17 +737,10 @@ class ShowcaseViewModel : ViewModel() {
                 route.announcementId
                     ?.takeIf { it.isNotBlank() }
                     ?.let {
-                        markAnnouncementViewedLocally(it)
                         trackAnnouncementClickOnce(it)
                     }
 
-                val publishedIds = adminAnnouncements
-                    .filter { it.status == AnnouncementStatus.Published }
-                    .map { it.id }
-
-                markAnnouncementsViewedLocally(publishedIds)
-
-                syncPublicAnnouncementsFromCloud()
+                syncPublicAnnouncementsFromCloud(markViewedAfterSync = true)
                 rebuildAnnouncementsList()
             }
         }
@@ -761,10 +760,7 @@ class ShowcaseViewModel : ViewModel() {
 
     fun shouldShowAnnouncementsEntryDot(): Boolean {
         if (uiState.screen == ShowcaseScreen.Announcements) return false
-
-        return adminAnnouncements.any {
-            it.status == AnnouncementStatus.Published && !isAnnouncementSeen(it.id)
-        }
+        return announcementsEntryDotFlow.value
     }
 
     fun openAdminAnnouncementPublisher() {
@@ -1879,6 +1875,10 @@ class ShowcaseViewModel : ViewModel() {
                     )
 
                     activeConversationId = convId
+                    ShowcaseRuntimeState.setActiveConversationId(convId)
+                    if (chatScreenVisible) {
+                        ShowcaseRuntimeState.markConversationVisible(convId)
+                    }
 
                     val ctx = appContext ?: return@collect
                     stopChatDbObserve()
@@ -1943,6 +1943,7 @@ class ShowcaseViewModel : ViewModel() {
     private var chatPollingJob: kotlinx.coroutines.Job? = null
     private var chatDbObserveJob: kotlinx.coroutines.Job? = null
     private var chatEntryPollingJob: kotlinx.coroutines.Job? = null
+    private var announcementsEntryPollingJob: kotlinx.coroutines.Job? = null
     // ✅ 关键：Chat 页实时链路只认这个稳定会话ID，避免 uiState/chatDomain 状态被重置导致 convId=null
     private var activeConversationId: String? = null
     private var chatSearchBackTarget: ShowcaseScreen = ShowcaseScreen.Chat
@@ -1968,6 +1969,7 @@ class ShowcaseViewModel : ViewModel() {
 
         // ✅ 关键：Chat 页进入时立刻打“可见”标记
         chatScreenVisible = true
+        ShowcaseRuntimeState.setChatVisible(true)
 
         // ✅ 进入 Chat 页即视为入口已读，先清红点缓存值
         _chatEntryDot.value = false
@@ -1992,6 +1994,7 @@ class ShowcaseViewModel : ViewModel() {
         )
 
         if (convId.isNullOrBlank()) {
+            ShowcaseRuntimeState.setActiveConversationId(null)
             android.util.Log.e(
                 "ChatTrace",
                 "VM_VISIBLE convId not ready yet -> wait VM_CONV_READY"
@@ -2001,6 +2004,7 @@ class ShowcaseViewModel : ViewModel() {
 
 // ✅ 缓存回 activeConversationId，避免别处继续读到 null
         activeConversationId = convId
+        ShowcaseRuntimeState.markConversationVisible(convId)
 
         startChatDbObserve(context.applicationContext, conversationId = convId)
         startChatPolling()
@@ -2008,6 +2012,11 @@ class ShowcaseViewModel : ViewModel() {
 
     fun onChatScreenHidden() {
         chatScreenVisible = false
+
+        val leavingConvId = chatDomain.uiState.conversationId ?: activeConversationId
+        ShowcaseRuntimeState.markConversationRecentlySeen(leavingConvId)
+        ShowcaseRuntimeState.setChatVisible(false)
+        ShowcaseRuntimeState.setActiveConversationId(null)
 
         val domainConv = chatDomain.uiState.conversationId
         val uiConv = uiState.chat.conversationId
@@ -2074,6 +2083,71 @@ class ShowcaseViewModel : ViewModel() {
         chatEntryPollingJob = null
     }
 
+    fun startAnnouncementsEntryPolling(context: Context) {
+        appContext = context.applicationContext
+
+        if (announcementsEntryPollingJob?.isActive == true) return
+
+        announcementsEntryPollingJob = viewModelScope.launch {
+            refreshAnnouncementsEntryDotOnce()
+
+            while (currentCoroutineContext().isActive) {
+                try {
+                    refreshAnnouncementsEntryDotOnce()
+                } catch (t: Throwable) {
+                    android.util.Log.e(
+                        "AnnouncementTrace",
+                        "[entry-dot] FAILED ${t.javaClass.simpleName}: ${t.message}",
+                        t
+                    )
+                }
+                kotlinx.coroutines.delay(2500L)
+            }
+        }
+    }
+
+    fun stopAnnouncementsEntryPolling() {
+        announcementsEntryPollingJob?.cancel()
+        announcementsEntryPollingJob = null
+    }
+
+    private suspend fun refreshAnnouncementsEntryDotOnce() {
+        val ctx = appContext ?: return
+
+        val cloudItems = showcaseCloudRepository.fetchAnnouncements(
+            storeId = chatStoreId,
+            includeDrafts = false,
+            actor = ShowcaseCloudConfig.AuthActor.PUBLIC
+        )
+
+        val cachedEntities = loadPublishedAnnouncementsFromStorage(ctx).map { item ->
+            toPublishedAnnouncementEntity(item)
+        }
+
+        val entities = if (cloudItems.isNotEmpty()) {
+            cloudItems.map { cloud -> toAnnouncementEntity(cloud) }
+        } else {
+            cachedEntities
+        }
+
+        if (entities.isNotEmpty()) {
+            adminAnnouncements.clear()
+            adminAnnouncements.addAll(entities)
+            rebuildAnnouncementsList()
+
+            if (cloudItems.isNotEmpty()) {
+                persistPublishedAnnouncementsLocally(entities)
+            }
+        } else {
+            adminAnnouncements.clear()
+            rebuildAnnouncementsList()
+        }
+
+        _announcementsEntryDot.value = entities.any {
+            it.status == AnnouncementStatus.Published && !isAnnouncementSeen(it.id)
+        }
+    }
+
     private suspend fun refreshChatEntryDotOnce() {
         val ctx = appContext ?: return
         val clientId = chatDomain.ensureClientId(ctx)
@@ -2111,7 +2185,7 @@ class ShowcaseViewModel : ViewModel() {
 
         if (chatScreenVisible && currentChatRole() != "merchant" && activeConversationId == actualConvId) {
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                chatRepository.markAllOutgoingRead(ctx, actualConvId)
+                chatDomain.acknowledgeClientVisibleConversation(ctx, actualConvId)
             }
             _chatEntryDot.value = false
             return
@@ -2244,23 +2318,13 @@ class ShowcaseViewModel : ViewModel() {
                         }
 
                         roleForPoll == "merchant" && chatRepository.isChatCloudEnabled() -> {
-                            val upserted = chatRepository.syncConversationFromCloud(
+                            chatRepository.syncConversationFromCloud(
                                 context = ctx,
                                 storeId = chatStoreId,
                                 conversationId = convId,
                                 perspectiveRole = "merchant",
                                 traceId = "T${System.currentTimeMillis()}_pollMCloud"
                             )
-
-                            runCatching {
-                                chatCloudRepository.markUserMessagesRead(
-                                    storeId = chatStoreId,
-                                    conversationId = convId,
-                                    traceId = "T${System.currentTimeMillis()}_pollMRead"
-                                )
-                            }
-
-                            upserted
                         }
 
                         roleForPoll != "merchant" && chatRepository.isChatRelayEnabled() -> {
@@ -2277,7 +2341,7 @@ class ShowcaseViewModel : ViewModel() {
                         roleForPoll != "merchant" && chatRepository.isChatCloudEnabled() -> {
                             val clientId = chatDomain.ensureClientId(ctx)
 
-                            val upserted = chatRepository.syncConversationFromCloud(
+                            chatRepository.syncConversationFromCloud(
                                 context = ctx,
                                 storeId = chatStoreId,
                                 conversationId = convId,
@@ -2285,17 +2349,6 @@ class ShowcaseViewModel : ViewModel() {
                                 clientId = clientId,
                                 traceId = "T${System.currentTimeMillis()}_pollCCloud"
                             )
-
-                            runCatching {
-                                chatCloudRepository.markMerchantMessagesRead(
-                                    storeId = chatStoreId,
-                                    conversationId = convId,
-                                    clientId = clientId,
-                                    traceId = "T${System.currentTimeMillis()}_pollRead"
-                                )
-                            }
-
-                            upserted
                         }
 
                         else -> 0
@@ -2314,17 +2367,31 @@ class ShowcaseViewModel : ViewModel() {
                         "ROOM_SNAP count=$cnt latestId=$latestId latestConv=${latest?.conversationId} latestDir=${latest?.direction}"
                     )
 
+                    val isCurrentVisibleConversation =
+                        chatScreenVisible && activeConversationId == convId
+
                     val shouldApplyRoomToUi =
-                        inserted > 0 || (latestId != null && latestId != chatLastAppliedLatestId)
+                        inserted > 0 ||
+                                (latestId != null && latestId != chatLastAppliedLatestId) ||
+                                isCurrentVisibleConversation
 
                     if (shouldApplyRoomToUi) {
                         val (list, unread) = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                             if (roleForPoll == "merchant") {
+                                if (isCurrentVisibleConversation) {
+                                    chatDomain.acknowledgeMerchantVisibleConversation(
+                                        context = ctx,
+                                        storeId = chatStoreId,
+                                        conversationId = convId
+                                    )
+                                }
                                 val localList = chatRepository.listLocal(ctx, convId)
                                 val localUnread = chatRepository.countUnread(ctx, convId)
                                 localList to localUnread
                             } else {
-                                chatRepository.markAllOutgoingRead(ctx, convId)
+                                if (isCurrentVisibleConversation) {
+                                    chatDomain.acknowledgeClientVisibleConversation(ctx, convId)
+                                }
                                 val localList = chatRepository.listLocal(ctx, convId)
                                 val localUnread = chatRepository.countUnreadForUserEntry(ctx, convId)
                                 localList to localUnread
@@ -2523,12 +2590,12 @@ class ShowcaseViewModel : ViewModel() {
                 .ifBlank { "Merchant" }
         } else {
             runCatching {
-                chatRepository.resolveMerchantThreadDisplayName(
+                chatRepository.resolveMerchantThreadPushDisplayName(
                     context = context.applicationContext,
                     storeId = chatStoreId,
                     conversationId = conversationId
                 )
-            }.getOrDefault("Customer")
+            }.getOrDefault("New Customer")
         }
     }
 

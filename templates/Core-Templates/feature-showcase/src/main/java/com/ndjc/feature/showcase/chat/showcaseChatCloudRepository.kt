@@ -251,6 +251,7 @@ class ShowcaseChatCloudRepository(
         val conversationId: String,
         val storeId: String,
         val clientId: String,
+        val customerSeq: Int?,
         val lastMessageAtIso: String?,
         val lastPreview: String?,
         val updatedAtIso: String?
@@ -425,6 +426,7 @@ class ShowcaseChatCloudRepository(
                             conversationId = o.optString("conversation_id"),
                             storeId = o.optString("store_id"),
                             clientId = o.optString("client_id"),
+                            customerSeq = o.optInt("customer_seq", 0).takeIf { it > 0 },
                             lastMessageAtIso = o.optString("last_message_at").takeIf { it.isNotBlank() },
                             lastPreview = o.optString("last_preview").takeIf { it.isNotBlank() },
                             updatedAtIso = o.optString("updated_at").takeIf { it.isNotBlank() }
@@ -434,7 +436,7 @@ class ShowcaseChatCloudRepository(
             }
         }
 
-        val viewSelect = "conversation_id,store_id,client_id,last_message_at,last_preview,updated_at"
+        val viewSelect = "conversation_id,store_id,client_id,customer_seq,last_message_at,last_preview,updated_at"
         val viewUrl = restUrl(
             "${ShowcaseCloudConfig.VIEW_CHAT_THREAD_SUMMARIES}" +
                     "?select=$viewSelect" +
@@ -489,7 +491,7 @@ class ShowcaseChatCloudRepository(
             Log.e(logTag, "[$tid] fetchThreadSummaries VIEW ERROR ${t.javaClass.simpleName}: ${t.message} -> fallback conversations", t)
         }
 
-        val convSelect = "conversation_id,store_id,client_id,updated_at"
+        val convSelect = "conversation_id,store_id,client_id,customer_seq,updated_at"
         val convUrl = restUrl(
             "${ShowcaseCloudConfig.TABLE_CHAT_CONVERSATIONS}" +
                     "?select=$convSelect" +
@@ -539,6 +541,7 @@ class ShowcaseChatCloudRepository(
                             conversationId = o.optString("conversation_id"),
                             storeId = o.optString("store_id"),
                             clientId = o.optString("client_id"),
+                            customerSeq = o.optInt("customer_seq", 0).takeIf { it > 0 },
                             lastMessageAtIso = null,
                             lastPreview = null,
                             updatedAtIso = o.optString("updated_at").takeIf { it.isNotBlank() }
@@ -609,11 +612,18 @@ class ShowcaseChatCloudRepository(
             buildList {
                 for (i in 0 until arr.length()) {
                     val o = arr.optJSONObject(i) ?: continue
+                    val rawMerchantAlias = o.optString("merchant_alias")
+                        .trim()
+                        .takeIf {
+                            it.isNotEmpty() &&
+                                    !it.equals("null", ignoreCase = true)
+                        }
+
                     add(
                         CloudThreadMetaRow(
                             conversationId = o.optString("conversation_id"),
                             storeId = o.optString("store_id"),
-                            merchantAlias = o.optString("merchant_alias").takeIf { it.isNotBlank() },
+                            merchantAlias = rawMerchantAlias,
                             merchantArchived = o.optBoolean("merchant_archived", false),
                             merchantArchivedAtMs = o.optLong("merchant_archived_at_ms", 0L)
                         )
@@ -988,39 +998,38 @@ class ShowcaseChatCloudRepository(
             Log.e(logTag, "[$tid] SKIP blank conversationId")
             return@withContext false
         }
+        if (clientId.isBlank()) {
+            Log.e(logTag, "[$tid] SKIP blank clientId")
+            return@withContext false
+        }
 
-        // 只把“商家发来的未读”标记已读（用户视角）
         val currentStoreId = ShowcaseCloudConfig.requireStoreId(storeId)
 
-        val url = restUrl(
-            "${ShowcaseCloudConfig.TABLE_CHAT_MESSAGES}" +
-                    "?store_id=eq.${encode(currentStoreId)}" +
-                    "&conversation_id=eq.${encode(conversationId)}" +
-                    "&role=eq.merchant" +
-                    "&is_read=eq.false"
-        )
+        val url = restUrl("rpc/ndjc_mark_merchant_messages_read")
 
         val payload = JSONObject().apply {
-            put("is_read", true)
+            put("p_store_id", currentStoreId)
+            put("p_conversation_id", conversationId)
+            put("p_client_id", clientId)
         }.toString()
 
-        Log.e(logTag, "[$tid] cloud markMerchantMessagesRead REQ url=$url body=$payload")
+        Log.e(logTag, "[$tid] cloud markMerchantMessagesRead RPC REQ url=$url body=$payload")
 
         val conn = openConn(
             url = url,
-            method = "PATCH",
+            method = "POST",
             actor = ShowcaseCloudConfig.AuthActor.PUBLIC,
             scopeStoreId = currentStoreId,
             scopeClientId = clientId
         )
-        conn.setRequestProperty("Prefer", "return=minimal")
-        conn.outputStream.use { it.write(payload.toByteArray()) }
+        conn.setRequestProperty("Prefer", "return=representation")
+        conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
 
         val code = conn.responseCode
+        val body = readAll(conn)
         val ok = code in 200..299
 
-        val body = readAll(conn)
-        Log.e(logTag, "[${tid}] cloud markMerchantMessagesRead RES code=$code ok=$ok body=$body url=$url")
+        Log.e(logTag, "[$tid] cloud markMerchantMessagesRead RPC RES code=$code ok=$ok body=$body url=$url")
         ok
     }
 

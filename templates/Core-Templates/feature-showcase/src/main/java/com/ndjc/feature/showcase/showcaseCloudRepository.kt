@@ -1,4 +1,4 @@
-package com.ndjc.feature.showcase
+﻿package com.ndjc.feature.showcase
 
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
@@ -2401,9 +2401,21 @@ class ShowcaseCloudRepository {
     }
     suspend fun upsertPushDevice(device: PushDeviceUpsert): Boolean = withContext(Dispatchers.IO) {
         val table = pushDevicesTable()
-        val url = ShowcaseCloudConfig.restUrl(
-            "$table?on_conflict=store_id,token,audience,conversation_scope"
-        )
+
+        val usePublicActor =
+            when (device.audience) {
+                "announcement_subscriber" -> true
+                "chat_client" -> !device.clientId.isNullOrBlank()
+                else -> false
+            }
+
+        val url = if (usePublicActor) {
+            ShowcaseCloudConfig.restUrl(table)
+        } else {
+            ShowcaseCloudConfig.restUrl(
+                "$table?on_conflict=store_id,token,audience,conversation_scope"
+            )
+        }
 
         val body = JSONObject().apply {
             put("store_id", device.storeId)
@@ -2418,17 +2430,14 @@ class ShowcaseCloudRepository {
         Log.d("NDJC_PUSH", "upsertPushDevice url=$url")
         Log.d("NDJC_PUSH", "upsertPushDevice body=$body")
 
-        val usePublicActor =
-            when (device.audience) {
-                "announcement_subscriber" -> true
-                "chat_client" -> !device.clientId.isNullOrBlank()
-                else -> false
-            }
-
         val codeAndBody = httpPost(
             urlString = url,
             body = body,
-            prefer = "resolution=merge-duplicates,return=minimal",
+            prefer = if (usePublicActor) {
+                "return=minimal"
+            } else {
+                "resolution=merge-duplicates,return=minimal"
+            },
             actor = if (usePublicActor) {
                 ShowcaseCloudConfig.AuthActor.PUBLIC
             } else {
@@ -2452,7 +2461,7 @@ class ShowcaseCloudRepository {
         Log.d("NDJC_PUSH", "upsertPushDevice code=$code")
         Log.d("NDJC_PUSH", "upsertPushDevice resp=$resp")
 
-        code in 200..299
+        code in 200..299 || code == 409
     }
 
     suspend fun dispatchChatPush(

@@ -43,14 +43,15 @@ class ShowcaseChatListDomain(
             }
         }
 
+        var cloudUi: List<ShowcaseChatThreadSummaryUi> = emptyList()
+
 // B) Direct cloud（非 relay）：先拉 threads summary，再逐个把对应会话同步到 Room
         if (repo.isChatCloudEnabled()) {
             val traceId = "L${System.currentTimeMillis()}_${storeId.takeLast(4)}"
             try {
                 val summaries = repo.fetchCloudThreadSummaries(storeId = storeId, traceId = traceId)
-                val top = summaries.take(20)
                 var upsertedTotal = 0
-                for (s in top) {
+                for (s in summaries) {
                     upsertedTotal += repo.syncConversationFromCloud(
                         context = context,
                         storeId = storeId,
@@ -59,25 +60,47 @@ class ShowcaseChatListDomain(
                         traceId = traceId
                     )
                 }
-                android.util.Log.e("ChatTrace", "[$traceId] chatlist cloudSync threads=${top.size} upserted=$upsertedTotal")
+                android.util.Log.e("ChatTrace", "[$traceId] chatlist cloudSync threads=${summaries.size} upserted=$upsertedTotal")
 
-                if (top.isNotEmpty()) {
-                    val cloudUi = buildMerchantThreadsFromCloudSummaries(
+                if (summaries.isNotEmpty()) {
+                    cloudUi = buildMerchantThreadsFromCloudSummaries(
                         context = context,
                         storeId = storeId,
-                        summaries = top
+                        summaries = summaries
                     )
-                    if (cloudUi.isNotEmpty()) {
-                        android.util.Log.e("ChatTrace", "[$traceId] chatlist useCloudSummaries threads=${cloudUi.size}")
-                        return cloudUi
-                    }
+                    android.util.Log.e("ChatTrace", "[$traceId] chatlist cloudUi=${cloudUi.size}")
                 }
             } catch (t: Throwable) {
                 android.util.Log.e("ChatTrace", "chatlist cloudSync FAILED: ${t.message}")
             }
         }
 
-        return buildMerchantThreadsFromLocal(context, storeId)
+        val localUi = buildMerchantThreadsFromLocal(context, storeId)
+        return mergeMerchantThreads(cloudUi = cloudUi, localUi = localUi)
+    }
+
+    private fun mergeMerchantThreads(
+        cloudUi: List<ShowcaseChatThreadSummaryUi>,
+        localUi: List<ShowcaseChatThreadSummaryUi>
+    ): List<ShowcaseChatThreadSummaryUi> {
+        if (cloudUi.isEmpty()) return localUi
+        if (localUi.isEmpty()) return cloudUi
+
+        val merged = LinkedHashMap<String, ShowcaseChatThreadSummaryUi>()
+
+        // ✅ cloud 作为主源：先放 cloud，保证多设备一致性
+        for (item in cloudUi) {
+            merged[item.threadId] = item
+        }
+
+        // ✅ local 只补洞：cloud 这轮没返回的线程补进来，不覆盖 cloud 已有项
+        for (item in localUi) {
+            if (!merged.containsKey(item.threadId)) {
+                merged[item.threadId] = item
+            }
+        }
+
+        return merged.values.toList()
     }
 
     suspend fun buildMerchantThreadsFromLocal(
@@ -91,15 +114,6 @@ class ShowcaseChatListDomain(
             .associateBy { it.conversationId }
 
         val byConv = all.groupBy { it.conversationId }
-
-        val seqMap: Map<String, Int> = byConv.entries
-            .map { (conversationId, msgs) ->
-                val firstMs = msgs.minOfOrNull { it.timeMs } ?: Long.MAX_VALUE
-                conversationId to firstMs
-            }
-            .sortedBy { it.second }
-            .mapIndexed { idx, pair -> pair.first to (idx + 1) }
-            .toMap()
 
         val triples: List<Triple<Pair<Long, Long>, ShowcaseChatThreadSummaryUi, Unit>> =
             byConv.mapNotNull { (conversationId, msgs) ->
@@ -118,8 +132,13 @@ class ShowcaseChatListDomain(
                 val timeText = if (lastMs > 0L) formatYmdAmpmHm(context, lastMs) else ""
                 val unread = repo.countUnread(context, conversationId)
 
-                val alias = meta?.alias?.trim()?.takeIf { it.isNotBlank() }
-                val seq = seqMap[conversationId] ?: 0
+                val alias = meta?.alias
+                    ?.trim()
+                    ?.takeIf {
+                        it.isNotBlank() &&
+                                !it.equals("null", ignoreCase = true)
+                    }
+                val seq = meta?.customerSeq ?: 0
                 val title = alias ?: if (seq > 0) "Customer #$seq" else "Customer"
 
                 val pinnedAt = meta?.pinnedAtMs ?: 0L
@@ -154,30 +173,43 @@ class ShowcaseChatListDomain(
         val metaMap = repo.listThreadMetaByStore(context, storeId)
             .associateBy { it.conversationId }
 
-        val seqMap = summaries
-            .mapIndexed { index, s -> s.conversationId to (index + 1) }
-            .toMap()
-
         val triples = summaries.mapNotNull { s ->
             val conversationId = s.conversationId
             if (conversationId.isBlank()) return@mapNotNull null
 
-            val meta = metaMap[conversationId]
-            if (meta?.isDeleted == true) return@mapNotNull null
+            repo.setThreadMetaSeq(
+                context = context,
+                storeId = storeId,
+                conversationId = conversationId,
+                customerSeq = s.customerSeq
+            )
 
-            val lastMs = parseCloudIsoToMs(s.lastMessageAtIso)
+            val latestMeta = repo.getThreadMeta(context, storeId, conversationId)
+            if (latestMeta?.isDeleted == true) return@mapNotNull null
+
+            val lastMessageMs = parseCloudIsoToMs(s.lastMessageAtIso)
+            val preview = buildThreadPreview(s.lastPreview.orEmpty())
+
+            // ✅ 过滤空会话：没有真正消息内容的 conversation 不显示在商家 chatlist
+            if (lastMessageMs == null && preview.isBlank()) return@mapNotNull null
+
+            val lastMs = lastMessageMs
                 ?: parseCloudIsoToMs(s.updatedAtIso)
                 ?: 0L
 
-            val preview = buildThreadPreview(s.lastPreview.orEmpty())
             val timeText = if (lastMs > 0L) formatYmdAmpmHm(context, lastMs) else ""
             val unread = repo.countUnread(context, conversationId)
 
-            val alias = meta?.alias?.trim()?.takeIf { it.isNotBlank() }
-            val seq = seqMap[conversationId] ?: 0
+            val alias = latestMeta?.alias
+                ?.trim()
+                ?.takeIf {
+                    it.isNotBlank() &&
+                            !it.equals("null", ignoreCase = true)
+                }
+            val seq = latestMeta?.customerSeq ?: s.customerSeq ?: 0
             val title = alias ?: if (seq > 0) "Customer #$seq" else "Customer"
 
-            val pinnedAt = meta?.pinnedAtMs ?: 0L
+            val pinnedAt = latestMeta?.pinnedAtMs ?: 0L
             val isPinned = pinnedAt > 0L
 
             val ui = ShowcaseChatThreadSummaryUi(

@@ -182,7 +182,8 @@ class ShowcaseChatRepository(
                         pinnedAtMs = old?.pinnedAtMs ?: 0L,
                         isDeleted = row.merchantArchived,
                         deletedAtMs = row.merchantArchivedAtMs,
-                        alias = mergedAlias
+                        alias = mergedAlias,
+                        customerSeq = old?.customerSeq
                     )
                 )
                 count++
@@ -204,27 +205,85 @@ class ShowcaseChatRepository(
         storeId: String,
         conversationId: String
     ): String {
-        val alias = getThreadAlias(context, storeId, conversationId)?.trim()
+        val meta = getThreadMeta(context, storeId, conversationId)
+
+        val alias = meta?.alias
+            ?.trim()
+            ?.takeIf {
+                it.isNotEmpty() &&
+                        !it.equals("null", ignoreCase = true)
+            }
         if (!alias.isNullOrBlank()) {
             return alias
         }
 
-        val all = listLocalByStore(context, storeId)
-        if (all.isEmpty()) {
-            return "Customer"
+        val seq = meta?.customerSeq
+        return if (seq != null && seq > 0) {
+            "Customer #$seq"
+        } else {
+            "Customer"
+        }
+    }
+
+    suspend fun resolveMerchantThreadPushDisplayName(
+        context: Context,
+        storeId: String,
+        conversationId: String
+    ): String {
+        val meta = getThreadMeta(context, storeId, conversationId)
+
+        val alias = meta?.alias
+            ?.trim()
+            ?.takeIf {
+                it.isNotEmpty() &&
+                        !it.equals("null", ignoreCase = true)
+            }
+        if (!alias.isNullOrBlank()) {
+            return alias
         }
 
-        val byConv = all.groupBy { it.conversationId }
-
-        val ordered = byConv.entries
-            .map { (cid, msgs) ->
-                val firstMs = msgs.minOfOrNull { it.timeMs } ?: Long.MAX_VALUE
-                cid to firstMs
+        if (isChatCloudEnabled()) {
+            val summaries = fetchCloudThreadSummaries(
+                storeId = storeId,
+                traceId = "P${System.currentTimeMillis()}_${storeId.takeLast(4)}"
+            )
+            val matched = summaries.firstOrNull { it.conversationId == conversationId }
+            val seq = matched?.customerSeq
+            if (seq != null && seq > 0) {
+                return "Customer #$seq"
             }
-            .sortedBy { it.second }
+        }
 
-        val idx = ordered.indexOfFirst { it.first == conversationId }
-        return if (idx >= 0) "Customer #${idx + 1}" else "Customer"
+        val localSeq = meta?.customerSeq
+        if (localSeq != null && localSeq > 0) {
+            return "Customer #$localSeq"
+        }
+
+        return "New Customer"
+    }
+
+    suspend fun setThreadMetaSeq(
+        context: Context,
+        storeId: String,
+        conversationId: String,
+        customerSeq: Int?
+    ) {
+        if (customerSeq == null || customerSeq <= 0) return
+
+        val old = metaDao(context).get(storeId, conversationId)
+        if (old?.customerSeq == customerSeq) return
+
+        metaDao(context).upsert(
+            ChatThreadMetaEntity(
+                storeId = storeId,
+                conversationId = conversationId,
+                pinnedAtMs = old?.pinnedAtMs ?: 0L,
+                isDeleted = old?.isDeleted ?: false,
+                deletedAtMs = old?.deletedAtMs ?: 0L,
+                alias = old?.alias,
+                customerSeq = customerSeq
+            )
+        )
     }
 
     suspend fun setThreadAlias(context: Context, storeId: String, conversationId: String, alias: String?) {
@@ -238,7 +297,8 @@ class ShowcaseChatRepository(
                 pinnedAtMs = old?.pinnedAtMs ?: 0L,
                 isDeleted = old?.isDeleted ?: false,
                 deletedAtMs = old?.deletedAtMs ?: 0L,
-                alias = a
+                alias = a,
+                customerSeq = old?.customerSeq
             )
         )
         metaDao(context).updateAlias(storeId, conversationId, a)
@@ -429,6 +489,7 @@ class ShowcaseChatRepository(
         val conversationId: String,
         val storeId: String,
         val clientId: String,
+        val customerSeq: Int?,
         val lastMessageAtIso: String?,
         val lastPreview: String?,
         val updatedAtIso: String?
@@ -442,8 +503,7 @@ class ShowcaseChatRepository(
         val tid = effectiveTraceId(traceId)
         android.util.Log.e("ChatTrace", "[$tid] repo fetchCloudThreadSummaries start store=$storeId")
 
-        val rows = cloud!!.fetchThreadSummaries(storeId = storeId, limit = 30, traceId = tid)
-
+        val rows = cloud!!.fetchThreadSummaries(storeId = storeId, limit = 200, traceId = tid)
 
         android.util.Log.e("ChatTrace", "[$tid] repo fetchCloudThreadSummaries end rows=${rows.size} store=$storeId")
 
@@ -452,6 +512,7 @@ class ShowcaseChatRepository(
                 conversationId = it.conversationId,
                 storeId = it.storeId,
                 clientId = it.clientId,
+                customerSeq = it.customerSeq,
                 lastMessageAtIso = it.lastMessageAtIso,
                 lastPreview = it.lastPreview,
                 updatedAtIso = it.updatedAtIso
@@ -512,29 +573,18 @@ class ShowcaseChatRepository(
         }
 
         // ✅ 关键：
-        // 云端 isRead 目前仍是“商家视角语义”。
-        // 同步到本地时，需要按当前打开视角转换成本地可用语义：
-        // 1) merchant 视角：沿用 cloud isRead
-        // 2) client 视角：
-        //    - 商家发给游客（canonical out）：
-        //         a. 如果本地已经存在这条消息且本地已读=true，则保留 true
-        //         b. 如果本地不存在这条消息，则作为新消息写 false
-        //    - 游客自己发给商家（canonical in）=> 对自己来说不算未读，写 true
+        // 云端 isRead 现在已经统一成“接收方是否已读”语义。
+        // 所以同步到本地时，不再按 merchant/client 做旧语义转换，
+        // 直接沿用云端 isRead 即可：
+        // - 用户发给商家：商家读了才会变 true
+        // - 商家发给用户：用户读了才会变 true
         fun mapLocalIsReadForPerspective(
             canonicalDirection: String,
             cloudIsRead: Boolean,
             perspectiveRole: String,
             existingLocal: ChatMessageEntity?
         ): Boolean {
-            return if (perspectiveRole == "merchant") {
-                cloudIsRead
-            } else {
-                if (canonicalDirection == "out") {
-                    existingLocal?.isRead ?: false
-                } else {
-                    true
-                }
-            }
+            return cloudIsRead
         }
 
         val upserted = withContext(Dispatchers.IO) {
@@ -668,6 +718,10 @@ class ShowcaseChatRepository(
     }
     suspend fun markAllOutgoingRead(context: Context, conversationId: String) {
         dao(context).markAllOutgoingRead(conversationId)
+    }
+
+    suspend fun markMerchantMessagesRead(context: Context, conversationId: String) {
+        dao(context).markMerchantMessagesRead(conversationId)
     }
 
     suspend fun enqueueReadReceiptForClient(

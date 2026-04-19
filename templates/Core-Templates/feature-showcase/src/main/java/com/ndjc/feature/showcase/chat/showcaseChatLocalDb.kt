@@ -33,7 +33,10 @@ data class ChatThreadMetaEntity(
     val deletedAtMs: Long = 0L, // 记录删除时间；只有“删除后新消息”才能让线程重新出现
 
     // ✅ 新增：商家给客户设置的别名/备注（优先显示）
-    val alias: String? = null
+    val alias: String? = null,
+
+    // ✅ 固定客户序号：持久化分配，只增不减，不复用
+    val customerSeq: Int? = null
 )
 
 
@@ -98,6 +101,13 @@ SET isRead = 1
 WHERE conversationId = :conversationId AND direction = 'out'
 """)
     suspend fun markAllOutgoingRead(conversationId: String)
+
+    @Query("""
+UPDATE chat_messages
+SET isRead = 1
+WHERE conversationId = :conversationId AND role = 'merchant'
+""")
+    suspend fun markMerchantMessagesRead(conversationId: String)
 
     @Query("""
 SELECT COUNT(*) FROM chat_messages
@@ -226,7 +236,7 @@ WHERE storeId = :storeId AND conversationId = :conversationId
 
 @Database(
     entities = [ChatMessageEntity::class, ChatThreadMetaEntity::class],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 

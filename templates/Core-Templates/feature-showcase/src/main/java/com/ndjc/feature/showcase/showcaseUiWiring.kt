@@ -165,6 +165,7 @@ fun ShowcaseHomeScreen(
     val editDraft by vm.editDraftFlow.collectAsState()
     val favoriteIds by vm.favoriteIdsFlow.collectAsState()
     val chatEntryDot by vm.chatEntryDotFlow.collectAsState()
+    val announcementsEntryDot by vm.announcementsEntryDotFlow.collectAsState()
     val pushRoute by ShowcasePushRouter.pendingRoute.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -263,6 +264,26 @@ fun ShowcaseHomeScreen(
         onDispose {
             if (shouldPollChatEntry) {
                 vm.stopChatEntryPolling()
+            }
+        }
+    }
+
+// ✅ Home 底栏 Announcements 红点：独立轻量轮询
+    DisposableEffect(uiState.screen) {
+        val shouldPollAnnouncementsEntry =
+            (uiState.screen == ShowcaseScreen.Home
+                    || uiState.screen == ShowcaseScreen.Detail
+                    || uiState.screen == ShowcaseScreen.StoreProfileView
+                    || uiState.screen == ShowcaseScreen.Favorites
+                    || uiState.screen == ShowcaseScreen.Announcements)
+
+        if (shouldPollAnnouncementsEntry) {
+            vm.startAnnouncementsEntryPolling(context)
+        }
+
+        onDispose {
+            if (shouldPollAnnouncementsEntry) {
+                vm.stopAnnouncementsEntryPolling()
             }
         }
     }
@@ -1383,7 +1404,8 @@ fun ShowcaseHomeScreen(
 
         val showChatEntryDot =
             chatEntryDot && uiState.screen != ShowcaseScreen.Chat
-        val showAnnouncementsEntryDot = vm.shouldShowAnnouncementsEntryDot()
+        val showAnnouncementsEntryDot =
+            announcementsEntryDot && uiState.screen != ShowcaseScreen.Announcements
 
 // ✅ Chat 页不显示底栏；全屏查看图片时也不显示底栏
         val isFullscreenViewerVisible by NdjcFullscreenViewerRegistry.visible
