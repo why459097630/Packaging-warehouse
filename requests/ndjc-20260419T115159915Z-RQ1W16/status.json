@@ -7,9 +7,9 @@
   "storeId": "store_showcase_trial_000041",
   "adminName": "123456789@qq.com",
   "status": "running",
-  "stage": "matching_logic_module",
-  "step": 3,
-  "message": "Matching logic module",
+  "stage": "applying_ui_pack",
+  "step": 4,
+  "message": "Applying UI pack",
   "artifactName": null,
   "workflowRunId": null,
   "workflowUrl": null,
@@ -17,5 +17,5 @@
   "downloadUrl": null,
   "error": null,
   "failedStep": null,
-  "updatedAt": "2026-04-19T11:52:40.564Z"
+  "updatedAt": "2026-04-19T11:52:41.704Z"
 }
