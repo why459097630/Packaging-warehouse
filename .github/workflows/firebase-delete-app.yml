@@ -1,0 +1,115 @@
+name: Firebase Delete App (NDJC)
+
+on:
+  workflow_dispatch:
+    inputs:
+      store_id:
+        description: "NDJC store id"
+        required: true
+        type: string
+      firebase_project_id:
+        description: "Firebase project id"
+        required: true
+        type: string
+      firebase_credentials_env_key:
+        description: "GitHub Actions secret env key name"
+        required: true
+        type: string
+      package_name:
+        description: "Android package name"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  delete_firebase_app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: NDJC | Resolve Firebase credentials
+        id: resolve_firebase_credentials
+        shell: bash
+        env:
+          FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_01: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_01 }}
+          FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_02: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_02 }}
+          FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_03: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_03 }}
+          FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_01: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_01 }}
+          FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_02: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_02 }}
+          FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_03: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_03 }}
+        run: |
+          set -euo pipefail
+
+          FIREBASE_CREDENTIALS_ENV_KEY="${{ inputs.firebase_credentials_env_key }}"
+          FIREBASE_PROJECT_ID="${{ inputs.firebase_project_id }}"
+
+          if [ -z "$FIREBASE_PROJECT_ID" ]; then
+            echo "::error::firebase_project_id is required"
+            exit 1
+          fi
+
+          if [ -z "$FIREBASE_CREDENTIALS_ENV_KEY" ]; then
+            echo "::error::firebase_credentials_env_key is required"
+            exit 1
+          fi
+
+          FIREBASE_CREDENTIALS_JSON="${!FIREBASE_CREDENTIALS_ENV_KEY:-}"
+
+          if [ -z "$FIREBASE_CREDENTIALS_JSON" ]; then
+            echo "::error::No workflow env value found for $FIREBASE_CREDENTIALS_ENV_KEY"
+            exit 1
+          fi
+
+          echo "firebase_project_id=$FIREBASE_PROJECT_ID" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "credentials_json<<EOF"
+            printf '%s\n' "$FIREBASE_CREDENTIALS_JSON"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Google Cloud auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ steps.resolve_firebase_credentials.outputs.credentials_json }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: NDJC | Delete Firebase Android App
+        shell: bash
+        env:
+          FIREBASE_PROJECT_ID: ${{ steps.resolve_firebase_credentials.outputs.firebase_project_id }}
+          PACKAGE_NAME: ${{ inputs.package_name }}
+        run: |
+          set -euo pipefail
+          bash scripts/ndjc-delete-firebase-app.sh
+
+      - name: NDJC | Callback mark delete complete
+        shell: bash
+        env:
+          API_BASE: ${{ secrets.API_BASE }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          STORE_ID: ${{ inputs.store_id }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${API_BASE:-}" ]; then
+            echo "::error::API_BASE secret is required"
+            exit 1
+          fi
+
+          if [ -z "${X_API_SECRET:-}" ]; then
+            echo "::error::X_API_SECRET secret is required"
+            exit 1
+          fi
+
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -H "x-api-secret: ${X_API_SECRET}" \
+            -d "{\"storeId\":\"${STORE_ID}\"}" \
+            "${API_BASE}/api/firebase/mark-delete-complete"
