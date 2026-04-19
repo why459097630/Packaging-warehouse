@@ -154,8 +154,8 @@ cat /tmp/ndjc-firebase-delete-response.txt || true
 echo
 
 if [ "$HTTP_CODE" = "404" ]; then
-  echo "[NDJC_FIREBASE_DELETE] app already deleted"
-  exit 0
+  echo "::error::Firebase androidApps.delete returned 404; treat as delete failure, not success"
+  exit 1
 fi
 
 if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
