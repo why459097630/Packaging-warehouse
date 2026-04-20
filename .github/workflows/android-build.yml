@@ -1,4 +1,5 @@
 name: Android Build (NDJC • Core-Templates minimal)
+run-name: NDJC ${{ inputs.run_id }}
 
 on:
   workflow_dispatch:
@@ -14,6 +15,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GH_API_TOKEN: ${{ github.token }}
 
     steps:
       - name: Checkout
@@ -71,6 +74,8 @@ jobs:
             message: String(process.env.BUILD_MESSAGE || current.message || ""),
             artifactName: process.env.ARTIFACT_NAME ? String(process.env.ARTIFACT_NAME) : current.artifactName ?? null,
             workflowRunId: process.env.WORKFLOW_RUN_ID ? String(process.env.WORKFLOW_RUN_ID) : current.workflowRunId ?? null,
+            workflowStatus: process.env.WORKFLOW_STATUS ? String(process.env.WORKFLOW_STATUS) : current.workflowStatus ?? null,
+            workflowConclusion: process.env.WORKFLOW_CONCLUSION ? String(process.env.WORKFLOW_CONCLUSION) : current.workflowConclusion ?? null,
             workflowUrl: process.env.WORKFLOW_URL ? String(process.env.WORKFLOW_URL) : current.workflowUrl ?? null,
             artifactUrl: process.env.ARTIFACT_URL ? String(process.env.ARTIFACT_URL) : current.artifactUrl ?? null,
             downloadUrl: process.env.DOWNLOAD_URL ? String(process.env.DOWNLOAD_URL) : current.downloadUrl ?? null,
@@ -80,6 +85,136 @@ jobs:
           };
 
           fs.writeFileSync(statusFile, JSON.stringify(data, null, 2) + "\n", "utf8");
+          EOF
+
+          cat > .github/scripts/publish-status.js <<'EOF'
+          const fs = require("fs");
+
+          const statusFile = process.argv[2] || "";
+          const token = process.env.GH_API_TOKEN || process.env.GITHUB_TOKEN || "";
+          const repository = process.env.GITHUB_REPOSITORY || "";
+          const branch = process.env.GITHUB_REF_NAME || "";
+          const commitMessage =
+            process.env.STATUS_COMMIT_MESSAGE || `NDJC: update ${statusFile}`;
+
+          if (!statusFile) {
+            throw new Error("status file path is required.");
+          }
+
+          if (!fs.existsSync(statusFile)) {
+            throw new Error(`status file does not exist: ${statusFile}`);
+          }
+
+          if (!token) {
+            throw new Error("GH_API_TOKEN or GITHUB_TOKEN is required.");
+          }
+
+          if (!repository.includes("/")) {
+            throw new Error("GITHUB_REPOSITORY is invalid.");
+          }
+
+          if (!branch) {
+            throw new Error("GITHUB_REF_NAME is required.");
+          }
+
+          const [owner, repo] = repository.split("/");
+          const encodedPath = encodeURIComponent(statusFile).replace(/%2F/g, "/");
+          const getUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodedPath}?ref=${encodeURIComponent(branch)}`;
+          const putUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodedPath}`;
+
+          async function githubRequest(url, init = {}) {
+            const response = await fetch(url, {
+              ...init,
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/vnd.github+json",
+                "Content-Type": "application/json",
+                ...(init.headers || {}),
+              },
+            });
+
+            return response;
+          }
+
+          function decodeGithubContent(content) {
+            return Buffer.from(String(content || "").replace(/\n/g, ""), "base64").toString("utf8");
+          }
+
+          function sleep(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+          }
+
+          async function readRemoteFile() {
+            const response = await githubRequest(getUrl, { method: "GET" });
+
+            if (response.status === 404) {
+              return { sha: null, content: null };
+            }
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(`failed to read remote status file: ${JSON.stringify(data)}`);
+            }
+
+            return {
+              sha: typeof data.sha === "string" ? data.sha : null,
+              content: typeof data.content === "string" ? decodeGithubContent(data.content) : null,
+            };
+          }
+
+          async function publish() {
+            const localContent = fs.readFileSync(statusFile, "utf8");
+            const base64Content = Buffer.from(localContent, "utf8").toString("base64");
+
+            for (let attempt = 1; attempt <= 5; attempt += 1) {
+              const remote = await readRemoteFile();
+
+              if (remote.content === localContent) {
+                console.log(`[NDJC] status already up to date: ${statusFile}`);
+                return;
+              }
+
+              const response = await githubRequest(putUrl, {
+                method: "PUT",
+                body: JSON.stringify({
+                  message: commitMessage,
+                  content: base64Content,
+                  branch,
+                  sha: remote.sha || undefined,
+                }),
+              });
+
+              const text = await response.text();
+
+              if (response.ok) {
+                console.log(`[NDJC] published status file on attempt ${attempt}: ${statusFile}`);
+                return;
+              }
+
+              if (
+                (response.status === 409 || response.status === 422 || response.status === 503) &&
+                attempt < 5
+              ) {
+                console.log(
+                  `[NDJC] publish conflict on attempt ${attempt}, retrying: ${statusFile}`,
+                );
+                await sleep(attempt * 1500);
+                continue;
+              }
+
+              throw new Error(
+                `failed to publish status file ${statusFile}: status=${response.status} body=${text}`,
+              );
+            }
+
+            throw new Error(`failed to publish status file after retries: ${statusFile}`);
+          }
+
+          publish().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
           EOF
 
       - name: NDJC | Init build status
@@ -93,9 +228,6 @@ jobs:
           REQUEST_FILE="requests/${RUN_ID}/request.json"
 
           mkdir -p "requests/${RUN_ID}"
-
-          git config user.name "ndjc-bot"
-          git config user.email "ndjc-bot@users.noreply.github.com"
 
           if [ ! -f "$ASSEMBLY_FILE" ] || [ ! -f "$REQUEST_FILE" ]; then
             echo "Missing request payload file."
@@ -113,11 +245,14 @@ jobs:
             BUILD_MESSAGE="Build request files are missing in repository." \
             BUILD_ERROR="Missing request payload file: requests/${RUN_ID}/assembly.local.json or request.json" \
             FAILED_STEP="preparing_request" \
+            WORKFLOW_RUN_ID="${{ github.run_id }}" \
+            WORKFLOW_STATUS="completed" \
+            WORKFLOW_CONCLUSION="failure" \
+            WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             node .github/scripts/write-status.js
 
-            git add "$STATUS_FILE"
-            git commit -m "NDJC: fail init status for ${RUN_ID}" || echo "no changes"
-            git push || true
+            STATUS_COMMIT_MESSAGE="NDJC: fail init status for ${RUN_ID}" \
+            node .github/scripts/publish-status.js "$STATUS_FILE"
 
             exit 1
           fi
@@ -142,11 +277,14 @@ jobs:
           BUILD_STAGE="preparing_request" \
           BUILD_STEP="1" \
           BUILD_MESSAGE="Preparing build request" \
+          WORKFLOW_RUN_ID="${{ github.run_id }}" \
+          WORKFLOW_STATUS="in_progress" \
+          WORKFLOW_CONCLUSION="" \
+          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
           node .github/scripts/write-status.js
 
-          git add "$STATUS_FILE"
-          git commit -m "NDJC: init status for ${RUN_ID}" || echo "no changes"
-          git push || true
+          STATUS_COMMIT_MESSAGE="NDJC: init status for ${RUN_ID}" \
+          node .github/scripts/publish-status.js "$STATUS_FILE"
 
       # 关键：把 requests/<run_id>/assembly.local.json 变成后面脚本会读的 lib/ndjc/assembly.local.json
       - name: NDJC | Materialize request -> lib/ndjc/assembly.local.json
@@ -228,9 +366,8 @@ jobs:
           BUILD_MESSAGE="Processing app identity" \
           node .github/scripts/write-status.js
 
-          git add "$STATUS_FILE"
-          git commit -m "NDJC: step2 ${RUN_ID}" || echo "no changes"
-          git push || true
+          STATUS_COMMIT_MESSAGE="NDJC: step2 ${RUN_ID}" \
+          node .github/scripts/publish-status.js "$STATUS_FILE"
 
       - name: NDJC | Update status - matching logic module
         shell: bash
@@ -248,9 +385,8 @@ jobs:
           BUILD_MESSAGE="Matching logic module" \
           node .github/scripts/write-status.js
 
-          git add "$STATUS_FILE"
-          git commit -m "NDJC: step3 ${RUN_ID}" || echo "no changes"
-          git push || true
+          STATUS_COMMIT_MESSAGE="NDJC: step3 ${RUN_ID}" \
+          node .github/scripts/publish-status.js "$STATUS_FILE"
 
       - name: NDJC | Core-Templates assembly
         shell: bash
@@ -274,9 +410,8 @@ jobs:
           BUILD_MESSAGE="Applying UI pack" \
           node .github/scripts/write-status.js
 
-          git add "$STATUS_FILE"
-          git commit -m "NDJC: step4 ${RUN_ID}" || echo "no changes"
-          git push || true
+          STATUS_COMMIT_MESSAGE="NDJC: step4 ${RUN_ID}" \
+          node .github/scripts/publish-status.js "$STATUS_FILE"
 
       - name: NDJC | Resolve Firebase credentials
         id: resolve_firebase_credentials
@@ -401,9 +536,8 @@ jobs:
           BUILD_MESSAGE="Preparing app services and signing" \
           node .github/scripts/write-status.js
 
-          git add "$STATUS_FILE"
-          git commit -m "NDJC: step5 ${RUN_ID}" || echo "no changes"
-          git push || true
+          STATUS_COMMIT_MESSAGE="NDJC: step5 ${RUN_ID}" \
+          node .github/scripts/publish-status.js "$STATUS_FILE"
 
       - name: NDJC | Prepare Release Keystore (generate or decode)
         shell: bash
@@ -499,9 +633,8 @@ jobs:
           BUILD_MESSAGE="Building and packaging APK" \
           node .github/scripts/write-status.js
 
-          git add "$STATUS_FILE"
-          git commit -m "NDJC: step6 ${RUN_ID}" || echo "no changes"
-          git push || true
+          STATUS_COMMIT_MESSAGE="NDJC: step6 ${RUN_ID}" \
+          node .github/scripts/publish-status.js "$STATUS_FILE"
       - name: Build Release (APK + AAB)
         shell: bash
         run: |
@@ -580,15 +713,16 @@ jobs:
           BUILD_MESSAGE="Build completed" \
           ARTIFACT_NAME="${{ env.NDJC_ARTIFACT_NAME }}" \
           WORKFLOW_RUN_ID="${{ github.run_id }}" \
+          WORKFLOW_STATUS="completed" \
+          WORKFLOW_CONCLUSION="success" \
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
           DOWNLOAD_URL="/api/download-artifact?runId=${RUN_ID}" \
           BUILD_ERROR="" \
           FAILED_STEP="" \
           node .github/scripts/write-status.js
 
-          git add "$STATUS_FILE"
-          git commit -m "NDJC: success ${RUN_ID}" || echo "no changes"
-          git push || true
+          STATUS_COMMIT_MESSAGE="NDJC: success ${RUN_ID}" \
+          node .github/scripts/publish-status.js "$STATUS_FILE"
 
       - name: NDJC | Update status - failed
         if: ${{ failure() }}
@@ -616,11 +750,14 @@ jobs:
           BUILD_ERROR="Packaging workflow failed. Check GitHub Actions logs." \
           FAILED_STEP="$CURRENT_STAGE" \
           ARTIFACT_NAME="" \
+          WORKFLOW_RUN_ID="${{ github.run_id }}" \
+          WORKFLOW_STATUS="completed" \
+          WORKFLOW_CONCLUSION="failure" \
+          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
           DOWNLOAD_URL="" \
           node .github/scripts/write-status.js
 
-          git add "$STATUS_FILE"
-          git commit -m "NDJC: failed ${RUN_ID}" || echo "no changes"
-          git push || true
+          STATUS_COMMIT_MESSAGE="NDJC: failed ${RUN_ID}" \
+          node .github/scripts/publish-status.js "$STATUS_FILE"
 
 
