@@ -1,0 +1,17 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "马德里竞技",
+  "packageName": "com.ndjc.apps.app.etrial000046",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_trial_000046",
+  "merchantEmail": "123456789@qq.com",
+  "privacyUrl": "https://niandongjicheng.vercel.app/privacy/store_showcase_trial_000046?appName=%E9%A9%AC%E5%BE%B7%E9%87%8C%E7%AB%9E%E6%8A%80&merchantEmail=123456789%40qq.com",
+  "plan": "free",
+  "firebaseProjectId": "ndjc-free-01",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_01"
+}
