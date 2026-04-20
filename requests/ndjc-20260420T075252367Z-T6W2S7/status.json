@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260420T075252367Z-T6W2S7",
+  "appName": "斯图加特",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "pro",
+  "storeId": "store_showcase_paid_000011",
+  "adminName": "123456789@qq.com",
+  "createdAt": "2026-04-20T07:54:27.942Z",
+  "updatedAt": "2026-04-20T07:54:27.942Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260420T075252367Z-T6W2S7/status.json"
+}
