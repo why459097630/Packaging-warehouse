@@ -8,6 +8,6 @@
   "versionCode": 1,
   "versionName": "1.0.0",
   "storeId": "store_showcase_trial_000028",
-  "merchantEmail": "demo@email.com",
+  "merchantEmail": "merchant@example.com",
   "privacyUrl": "https://你的域名/privacy/store_showcase_trial_000028"
 }
