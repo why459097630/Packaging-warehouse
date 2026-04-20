@@ -7,9 +7,9 @@
   "storeId": "store_showcase_trial_000044",
   "adminName": "123456789@qq.com",
   "status": "running",
-  "stage": "preparing_services",
-  "step": 5,
-  "message": "Preparing app services and signing",
+  "stage": "building_apk",
+  "step": 6,
+  "message": "Building and packaging APK",
   "artifactName": null,
   "workflowRunId": "24649312668",
   "workflowStatus": "in_progress",
@@ -19,5 +19,5 @@
   "downloadUrl": null,
   "error": null,
   "failedStep": null,
-  "updatedAt": "2026-04-20T05:04:00.516Z"
+  "updatedAt": "2026-04-20T05:04:02.946Z"
 }
