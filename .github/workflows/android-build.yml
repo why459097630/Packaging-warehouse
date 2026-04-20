@@ -639,9 +639,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          rm -rf templates/Core-Templates/app/build
+          rm -rf templates/Core-Templates/build
+
           cd templates/Core-Templates
           chmod +x ./gradlew
-          ./gradlew assembleRelease bundleRelease --no-daemon
+          ./gradlew clean assembleRelease bundleRelease --no-daemon
 
       - name: Rename outputs to user app name (APK + AAB) and prepare artifact name
         shell: bash
@@ -656,15 +660,31 @@ jobs:
           if [ -z "$SAFE_APK_NAME" ]; then SAFE_APK_NAME="NDJC App"; fi
 
           APK_DIR="templates/Core-Templates/app/build/outputs/apk/release"
-          APK_SRC="$(ls -1 "$APK_DIR"/*.apk | head -n 1)"
-          APK_OUT="$APK_DIR/${SAFE_APK_NAME}.apk"
-
           AAB_DIR="templates/Core-Templates/app/build/outputs/bundle/release"
-          AAB_SRC="$(ls -1 "$AAB_DIR"/*.aab | head -n 1)"
+
+          mapfile -t APK_FILES < <(find "$APK_DIR" -maxdepth 1 -type f -name "*.apk" | sort)
+          mapfile -t AAB_FILES < <(find "$AAB_DIR" -maxdepth 1 -type f -name "*.aab" | sort)
+
+          if [ "${#APK_FILES[@]}" -ne 1 ]; then
+            echo "Expected exactly 1 APK, found ${#APK_FILES[@]}"
+            printf '%s\n' "${APK_FILES[@]}"
+            exit 1
+          fi
+
+          if [ "${#AAB_FILES[@]}" -ne 1 ]; then
+            echo "Expected exactly 1 AAB, found ${#AAB_FILES[@]}"
+            printf '%s\n' "${AAB_FILES[@]}"
+            exit 1
+          fi
+
+          APK_SRC="${APK_FILES[0]}"
+          AAB_SRC="${AAB_FILES[0]}"
+
+          APK_OUT="$APK_DIR/${SAFE_APK_NAME}.apk"
           AAB_OUT="$AAB_DIR/${SAFE_APK_NAME}.aab"
 
-          cp -f "$APK_SRC" "$APK_OUT"
-          cp -f "$AAB_SRC" "$AAB_OUT"
+          mv -f "$APK_SRC" "$APK_OUT"
+          mv -f "$AAB_SRC" "$AAB_OUT"
 
           # 固定 artifact 名（最终下载到的就是 NDJC-app.zip）
           echo "NDJC_ARTIFACT_NAME=NDJC-app" >> "$GITHUB_ENV"
