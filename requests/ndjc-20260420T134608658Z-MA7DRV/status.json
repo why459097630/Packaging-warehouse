@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260420T134608658Z-MA7DRV",
+  "appName": "马德里竞技",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000046",
+  "adminName": "123456789@qq.com",
+  "createdAt": "2026-04-20T13:46:09.177Z",
+  "updatedAt": "2026-04-20T13:46:09.177Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260420T134608658Z-MA7DRV/status.json"
+}
