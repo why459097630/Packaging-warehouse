@@ -2,10 +2,12 @@
   "template": "core-skeleton",
   "uiPack": "ui-greenpowder",
   "modules": ["feature-showcase"],
-  "appName": "牛大哥",
+  "appName": "水晶宫5",
   "iconPath": "lib/ndjc/icon.png",
   "packageName": "com.ndjc.apps.niudaige.id12ab3c",
   "versionCode": 1,
   "versionName": "1.0.0",
-  "storeId": "store_showcase_trial_000001"
+  "storeId": "store_showcase_trial_000028",
+  "merchantEmail": "demo@email.com",
+  "privacyUrl": "https://你的域名/privacy/store_showcase_trial_000028"
 }
