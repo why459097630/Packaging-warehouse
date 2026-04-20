@@ -202,6 +202,9 @@ import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Locale
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
 
 import androidx.compose.material.icons.filled.Favorite
 //endregion
@@ -5131,6 +5134,10 @@ internal fun ShowcaseStoreProfileView(
                                 actions.onCopy(label, value)
                             }
                         )
+
+                        sectionDivider()
+
+                        UniversalStoreAppAboutSection()
                     }
                 }
             }
@@ -5967,6 +5974,10 @@ private fun UniversalStoreBrandHeader(
         }
     }
 }
+private const val NDJC_ABOUT_APP_NAME = "__NDJC_APP_NAME__"
+private const val NDJC_ABOUT_MERCHANT_EMAIL = "__NDJC_MERCHANT_EMAIL__"
+private const val NDJC_ABOUT_PRIVACY_URL = "__NDJC_PRIVACY_URL__"
+
 @Composable
 private fun UniversalStoreEmptyInfoText() {
     Text(
@@ -6031,6 +6042,95 @@ private fun UniversalStoreAboutSection(description: String) {
         color = HomeTokens.ChipSelectedBackground,
         modifier = Modifier.clickable { expanded = !expanded }
     )
+}
+
+@Composable
+private fun UniversalStoreAppAboutSection() {
+    val context = LocalContext.current
+    val appName = NDJC_ABOUT_APP_NAME.trim().ifBlank { "App" }
+    val merchantEmail = NDJC_ABOUT_MERCHANT_EMAIL.trim().ifBlank { "Not provided" }
+    val privacyUrl = NDJC_ABOUT_PRIVACY_URL.trim()
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .width(NdjcCommonTokens.Dp.Dp2)
+                .height(NdjcCommonTokens.Dp.Dp14)
+                .background(HomeTokens.ChipSelectedBackground, RoundedCornerShape(999.dp))
+        )
+        Spacer(Modifier.width(NdjcCommonTokens.Dp.Dp8))
+        Text(
+            text = "About this app",
+            style = MaterialTheme.typography.labelLarge,
+            color = NdjcCommonTokens.Colors.C_FF111827.copy(alpha = NdjcCommonTokens.Alpha.a70),
+            fontWeight = FontWeight.Medium
+        )
+    }
+
+    Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp10))
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp10)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "App Name",
+                style = MaterialTheme.typography.labelMedium,
+                color = NdjcCommonTokens.Colors.C_FF111827.copy(alpha = NdjcCommonTokens.Alpha.a55)
+            )
+            Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp4))
+            Text(
+                text = appName,
+                style = MaterialTheme.typography.bodyMedium,
+                color = NdjcCommonTokens.Colors.C_FF111827.copy(alpha = NdjcCommonTokens.Alpha.a90)
+            )
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Contact",
+                style = MaterialTheme.typography.labelMedium,
+                color = NdjcCommonTokens.Colors.C_FF111827.copy(alpha = NdjcCommonTokens.Alpha.a55)
+            )
+            Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp4))
+            Text(
+                text = merchantEmail,
+                style = MaterialTheme.typography.bodyMedium,
+                color = NdjcCommonTokens.Colors.C_FF111827.copy(alpha = NdjcCommonTokens.Alpha.a90)
+            )
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Privacy Policy",
+                style = MaterialTheme.typography.labelMedium,
+                color = NdjcCommonTokens.Colors.C_FF111827.copy(alpha = NdjcCommonTokens.Alpha.a55)
+            )
+            Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp4))
+            Text(
+                text = if (privacyUrl.isNotBlank()) "Open Privacy Policy" else "Not available",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (privacyUrl.isNotBlank()) {
+                    HomeTokens.ChipSelectedBackground
+                } else {
+                    NdjcCommonTokens.Colors.C_FF111827.copy(alpha = NdjcCommonTokens.Alpha.a45)
+                },
+                textDecoration = if (privacyUrl.isNotBlank()) TextDecoration.Underline else TextDecoration.None,
+                modifier = Modifier.clickable(enabled = privacyUrl.isNotBlank()) {
+                    if (privacyUrl.isBlank()) return@clickable
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(privacyUrl))
+                    context.startActivity(intent)
+                }
+            )
+        }
+    }
 }
 
 @Composable
