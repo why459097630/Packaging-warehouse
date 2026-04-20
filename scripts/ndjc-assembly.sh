@@ -209,6 +209,85 @@ function injectStoreIdIntoModuleSources(modules, injectedStoreId) {
   }
 }
 
+function escapeKotlinString(v) {
+  return String(v)
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\$/g, "\\$")
+    .replace(/\n/g, "\\n");
+}
+
+function injectBuildStringsIntoModuleSources(modules, replacements) {
+  if (!modules.length) {
+    warn("没有模块可注入构建字符串，跳过源码锚点注入");
+    return;
+  }
+
+  for (const moduleName of modules) {
+    const moduleJavaDir = path.join(
+      TEMPLATE_DIR,
+      moduleName,
+      "src",
+      "main",
+      "java"
+    );
+
+    if (!fs.existsSync(moduleJavaDir)) {
+      warn(`模块源码目录不存在，跳过构建字符串注入：${moduleJavaDir}`);
+      continue;
+    }
+
+    const targetFiles = [];
+
+    function walk(dir) {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walk(fullPath);
+          continue;
+        }
+        if (!entry.isFile()) continue;
+
+        const lower = entry.name.toLowerCase();
+        if (lower.endsWith(".kt") || lower.endsWith(".java")) {
+          targetFiles.push(fullPath);
+        }
+      }
+    }
+
+    walk(moduleJavaDir);
+
+    let replacedCount = 0;
+
+    for (const filePath of targetFiles) {
+      const original = readText(filePath);
+      let updated = original;
+      let touched = false;
+
+      for (const [token, value] of Object.entries(replacements)) {
+        if (!updated.includes(token)) continue;
+        updated = updated.replaceAll(token, value);
+        touched = true;
+      }
+
+      if (!touched) continue;
+
+      writeText(filePath, updated);
+      replacedCount += 1;
+    }
+
+    if (replacedCount <= 0) {
+      warn(`未在模块源码中找到构建字符串锚点：${moduleName}`);
+    } else {
+      console.log("[NDJC-assembly] 已注入构建字符串到模块源码:");
+      console.log("  module :", moduleName);
+      console.log("  files  :", replacedCount);
+      console.log("  keys   :", Object.keys(replacements).join(", "));
+    }
+  }
+}
+
 // ---------- 1) 校验基础文件存在 ----------
 ensureFile(ASSEMBLY_JSON, "装配清单 assembly.local.json");
 ensureFile(SETTINGS_GRADLE, "settings.gradle.kts");
@@ -268,6 +347,8 @@ try {
 // ✅ 新增：App 名称
 const appLabel = (assembly.appName || assembly.app_label || "NDJC App").toString().trim();
 const storeId = (assembly.storeId || assembly.store_id || "").toString().trim();
+const merchantEmail = (assembly.merchantEmail || assembly.adminName || "").toString().trim().toLowerCase();
+const privacyUrl = (assembly.privacyUrl || "").toString().trim();
 
 if (!storeId) {
   fail("assembly.local.json 缺少 storeId，无法注入逻辑模块锚点");
@@ -537,6 +618,13 @@ copyUiPackSourcesToFeatureUi(uiPackId, modules);
 
 // ---------- 2.8) 注入 storeId 到逻辑模块源码 ----------
 injectStoreIdIntoModuleSources(modules, storeId);
+
+// ---------- 2.9) 注入 About / Privacy 构建字符串到模块源码 ----------
+injectBuildStringsIntoModuleSources(modules, {
+  "__NDJC_APP_NAME__": escapeKotlinString(appLabel),
+  "__NDJC_MERCHANT_EMAIL__": escapeKotlinString(merchantEmail),
+  "__NDJC_PRIVACY_URL__": escapeKotlinString(privacyUrl),
+});
 
 // ---------- 3) 更新 settings.gradle.kts ----------
 const moduleNames = ["app", "core-skeleton", ...modules];
