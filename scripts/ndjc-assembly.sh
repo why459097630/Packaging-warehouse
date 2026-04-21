@@ -600,6 +600,37 @@ function writeAdaptiveSolidBackgroundDrawable(resDir) {
   console.log("[NDJC-assembly] 已写入 adaptive background 纯色 drawable:", target);
   return true;
 }
+function writeLauncherBitmapDrawableXmlFiles(resDir) {
+  const drawableDir = path.join(resDir, "drawable");
+  fs.mkdirSync(drawableDir, { recursive: true });
+
+  const foregroundXmlPath = path.join(drawableDir, "ic_launcher_foreground.xml");
+  const backgroundXmlPath = path.join(drawableDir, "ic_launcher_background.xml");
+
+  const foregroundXml = `<?xml version="1.0" encoding="utf-8"?>
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@mipmap/ic_launcher_foreground"
+    android:gravity="fill" />
+`;
+
+  const backgroundXml = `<?xml version="1.0" encoding="utf-8"?>
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@mipmap/ic_launcher_background"
+    android:gravity="fill" />
+`;
+
+  writeText(foregroundXmlPath, foregroundXml);
+  writeText(backgroundXmlPath, backgroundXml);
+
+  ensureNonEmptyFile(foregroundXmlPath, "ic_launcher_foreground.xml");
+  ensureNonEmptyFile(backgroundXmlPath, "ic_launcher_background.xml");
+
+  console.log("[NDJC-assembly] 已重写 launcher drawable xml:");
+  console.log("  foreground:", foregroundXmlPath);
+  console.log("  background:", backgroundXmlPath);
+
+  return true;
+}
 function writeLauncherIcons(pngPath) {
   const ROOT = process.cwd();
   const resDir = path.join(ROOT, "templates/Core-Templates/app/src/main/res");
@@ -688,15 +719,15 @@ if (!wroteLauncherIcons) {
   fail(`写入 launcher 图标失败：${iconPngPath}`);
 }
 
-const wroteAdaptiveSolidBackgroundDrawable = writeAdaptiveSolidBackgroundDrawable(RES_DIR);
-if (!wroteAdaptiveSolidBackgroundDrawable) {
-  fail("写入 adaptive background 纯色 drawable 失败");
+const wroteLauncherBitmapDrawableXml = writeLauncherBitmapDrawableXmlFiles(RES_DIR);
+if (!wroteLauncherBitmapDrawableXml) {
+  fail("写入 launcher bitmap drawable xml 失败");
 }
 
 const patchedLauncherXml = patchAdaptiveIconXmlFile(
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
-  "@mipmap/ic_launcher_foreground",
-  "@drawable/ndjc_adaptive_background_solid"
+  "@drawable/ic_launcher_foreground",
+  "@drawable/ic_launcher_background"
 );
 if (!patchedLauncherXml) {
   fail("修补 ic_launcher.xml 失败");
@@ -704,8 +735,8 @@ if (!patchedLauncherXml) {
 
 const patchedLauncherRoundXml = patchAdaptiveIconXmlFile(
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
-  "@mipmap/ic_launcher_foreground",
-  "@drawable/ndjc_adaptive_background_solid"
+  "@drawable/ic_launcher_foreground",
+  "@drawable/ic_launcher_background"
 );
 if (!patchedLauncherRoundXml) {
   fail("修补 ic_launcher_round.xml 失败");
@@ -727,9 +758,15 @@ const launcherVerifyTargets = [
   "templates/Core-Templates/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png",
   "templates/Core-Templates/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png",
   "templates/Core-Templates/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-mdpi/ic_launcher_background.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-hdpi/ic_launcher_background.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xhdpi/ic_launcher_background.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xxhdpi/ic_launcher_background.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xxxhdpi/ic_launcher_background.png",
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
-  "templates/Core-Templates/app/src/main/res/drawable/ndjc_adaptive_background_solid.xml"
+  "templates/Core-Templates/app/src/main/res/drawable/ic_launcher_foreground.xml",
+  "templates/Core-Templates/app/src/main/res/drawable/ic_launcher_background.xml"
 ];
 
 for (const verifyTarget of launcherVerifyTargets) {
@@ -857,7 +894,7 @@ if (typeof result.status === "number" && result.status !== 0) {
 
 console.log("[NDJC-assembly] 完成：");
 console.log("  - App 名称已写入 strings.xml + manifest label 指向 @string/app_name");
-console.log("  - App 图标已按“居中裁正方形 + 铺满容器 + 允许边缘裁切”规则写入 res/mipmap-*/ic_launcher(.png) / ic_launcher_round(.png) / ic_launcher_foreground(.png)，并启用 adaptive icon xml（foreground 铺满上传图，background 使用纯色 drawable）");
+console.log("  - App 图标已按“居中裁正方形 + 铺满容器 + 允许边缘裁切”规则写入 res/mipmap-*/ic_launcher(.png) / ic_launcher_round(.png) / ic_launcher_foreground(.png) / ic_launcher_background(.png)，并启用 adaptive icon xml（foreground/background 均通过 drawable xml 稳定引用到上传图）");
 console.log("  - UI 包源码已复制到 feature 模块 ui 目录");
 console.log(`  - storeId 已注入逻辑模块源码：${storeId}`);
 console.log("  - settings.gradle.kts 已根据 assembly.local.json 更新（不再 include UI 包）");
