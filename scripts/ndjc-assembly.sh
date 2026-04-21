@@ -619,13 +619,24 @@ function writeLauncherBitmapDrawableXmlFiles(resDir) {
     android:gravity="fill" />
 `;
 
-  writeText(foregroundXmlPath, foregroundXml);
-  writeText(backgroundXmlPath, backgroundXml);
+  fs.writeFileSync(foregroundXmlPath, foregroundXml, "utf8");
+  fs.writeFileSync(backgroundXmlPath, backgroundXml, "utf8");
 
   ensureNonEmptyFile(foregroundXmlPath, "ic_launcher_foreground.xml");
   ensureNonEmptyFile(backgroundXmlPath, "ic_launcher_background.xml");
 
-  console.log("[NDJC-assembly] 已重写 launcher drawable xml:");
+  const writtenForegroundXml = readText(foregroundXmlPath);
+  const writtenBackgroundXml = readText(backgroundXmlPath);
+
+  if (!writtenForegroundXml.includes('android:src="@mipmap/ic_launcher_foreground"')) {
+    fail(`ic_launcher_foreground.xml 未成功覆盖为位图版本：${foregroundXmlPath}`);
+  }
+
+  if (!writtenBackgroundXml.includes('android:src="@mipmap/ic_launcher_background"')) {
+    fail(`ic_launcher_background.xml 未成功覆盖为位图版本：${backgroundXmlPath}`);
+  }
+
+  console.log("[NDJC-assembly] 已强制覆盖 launcher drawable xml:");
   console.log("  foreground:", foregroundXmlPath);
   console.log("  background:", backgroundXmlPath);
 
@@ -723,6 +734,11 @@ const wroteLauncherBitmapDrawableXml = writeLauncherBitmapDrawableXmlFiles(RES_D
 if (!wroteLauncherBitmapDrawableXml) {
   fail("写入 launcher bitmap drawable xml 失败");
 }
+
+console.log("[NDJC-assembly] foreground drawable xml content:");
+console.log(readText("templates/Core-Templates/app/src/main/res/drawable/ic_launcher_foreground.xml"));
+console.log("[NDJC-assembly] background drawable xml content:");
+console.log(readText("templates/Core-Templates/app/src/main/res/drawable/ic_launcher_background.xml"));
 
 const patchedLauncherXml = patchAdaptiveIconXmlFile(
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
