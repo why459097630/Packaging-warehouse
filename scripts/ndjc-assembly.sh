@@ -584,64 +584,8 @@ function normalizeLauncherIconSource(pngPath) {
   return normalizedPath;
 }
 
-function writeAdaptiveSolidBackgroundDrawable(resDir) {
-  const drawableDir = path.join(resDir, "drawable");
-  fs.mkdirSync(drawableDir, { recursive: true });
 
-  const target = path.join(drawableDir, "ndjc_adaptive_background_solid.xml");
-  const content = `<?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#FFFFFF" />
-</shape>
-`;
 
-  writeText(target, content);
-  ensureNonEmptyFile(target, "adaptive background 纯色 drawable xml");
-  console.log("[NDJC-assembly] 已写入 adaptive background 纯色 drawable:", target);
-  return true;
-}
-function writeLauncherBitmapDrawableXmlFiles(resDir) {
-  const drawableDir = path.join(resDir, "drawable");
-  fs.mkdirSync(drawableDir, { recursive: true });
-
-  const foregroundXmlPath = path.join(drawableDir, "ic_launcher_foreground.xml");
-  const backgroundXmlPath = path.join(drawableDir, "ic_launcher_background.xml");
-
-  const foregroundXml = `<?xml version="1.0" encoding="utf-8"?>
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@mipmap/ic_launcher_foreground"
-    android:gravity="fill" />
-`;
-
-  const backgroundXml = `<?xml version="1.0" encoding="utf-8"?>
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@mipmap/ic_launcher_background"
-    android:gravity="fill" />
-`;
-
-  fs.writeFileSync(foregroundXmlPath, foregroundXml, "utf8");
-  fs.writeFileSync(backgroundXmlPath, backgroundXml, "utf8");
-
-  ensureNonEmptyFile(foregroundXmlPath, "ic_launcher_foreground.xml");
-  ensureNonEmptyFile(backgroundXmlPath, "ic_launcher_background.xml");
-
-  const writtenForegroundXml = readText(foregroundXmlPath);
-  const writtenBackgroundXml = readText(backgroundXmlPath);
-
-  if (!writtenForegroundXml.includes('android:src="@mipmap/ic_launcher_foreground"')) {
-    fail(`ic_launcher_foreground.xml 未成功覆盖为位图版本：${foregroundXmlPath}`);
-  }
-
-  if (!writtenBackgroundXml.includes('android:src="@mipmap/ic_launcher_background"')) {
-    fail(`ic_launcher_background.xml 未成功覆盖为位图版本：${backgroundXmlPath}`);
-  }
-
-  console.log("[NDJC-assembly] 已强制覆盖 launcher drawable xml:");
-  console.log("  foreground:", foregroundXmlPath);
-  console.log("  background:", backgroundXmlPath);
-
-  return true;
-}
 function writeLauncherIcons(pngPath) {
   const ROOT = process.cwd();
   const resDir = path.join(ROOT, "templates/Core-Templates/app/src/main/res");
@@ -699,6 +643,7 @@ const targets = [
   "ic_launcher.png",
   "ic_launcher_round.png",
   "ic_launcher_foreground.png",
+  "ic_launcher_background.png",
 ];
 
   const writtenTargets = [];
@@ -730,20 +675,11 @@ if (!wroteLauncherIcons) {
   fail(`写入 launcher 图标失败：${iconPngPath}`);
 }
 
-const wroteLauncherBitmapDrawableXml = writeLauncherBitmapDrawableXmlFiles(RES_DIR);
-if (!wroteLauncherBitmapDrawableXml) {
-  fail("写入 launcher bitmap drawable xml 失败");
-}
-
-console.log("[NDJC-assembly] foreground drawable xml content:");
-console.log(readText("templates/Core-Templates/app/src/main/res/drawable/ic_launcher_foreground.xml"));
-console.log("[NDJC-assembly] background drawable xml content:");
-console.log(readText("templates/Core-Templates/app/src/main/res/drawable/ic_launcher_background.xml"));
 
 const patchedLauncherXml = patchAdaptiveIconXmlFile(
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
-  "@drawable/ic_launcher_foreground",
-  "@drawable/ic_launcher_background"
+  "@mipmap/ic_launcher_foreground",
+  "@mipmap/ic_launcher_background"
 );
 if (!patchedLauncherXml) {
   fail("修补 ic_launcher.xml 失败");
@@ -751,8 +687,8 @@ if (!patchedLauncherXml) {
 
 const patchedLauncherRoundXml = patchAdaptiveIconXmlFile(
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
-  "@drawable/ic_launcher_foreground",
-  "@drawable/ic_launcher_background"
+  "@mipmap/ic_launcher_foreground",
+  "@mipmap/ic_launcher_background"
 );
 if (!patchedLauncherRoundXml) {
   fail("修补 ic_launcher_round.xml 失败");
@@ -774,17 +710,20 @@ const launcherVerifyTargets = [
   "templates/Core-Templates/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png",
   "templates/Core-Templates/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png",
   "templates/Core-Templates/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-mdpi/ic_launcher_background.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-hdpi/ic_launcher_background.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xhdpi/ic_launcher_background.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xxhdpi/ic_launcher_background.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xxxhdpi/ic_launcher_background.png",
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
-  "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
-  "templates/Core-Templates/app/src/main/res/drawable/ic_launcher_foreground.xml",
-  "templates/Core-Templates/app/src/main/res/drawable/ic_launcher_background.xml"
+  "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml"
 ];
 
 for (const verifyTarget of launcherVerifyTargets) {
   ensureNonEmptyFile(verifyTarget, "图标校验目标文件");
 }
 
-console.log("[NDJC-assembly] App 图标链路强校验通过（已启用 adaptive icon：foreground 铺满上传图，background 使用纯色 drawable）");
+console.log("[NDJC-assembly] App 图标链路强校验通过（已启用 adaptive icon：foreground/background 均直接引用 mipmap PNG）");
 
 // ---------- 2.7) 复制 UI 包源码到逻辑模块 UI 目录 ----------
 copyUiPackSourcesToFeatureUi(uiPackId, modules);
@@ -905,7 +844,7 @@ if (typeof result.status === "number" && result.status !== 0) {
 
 console.log("[NDJC-assembly] 完成：");
 console.log("  - App 名称已写入 strings.xml + manifest label 指向 @string/app_name");
-console.log("  - App 图标已按“居中裁正方形 + 铺满容器 + 允许边缘裁切”规则写入 res/mipmap-*/ic_launcher(.png) / ic_launcher_round(.png) / ic_launcher_foreground(.png) / ic_launcher_background(.png)，并启用 adaptive icon xml（foreground/background 均通过 drawable xml 稳定引用到上传图）");
+console.log("  - App 图标已按“居中裁正方形 + 铺满容器 + 允许边缘裁切”规则写入 res/mipmap-*/ic_launcher(.png) / ic_launcher_round(.png) / ic_launcher_foreground(.png) / ic_launcher_background(.png)，并启用 adaptive icon xml（foreground/background 均直接引用 mipmap PNG）");
 console.log("  - UI 包源码已复制到 feature 模块 ui 目录");
 console.log(`  - storeId 已注入逻辑模块源码：${storeId}`);
 console.log("  - settings.gradle.kts 已根据 assembly.local.json 更新（不再 include UI 包）");
