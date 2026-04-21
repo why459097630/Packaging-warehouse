@@ -551,7 +551,29 @@ function cleanupDrawableDuplicates(resDir) {
     }
   }
 }
+function disableAdaptiveIconXml(resDir) {
+  const anydpiDir = path.join(resDir, "mipmap-anydpi-v26");
+  if (!fs.existsSync(anydpiDir)) {
+    console.log("[NDJC-assembly] 未找到 mipmap-anydpi-v26，跳过 adaptive icon xml 删除");
+    return true;
+  }
 
+  const targets = [
+    path.join(anydpiDir, "ic_launcher.xml"),
+    path.join(anydpiDir, "ic_launcher_round.xml"),
+  ];
+
+  for (const target of targets) {
+    if (fs.existsSync(target)) {
+      fs.rmSync(target, { force: true });
+      console.log("[NDJC-assembly] 已删除 adaptive icon xml:", target);
+    } else {
+      console.log("[NDJC-assembly] adaptive icon xml 不存在，跳过:", target);
+    }
+  }
+
+  return true;
+}
 function writeLauncherIcons(pngPath) {
   const ROOT = process.cwd();
   const resDir = path.join(ROOT, "templates/Core-Templates/app/src/main/res");
@@ -639,22 +661,9 @@ if (!wroteLauncherIcons) {
   fail(`写入 launcher 图标失败：${iconPngPath}`);
 }
 
-const patchedLauncherXml = patchAdaptiveIconXmlFile(
-  "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
-  "@mipmap/ic_launcher_foreground",
-  "@mipmap/ic_launcher_background"
-);
-if (!patchedLauncherXml) {
-  fail("修补 ic_launcher.xml 失败");
-}
-
-const patchedLauncherRoundXml = patchAdaptiveIconXmlFile(
-  "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
-  "@mipmap/ic_launcher_foreground",
-  "@mipmap/ic_launcher_background"
-);
-if (!patchedLauncherRoundXml) {
-  fail("修补 ic_launcher_round.xml 失败");
+const disabledAdaptiveIconXml = disableAdaptiveIconXml(RES_DIR);
+if (!disabledAdaptiveIconXml) {
+  fail("禁用 adaptive icon xml 失败");
 }
 
 const launcherVerifyTargets = [
@@ -663,15 +672,18 @@ const launcherVerifyTargets = [
   "templates/Core-Templates/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
   "templates/Core-Templates/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
   "templates/Core-Templates/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
-  "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
-  "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml"
+  "templates/Core-Templates/app/src/main/res/mipmap-mdpi/ic_launcher_round.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-hdpi/ic_launcher_round.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png"
 ];
 
 for (const verifyTarget of launcherVerifyTargets) {
   ensureNonEmptyFile(verifyTarget, "图标校验目标文件");
 }
 
-console.log("[NDJC-assembly] App 图标链路强校验通过");
+console.log("[NDJC-assembly] App 图标链路强校验通过（已禁用 adaptive icon xml，仅保留普通 PNG 图标）");
 
 // ---------- 2.7) 复制 UI 包源码到逻辑模块 UI 目录 ----------
 copyUiPackSourcesToFeatureUi(uiPackId, modules);
@@ -792,7 +804,7 @@ if (typeof result.status === "number" && result.status !== 0) {
 
 console.log("[NDJC-assembly] 完成：");
 console.log("  - App 名称已写入 strings.xml + manifest label 指向 @string/app_name");
-console.log("  - App 图标已写入 res/mipmap-*/ic_launcher_foreground/background(.png) 以及 ic_launcher(.png) / ic_launcher_round(.png)");
+console.log("  - App 图标已写入 res/mipmap-*/ic_launcher(.png) / ic_launcher_round(.png) / ic_launcher_foreground(.png) / ic_launcher_background(.png)，并已删除 mipmap-anydpi-v26 下的 adaptive icon xml");
 console.log("  - UI 包源码已复制到 feature 模块 ui 目录");
 console.log(`  - storeId 已注入逻辑模块源码：${storeId}`);
 console.log("  - settings.gradle.kts 已根据 assembly.local.json 更新（不再 include UI 包）");
