@@ -43,6 +43,23 @@ function ensureFile(p, desc) {
   if (!fs.existsSync(p)) fail(`找不到 ${desc}：${p}`);
 }
 
+function ensureExists(p, desc) {
+  if (!fs.existsSync(p)) {
+    fail(`缺少 ${desc}：${p}`);
+  }
+}
+
+function ensureNonEmptyFile(p, desc) {
+  ensureExists(p, desc);
+  const stat = fs.statSync(p);
+  if (!stat.isFile()) {
+    fail(`${desc} 不是文件：${p}`);
+  }
+  if (stat.size <= 0) {
+    fail(`${desc} 为空文件：${p}`);
+  }
+}
+
 function readText(p) {
   return fs.readFileSync(p, "utf8");
 }
@@ -479,18 +496,37 @@ patchManifestLabel(MANIFEST_XML);
 
 // ---------- 2.6) 写入 Launcher 图标到模板 ----------
 function patchAdaptiveIconXmlFile(xmlPath, foregroundRef, backgroundRef) {
-  if (!fs.existsSync(xmlPath)) return false;
+  ensureFile(xmlPath, "adaptive icon xml");
   let x = readText(xmlPath);
 
-  // 只做最小替换：把 foreground/background 的 android:drawable 指向 @mipmap/...
-  x = x.replace(/<foreground>\s*<inset[^>]*android:drawable="[^"]*"[^>]*\/>\s*<\/foreground>/m,
-                `<foreground>\n        <inset android:drawable="${foregroundRef}" android:inset="0%"/>\n    </foreground>`);
-  x = x.replace(/<background>\s*<inset[^>]*android:drawable="[^"]*"[^>]*\/>\s*<\/background>/m,
-                `<background>\n        <inset android:drawable="${backgroundRef}" android:inset="0%"/>\n    </background>`);
+  const original = x;
+
+  x = x.replace(
+    /<foreground>\s*<inset[^>]*android:drawable="[^"]*"[^>]*\/>\s*<\/foreground>/m,
+    `<foreground>\n        <inset android:drawable="${foregroundRef}" android:inset="0%"/>\n    </foreground>`
+  );
+  x = x.replace(
+    /<background>\s*<inset[^>]*android:drawable="[^"]*"[^>]*\/>\s*<\/background>/m,
+    `<background>\n        <inset android:drawable="${backgroundRef}" android:inset="0%"/>\n    </background>`
+  );
   x = x.replace(/android:drawable="[^"]*ic_launcher_foreground[^"]*"/g, `android:drawable="${foregroundRef}"`);
   x = x.replace(/android:drawable="[^"]*ic_launcher_background[^"]*"/g, `android:drawable="${backgroundRef}"`);
 
+  if (x === original) {
+    fail(`adaptive icon xml 未发生任何修改：${xmlPath}`);
+  }
+
   writeText(xmlPath, x);
+
+  const patched = readText(xmlPath);
+  if (!patched.includes(`android:drawable="${foregroundRef}"`)) {
+    fail(`adaptive icon xml foreground 引用写入失败：${xmlPath}`);
+  }
+  if (!patched.includes(`android:drawable="${backgroundRef}"`)) {
+    fail(`adaptive icon xml background 引用写入失败：${xmlPath}`);
+  }
+
+  console.log("[NDJC-assembly] 已修补 adaptive icon xml:", xmlPath);
   return true;
 }
 
@@ -521,12 +557,13 @@ function cleanupDrawableDuplicates(resDir) {
 function writeLauncherIcons(pngPath) {
   const ROOT = process.cwd();
   const resDir = path.join(ROOT, "templates/Core-Templates/app/src/main/res");
+
+  ensureNonEmptyFile(pngPath, "源图标文件");
+
   if (!fs.existsSync(resDir)) {
-    warn(`res dir not found: ${resDir}`);
-    return false;
+    fail(`找不到 res 目录：${resDir}`);
   }
 
-  // A) 任何情况下：mipmap-anydpi-v26 只能放 adaptive icon 的 XML，绝对不能出现同名 PNG
   const anydpiDir = path.join(resDir, "mipmap-anydpi-v26");
   if (fs.existsSync(anydpiDir)) {
     for (const f of [
@@ -536,18 +573,18 @@ function writeLauncherIcons(pngPath) {
       "ic_launcher_background.png",
     ]) {
       const p = path.join(anydpiDir, f);
-      try { if (fs.existsSync(p)) fs.rmSync(p, { force: true }); } catch {}
+      if (fs.existsSync(p)) {
+        fs.rmSync(p, { force: true });
+        console.log("[NDJC-assembly] 已删除 anydpi 非法 PNG:", p);
+      }
     }
   }
 
-  // B) 清理“同名 xml + png”冲突（这是 Duplicate resources 的最常见根因）
-  //    例如：你曾经生成过 mipmap-anydpi-v26/ic_launcher.png 或 drawable/ic_launcher_foreground.png 等
   for (const dirent of fs.readdirSync(resDir, { withFileTypes: true })) {
     if (!dirent.isDirectory()) continue;
 
     const d = path.join(resDir, dirent.name);
 
-    // 只处理 drawable* 与 mipmap*（避免误删其它资源）
     if (!dirent.name.startsWith("drawable") && !dirent.name.startsWith("mipmap")) continue;
 
     const names = ["ic_launcher", "ic_launcher_round", "ic_launcher_foreground", "ic_launcher_background"];
@@ -555,28 +592,19 @@ function writeLauncherIcons(pngPath) {
       const xml = path.join(d, `${n}.xml`);
       const png = path.join(d, `${n}.png`);
 
-      // 规则：如果同名 xml 与 png 同时存在 -> 删除 png（保留 xml）
-      // 这样可确保你模板已有 xml 不会和 png 冲突；真正需要 png 的目录我们会在下方明确写入
       if (fs.existsSync(xml) && fs.existsSync(png)) {
-        try {
-          fs.rmSync(png, { force: true });
-          warn(`已清理冲突资源：${png}（保留 ${xml}）`);
-        } catch (e) {
-          warn(`清理冲突资源失败：${png} -> ${e.message}`);
-        }
+        fs.rmSync(png, { force: true });
+        console.log("[NDJC-assembly] 已清理冲突资源:", png);
       }
     }
   }
 
-  // C) 只往 mipmap-*dpi 写 PNG（这才符合你现在 manifest: android:icon="@mipmap/ic_launcher" 的引用方式）
   const mipmapBases = ["mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi"];
-  const mipmapDirs = mipmapBases.map(b => path.join(resDir, b));
+  const mipmapDirs = mipmapBases.map((b) => path.join(resDir, b));
   for (const d of mipmapDirs) {
-    try { fs.mkdirSync(d, { recursive: true }); } catch {}
+    fs.mkdirSync(d, { recursive: true });
   }
 
-  // 关键点：为了实现“上传一张图 -> adaptive icon 背景铺满”，我们把这张图同时写入 foreground/background
-  // 这样 launcher 的 mask 不会露出一圈纯色底（你之前那圈就是 background 纯色导致的观感差异）
   const targets = [
     "ic_launcher.png",
     "ic_launcher_round.png",
@@ -584,34 +612,68 @@ function writeLauncherIcons(pngPath) {
     "ic_launcher_background.png",
   ];
 
+  const writtenTargets = [];
+
   for (const dir of mipmapDirs) {
     for (const f of targets) {
       const target = path.join(dir, f);
-      try {
-        fs.copyFileSync(pngPath, target);
-      } catch (e) {
-        warn(`写入图标失败: ${dir}/${f} -> ${e.message}`);
-      }
+      fs.copyFileSync(pngPath, target);
+      writtenTargets.push(target);
+      console.log("[NDJC-assembly] 已写入图标:", target);
     }
   }
 
+  for (const target of writtenTargets) {
+    ensureNonEmptyFile(target, "已写入的 launcher 图标");
+  }
+
+  console.log("[NDJC-assembly] Launcher 图标写入完成，共写入文件数:", writtenTargets.length);
   return true;
 }
 
 
 console.log("[NDJC-assembly] 写入 App 图标:", iconPathFromJson ? iconPngPath : `${iconPngPath} (fallback)`);
-writeLauncherIcons(iconPngPath);
-// 把 adaptive icon 的 foreground/background 都指向 @mipmap（与我们写入的 png 目录一致）
-patchAdaptiveIconXmlFile(
+
+ensureNonEmptyFile(iconPngPath, "图标源文件");
+
+const wroteLauncherIcons = writeLauncherIcons(iconPngPath);
+if (!wroteLauncherIcons) {
+  fail(`写入 launcher 图标失败：${iconPngPath}`);
+}
+
+const patchedLauncherXml = patchAdaptiveIconXmlFile(
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
   "@mipmap/ic_launcher_foreground",
   "@mipmap/ic_launcher_background"
 );
-patchAdaptiveIconXmlFile(
+if (!patchedLauncherXml) {
+  fail("修补 ic_launcher.xml 失败");
+}
+
+const patchedLauncherRoundXml = patchAdaptiveIconXmlFile(
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
   "@mipmap/ic_launcher_foreground",
   "@mipmap/ic_launcher_background"
 );
+if (!patchedLauncherRoundXml) {
+  fail("修补 ic_launcher_round.xml 失败");
+}
+
+const launcherVerifyTargets = [
+  "templates/Core-Templates/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+  "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml"
+];
+
+for (const verifyTarget of launcherVerifyTargets) {
+  ensureNonEmptyFile(verifyTarget, "图标校验目标文件");
+}
+
+console.log("[NDJC-assembly] App 图标链路强校验通过");
 
 // ---------- 2.7) 复制 UI 包源码到逻辑模块 UI 目录 ----------
 copyUiPackSourcesToFeatureUi(uiPackId, modules);
