@@ -1,0 +1,17 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "阿斯顿维拉",
+  "packageName": "com.ndjc.apps.app.etrial000048",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_trial_000048",
+  "merchantEmail": "whywhy9264@gmail.com",
+  "privacyUrl": "https://niandongjicheng.vercel.app/privacy/store_showcase_trial_000048",
+  "plan": "free",
+  "firebaseProjectId": "ndjc-free-03",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_03"
+}
