@@ -446,8 +446,12 @@ if (!isValidApplicationId(packageName)) {
 // ✅ 新增：图标输入（iconPath 或 iconBase64）
 const iconPathFromJson = (assembly.iconPath || assembly.icon_path || "").toString().trim();
 const iconBase64       = (assembly.iconBase64 || assembly.icon_base64 || "").toString().trim();
-const ICON_FALLBACK    = "lib/ndjc/icon.png"; // 约定：route.ts 可把上传图标落盘到这里
-const iconPngPath      = iconPathFromJson || ICON_FALLBACK;
+
+if (!iconPathFromJson) {
+  fail("assembly.local.json 缺少 iconPath，禁止使用 fallback 图标");
+}
+
+const iconPngPath = iconPathFromJson;
 
 
 console.log("[NDJC-assembly] 使用组合：");
@@ -666,9 +670,10 @@ const targets = [
 }
 
 
-console.log("[NDJC-assembly] 写入 App 图标:", iconPathFromJson ? iconPngPath : `${iconPngPath} (fallback)`);
+console.log("[NDJC-assembly] 写入 App 图标:", iconPngPath);
 
 ensureNonEmptyFile(iconPngPath, "图标源文件");
+console.log("[NDJC-assembly] 图标源文件校验通过:", iconPngPath);
 
 const wroteLauncherIcons = writeLauncherIcons(iconPngPath);
 if (!wroteLauncherIcons) {
