@@ -499,8 +499,6 @@ function patchAdaptiveIconXmlFile(xmlPath, foregroundRef, backgroundRef) {
   ensureFile(xmlPath, "adaptive icon xml");
   let x = readText(xmlPath);
 
-  const original = x;
-
   x = x.replace(
     /<foreground>\s*<inset[^>]*android:drawable="[^"]*"[^>]*\/>\s*<\/foreground>/m,
     `<foreground>\n        <inset android:drawable="${foregroundRef}" android:inset="0%"/>\n    </foreground>`
@@ -512,36 +510,21 @@ function patchAdaptiveIconXmlFile(xmlPath, foregroundRef, backgroundRef) {
   x = x.replace(/android:drawable="[^"]*ic_launcher_foreground[^"]*"/g, `android:drawable="${foregroundRef}"`);
   x = x.replace(/android:drawable="[^"]*ic_launcher_background[^"]*"/g, `android:drawable="${backgroundRef}"`);
 
-writeText(xmlPath, x);
-
-const patched = readText(xmlPath);
-
-const hasForeground = patched.includes(`android:drawable="${foregroundRef}"`);
-const hasBackground = patched.includes(`android:drawable="${backgroundRef}"`);
-
-if (!hasForeground) {
-  fail(`adaptive icon xml foreground 引用缺失：${xmlPath}`);
-}
-
-if (!hasBackground) {
-  fail(`adaptive icon xml background 引用缺失：${xmlPath}`);
-}
-
-console.log("[NDJC-assembly] adaptive icon xml 已满足要求:", xmlPath);
-
-return true;
-
   writeText(xmlPath, x);
 
   const patched = readText(xmlPath);
-  if (!patched.includes(`android:drawable="${foregroundRef}"`)) {
-    fail(`adaptive icon xml foreground 引用写入失败：${xmlPath}`);
-  }
-  if (!patched.includes(`android:drawable="${backgroundRef}"`)) {
-    fail(`adaptive icon xml background 引用写入失败：${xmlPath}`);
+  const hasForeground = patched.includes(`android:drawable="${foregroundRef}"`);
+  const hasBackground = patched.includes(`android:drawable="${backgroundRef}"`);
+
+  if (!hasForeground) {
+    fail(`adaptive icon xml foreground 引用缺失：${xmlPath}`);
   }
 
-  console.log("[NDJC-assembly] 已修补 adaptive icon xml:", xmlPath);
+  if (!hasBackground) {
+    fail(`adaptive icon xml background 引用缺失：${xmlPath}`);
+  }
+
+  console.log("[NDJC-assembly] adaptive icon xml 已满足要求:", xmlPath);
   return true;
 }
 
