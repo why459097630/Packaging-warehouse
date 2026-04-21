@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260421T161841197Z-3587PF",
+  "appName": "瓦伦西亚",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000062",
+  "adminName": "123456789@qq.com",
+  "createdAt": "2026-04-21T16:18:41.908Z",
+  "updatedAt": "2026-04-21T16:18:41.908Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260421T161841197Z-3587PF/status.json"
+}
