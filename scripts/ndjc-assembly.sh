@@ -584,20 +584,20 @@ function normalizeLauncherIconSource(pngPath) {
   return normalizedPath;
 }
 
-function writeAdaptiveTransparentForegroundDrawable(resDir) {
+function writeAdaptiveSolidBackgroundDrawable(resDir) {
   const drawableDir = path.join(resDir, "drawable");
   fs.mkdirSync(drawableDir, { recursive: true });
 
-  const target = path.join(drawableDir, "ndjc_adaptive_foreground_transparent.xml");
+  const target = path.join(drawableDir, "ndjc_adaptive_background_solid.xml");
   const content = `<?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="@android:color/transparent" />
+    <solid android:color="#FFFFFF" />
 </shape>
 `;
 
   writeText(target, content);
-  ensureNonEmptyFile(target, "adaptive foreground 透明 drawable xml");
-  console.log("[NDJC-assembly] 已写入 adaptive foreground 透明 drawable:", target);
+  ensureNonEmptyFile(target, "adaptive background 纯色 drawable xml");
+  console.log("[NDJC-assembly] 已写入 adaptive background 纯色 drawable:", target);
   return true;
 }
 function writeLauncherIcons(pngPath) {
@@ -656,7 +656,7 @@ function writeLauncherIcons(pngPath) {
 const targets = [
   "ic_launcher.png",
   "ic_launcher_round.png",
-  "ic_launcher_background.png",
+  "ic_launcher_foreground.png",
 ];
 
   const writtenTargets = [];
@@ -688,15 +688,15 @@ if (!wroteLauncherIcons) {
   fail(`写入 launcher 图标失败：${iconPngPath}`);
 }
 
-const wroteAdaptiveTransparentForegroundDrawable = writeAdaptiveTransparentForegroundDrawable(RES_DIR);
-if (!wroteAdaptiveTransparentForegroundDrawable) {
-  fail("写入 adaptive foreground 透明 drawable 失败");
+const wroteAdaptiveSolidBackgroundDrawable = writeAdaptiveSolidBackgroundDrawable(RES_DIR);
+if (!wroteAdaptiveSolidBackgroundDrawable) {
+  fail("写入 adaptive background 纯色 drawable 失败");
 }
 
 const patchedLauncherXml = patchAdaptiveIconXmlFile(
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
-  "@drawable/ndjc_adaptive_foreground_transparent",
-  "@mipmap/ic_launcher_background"
+  "@mipmap/ic_launcher_foreground",
+  "@drawable/ndjc_adaptive_background_solid"
 );
 if (!patchedLauncherXml) {
   fail("修补 ic_launcher.xml 失败");
@@ -704,8 +704,8 @@ if (!patchedLauncherXml) {
 
 const patchedLauncherRoundXml = patchAdaptiveIconXmlFile(
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
-  "@drawable/ndjc_adaptive_foreground_transparent",
-  "@mipmap/ic_launcher_background"
+  "@mipmap/ic_launcher_foreground",
+  "@drawable/ndjc_adaptive_background_solid"
 );
 if (!patchedLauncherRoundXml) {
   fail("修补 ic_launcher_round.xml 失败");
@@ -722,21 +722,21 @@ const launcherVerifyTargets = [
   "templates/Core-Templates/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png",
   "templates/Core-Templates/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png",
   "templates/Core-Templates/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png",
-  "templates/Core-Templates/app/src/main/res/mipmap-mdpi/ic_launcher_background.png",
-  "templates/Core-Templates/app/src/main/res/mipmap-hdpi/ic_launcher_background.png",
-  "templates/Core-Templates/app/src/main/res/mipmap-xhdpi/ic_launcher_background.png",
-  "templates/Core-Templates/app/src/main/res/mipmap-xxhdpi/ic_launcher_background.png",
-  "templates/Core-Templates/app/src/main/res/mipmap-xxxhdpi/ic_launcher_background.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png",
+  "templates/Core-Templates/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
   "templates/Core-Templates/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
-  "templates/Core-Templates/app/src/main/res/drawable/ndjc_adaptive_foreground_transparent.xml"
+  "templates/Core-Templates/app/src/main/res/drawable/ndjc_adaptive_background_solid.xml"
 ];
 
 for (const verifyTarget of launcherVerifyTargets) {
   ensureNonEmptyFile(verifyTarget, "图标校验目标文件");
 }
 
-console.log("[NDJC-assembly] App 图标链路强校验通过（已启用 adaptive icon：background 铺满上传图，foreground 使用透明 drawable）");
+console.log("[NDJC-assembly] App 图标链路强校验通过（已启用 adaptive icon：foreground 铺满上传图，background 使用纯色 drawable）");
 
 // ---------- 2.7) 复制 UI 包源码到逻辑模块 UI 目录 ----------
 copyUiPackSourcesToFeatureUi(uiPackId, modules);
@@ -857,7 +857,7 @@ if (typeof result.status === "number" && result.status !== 0) {
 
 console.log("[NDJC-assembly] 完成：");
 console.log("  - App 名称已写入 strings.xml + manifest label 指向 @string/app_name");
-console.log("  - App 图标已按“居中裁正方形 + 铺满容器 + 允许边缘裁切”规则写入 res/mipmap-*/ic_launcher(.png) / ic_launcher_round(.png) / ic_launcher_background(.png)，并启用 adaptive icon xml（background 铺满上传图，foreground 使用透明 drawable）");
+console.log("  - App 图标已按“居中裁正方形 + 铺满容器 + 允许边缘裁切”规则写入 res/mipmap-*/ic_launcher(.png) / ic_launcher_round(.png) / ic_launcher_foreground(.png)，并启用 adaptive icon xml（foreground 铺满上传图，background 使用纯色 drawable）");
 console.log("  - UI 包源码已复制到 feature 模块 ui 目录");
 console.log(`  - storeId 已注入逻辑模块源码：${storeId}`);
 console.log("  - settings.gradle.kts 已根据 assembly.local.json 更新（不再 include UI 包）");
