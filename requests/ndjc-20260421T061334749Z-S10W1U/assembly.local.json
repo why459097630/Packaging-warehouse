@@ -1,0 +1,17 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "AC米兰",
+  "packageName": "com.ndjc.apps.ac.etrial000051",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_trial_000051",
+  "merchantEmail": "whywhy9264@gmail.com",
+  "privacyUrl": "https://niandongjicheng.vercel.app/privacy/store_showcase_trial_000051",
+  "plan": "free",
+  "firebaseProjectId": "ndjc-free-03",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_03"
+}
