@@ -1,0 +1,18 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "瓦伦西亚",
+  "packageName": "com.ndjc.apps.app.etrial000062",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_trial_000062",
+  "merchantEmail": "whywhy9264@gmail.com",
+  "privacyUrl": "https://niandongjicheng.vercel.app/privacy/store_showcase_trial_000062",
+  "iconPath": "requests/ndjc-20260421T161841197Z-3587PF/icon.png",
+  "plan": "free",
+  "firebaseProjectId": "ndjc-free-02",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_02"
+}
