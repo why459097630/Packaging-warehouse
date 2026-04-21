@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260421T131041222Z-3CNUYI",
+  "appName": "凯泽斯劳特",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000057",
+  "adminName": "123456789@qq.com",
+  "createdAt": "2026-04-21T13:10:42.087Z",
+  "updatedAt": "2026-04-21T13:10:42.087Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260421T131041222Z-3CNUYI/status.json"
+}
