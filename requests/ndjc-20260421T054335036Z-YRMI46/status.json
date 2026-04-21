@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260421T054335036Z-YRMI46",
+  "appName": "亚特兰大",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000050",
+  "adminName": "123456789@qq.com",
+  "createdAt": "2026-04-21T05:43:35.496Z",
+  "updatedAt": "2026-04-21T05:43:35.496Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260421T054335036Z-YRMI46/status.json"
+}
