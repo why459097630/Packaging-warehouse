@@ -512,9 +512,24 @@ function patchAdaptiveIconXmlFile(xmlPath, foregroundRef, backgroundRef) {
   x = x.replace(/android:drawable="[^"]*ic_launcher_foreground[^"]*"/g, `android:drawable="${foregroundRef}"`);
   x = x.replace(/android:drawable="[^"]*ic_launcher_background[^"]*"/g, `android:drawable="${backgroundRef}"`);
 
-  if (x === original) {
-    fail(`adaptive icon xml 未发生任何修改：${xmlPath}`);
-  }
+writeText(xmlPath, x);
+
+const patched = readText(xmlPath);
+
+const hasForeground = patched.includes(`android:drawable="${foregroundRef}"`);
+const hasBackground = patched.includes(`android:drawable="${backgroundRef}"`);
+
+if (!hasForeground) {
+  fail(`adaptive icon xml foreground 引用缺失：${xmlPath}`);
+}
+
+if (!hasBackground) {
+  fail(`adaptive icon xml background 引用缺失：${xmlPath}`);
+}
+
+console.log("[NDJC-assembly] adaptive icon xml 已满足要求:", xmlPath);
+
+return true;
 
   writeText(xmlPath, x);
 
