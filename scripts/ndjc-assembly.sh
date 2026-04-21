@@ -551,6 +551,39 @@ function cleanupDrawableDuplicates(resDir) {
     }
   }
 }
+
+function normalizeLauncherIconSource(pngPath) {
+  ensureNonEmptyFile(pngPath, "源图标文件");
+
+  const normalizedPath = path.join("lib", "ndjc", "icon-normalized.png");
+  const result = spawnSync(
+    "convert",
+    [
+      pngPath,
+      "-auto-orient",
+      "-gravity", "center",
+      "-resize", "1024x1024^",
+      "-extent", "1024x1024",
+      "PNG32:" + normalizedPath,
+    ],
+    {
+      stdio: "inherit",
+    }
+  );
+
+  if (result.error) {
+    fail(`图标规范化失败：${result.error.message}`);
+  }
+
+  if (typeof result.status === "number" && result.status !== 0) {
+    fail(`图标规范化失败，退出码：${result.status}`);
+  }
+
+  ensureNonEmptyFile(normalizedPath, "规范化后的图标文件");
+  console.log("[NDJC-assembly] 已生成铺满容器用的正方形图标:", normalizedPath);
+  return normalizedPath;
+}
+
 function disableAdaptiveIconXml(resDir) {
   const anydpiDir = path.join(resDir, "mipmap-anydpi-v26");
   if (!fs.existsSync(anydpiDir)) {
@@ -583,6 +616,8 @@ function writeLauncherIcons(pngPath) {
   if (!fs.existsSync(resDir)) {
     fail(`找不到 res 目录：${resDir}`);
   }
+
+  const normalizedIconPath = normalizeLauncherIconSource(pngPath);
 
   const anydpiDir = path.join(resDir, "mipmap-anydpi-v26");
   if (fs.existsSync(anydpiDir)) {
@@ -637,7 +672,7 @@ function writeLauncherIcons(pngPath) {
   for (const dir of mipmapDirs) {
     for (const f of targets) {
       const target = path.join(dir, f);
-      fs.copyFileSync(pngPath, target);
+      fs.copyFileSync(normalizedIconPath, target);
       writtenTargets.push(target);
       console.log("[NDJC-assembly] 已写入图标:", target);
     }
@@ -804,7 +839,7 @@ if (typeof result.status === "number" && result.status !== 0) {
 
 console.log("[NDJC-assembly] 完成：");
 console.log("  - App 名称已写入 strings.xml + manifest label 指向 @string/app_name");
-console.log("  - App 图标已写入 res/mipmap-*/ic_launcher(.png) / ic_launcher_round(.png) / ic_launcher_foreground(.png) / ic_launcher_background(.png)，并已删除 mipmap-anydpi-v26 下的 adaptive icon xml");
+console.log("  - App 图标已按“居中裁正方形 + 铺满容器 + 允许边缘裁切”规则写入 res/mipmap-*/ic_launcher(.png) / ic_launcher_round(.png) / ic_launcher_foreground(.png) / ic_launcher_background(.png)，并已删除 mipmap-anydpi-v26 下的 adaptive icon xml");
 console.log("  - UI 包源码已复制到 feature 模块 ui 目录");
 console.log(`  - storeId 已注入逻辑模块源码：${storeId}`);
 console.log("  - settings.gradle.kts 已根据 assembly.local.json 更新（不再 include UI 包）");
