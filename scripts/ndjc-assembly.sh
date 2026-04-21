@@ -551,7 +551,31 @@ function cleanupDrawableDuplicates(resDir) {
     }
   }
 }
+function writeTransparentForegroundIcons(resDir) {
+  const mipmapBases = ["mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi"];
+  const transparentPngBase64 =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg==";
+  const transparentBuffer = Buffer.from(transparentPngBase64, "base64");
 
+  const writtenTargets = [];
+
+  for (const base of mipmapBases) {
+    const dir = path.join(resDir, base);
+    fs.mkdirSync(dir, { recursive: true });
+
+    const target = path.join(dir, "ic_launcher_foreground.png");
+    fs.writeFileSync(target, transparentBuffer);
+    writtenTargets.push(target);
+    console.log("[NDJC-assembly] 已写入透明前景图:", target);
+  }
+
+  for (const target of writtenTargets) {
+    ensureNonEmptyFile(target, "透明 foreground 图标");
+  }
+
+  console.log("[NDJC-assembly] 透明 foreground 图标写入完成，共写入文件数:", writtenTargets.length);
+  return true;
+}
 function writeLauncherIcons(pngPath) {
   const ROOT = process.cwd();
   const resDir = path.join(ROOT, "templates/Core-Templates/app/src/main/res");
@@ -603,21 +627,20 @@ function writeLauncherIcons(pngPath) {
     fs.mkdirSync(d, { recursive: true });
   }
 
-  const targets = [
+  const uploadTargets = [
     "ic_launcher.png",
     "ic_launcher_round.png",
-    "ic_launcher_foreground.png",
     "ic_launcher_background.png",
   ];
 
   const writtenTargets = [];
 
   for (const dir of mipmapDirs) {
-    for (const f of targets) {
+    for (const f of uploadTargets) {
       const target = path.join(dir, f);
       fs.copyFileSync(pngPath, target);
       writtenTargets.push(target);
-      console.log("[NDJC-assembly] 已写入图标:", target);
+      console.log("[NDJC-assembly] 已写入上传图标:", target);
     }
   }
 
@@ -625,7 +648,12 @@ function writeLauncherIcons(pngPath) {
     ensureNonEmptyFile(target, "已写入的 launcher 图标");
   }
 
-  console.log("[NDJC-assembly] Launcher 图标写入完成，共写入文件数:", writtenTargets.length);
+  const wroteTransparentForeground = writeTransparentForegroundIcons(resDir);
+  if (!wroteTransparentForeground) {
+    fail("透明 foreground 图标写入失败");
+  }
+
+  console.log("[NDJC-assembly] Launcher 图标写入完成，共写入上传图文件数:", writtenTargets.length);
   return true;
 }
 
@@ -792,7 +820,7 @@ if (typeof result.status === "number" && result.status !== 0) {
 
 console.log("[NDJC-assembly] 完成：");
 console.log("  - App 名称已写入 strings.xml + manifest label 指向 @string/app_name");
-console.log("  - App 图标已写入 res/mipmap-*/ic_launcher_foreground/background(.png) 以及 ic_launcher(.png) / ic_launcher_round(.png)");
+console.log("  - App 图标已写入 res/mipmap-*/ic_launcher(.png) / ic_launcher_round(.png) / ic_launcher_background(.png)，并生成透明 ic_launcher_foreground(.png)");
 console.log("  - UI 包源码已复制到 feature 模块 ui 目录");
 console.log(`  - storeId 已注入逻辑模块源码：${storeId}`);
 console.log("  - settings.gradle.kts 已根据 assembly.local.json 更新（不再 include UI 包）");
