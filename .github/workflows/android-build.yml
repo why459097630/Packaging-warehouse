@@ -306,8 +306,7 @@ jobs:
           echo "Wrote $DST from $SRC"
           ls -la "$DST" || true
 
-      # 可选：把 requests/<run_id>/icon.png 变成 lib/ndjc/icon.png
-      - name: NDJC | Materialize icon -> lib/ndjc/icon.png (optional)
+      - name: NDJC | Materialize icon -> lib/ndjc/icon.png
         shell: bash
         run: |
           set -euo pipefail
@@ -315,40 +314,39 @@ jobs:
           SRC="requests/${RUN_ID}/icon.png"
           DST="lib/ndjc/icon.png"
 
-          if [ -f "$SRC" ]; then
-            mkdir -p "$(dirname "$DST")"
-            cp -f "$SRC" "$DST"
-            echo "Wrote $DST from $SRC"
-            ls -la "$DST" || true
-
-            # --- NDJC: Force-convert to a valid PNG to avoid AAPT2 compile failures ---
-            # Ensure ImageMagick exists
-            if ! command -v magick >/dev/null 2>&1 && ! command -v convert >/dev/null 2>&1; then
-              echo "[NDJC] Installing ImageMagick..."
-              sudo apt-get update -y
-              sudo apt-get install -y imagemagick
-            fi
-
-            echo "[NDJC] icon file type before convert:"
-            file "$DST" || true
-
-            TMP="${DST}.tmp.png"
-            if command -v magick >/dev/null 2>&1; then
-              magick "$DST" -strip PNG32:"$TMP"
-            else
-              convert "$DST" -strip PNG32:"$TMP"
-            fi
-
-            mv -f "$TMP" "$DST"
-
-            echo "[NDJC] icon file type after convert:"
-            file "$DST" || true
-            ls -la "$DST" || true
-            # Quick signature check (must start with 89 50 4E 47)
-            head -c 8 "$DST" | xxd || true
-          else
-            echo "No icon uploaded for $RUN_ID (skip)"
+          if [ ! -f "$SRC" ]; then
+            echo "Missing required icon file: $SRC"
+            ls -la "requests/${RUN_ID}" || true
+            exit 1
           fi
+
+          mkdir -p "$(dirname "$DST")"
+          cp -f "$SRC" "$DST"
+          echo "Wrote $DST from $SRC"
+          ls -la "$DST" || true
+
+          if ! command -v magick >/dev/null 2>&1 && ! command -v convert >/dev/null 2>&1; then
+            echo "[NDJC] Installing ImageMagick..."
+            sudo apt-get update -y
+            sudo apt-get install -y imagemagick
+          fi
+
+          echo "[NDJC] icon file type before convert:"
+          file "$DST" || true
+
+          TMP="${DST}.tmp.png"
+          if command -v magick >/dev/null 2>&1; then
+            magick "$DST" -strip PNG32:"$TMP"
+          else
+            convert "$DST" -strip PNG32:"$TMP"
+          fi
+
+          mv -f "$TMP" "$DST"
+
+          echo "[NDJC] icon file type after convert:"
+          file "$DST" || true
+          ls -la "$DST" || true
+          head -c 8 "$DST" | xxd || true
 
       - name: NDJC | Update status - processing identity
         shell: bash
