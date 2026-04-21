@@ -9,11 +9,12 @@
     <!-- Android 13+ 通知权限 -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <application
-        android:name=".NdjcApp"
-        android:label="@string/app_name"
-        android:icon="@mipmap/ic_launcher"
-        android:theme="@style/Theme.NDJCSkeleton">
+<application
+    android:name=".NdjcApp"
+    android:label="@string/app_name"
+    android:icon="@mipmap/ic_launcher"
+    android:roundIcon="@mipmap/ic_launcher_round"
+    android:theme="@style/Theme.NDJCSkeleton">
 
         <provider
             android:name="androidx.core.content.FileProvider"
