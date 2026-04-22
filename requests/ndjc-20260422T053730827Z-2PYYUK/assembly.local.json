@@ -1,0 +1,18 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "印度尼西亚",
+  "packageName": "com.ndjc.apps.app.etrial000063",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_trial_000063",
+  "merchantEmail": "whywhy9264@gmail.com",
+  "privacyUrl": "https://niandongjicheng.vercel.app/privacy/store_showcase_trial_000063",
+  "iconPath": "requests/ndjc-20260422T053730827Z-2PYYUK/icon.png",
+  "plan": "free",
+  "firebaseProjectId": "ndjc-free-03",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_03"
+}
