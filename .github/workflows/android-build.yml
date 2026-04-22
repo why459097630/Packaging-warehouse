@@ -990,7 +990,7 @@ echo "[NDJC] Wrote ${START_HERE}"
         run: |
           set -euo pipefail
 
-          PLAN_VALUE="$(node -e "const fs=require('fs'); const p='requests/${{ inputs.run_id }}/request.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || 'pro').trim().toLowerCase());")"
+          PLAN_VALUE="$(node -e "const fs=require('fs'); const p='lib/ndjc/assembly.local.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || j.mode || 'pro').trim().toLowerCase());")"
 
           rm -rf dist
           mkdir -p dist
@@ -1032,10 +1032,10 @@ echo "[NDJC] Wrote ${START_HERE}"
       - name: Upload Release artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.NDJC_ARTIFACT_NAME }}
+          name: Think-it-Done-App
           path: dist/**
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 1
       - name: NDJC | Update status - success
         shell: bash
         run: |
