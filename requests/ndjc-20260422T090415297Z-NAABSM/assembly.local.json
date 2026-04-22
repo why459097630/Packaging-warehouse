@@ -1,0 +1,18 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "皇家社会",
+  "packageName": "com.ndjc.apps.app.etrial000065",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_trial_000065",
+  "merchantEmail": "whywhy9264@gmail.com",
+  "privacyUrl": "https://niandongjicheng.vercel.app/privacy/store_showcase_trial_000065",
+  "iconPath": "requests/ndjc-20260422T090415297Z-NAABSM/icon.png",
+  "plan": "free",
+  "firebaseProjectId": "ndjc-free-02",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_FREE_02"
+}
