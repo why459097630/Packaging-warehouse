@@ -621,7 +621,7 @@ jobs:
             echo "Important:"
             echo "- This keystore is required to publish updates to this app"
             echo "- Keep this file safe and do not share it publicly"
-            echo "- Losing this keystore will prevent future updates to this app"
+            echo "- Losing this keystore will prevent you from updating this app on Google Play"
           } > "${SIGNING_INFO}"
 
           {
@@ -667,6 +667,8 @@ jobs:
           {
             echo "App Review Notes"
             echo
+            echo "⚠ You must fill required fields before submitting to Google Play"
+            echo
             echo "App purpose:"
             echo "This app allows local businesses to showcase products or services, communicate with customers, and publish announcements."
             echo
@@ -705,11 +707,7 @@ jobs:
             echo "Password: [REPLACE WITH YOUR PASSWORD]"
             echo
             echo "Contact:"
-            if [ -n "${MERCHANT_EMAIL}" ]; then
-              echo "${MERCHANT_EMAIL}"
-            else
-              echo "[REPLACE WITH YOUR CONTACT EMAIL]"
-            fi
+            echo "[REPLACE WITH YOUR CONTACT EMAIL]"
             echo
             echo "Privacy Policy:"
             if [ -n "${PRIVACY_URL}" ]; then
@@ -730,7 +728,7 @@ jobs:
           {
             echo "How to publish your app:"
             echo
-            echo "1. Upload app-release.aab to Google Play Console"
+            echo "1. Upload the AAB file to Google Play Console"
             echo "2. Fill store listing (app name, description, etc.)"
             echo "3. Complete Data Safety (see data-safety.txt)"
             echo "4. Upload screenshots (at least 2)"
@@ -902,18 +900,20 @@ jobs:
           set -euo pipefail
 
           rm -rf dist
-          mkdir -p dist/publish
+          mkdir -p dist/google-play
+           mkdir -p dist/handoff
 
           cp -f "${{ env.NDJC_APK_OUT }}" dist/ || true
-          cp -f "${{ env.NDJC_AAB_OUT }}" dist/ || true
-          cp -f lib/ndjc/ndjc-upload-keystore.jks dist/ || true
-          cp -f lib/ndjc/signing-info.txt dist/ || true
-          cp -f lib/ndjc/handover-info.txt dist/ || true
 
-          cp -f lib/ndjc/publish/data-safety.txt dist/publish/ || true
-          cp -f lib/ndjc/publish/review-notes.txt dist/publish/ || true
-          cp -f lib/ndjc/publish/README-PUBLISH.txt dist/publish/ || true
-          cp -f lib/ndjc/publish/privacy-url.txt dist/publish/ || true
+          cp -f "${{ env.NDJC_AAB_OUT }}" dist/google-play/ || true
+          cp -f lib/ndjc/publish/data-safety.txt dist/google-play/ || true
+          cp -f lib/ndjc/publish/review-notes.txt dist/google-play/ || true
+          cp -f lib/ndjc/publish/README-PUBLISH.txt dist/google-play/ || true
+          cp -f lib/ndjc/publish/privacy-url.txt dist/google-play/ || true
+
+          cp -f lib/ndjc/ndjc-upload-keystore.jks dist/handoff/ || true
+          cp -f lib/ndjc/signing-info.txt dist/handoff/ || true
+          cp -f lib/ndjc/handover-info.txt dist/handoff/ || true
 
           echo "[NDJC] dist contents:"
           find dist -maxdepth 3 -type f | sort
