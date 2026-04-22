@@ -1,0 +1,18 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "皇家贝蒂斯",
+  "packageName": "com.ndjc.apps.app.sepaid000012",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_paid_000012",
+  "merchantEmail": "whywhy9264@gmail.com",
+  "privacyUrl": "https://niandongjicheng.vercel.app/privacy/store_showcase_paid_000012",
+  "iconPath": "requests/ndjc-20260422T123127909Z-HKLA7W/icon.png",
+  "plan": "pro",
+  "firebaseProjectId": "ndjc-paid-03",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_03"
+}
