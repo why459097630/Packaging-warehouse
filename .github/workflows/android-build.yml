@@ -807,105 +807,108 @@ jobs:
             echo "The business owner must provide test account credentials in review-notes.txt before submission."
           } > "${HANDOVER_INFO}"
 
+          START_HERE="lib/ndjc/START-HERE.txt"
+
+          {
+            echo "NDJC App Package - Start Here"
+            echo
+            echo "This package contains everything you need to:"
+            echo
+            echo "1. Test your app"
+            echo "2. Publish your app to Google Play"
+            echo "3. Allow a developer to continue working on your app"
+            echo
+            echo "--------------------------------------------------"
+            echo
+            echo "STEP 1 — Test Your App"
+            echo
+            echo "File:"
+            echo "- *.apk"
+            echo
+            echo "What to do:"
+            echo "- Install this file on your Android phone"
+            echo "- Check if everything works as expected"
+            echo
+            echo "--------------------------------------------------"
+            echo
+            echo "STEP 2 — Publish to Google Play"
+            echo
+            echo "Folder:"
+            echo "- google-play/"
+            echo
+            echo "Inside you will find:"
+            echo "- *.aab (this is the file you upload)"
+            echo "- data-safety.txt"
+            echo "- review-notes.txt"
+            echo "- README-PUBLISH.txt"
+            echo "- privacy-url.txt"
+            echo
+            echo "What to do:"
+            echo "1. Go to Google Play Console"
+            echo "2. Create a new app"
+            echo "3. Upload the .aab file"
+            echo "4. Follow instructions in README-PUBLISH.txt"
+            echo
+            echo "IMPORTANT:"
+            echo "Before submitting your app, you MUST:"
+            echo
+            echo "- Open review-notes.txt"
+            echo "  -> Fill in your test account (email + password)"
+            echo "  -> Fill in your contact email"
+            echo "  -> Confirm your privacy policy URL"
+            echo
+            echo "- Review data-safety.txt"
+            echo "  -> Make sure it matches your app functionality"
+            echo
+            echo "--------------------------------------------------"
+            echo
+            echo "STEP 3 — Continue Development (Optional)"
+            echo
+            echo "Folder:"
+            echo "- app-handover/"
+            echo
+            echo "Use this only if:"
+            echo "- You hire a developer"
+            echo "- You want to update or rebuild your app in the future"
+            echo
+            echo "This folder contains:"
+            echo "- App signing files (VERY IMPORTANT)"
+            echo "- Technical information needed for updates"
+            echo
+            echo "WARNING:"
+            echo "- Do NOT lose these files"
+            echo "- Do NOT share them publicly"
+            echo
+            echo "--------------------------------------------------"
+            echo
+            echo "IMPORTANT NOTES"
+            echo
+            echo "- Only upload the .aab file to Google Play"
+            echo "- Do NOT upload the APK file"
+            echo "- Do NOT upload this zip file"
+            echo
+            echo "- Your app already includes a Privacy Policy inside the app"
+            echo "- You still need to enter the Privacy Policy URL in Google Play"
+            echo
+            echo "--------------------------------------------------"
+            echo
+            echo "If you need backend data or push notification access:"
+            echo "Contact the site owner."
+            echo
+            echo "--------------------------------------------------"
+            echo
+            echo "End of file"
+          } > "${START_HERE}"
+
           echo "[NDJC] Wrote ${SIGNING_INFO}"
           echo "[NDJC] Wrote ${DATA_SAFETY}"
           echo "[NDJC] Wrote ${REVIEW_NOTES}"
           echo "[NDJC] Wrote ${README_PUBLISH}"
           echo "[NDJC] Wrote ${PRIVACY_URL_FILE}"
-START_HERE="lib/ndjc/START-HERE.txt"
+          echo "[NDJC] Wrote ${HANDOVER_INFO}"
+          echo "[NDJC] Wrote ${START_HERE}"
 
-{
-  echo "NDJC App Package - Start Here"
-  echo
-  echo "This package contains everything you need to:"
-  echo
-  echo "1. Test your app"
-  echo "2. Publish your app to Google Play"
-  echo "3. Allow a developer to continue working on your app"
-  echo
-  echo "--------------------------------------------------"
-  echo
-  echo "STEP 1 — Test Your App"
-  echo
-  echo "File:"
-  echo "- *.apk"
-  echo
-  echo "What to do:"
-  echo "- Install this file on your Android phone"
-  echo "- Check if everything works as expected"
-  echo
-  echo "--------------------------------------------------"
-  echo
-  echo "STEP 2 — Publish to Google Play"
-  echo
-  echo "Folder:"
-  echo "- google-play/"
-  echo
-  echo "Inside you will find:"
-  echo "- *.aab (this is the file you upload)"
-  echo "- data-safety.txt"
-  echo "- review-notes.txt"
-  echo "- README-PUBLISH.txt"
-  echo "- privacy-url.txt"
-  echo
-  echo "What to do:"
-  echo "1. Go to Google Play Console"
-  echo "2. Create a new app"
-  echo "3. Upload the .aab file"
-  echo "4. Follow instructions in README-PUBLISH.txt"
-  echo
-  echo "IMPORTANT:"
-  echo "Before submitting your app, you MUST:"
-  echo
-  echo "- Open review-notes.txt"
-  echo "  → Fill in your test account (email + password)"
-  echo "  → Fill in your contact email"
-  echo "  → Confirm your privacy policy URL"
-  echo
-  echo "- Review data-safety.txt"
-  echo "  → Make sure it matches your app functionality"
-  echo
-  echo "--------------------------------------------------"
-  echo
-  echo "STEP 3 — Continue Development (Optional)"
-  echo
-  echo "Folder:"
-  echo "- app-handover/"
-  echo
-  echo "Use this only if:"
-  echo "- You hire a developer"
-  echo "- You want to update or rebuild your app in the future"
-  echo
-  echo "This folder contains:"
-  echo "- App signing files (VERY IMPORTANT)"
-  echo "- Technical information needed for updates"
-  echo
-  echo "WARNING:"
-  echo "- Do NOT lose these files"
-  echo "- Do NOT share them publicly"
-  echo
-  echo "--------------------------------------------------"
-  echo
-  echo "IMPORTANT NOTES"
-  echo
-  echo "- Only upload the .aab file to Google Play"
-  echo "- Do NOT upload the APK file"
-  echo "- Do NOT upload this zip file"
-  echo
-  echo "- Your app already includes a Privacy Policy inside the app"
-  echo "- You still need to enter the Privacy Policy URL in Google Play"
-  echo
-  echo "--------------------------------------------------"
-  echo
-  echo "If you need backend data or push notification access:"
-  echo "Contact the site owner."
-  echo
-  echo "--------------------------------------------------"
-  echo
-  echo "End of file"
-} > "${START_HERE}"
-
-echo "[NDJC] Wrote ${START_HERE}"
+          find lib/ndjc -maxdepth 3 -type f | sort
 
       - name: NDJC | Update status - building apk
         shell: bash
