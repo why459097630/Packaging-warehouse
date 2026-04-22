@@ -578,42 +578,245 @@ jobs:
 
           ls -la "$KS_PATH"
 
-      - name: NDJC | Write signing-info.txt (handoff)
+      - name: NDJC | Write publish and handoff docs
         shell: bash
         run: |
           set -euo pipefail
 
-          SIGNING_INFO="lib/ndjc/signing-info.txt"
-          PUBLISH_INFO="lib/ndjc/publish-info.txt"
+          ASSEMBLY="lib/ndjc/assembly.local.json"
 
-          mkdir -p "lib/ndjc"
+          APP_LABEL="$(ASSEMBLY="$ASSEMBLY" node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.env.ASSEMBLY,'utf8')); process.stdout.write(((j.appName||j.app_label||'NDJC App')+'').trim());")"
+          PACKAGE_NAME="$(ASSEMBLY="$ASSEMBLY" node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.env.ASSEMBLY,'utf8')); process.stdout.write(((j.packageName||j.applicationId||'')+'').trim());")"
+          STORE_ID="$(ASSEMBLY="$ASSEMBLY" node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.env.ASSEMBLY,'utf8')); process.stdout.write(((j.storeId||j.store_id||'')+'').trim());")"
+          MERCHANT_EMAIL="$(ASSEMBLY="$ASSEMBLY" node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.env.ASSEMBLY,'utf8')); process.stdout.write(((j.merchantEmail||j.adminName||'')+'').trim());")"
+          PRIVACY_URL="$(ASSEMBLY="$ASSEMBLY" node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.env.ASSEMBLY,'utf8')); process.stdout.write(((j.privacyUrl||'')+'').trim());")"
+
+          SIGNING_INFO="lib/ndjc/signing-info.txt"
+          DATA_SAFETY="lib/ndjc/publish/data-safety.txt"
+          REVIEW_NOTES="lib/ndjc/publish/review-notes.txt"
+          README_PUBLISH="lib/ndjc/publish/README-PUBLISH.txt"
+          PRIVACY_URL_FILE="lib/ndjc/publish/privacy-url.txt"
+          HANDOVER_INFO="lib/ndjc/handover-info.txt"
+
+          mkdir -p "lib/ndjc/publish"
 
           {
-            echo "NDJC Signing Info (handoff)"
-            echo "- keystoreFile: ndjc-upload-keystore.jks"
-            echo "- keystorePath: ${NDJC_KEYSTORE_PATH}"
-            echo "- keyAlias: ${NDJC_KEY_ALIAS}"
-            echo "- storePassword: ${NDJC_KEYSTORE_PASSWORD}"
-            echo "- keyPassword: ${NDJC_KEY_PASSWORD}"
+            echo "App Signing Information"
             echo
-            echo "Certificate fingerprints:"
-            keytool -list -v -keystore "${NDJC_KEYSTORE_PATH}" -storepass "${NDJC_KEYSTORE_PASSWORD}" -alias "${NDJC_KEY_ALIAS}" | sed -n '1,200p'
+            echo "Package Name:"
+            echo "${PACKAGE_NAME}"
+            echo
+            echo "Keystore File:"
+            echo "ndjc-upload-keystore.jks"
+            echo
+            echo "Key Alias:"
+            echo "${NDJC_KEY_ALIAS}"
+            echo
+            echo "Keystore Password:"
+            echo "${NDJC_KEYSTORE_PASSWORD}"
+            echo
+            echo "Key Password:"
+            echo "${NDJC_KEY_PASSWORD}"
+            echo
+            echo "Important:"
+            echo "- This keystore is required to publish updates to this app"
+            echo "- Keep this file safe and do not share it publicly"
+            echo "- Losing this keystore will prevent future updates to this app"
           } > "${SIGNING_INFO}"
 
-          if [ ! -f "${PUBLISH_INFO}" ]; then
-            echo "NDJC Publish Info" > "${PUBLISH_INFO}"
-          fi
+          {
+            echo "Please review and confirm this matches your app functionality before submitting to Google Play."
+            echo
+            echo "Data Safety Declaration (Draft)"
+            echo
+            echo "Data collected:"
+            echo
+            echo "For all users (no login required):"
+            echo "- Messages (chat content between user and business)"
+            echo "- App Activity (user interactions such as browsing products and viewing announcements)"
+            echo "- Device Information (push notification token, basic device identifiers)"
+            echo
+            echo "For business accounts (login required):"
+            echo "- Contact Info (email address used for login)"
+            echo "- Account-related data (business profile, content created in the app)"
+            echo
+            echo "Purpose of data collection:"
+            echo "- App functionality (display products, announcements, and business information)"
+            echo "- Communication (chat between customers and business)"
+            echo "- Notifications (push notifications for updates and announcements)"
+            echo "- Account management (for business users)"
+            echo
+            echo "Data sharing:"
+            echo "- No user data is sold or shared with third parties"
+            echo "- Data is only used within the app’s backend services"
+            echo
+            echo "Data security:"
+            echo "- Data is transmitted over secure HTTPS connections"
+            echo "- Access is restricted to authorized services and authenticated business users"
+            echo
+            echo "User control:"
+            echo "- Users can choose not to provide personal information"
+            echo "- Business users can manage or delete their account data"
+            echo "- Users can request data deletion by contacting the business"
+            echo
+            echo "Notes:"
+            echo "- General users are not required to create an account"
+            echo "- Business users must log in to access management features"
+          } > "${DATA_SAFETY}"
 
           {
+            echo "App Review Notes"
             echo
-            echo "(Signing summary)"
-            echo "- keystoreFile: ndjc-upload-keystore.jks"
-            echo "- keyAlias: ${NDJC_KEY_ALIAS}"
-            echo "- (Passwords in signing-info.txt)"
-          } >> "${PUBLISH_INFO}"
+            echo "App purpose:"
+            echo "This app allows local businesses to showcase products or services, communicate with customers, and publish announcements."
+            echo
+            echo "User roles:"
+            echo "- General users (customers): no login required"
+            echo "- Business users (merchants): login required to access management features"
+            echo
+            echo "Core features:"
+            echo "- Browse products or services"
+            echo "- View business information and announcements"
+            echo "- Chat with the business"
+            echo "- Business-side management (requires login)"
+            echo
+            echo "How to test the app (general user):"
+            echo "1. Launch the app"
+            echo "2. Enter the main store screen"
+            echo "3. Browse products or services"
+            echo "4. Open a product detail page"
+            echo "5. Navigate to the chat section"
+            echo "6. Send a message to the business"
+            echo "7. View announcements"
+            echo
+            echo "How to test business features (login required):"
+            echo "1. Navigate to the login screen"
+            echo "2. Log in using the test account below"
+            echo "3. Access the admin/management interface"
+            echo "4. Create or edit products"
+            echo "5. Send announcements"
+            echo
+            echo "========================================"
+            echo "ACTION REQUIRED (YOU MUST FILL THIS)"
+            echo "========================================"
+            echo
+            echo "Test account (for reviewer):"
+            echo "Email: [REPLACE WITH YOUR BUSINESS ACCOUNT EMAIL]"
+            echo "Password: [REPLACE WITH YOUR PASSWORD]"
+            echo
+            echo "Contact:"
+            if [ -n "${MERCHANT_EMAIL}" ]; then
+              echo "${MERCHANT_EMAIL}"
+            else
+              echo "[REPLACE WITH YOUR CONTACT EMAIL]"
+            fi
+            echo
+            echo "Privacy Policy:"
+            if [ -n "${PRIVACY_URL}" ]; then
+              echo "${PRIVACY_URL}"
+            else
+              echo "[REPLACE WITH YOUR PRIVACY POLICY URL]"
+            fi
+            echo
+            echo "========================================"
+            echo
+            echo "Notes for reviewer:"
+            echo "- General user features are fully accessible without login"
+            echo "- Business features are restricted to authenticated accounts"
+            echo "- App content is dynamically loaded and may vary depending on configuration"
+            echo "- Push notifications may require testing on a real device"
+          } > "${REVIEW_NOTES}"
+
+          {
+            echo "How to publish your app:"
+            echo
+            echo "1. Upload app-release.aab to Google Play Console"
+            echo "2. Fill store listing (app name, description, etc.)"
+            echo "3. Complete Data Safety (see data-safety.txt)"
+            echo "4. Upload screenshots (at least 2)"
+            echo "5. Provide review notes (see review-notes.txt)"
+            echo "6. Enter your Privacy Policy URL in Google Play Console"
+            echo
+            echo "========================================"
+            echo "IMPORTANT ACTION REQUIRED"
+            echo "========================================"
+            echo
+            echo "Before submitting your app, you MUST:"
+            echo
+            echo "1. Open publish/review-notes.txt"
+            echo "   - Fill in your test account email and password"
+            echo "   - Confirm your contact email"
+            echo "   - Confirm your Privacy Policy URL"
+            echo
+            echo "2. Review publish/data-safety.txt"
+            echo "   - Make sure it matches your app functionality"
+            echo
+            echo "Important:"
+            echo "- Do NOT upload APK"
+            echo "- Do NOT upload this zip file"
+            echo "- Only upload the .aab file"
+          } > "${README_PUBLISH}"
+
+          {
+            echo "Privacy Policy URL"
+            echo
+            if [ -n "${PRIVACY_URL}" ]; then
+              echo "${PRIVACY_URL}"
+            else
+              echo "[REPLACE WITH YOUR PRIVACY POLICY URL]"
+            fi
+            echo
+            echo "Important:"
+            echo "- This URL must be entered in Google Play Console"
+            echo "- It must be publicly accessible"
+            echo "- It must not be empty"
+          } > "${PRIVACY_URL_FILE}"
+
+          {
+            echo "NDJC App Handover Information"
+            echo
+            echo "This package includes:"
+            echo "- App bundle (.aab)"
+            echo "- Test build (.apk)"
+            echo "- Signing information for this app"
+            echo "- Publish guidance materials"
+            echo
+            echo "Important:"
+            echo "This package does NOT include backend project access or push notification project access."
+            echo
+            echo "Backend / Cloud Data:"
+            echo "If you need to continue development with the existing cloud backend and existing business data, please contact the site owner to request backend handover or data export."
+            echo
+            echo "Push Notifications:"
+            echo "If you need to continue using the existing push notification service, please contact the site owner to request push service handover."
+            echo
+            echo "Included for app inheritance:"
+            echo "- Package name"
+            echo "- Signing materials for this app"
+            echo
+            echo "Not included in this package:"
+            echo "- Supabase / backend project access"
+            echo "- Existing cloud database export"
+            echo "- Firebase / push project access"
+            echo "- Server environment variables"
+            echo
+            echo "Store ID:"
+            echo "${STORE_ID}"
+            echo
+            echo "Note:"
+            echo "This package allows publishing and updating the app."
+            echo "If backend or push services are needed, contact the site owner."
+            echo "The business owner must provide test account credentials in review-notes.txt before submission."
+          } > "${HANDOVER_INFO}"
 
           echo "[NDJC] Wrote ${SIGNING_INFO}"
-          ls -la "${SIGNING_INFO}" || true
+          echo "[NDJC] Wrote ${DATA_SAFETY}"
+          echo "[NDJC] Wrote ${REVIEW_NOTES}"
+          echo "[NDJC] Wrote ${README_PUBLISH}"
+          echo "[NDJC] Wrote ${PRIVACY_URL_FILE}"
+          echo "[NDJC] Wrote ${HANDOVER_INFO}"
+
+          find lib/ndjc -maxdepth 3 -type f | sort
 
       - name: NDJC | Update status - building apk
         shell: bash
@@ -693,22 +896,29 @@ jobs:
           echo "Renamed AAB -> $AAB_OUT"
           ls -la "$APK_DIR"
           ls -la "$AAB_DIR"
-      - name: NDJC | Collect deliverables (flatten)
+      - name: NDJC | Collect deliverables
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p dist
+
+          rm -rf dist
+          mkdir -p dist/publish
 
           cp -f "${{ env.NDJC_APK_OUT }}" dist/ || true
           cp -f "${{ env.NDJC_AAB_OUT }}" dist/ || true
           cp -f lib/ndjc/ndjc-upload-keystore.jks dist/ || true
-          cp -f lib/ndjc/publish-info.txt dist/ || true
           cp -f lib/ndjc/signing-info.txt dist/ || true
+          cp -f lib/ndjc/handover-info.txt dist/ || true
+
+          cp -f lib/ndjc/publish/data-safety.txt dist/publish/ || true
+          cp -f lib/ndjc/publish/review-notes.txt dist/publish/ || true
+          cp -f lib/ndjc/publish/README-PUBLISH.txt dist/publish/ || true
+          cp -f lib/ndjc/publish/privacy-url.txt dist/publish/ || true
 
           echo "[NDJC] dist contents:"
-          ls -la dist
+          find dist -maxdepth 3 -type f | sort
 
-      - name: Upload Release artifacts (APK + AAB + keystore + publish-info)
+      - name: Upload Release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.NDJC_ARTIFACT_NAME }}
