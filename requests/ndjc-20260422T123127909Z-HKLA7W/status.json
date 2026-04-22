@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260422T123127909Z-HKLA7W",
+  "appName": "皇家贝蒂斯",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "pro",
+  "storeId": "store_showcase_paid_000012",
+  "adminName": "123456789@qq.com",
+  "createdAt": "2026-04-22T12:31:56.071Z",
+  "updatedAt": "2026-04-22T12:31:56.071Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260422T123127909Z-HKLA7W/status.json"
+}
