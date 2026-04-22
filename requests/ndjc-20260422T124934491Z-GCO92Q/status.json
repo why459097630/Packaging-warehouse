@@ -1,0 +1,22 @@
+{
+  "runId": "ndjc-20260422T124934491Z-GCO92Q",
+  "appName": "塞维利亚",
+  "moduleName": "feature-showcase",
+  "uiPackName": "ui-pack-showcase-greenpink",
+  "plan": "free",
+  "storeId": "store_showcase_trial_000067",
+  "adminName": "123456789@qq.com",
+  "createdAt": "2026-04-22T12:49:35.113Z",
+  "updatedAt": "2026-04-22T12:49:35.113Z",
+  "status": "queued",
+  "stage": "queued",
+  "message": "Your request has been received and is waiting for an available build slot.",
+  "artifactUrl": null,
+  "downloadUrl": null,
+  "error": null,
+  "workflowRunId": null,
+  "workflowStatus": "queued",
+  "workflowConclusion": null,
+  "workflowUrl": null,
+  "requestPath": "requests/ndjc-20260422T124934491Z-GCO92Q/status.json"
+}
