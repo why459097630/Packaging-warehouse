@@ -609,11 +609,13 @@ function writeLauncherIcons(pngPath) {
       "ic_launcher_round.png",
       "ic_launcher_foreground.png",
       "ic_launcher_background.png",
+      "ic_launcher_foreground.xml",
+      "ic_launcher_background.xml",
     ]) {
       const p = path.join(anydpiDir, f);
       if (fs.existsSync(p)) {
         fs.rmSync(p, { force: true });
-        console.log("[NDJC-assembly] 已删除 anydpi 非法 PNG:", p);
+        console.log("[NDJC-assembly] 已删除 anydpi 非法 launcher 残留:", p);
       }
     }
   }
@@ -635,6 +637,12 @@ function writeLauncherIcons(pngPath) {
         console.log("[NDJC-assembly] 已清理冲突资源:", png);
       }
     }
+  }
+
+  const drawableLauncherForegroundXml = path.join(resDir, "drawable", "ic_launcher_foreground.xml");
+  if (fs.existsSync(drawableLauncherForegroundXml)) {
+    fs.rmSync(drawableLauncherForegroundXml, { force: true });
+    console.log("[NDJC-assembly] 已删除默认 launcher 前景矢量:", drawableLauncherForegroundXml);
   }
 
   const mipmapBases = ["mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi"];
