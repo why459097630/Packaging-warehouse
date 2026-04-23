@@ -1,0 +1,18 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "拉齐奥",
+  "packageName": "com.ndjc.apps.app.sepaid000015",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_paid_000015",
+  "merchantEmail": "whywhy9264@gmail.com",
+  "privacyUrl": "https://niandongjicheng.vercel.app/privacy/store_showcase_paid_000015",
+  "iconPath": "requests/ndjc-20260423T135221461Z-54362Q/icon.png",
+  "plan": "pro",
+  "firebaseProjectId": "ndjc-paid-03",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_03"
+}
