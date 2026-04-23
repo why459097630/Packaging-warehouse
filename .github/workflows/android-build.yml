@@ -1049,6 +1049,8 @@ jobs:
 
           RUN_ID="${{ inputs.run_id }}"
           PLAN_VALUE="$(node -e "const fs=require('fs'); const p='lib/ndjc/assembly.local.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || j.mode || 'pro').trim().toLowerCase());")"
+          APP_NAME_VALUE="$(node -e "const fs=require('fs'); const p='lib/ndjc/assembly.local.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.appName || 'Think it Done App'));")"
+          APK_FILE_NAME="$(node -e "const fs=require('fs'); const p='lib/ndjc/assembly.local.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); const raw=String(j.appName || 'Think it Done App').trim(); const safe=raw.replace(/[\\\\/:*?\"<>|]/g,' ').replace(/\\s+/g,' ').trim().replace(/ /g,'-'); process.stdout.write((safe || 'Think-it-Done-App') + '.apk');")"
 
           rm -rf release-assets
           mkdir -p release-assets
@@ -1067,14 +1069,16 @@ jobs:
           echo "NDJC_RELEASE_TITLE=${RELEASE_TITLE}" >> "$GITHUB_ENV"
           echo "NDJC_RELEASE_URL=${RELEASE_URL}" >> "$GITHUB_ENV"
           echo "NDJC_RELEASE_DOWNLOAD_URL=${RELEASE_DOWNLOAD_URL}" >> "$GITHUB_ENV"
+          echo "NDJC_RELEASE_APP_NAME=${APP_NAME_VALUE}" >> "$GITHUB_ENV"
+          echo "NDJC_PUBLIC_APK_FILE_NAME=${APK_FILE_NAME}" >> "$GITHUB_ENV"
 
           if [ "$PLAN_VALUE" = "free" ] || [ "$PLAN_VALUE" = "trial" ]; then
             echo "NDJC_PUBLIC_APK_URL=" >> "$GITHUB_ENV"
             echo "[NDJC] Free/trial build: Release only keeps Think-it-Done-App.zip"
           else
-            cp -f "${{ env.NDJC_APK_OUT }}" release-assets/public-download.apk
-            echo "NDJC_PUBLIC_APK_URL=${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}/public-download.apk" >> "$GITHUB_ENV"
-            echo "[NDJC] Paid build: Release keeps Think-it-Done-App.zip + public-download.apk"
+            cp -f "${{ env.NDJC_APK_OUT }}" "release-assets/${APK_FILE_NAME}"
+            echo "NDJC_PUBLIC_APK_URL=${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}/${APK_FILE_NAME}" >> "$GITHUB_ENV"
+            echo "[NDJC] Paid build: Release keeps Think-it-Done-App.zip + ${APK_FILE_NAME}"
           fi
 
           echo "[NDJC] release-assets contents:"
