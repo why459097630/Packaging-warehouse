@@ -1,0 +1,18 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "迈阿密国际",
+  "packageName": "com.ndjc.apps.app.sepaid000016",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_paid_000016",
+  "merchantEmail": "whywhy9264@gmail.com",
+  "privacyUrl": "https://niandongjicheng.vercel.app/privacy/store_showcase_paid_000016",
+  "iconPath": "requests/ndjc-20260423T141952131Z-O712BO/icon.png",
+  "plan": "pro",
+  "firebaseProjectId": "ndjc-paid-01",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_01"
+}
