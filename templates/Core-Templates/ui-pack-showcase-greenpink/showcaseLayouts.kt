@@ -2202,6 +2202,35 @@ private fun ndjcMoneyTrim2(v: Double): String {
     df.isGroupingUsed = false
     return df.format(v)
 }
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun NdjcPullRefreshContainer(
+    refreshing: Boolean,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit
+) {
+    val pullState = rememberPullRefreshState(
+        refreshing = refreshing,
+        onRefresh = onRefresh
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .pullRefresh(pullState)
+    ) {
+        content()
+
+        PullRefreshIndicator(
+            refreshing = refreshing,
+            state = pullState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 internal fun ShowcaseHome(
@@ -6050,6 +6079,12 @@ private fun UniversalStoreAppAboutSection() {
     val appName = NDJC_ABOUT_APP_NAME.trim().ifBlank { "App" }
     val merchantEmail = NDJC_ABOUT_MERCHANT_EMAIL.trim().ifBlank { "Not provided" }
     val privacyUrl = NDJC_ABOUT_PRIVACY_URL.trim()
+    val versionName = remember(context) {
+        runCatching {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            packageInfo.versionName?.trim().orEmpty().ifBlank { "1.0.0" }
+        }.getOrDefault("1.0.0")
+    }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
@@ -6084,6 +6119,22 @@ private fun UniversalStoreAppAboutSection() {
             Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp4))
             Text(
                 text = appName,
+                style = MaterialTheme.typography.bodyMedium,
+                color = NdjcCommonTokens.Colors.C_FF111827.copy(alpha = NdjcCommonTokens.Alpha.a90)
+            )
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Version",
+                style = MaterialTheme.typography.labelMedium,
+                color = NdjcCommonTokens.Colors.C_FF111827.copy(alpha = NdjcCommonTokens.Alpha.a55)
+            )
+            Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp4))
+            Text(
+                text = versionName,
                 style = MaterialTheme.typography.bodyMedium,
                 color = NdjcCommonTokens.Colors.C_FF111827.copy(alpha = NdjcCommonTokens.Alpha.a90)
             )
@@ -6991,205 +7042,210 @@ internal fun ShowcaseAdmin(
 
         val scrollState = rememberScrollState()
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(
-                    start = NdjcWhiteCardLayoutTokens.ScreenPadding,
-                    end = NdjcWhiteCardLayoutTokens.ScreenPadding,
-                    bottom = NdjcWhiteCardLayoutTokens.ScreenPadding,
-                    top = NdjcTopContentPadding
-                )
-                .navigationBarsPadding()
+        NdjcPullRefreshContainer(
+            refreshing = uiState.syncOverviewState == ShowcaseSyncOverviewState.Syncing,
+            onRefresh = actions.onRefresh
         ) {
-
-
-            NdjcWhiteCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp10)
-                ) {
-
-                    // 标题
-                    Text(
-                        text = "Admin",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.Black
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(
+                        start = NdjcWhiteCardLayoutTokens.ScreenPadding,
+                        end = NdjcWhiteCardLayoutTokens.ScreenPadding,
+                        bottom = NdjcWhiteCardLayoutTokens.ScreenPadding,
+                        top = NdjcTopContentPadding
                     )
+                    .navigationBarsPadding()
+            ) {
 
-                    if (uiState.syncNoticeLabel.isNotBlank()) {
+
+                NdjcWhiteCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp10)
+                    ) {
+
+                        // 标题
                         Text(
-                            text = uiState.syncNoticeLabel,
-                            style = MaterialTheme.typography.bodySmall,
+                            text = "Admin",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.SemiBold,
                             color = Color.Black
                         )
-                    }
 
-                    uiState.cloudStatus?.let { cloud ->
-                        Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp8))
-
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp10)
-                        ) {
+                        if (uiState.syncNoticeLabel.isNotBlank()) {
                             Text(
-                                text = "Cloud",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold,
+                                text = uiState.syncNoticeLabel,
+                                style = MaterialTheme.typography.bodySmall,
                                 color = Color.Black
                             )
+                        }
 
-                            Text(
-                                text = "${cloud.planLabel} · ${cloud.storeId}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF475467)
-                            )
+                        uiState.cloudStatus?.let { cloud ->
+                            Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp8))
 
                             Column(
-                                verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp4)
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp10)
                             ) {
                                 Text(
-                                    text = cloud.statusLabel,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFF344054)
+                                    text = "Cloud",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.Black
                                 )
 
-                                if (cloud.daysRemainingLabel.isNotBlank()) {
+                                Text(
+                                    text = "${cloud.planLabel} · ${cloud.storeId}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFF475467)
+                                )
+
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp4)
+                                ) {
                                     Text(
-                                        text = cloud.daysRemainingLabel,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF101828)
+                                        text = cloud.statusLabel,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color(0xFF344054)
                                     )
+
+                                    if (cloud.daysRemainingLabel.isNotBlank()) {
+                                        Text(
+                                            text = cloud.daysRemainingLabel,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFF101828)
+                                        )
+                                    }
+                                }
+
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp4)
+                                ) {
+                                    if (cloud.serviceEndAtLabel.isNotBlank()) {
+                                        Text(
+                                            text = "Expires · ${cloud.serviceEndAtLabel}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color(0xFF667085)
+                                        )
+                                    }
+
+                                    if (cloud.deleteAtLabel.isNotBlank()) {
+                                        Text(
+                                            text = "Deletes · ${cloud.deleteAtLabel}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color(0xFF667085)
+                                        )
+                                    }
                                 }
                             }
 
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(NdjcCommonTokens.Dp.Dp4)
-                            ) {
-                                if (cloud.serviceEndAtLabel.isNotBlank()) {
-                                    Text(
-                                        text = "Expires · ${cloud.serviceEndAtLabel}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color(0xFF667085)
-                                    )
-                                }
-
-                                if (cloud.deleteAtLabel.isNotBlank()) {
-                                    Text(
-                                        text = "Deletes · ${cloud.deleteAtLabel}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color(0xFF667085)
-                                    )
-                                }
-                            }
+                            Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
+                            HorizontalDivider()
                         }
 
                         Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
+
+                        // 主次：Quick action（把最常用动作单独放一组）
+                        Text(
+                            text = "Quick action",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color.Black
+                        )
+
+                        NdjcPrimaryActionButton(
+                            text = "Add Item",
+                            onClick = actions.onAddNewDish,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
                         HorizontalDivider()
+                        Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
+
+                        // 分组：Catalog
+                        Text(
+                            text = "Catalog",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color.Black
+                        )
+
+                        NdjcPrimaryActionButton(
+                            text = "Items",
+                            onClick = actions.onOpenItemsManager,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        NdjcPrimaryActionButton(
+                            text = "Categories",
+                            onClick = actions.onOpenCategoriesManager,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
+                        HorizontalDivider()
+                        Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
+
+                        // 分组：Store
+                        Text(
+                            text = "Store",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color.Black
+                        )
+
+                        NdjcPrimaryActionButton(
+                            text = "Store settings",
+                            onClick = actions.onOpenStoreProfile,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        NdjcPrimaryActionButton(
+                            text = "Messages",
+                            onClick = actions.onOpenMerchantChatList,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        NdjcPrimaryActionButton(
+                            text = "Announcements",
+                            onClick = actions.onOpenAnnouncementPublisher,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
+                        HorizontalDivider()
+                        Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
+
+                        // 分组：Account
+                        Text(
+                            text = "Account",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color.Black
+                        )
+
+                        NdjcPrimaryActionButton(
+                            text = "Password",
+                            onClick = actions.onOpenChangePassword,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        NdjcPrimaryActionButton(
+                            text = "Sign out",
+                            onClick = actions.onLogout,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
+                }
 
-                    Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
-
-                    // 主次：Quick action（把最常用动作单独放一组）
+                // 状态展示（可选，纯渲染，不是逻辑）
+                if (!uiState.statusMessage.isNullOrBlank()) {
+                    Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp14))
                     Text(
-                        text = "Quick action",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.Black
-                    )
-
-                    NdjcPrimaryActionButton(
-                        text = "Add Item",
-                        onClick = actions.onAddNewDish,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
-                    HorizontalDivider()
-                    Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
-
-                    // 分组：Catalog
-                    Text(
-                        text = "Catalog",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.Black
-                    )
-
-                    NdjcPrimaryActionButton(
-                        text = "Items",
-                        onClick = actions.onOpenItemsManager,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    NdjcPrimaryActionButton(
-                        text = "Categories",
-                        onClick = actions.onOpenCategoriesManager,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
-                    HorizontalDivider()
-                    Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
-
-                    // 分组：Store
-                    Text(
-                        text = "Store",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.Black
-                    )
-
-                    NdjcPrimaryActionButton(
-                        text = "Store settings",
-                        onClick = actions.onOpenStoreProfile,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    NdjcPrimaryActionButton(
-                        text = "Messages",
-                        onClick = actions.onOpenMerchantChatList,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    NdjcPrimaryActionButton(
-                        text = "Announcements",
-                        onClick = actions.onOpenAnnouncementPublisher,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
-                    HorizontalDivider()
-                    Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp6))
-
-                    // 分组：Account
-                    Text(
-                        text = "Account",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.Black
-                    )
-
-                    NdjcPrimaryActionButton(
-                        text = "Password",
-                        onClick = actions.onOpenChangePassword,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    NdjcPrimaryActionButton(
-                        text = "Sign out",
-                        onClick = actions.onLogout,
-                        modifier = Modifier.fillMaxWidth()
+                        text = uiState.statusMessage.orEmpty(),
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
-            }
-
-            // 状态展示（可选，纯渲染，不是逻辑）
-            if (!uiState.statusMessage.isNullOrBlank()) {
-                Spacer(Modifier.height(NdjcCommonTokens.Dp.Dp14))
-                Text(
-                    text = uiState.statusMessage.orEmpty(),
-                    style = MaterialTheme.typography.bodyMedium
-                )
             }
         }
     }
