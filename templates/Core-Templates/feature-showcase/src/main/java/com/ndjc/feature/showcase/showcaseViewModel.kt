@@ -2682,6 +2682,60 @@ class ShowcaseViewModel : ViewModel() {
         } catch (_: Exception) {
         }
     }
+
+    private fun validateRestoredMerchantSession(context: Context) {
+        val authUserId = ShowcaseStoreSession.currentMerchantAuthUserId()?.trim().orEmpty()
+        if (authUserId.isBlank()) {
+            ShowcaseStoreSession.clearMerchantSession()
+            clearStoredMerchantSession(context, clearRememberMe = false)
+            uiState = uiState.copy(
+                isAdminLoggedIn = false,
+                loginError = null,
+                statusMessage = "Saved login expired. Please sign in again."
+            )
+            return
+        }
+
+        viewModelScope.launch {
+            val binding = showcaseCloudRepository.fetchMerchantBindingForStoreAndAuthUser(
+                storeId = chatStoreId,
+                authUserId = authUserId
+            )
+
+            if (binding == null) {
+                ShowcaseStoreSession.clearMerchantSession()
+                clearStoredMerchantSession(context, clearRememberMe = false)
+                adminUser = ""
+
+                uiState = uiState.copy(
+                    isAdminLoggedIn = false,
+                    screen = ShowcaseScreen.Home,
+                    loginError = "This account is not bound to current store.",
+                    loginUsernameDraft = "",
+                    adminUsernameDraft = "",
+                    adminPasswordDraft = "",
+                    statusMessage = "Saved login was cleared because this account does not belong to current store."
+                )
+                return@launch
+            }
+
+            val effectiveLoginName = binding.loginName?.trim().orEmpty()
+                .ifBlank { ShowcaseStoreSession.currentMerchantLoginName()?.trim().orEmpty() }
+
+            if (effectiveLoginName.isNotBlank()) {
+                adminUser = effectiveLoginName
+                ShowcaseStoreSession.updateMerchantLoginName(effectiveLoginName)
+                persistMerchantSession(context)
+
+                uiState = uiState.copy(
+                    isAdminLoggedIn = true,
+                    loginError = null,
+                    loginUsernameDraft = effectiveLoginName,
+                    adminUsernameDraft = effectiveLoginName
+                )
+            }
+        }
+    }
     // -------------------- Change Password (独立 Screen) --------------------
 
     private var changePasswordBackTarget: ShowcaseScreen = ShowcaseScreen.StoreProfileView
@@ -4127,7 +4181,10 @@ class ShowcaseViewModel : ViewModel() {
     }
 
     fun refresh(context: Context) {
-        viewModelScope.launch { loadFromSources(context) }
+        viewModelScope.launch {
+            loadFromSources(context)
+            refreshCloudServiceStatus()
+        }
     }
 
     /**
@@ -4560,6 +4617,10 @@ class ShowcaseViewModel : ViewModel() {
                 loginUsernameDraft = if (canResume) loginName else uiState.loginUsernameDraft,
                 adminUsernameDraft = if (loginName.isNotBlank()) loginName else uiState.adminUsernameDraft
             )
+
+            if (canResume) {
+                validateRestoredMerchantSession(context)
+            }
         } catch (_: Exception) {
         }
     }

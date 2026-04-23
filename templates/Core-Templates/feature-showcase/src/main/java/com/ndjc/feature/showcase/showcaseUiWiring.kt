@@ -54,6 +54,10 @@ private fun parseCloudIsoMillis(raw: String): Long? {
     val value = raw.trim()
     if (value.isBlank()) return null
 
+    val normalized = value
+        .replace(" ", "T")
+        .replace(Regex("([+-]\\d{2})$"), "$1:00")
+
     val patterns = listOf(
         "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
         "yyyy-MM-dd'T'HH:mm:ssXXX",
@@ -66,7 +70,7 @@ private fun parseCloudIsoMillis(raw: String): Long? {
             val sdf = SimpleDateFormat(pattern, Locale.US).apply {
                 timeZone = TimeZone.getTimeZone("UTC")
             }
-            val parsed = sdf.parse(value)
+            val parsed = sdf.parse(normalized)
             if (parsed != null) return parsed.time
         }
     }
@@ -76,7 +80,7 @@ private fun parseCloudIsoMillis(raw: String): Long? {
 
 private fun formatCloudDateTimeLabel(raw: String): String {
     val millis = parseCloudIsoMillis(raw) ?: return raw.trim()
-    val output = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US).apply {
+    val output = SimpleDateFormat("MMM dd, yyyy, h:mm a", Locale.US).apply {
         timeZone = TimeZone.getDefault()
     }
     return output.format(millis)

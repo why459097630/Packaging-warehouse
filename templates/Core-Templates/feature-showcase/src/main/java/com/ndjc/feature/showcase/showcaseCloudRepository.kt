@@ -2670,6 +2670,43 @@ class ShowcaseCloudRepository {
         }
     }
 
+    suspend fun fetchMerchantBindingForStoreAndAuthUser(
+        storeId: String,
+        authUserId: String
+    ): MerchantStoreMembership? = withContext(Dispatchers.IO) {
+        val currentStoreId = storeId.trim()
+        val currentAuthUserId = authUserId.trim()
+        if (currentStoreId.isBlank() || currentAuthUserId.isBlank()) return@withContext null
+
+        try {
+            val table = "store_memberships"
+            val url = ShowcaseCloudConfig.restUrl(
+                "$table?select=store_id,auth_user_id,login_name&store_id=eq.${urlEncode(currentStoreId)}&auth_user_id=eq.${urlEncode(currentAuthUserId)}&limit=1"
+            )
+
+            val (code, body) = httpGet(
+                urlString = url,
+                actor = ShowcaseCloudConfig.AuthActor.MERCHANT,
+                scopeStoreId = currentStoreId
+            )
+            if (code !in 200..299 || body.isNullOrBlank()) return@withContext null
+
+            val arr = JSONArray(body)
+            if (arr.length() <= 0) return@withContext null
+
+            val obj = arr.optJSONObject(0) ?: return@withContext null
+
+            MerchantStoreMembership(
+                storeId = obj.optString("store_id", "").trim(),
+                authUserId = obj.optString("auth_user_id", "").trim(),
+                loginName = obj.optString("login_name", "").trim().ifBlank { null }
+            )
+        } catch (e: Exception) {
+            Log.e("ShowcaseCloud", "fetchMerchantBindingForStoreAndAuthUser failed", e)
+            null
+        }
+    }
+
     suspend fun updateMerchantPassword(
         newPassword: String
     ): Boolean = withContext(Dispatchers.IO) {
