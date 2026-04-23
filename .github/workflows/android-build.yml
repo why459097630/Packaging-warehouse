@@ -988,6 +988,8 @@ jobs:
 
           echo "Renamed APK -> $APK_OUT"
           echo "Renamed AAB -> $AAB_OUT"
+          echo "NDJC_APK_OUT=$APK_OUT"
+          echo "NDJC_AAB_OUT=$AAB_OUT"
           ls -la "$APK_DIR"
           ls -la "$AAB_DIR"
       - name: NDJC | Collect deliverables
@@ -1000,7 +1002,7 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          cp -f "${{ env.NDJC_APK_OUT }}" dist/ || true
+          cp -f "$NDJC_APK_OUT" dist/ || true
 
           if [ "$PLAN_VALUE" = "free" ] || [ "$PLAN_VALUE" = "trial" ]; then
             echo "[NDJC] Trial build: package APK + TRIAL-README only"
@@ -1019,7 +1021,7 @@ jobs:
             mkdir -p dist/google-play
             mkdir -p dist/app-handover
 
-            cp -f "${{ env.NDJC_AAB_OUT }}" dist/google-play/ || true
+            cp -f "$NDJC_AAB_OUT" dist/google-play/ || true
             cp -f lib/ndjc/publish/data-safety.txt dist/google-play/ || true
             cp -f lib/ndjc/publish/review-notes.txt dist/google-play/ || true
             cp -f lib/ndjc/publish/README-PUBLISH.txt dist/google-play/ || true
@@ -1049,7 +1051,7 @@ jobs:
 
           RUN_ID="${{ inputs.run_id }}"
           PLAN_VALUE="$(node -e "const fs=require('fs'); const p='lib/ndjc/assembly.local.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || j.mode || 'pro').trim().toLowerCase());")"
-          APK_FILE_NAME="$(basename "${{ env.NDJC_APK_OUT }}")"
+          APK_FILE_NAME="$(basename "$NDJC_APK_OUT")"
 
           rm -rf release-assets
           mkdir -p release-assets
@@ -1074,7 +1076,7 @@ jobs:
             echo "NDJC_PUBLIC_APK_URL=" >> "$GITHUB_ENV"
             echo "[NDJC] Free/trial build: Release only keeps Think-it-Done-App.zip"
           else
-            cp -f "${{ env.NDJC_APK_OUT }}" "release-assets/${APK_FILE_NAME}"
+            cp -f "$NDJC_APK_OUT" "release-assets/${APK_FILE_NAME}"
             echo "NDJC_PUBLIC_APK_URL=${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}/${APK_FILE_NAME}" >> "$GITHUB_ENV"
             echo "[NDJC] Paid build: Release keeps Think-it-Done-App.zip + ${APK_FILE_NAME}"
           fi
