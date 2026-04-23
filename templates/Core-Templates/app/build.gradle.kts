@@ -6,18 +6,18 @@ plugins {
 
 android {
     namespace = "com.ndjc.app"
-    compileSdk = (System.getenv("NDJC_COMPILE_SDK") ?: "34").toInt()
+    compileSdk = (System.getenv("NDJC_COMPILE_SDK") ?: "35").toInt()
 
     defaultConfig {
         // NDJC-AUTO-APPID-START
-applicationId = "com.ndjc.apps.niudaige.id12ab3c"
+        applicationId = "com.ndjc.apps.niudaige.id12ab3c"
 // NDJC-AUTO-APPID-END
 
         minSdk = (System.getenv("NDJC_MIN_SDK") ?: "24").toInt()
-        targetSdk = (System.getenv("NDJC_TARGET_SDK") ?: "34").toInt()
+        targetSdk = (System.getenv("NDJC_TARGET_SDK") ?: "35").toInt()
 
         // NDJC-AUTO-VERSION-START
-versionCode = 1
+        versionCode = 1
         versionName = "1.0.0"
 // NDJC-AUTO-VERSION-END
     }
