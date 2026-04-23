@@ -79,6 +79,8 @@ jobs:
             workflowUrl: process.env.WORKFLOW_URL ? String(process.env.WORKFLOW_URL) : current.workflowUrl ?? null,
             artifactUrl: process.env.ARTIFACT_URL ? String(process.env.ARTIFACT_URL) : current.artifactUrl ?? null,
             downloadUrl: process.env.DOWNLOAD_URL ? String(process.env.DOWNLOAD_URL) : current.downloadUrl ?? null,
+            releaseUrl: process.env.RELEASE_URL ? String(process.env.RELEASE_URL) : current.releaseUrl ?? null,
+            publicApkUrl: process.env.PUBLIC_APK_URL ? String(process.env.PUBLIC_APK_URL) : current.publicApkUrl ?? null,
             error: process.env.BUILD_ERROR ? String(process.env.BUILD_ERROR) : current.error ?? null,
             failedStep: process.env.FAILED_STEP ? String(process.env.FAILED_STEP) : current.failedStep ?? null,
             updatedAt: new Date().toISOString(),
@@ -1039,6 +1041,61 @@ jobs:
           path: dist/**
           if-no-files-found: error
           retention-days: 1
+
+      - name: NDJC | Prepare GitHub Release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RUN_ID="${{ inputs.run_id }}"
+          PLAN_VALUE="$(node -e "const fs=require('fs'); const p='lib/ndjc/assembly.local.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || j.mode || 'pro').trim().toLowerCase());")"
+
+          rm -rf release-assets
+          mkdir -p release-assets
+
+          RELEASE_TAG="run-${RUN_ID}"
+          RELEASE_TITLE="NDJC Build - ${RUN_ID}"
+          RELEASE_URL="${{ github.server_url }}/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
+          RELEASE_DOWNLOAD_URL="${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}/Think-it-Done-App.zip"
+
+          (
+            cd dist
+            zip -r "../release-assets/Think-it-Done-App.zip" .
+          )
+
+          echo "NDJC_RELEASE_TAG=${RELEASE_TAG}" >> "$GITHUB_ENV"
+          echo "NDJC_RELEASE_TITLE=${RELEASE_TITLE}" >> "$GITHUB_ENV"
+          echo "NDJC_RELEASE_URL=${RELEASE_URL}" >> "$GITHUB_ENV"
+          echo "NDJC_RELEASE_DOWNLOAD_URL=${RELEASE_DOWNLOAD_URL}" >> "$GITHUB_ENV"
+
+          if [ "$PLAN_VALUE" = "free" ] || [ "$PLAN_VALUE" = "trial" ]; then
+            echo "NDJC_PUBLIC_APK_URL=" >> "$GITHUB_ENV"
+            echo "[NDJC] Free/trial build: Release only keeps Think-it-Done-App.zip"
+          else
+            cp -f "${{ env.NDJC_APK_OUT }}" release-assets/public-download.apk
+            echo "NDJC_PUBLIC_APK_URL=${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}/public-download.apk" >> "$GITHUB_ENV"
+            echo "[NDJC] Paid build: Release keeps Think-it-Done-App.zip + public-download.apk"
+          fi
+
+          echo "[NDJC] release-assets contents:"
+          find release-assets -maxdepth 2 -type f | sort
+
+      - name: NDJC | Publish GitHub Release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RELEASE_TAG="${{ env.NDJC_RELEASE_TAG }}"
+          RELEASE_TITLE="${{ env.NDJC_RELEASE_TITLE }}"
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release-assets/* --clobber
+          else
+            gh release create "$RELEASE_TAG" release-assets/* --title "$RELEASE_TITLE" --notes "NDJC build artifacts for ${{ inputs.run_id }}"
+          fi
+
       - name: NDJC | Update status - success
         shell: bash
         run: |
@@ -1058,7 +1115,10 @@ jobs:
           WORKFLOW_STATUS="completed" \
           WORKFLOW_CONCLUSION="success" \
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-          DOWNLOAD_URL="/api/download-artifact?runId=${RUN_ID}" \
+          ARTIFACT_URL="${{ env.NDJC_RELEASE_URL }}" \
+          DOWNLOAD_URL="${{ env.NDJC_RELEASE_DOWNLOAD_URL }}" \
+          RELEASE_URL="${{ env.NDJC_RELEASE_URL }}" \
+          PUBLIC_APK_URL="${{ env.NDJC_PUBLIC_APK_URL }}" \
           BUILD_ERROR="" \
           FAILED_STEP="" \
           node .github/scripts/write-status.js
