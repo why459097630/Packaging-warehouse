@@ -997,12 +997,52 @@ jobs:
         run: |
           set -euo pipefail
 
+          RUN_ID="${{ inputs.run_id }}"
           PLAN_VALUE="$(node -e "const fs=require('fs'); const p='lib/ndjc/assembly.local.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || j.mode || 'pro').trim().toLowerCase());")"
+
+          APK_FILE_NAME="$(RUN_ID="$RUN_ID" node - <<'NODE'
+          const fs = require("fs");
+
+          function readJson(path) {
+            try {
+              return JSON.parse(fs.readFileSync(path, "utf8"));
+            } catch {
+              return {};
+            }
+          }
+
+          const runId = process.env.RUN_ID || "";
+          const assembly = readJson("lib/ndjc/assembly.local.json");
+          const request = readJson(`requests/${runId}/request.json`);
+          const status = readJson(`requests/${runId}/status.json`);
+
+          const raw = String(
+            assembly.appName ||
+            assembly.app_name ||
+            request.appName ||
+            request.app_name ||
+            status.appName ||
+            status.app_name ||
+            "NDJC App"
+          ).trim();
+
+          const safe = raw
+            .replace(/[\\/:*?"<>|]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .replace(/ /g, "-");
+
+          process.stdout.write(`${safe || "NDJC-App"}.apk`);
+          NODE
+          )"
 
           rm -rf dist
           mkdir -p dist
 
-          cp -f "$NDJC_APK_OUT" dist/ || true
+          cp -f "$NDJC_APK_OUT" "dist/${APK_FILE_NAME}"
+          echo "NDJC_PUBLIC_APK_FILE_NAME=${APK_FILE_NAME}" >> "$GITHUB_ENV"
+
+          echo "[NDJC] Final APK file name: ${APK_FILE_NAME}"
 
           if [ "$PLAN_VALUE" = "free" ] || [ "$PLAN_VALUE" = "trial" ]; then
             echo "[NDJC] Trial build: package APK + TRIAL-README only"
@@ -1051,7 +1091,7 @@ jobs:
 
           RUN_ID="${{ inputs.run_id }}"
           PLAN_VALUE="$(node -e "const fs=require('fs'); const p='lib/ndjc/assembly.local.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || j.mode || 'pro').trim().toLowerCase());")"
-          APK_FILE_NAME="$(basename "$NDJC_APK_OUT")"
+          APK_FILE_NAME="${NDJC_PUBLIC_APK_FILE_NAME}"
 
           rm -rf release-assets
           mkdir -p release-assets
@@ -1076,7 +1116,7 @@ jobs:
             echo "NDJC_PUBLIC_APK_URL=" >> "$GITHUB_ENV"
             echo "[NDJC] Free/trial build: Release only keeps Think-it-Done-App.zip"
           else
-            cp -f "$NDJC_APK_OUT" "release-assets/${APK_FILE_NAME}"
+            cp -f "dist/${APK_FILE_NAME}" "release-assets/${APK_FILE_NAME}"
             echo "NDJC_PUBLIC_APK_URL=${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}/${APK_FILE_NAME}" >> "$GITHUB_ENV"
             echo "[NDJC] Paid build: Release keeps Think-it-Done-App.zip + ${APK_FILE_NAME}"
           fi
