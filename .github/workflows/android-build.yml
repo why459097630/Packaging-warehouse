@@ -1091,7 +1091,6 @@ jobs:
 
           RUN_ID="${{ inputs.run_id }}"
           PLAN_VALUE="$(node -e "const fs=require('fs'); const p='lib/ndjc/assembly.local.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); process.stdout.write(String(j.plan || j.mode || 'pro').trim().toLowerCase());")"
-          APK_FILE_NAME="${NDJC_PUBLIC_APK_FILE_NAME}"
 
           rm -rf release-assets
           mkdir -p release-assets
@@ -1106,18 +1105,61 @@ jobs:
             zip -r "../release-assets/Think-it-Done-App.zip" .
           )
 
+          echo "[NDJC] ZIP contents:"
+          unzip -l release-assets/Think-it-Done-App.zip
+
           echo "NDJC_RELEASE_TAG=${RELEASE_TAG}" >> "$GITHUB_ENV"
           echo "NDJC_RELEASE_TITLE=${RELEASE_TITLE}" >> "$GITHUB_ENV"
           echo "NDJC_RELEASE_URL=${RELEASE_URL}" >> "$GITHUB_ENV"
           echo "NDJC_RELEASE_DOWNLOAD_URL=${RELEASE_DOWNLOAD_URL}" >> "$GITHUB_ENV"
-          echo "NDJC_PUBLIC_APK_FILE_NAME=${APK_FILE_NAME}" >> "$GITHUB_ENV"
 
           if [ "$PLAN_VALUE" = "free" ] || [ "$PLAN_VALUE" = "trial" ]; then
             echo "NDJC_PUBLIC_APK_URL=" >> "$GITHUB_ENV"
+            echo "NDJC_PUBLIC_APK_FILE_NAME=" >> "$GITHUB_ENV"
             echo "[NDJC] Free/trial build: Release only keeps Think-it-Done-App.zip"
           else
-            cp -f "dist/${APK_FILE_NAME}" "release-assets/${APK_FILE_NAME}"
-            echo "NDJC_PUBLIC_APK_URL=${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}/${APK_FILE_NAME}" >> "$GITHUB_ENV"
+            APK_IN_ZIP="$(python3 - <<'PY'
+          import zipfile
+
+          zip_path = "release-assets/Think-it-Done-App.zip"
+
+          with zipfile.ZipFile(zip_path, "r") as z:
+              apk_files = [
+                  name for name in z.namelist()
+                  if name.lower().endswith(".apk") and not name.endswith("/")
+              ]
+
+          if not apk_files:
+              raise SystemExit("No APK file found inside Think-it-Done-App.zip")
+
+          apk_files.sort()
+          print(apk_files[0])
+          PY
+          )"
+
+            APK_FILE_NAME="$(basename "$APK_IN_ZIP")"
+
+            python3 - <<PY
+          import os
+          import zipfile
+
+          zip_path = "release-assets/Think-it-Done-App.zip"
+          apk_in_zip = """$APK_IN_ZIP"""
+          apk_file_name = os.path.basename(apk_in_zip)
+          output_path = os.path.join("release-assets", apk_file_name)
+
+          with zipfile.ZipFile(zip_path, "r") as z:
+              with z.open(apk_in_zip) as src:
+                  with open(output_path, "wb") as dst:
+                      dst.write(src.read())
+
+          print(f"[NDJC] Extracted public APK from zip: {apk_in_zip} -> {output_path}")
+          PY
+
+            ENCODED_APK_FILE_NAME="$(node -e "process.stdout.write(encodeURIComponent(process.argv[1]))" "$APK_FILE_NAME")"
+
+            echo "NDJC_PUBLIC_APK_FILE_NAME=${APK_FILE_NAME}" >> "$GITHUB_ENV"
+            echo "NDJC_PUBLIC_APK_URL=${{ github.server_url }}/${{ github.repository }}/releases/download/${RELEASE_TAG}/${ENCODED_APK_FILE_NAME}" >> "$GITHUB_ENV"
             echo "[NDJC] Paid build: Release keeps Think-it-Done-App.zip + ${APK_FILE_NAME}"
           fi
 
