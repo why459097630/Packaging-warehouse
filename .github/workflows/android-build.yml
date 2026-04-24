@@ -1176,11 +1176,30 @@ jobs:
           RELEASE_TAG="${{ env.NDJC_RELEASE_TAG }}"
           RELEASE_TITLE="${{ env.NDJC_RELEASE_TITLE }}"
 
+          echo "[NDJC] Publishing release tag: ${RELEASE_TAG}"
+          echo "[NDJC] Local release-assets before upload:"
+          find release-assets -maxdepth 1 -type f -print | sort
+
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" release-assets/* --clobber
+            echo "[NDJC] Existing release found. Deleting existing uploaded assets before re-upload."
+
+            gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | while IFS= read -r asset_name; do
+              if [ -n "$asset_name" ]; then
+                echo "[NDJC] Deleting old release asset: $asset_name"
+                gh release delete-asset "$RELEASE_TAG" "$asset_name" -y || true
+              fi
+            done
+
+            gh release upload "$RELEASE_TAG" release-assets/*
           else
+            echo "[NDJC] Release not found. Creating new release."
             gh release create "$RELEASE_TAG" release-assets/* --title "$RELEASE_TITLE" --notes "NDJC build artifacts for ${{ inputs.run_id }}"
           fi
+
+          echo "[NDJC] Remote release assets after upload:"
+          gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name'
+
+          echo "${{ github.server_url }}/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
 
       - name: NDJC | Update status - success
         shell: bash
