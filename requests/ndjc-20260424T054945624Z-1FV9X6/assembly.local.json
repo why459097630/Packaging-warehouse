@@ -1,0 +1,18 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "osaka",
+  "packageName": "com.ndjc.apps.osaka.sepaid000023",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_paid_000023",
+  "merchantEmail": "whywhy9264@gmail.com",
+  "privacyUrl": "https://niandongjicheng.vercel.app/privacy/store_showcase_paid_000023",
+  "iconPath": "requests/ndjc-20260424T054945624Z-1FV9X6/icon.png",
+  "plan": "pro",
+  "firebaseProjectId": "ndjc-paid-02",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_02"
+}
