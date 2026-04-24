@@ -7,9 +7,9 @@
   "storeId": "store_showcase_paid_000022",
   "adminName": "11111111@qq.com",
   "status": "running",
-  "stage": "preparing_request",
-  "step": 1,
-  "message": "Preparing build request",
+  "stage": "processing_identity",
+  "step": 2,
+  "message": "Processing app identity",
   "artifactName": null,
   "workflowRunId": "24872014798",
   "workflowStatus": "in_progress",
@@ -21,5 +21,5 @@
   "publicApkUrl": null,
   "error": null,
   "failedStep": null,
-  "updatedAt": "2026-04-24T04:20:50.045Z"
+  "updatedAt": "2026-04-24T04:21:12.824Z"
 }
