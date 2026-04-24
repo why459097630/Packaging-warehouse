@@ -1,0 +1,18 @@
+{
+  "template": "core-skeleton",
+  "uiPack": "ui-pack-showcase-greenpink",
+  "modules": [
+    "feature-showcase"
+  ],
+  "appName": "Tokyo Sushi",
+  "packageName": "com.ndjc.apps.tokyosushi.sepaid000022",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "storeId": "store_showcase_paid_000022",
+  "merchantEmail": "whywhy9264@gmail.com",
+  "privacyUrl": "https://niandongjicheng.vercel.app/privacy/store_showcase_paid_000022",
+  "iconPath": "requests/ndjc-20260424T041958297Z-5ULW2R/icon.png",
+  "plan": "pro",
+  "firebaseProjectId": "ndjc-paid-01",
+  "firebaseCredentialsEnvKey": "FIREBASE_SERVICE_ACCOUNT_NDJC_PAID_01"
+}
